@@ -1,0 +1,30 @@
+# Files and folders created by aclocal, autoconf, automake, and libtoolize
+/aclocal.m4
+/autom4te.cache/
+/compile
+/config.*
+/configure
+/depcomp
+/install-sh
+/libtool
+/ltmain.sh
+/m4
+/missing
+Makefile
+Makefile.in
+
+# Documentation files created by make
+/doc/dimension.info
+/doc/texinfo.tex
+
+# Files created by `make check'
+/tests/png
+/tests/dimension.png
+
+# Files and folders created by libtool
+.libs/
+*.l[oa]
+
+# Files and folders created by compilation
+.deps/
+*.[oa]
