@@ -27,8 +27,8 @@
 
 /* 48-bit sRGB color for pixels. */
 typedef struct {
-  uint16_t r, g, b;
-  uint16_t a, t;
+  uint16_t r, g, b; /* Red, green, blue */
+  uint16_t a, t;    /* Filtered transparancy, normal transparancy */
 } dmnsn_pixel;
 
 dmnsn_pixel dmnsn_pixel_from_color(dmnsn_color color);

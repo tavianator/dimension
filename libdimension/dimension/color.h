@@ -29,14 +29,15 @@
 extern "C" {
 #endif
 
-/* CIE 1931 XYZ color. */
+/* CIE 1931 xyY color. */
 typedef struct {
-  double X, Y, Z; /* X, Y, and Z are the tristimulus values of a color in CIE
-                     1931 XYZ color space.  We use an unlimited light model
-                     here, where the range of X, Y, and Z are unbounded >= 0. */
-  double alpha, trans; /* Alpha transparancy only lets light of this color
-                          through; regular transparancy lets all colors
-                          through */
+  double x, y, Y; /* x and y are chromaticity coordinates, and Y is luminance,
+                     in the CIE 1931 xyZ color space.  We use an unlimited light
+                     model, so x,y in [0, 1] and Y >= 0, with 1 = diffuse
+                     white */
+  double filter, trans; /* Filter transparancy only lets light of this color
+                           through; regular transparancy lets all colors
+                           through */
 } dmnsn_color;
 
 #ifdef __cplusplus

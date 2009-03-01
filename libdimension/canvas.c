@@ -27,9 +27,15 @@
 dmnsn_pixel
 dmnsn_pixel_from_color(dmnsn_color color)
 {
+  double X, Y, Z;                   /* CIE XYZ values */
   double Rlinear, Glinear, Blinear; /* Linear RGB values - no gamma */
   double R, G, B;                   /* sRGB values */
   dmnsn_pixel pixel;
+
+  /* Convert from CIE xyY to CIE XYZ */
+  Y = color.Y;
+  X = Y*color.x/color.y;
+  Z = Y*(1.0 - color.x - color.y)/color.y;
 
   /*
    * First, the linear conversion.  Expressed as matrix multiplication, it looks
@@ -39,9 +45,9 @@ dmnsn_pixel_from_color(dmnsn_color color)
    *   [Glinear] = [-0.9692  1.8760  0.0416]*[Y]
    *   [Blinear]   [ 0.0556 -0.2040  1.0570] [Z]
    */
-  Rlinear =  3.2410*color.X - 1.5374*color.Y - 0.4986*color.Z;
-  Glinear = -0.9692*color.X + 1.8760*color.Y + 0.0416*color.Z;
-  Blinear =  0.0556*color.X - 0.2040*color.Y + 1.0570*color.Z;
+  Rlinear =  3.2410*X - 1.5374*Y - 0.4986*Z;
+  Glinear = -0.9692*X + 1.8760*Y + 0.0416*Z;
+  Blinear =  0.0556*X - 0.2040*Y + 1.0570*Z;
 
   /*
    * If C represents R, G, and B, then the sRGB values are now found as follows:
@@ -71,41 +77,41 @@ dmnsn_pixel_from_color(dmnsn_color color)
 
   /* Now we go from unlimited to limited light, saturating at UINT16_MAX */
 
-  if (R < 0) {
-    pixel.r = 0;
-  } else if (R > 1) {
+  if (R < 0.0) {
+    pixel.r = 0.0;
+  } else if (R > 1.0) {
     pixel.r = UINT16_MAX;
   } else {
     pixel.r = UINT16_MAX*R;
   }
 
-  if (G < 0) {
-    pixel.g = 0;
-  } else if (G > 1) {
+  if (G < 0.0) {
+    pixel.g = 0.0;
+  } else if (G > 1.0) {
     pixel.g = UINT16_MAX;
   } else {
     pixel.g = UINT16_MAX*G;
   }
 
-  if (B < 0) {
-    pixel.b = 0;
-  } else if (B > 1) {
+  if (B < 0.0) {
+    pixel.b = 0.0;
+  } else if (B > 1.0) {
     pixel.b = UINT16_MAX;
   } else {
     pixel.b = UINT16_MAX*B;
   }
 
-  if (color.alpha < 0) {
-    pixel.a = 0;
-  } else if (color.alpha > 1) {
+  if (color.filter < 0.0) {
+    pixel.a = 0.0;
+  } else if (color.filter > 1.0) {
     pixel.a = UINT16_MAX;
   } else {
-    pixel.a = UINT16_MAX*color.alpha;
+    pixel.a = UINT16_MAX*color.filter;
   }
 
-  if (color.trans < 0) {
-    pixel.t = 0;
-  } else if (color.trans > 1) {
+  if (color.trans < 0.0) {
+    pixel.t = 0.0;
+  } else if (color.trans > 1.0) {
     pixel.t = UINT16_MAX;
   } else {
     pixel.t = UINT16_MAX*color.trans;
@@ -119,6 +125,7 @@ dmnsn_color_from_pixel(dmnsn_pixel pixel)
 {
   double R, G, B;                   /* sRGB values */
   double Rlinear, Glinear, Blinear; /* Linear RGB values - no gamma */
+  double X, Y, Z;                   /* CIE XYZ values */
   dmnsn_color color;
 
   /* Conversion back to unlimited light */
@@ -162,11 +169,15 @@ dmnsn_color_from_pixel(dmnsn_pixel pixel)
    *   [X]   [0.0193 0.1192 0.9505] [Blinear]
    */
 
-  color.X = 0.4124*Rlinear + 0.3576*Glinear + 0.1805*Blinear;
-  color.Y = 0.2126*Rlinear + 0.7152*Glinear + 0.0722*Blinear;
-  color.Z = 0.0193*Rlinear + 0.1192*Glinear + 0.9505*Blinear;
+  X = 0.4124*Rlinear + 0.3576*Glinear + 0.1805*Blinear;
+  Y = 0.2126*Rlinear + 0.7152*Glinear + 0.0722*Blinear;
+  Z = 0.0193*Rlinear + 0.1192*Glinear + 0.9505*Blinear;
 
-  color.alpha = ((double)pixel.a)/UINT16_MAX;
+  /* Now convert to CIE xyY colorspace */
+  color.x = X/(X + Y + Z);
+  color.y = Y/(X + Y + Z);
+  color.Y = Y;
+  color.filter = ((double)pixel.a)/UINT16_MAX;
   color.trans = ((double)pixel.t)/UINT16_MAX;
 
   return color;
