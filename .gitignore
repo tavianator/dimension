@@ -19,7 +19,7 @@ Makefile.in
 
 # Files created by `make check'
 /tests/png
-/tests/dimension.png
+/tests/dimension*.png
 
 # Files and folders created by libtool
 .libs/

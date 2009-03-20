@@ -83,22 +83,28 @@ dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
       pixel = canvas->pixels + (height - y - 1)*width + x;
       sRGB = dmnsn_sRGB_from_color(*pixel);
 
-      if (sRGB.R < 1.0) {
-        row[4*x] = sRGB.R*UINT16_MAX;
-      } else {
+      if (sRGB.R <= 0.0) {
+        row[4*x] = 0;
+      } else if (sRGB.R >= 1.0) {
         row[4*x] = UINT16_MAX;
+      } else {
+        row[4*x] = sRGB.R*UINT16_MAX;
       }
 
-      if (sRGB.G < 1.0) {
-        row[4*x + 1] = sRGB.G*UINT16_MAX;
-      } else {
+      if (sRGB.G <= 0.0) {
+        row[4*x + 1] = 0;
+      } else if (sRGB.G >= 1.0) {
         row[4*x + 1] = UINT16_MAX;
-      }
-      
-      if (sRGB.B < 1.0) {
-        row[4*x + 2] = sRGB.B*UINT16_MAX;
       } else {
+        row[4*x + 1] = sRGB.G*UINT16_MAX;
+      }
+
+      if (sRGB.B <= 0.0) {
+        row[4*x + 2] = 0;
+      } else if (sRGB.B >= 1.0) {
         row[4*x + 2] = UINT16_MAX;
+      } else {
+        row[4*x + 2] = sRGB.B*UINT16_MAX;
       }
 
       row[4*x + 3] = (pixel->filter + pixel->trans)*UINT16_MAX;

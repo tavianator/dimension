@@ -26,17 +26,24 @@ dmnsn_CIE_XYZ whitepoint = { 0.9505, 1, 1.089 };
 dmnsn_color
 dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ)
 {
-  dmnsn_color ret = { XYZ.X, XYZ.Y, XYZ.Z, 0.0, 0.0 };
+  dmnsn_color ret;
+  ret.X = XYZ.X;
+  ret.Y = XYZ.Y;
+  ret.Z = XYZ.Z;
+  ret.filter = 0.0;
+  ret.trans  = 0.0;
   return ret;
 }
 
 dmnsn_color
 dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY)
 {
-  dmnsn_color ret = { xyY.Y*xyY.x/xyY.y,
-                      xyY.Y,
-                      xyY.Y*(1.0 - xyY.x - xyY.Y)/xyY.y,
-                      0.0, 0.0 };
+  dmnsn_color ret;
+  ret.X = xyY.Y*xyY.x/xyY.y;
+  ret.Y = xyY.Y;
+  ret.Z = xyY.Y*(1.0 - xyY.x - xyY.Y)/xyY.y;
+  ret.filter = 0.0;
+  ret.trans  = 0.0;
   return ret;
 }
 
@@ -86,12 +93,7 @@ dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white)
   return ret;
 }
 
-dmnsn_color
-dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
-{
-  double Rlinear, Glinear, Blinear; /* Linear RGB values - no gamma */
-  dmnsn_color ret;
-
+static double sRGB_Cinv(double CsRGB) {
   /*
    * If C represents R, G, and B, then the Clinear values are now found as
    * follows:
@@ -100,24 +102,22 @@ dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
    * Clinear = {                        1/2.4
    *           { ((Csrgb + 0.055)/1.055)     , Csrgb >  0.04045
    */
-
-  if (sRGB.R <= 0.04045) {
-    Rlinear = sRGB.R/19.92;
+  if (CsRGB <= 0.040449936) {
+    return CsRGB/12.92;
   } else {
-    Rlinear = pow((sRGB.R + 0.055)/1.055, 2.4);
+    return pow((CsRGB + 0.055)/1.055, 2.4);
   }
+}
 
-  if (sRGB.G <= 0.04045) {
-    Glinear = sRGB.G/19.92;
-  } else {
-    Glinear = pow((sRGB.G + 0.055)/1.055, 2.4);
-  }
+dmnsn_color
+dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
+{
+  double Rlinear, Glinear, Blinear; /* Linear RGB values - no gamma */
+  dmnsn_color ret;
 
-  if (sRGB.B <= 0.04045) {
-    Blinear = sRGB.B/19.92;
-  } else {
-    Blinear = pow((sRGB.B + 0.055)/1.055, 2.4);
-  }
+  Rlinear = sRGB_Cinv(sRGB.R);
+  Glinear = sRGB_Cinv(sRGB.G);
+  Blinear = sRGB_Cinv(sRGB.B);
 
   /*
    * Now, the linear conversion.  Expressed as matrix multiplication, it looks
@@ -127,10 +127,12 @@ dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
    *   [Y] = [0.2126 0.7152 0.0722]*[Glinear]
    *   [X]   [0.0193 0.1192 0.9505] [Blinear]
    */
-
-  ret.X = 0.4124*Rlinear + 0.3576*Glinear + 0.1805*Blinear;
-  ret.Y = 0.2126*Rlinear + 0.7152*Glinear + 0.0722*Blinear;
-  ret.Z = 0.0193*Rlinear + 0.1192*Glinear + 0.9505*Blinear;
+  ret.X = 0.4123808838268995*Rlinear + 0.3575728355732478*Blinear
+    + 0.1804522977447919*Glinear;
+  ret.Y = 0.2126198631048975*Rlinear + 0.7151387878413206*Blinear
+    + 0.0721499433963131*Glinear;
+  ret.Z = 0.0193434956789248*Rlinear + 0.1192121694056356*Blinear
+    + 0.9505065664127130*Glinear;
   ret.filter = 0.0;
   ret.trans  = 0.0;
 
@@ -191,6 +193,21 @@ dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white)
   return ret;
 }
 
+static double sRGB_C(double Clinear) {
+  /*
+   * If C represents R, G, and B, then the sRGB values are now found as follows:
+   *
+   *         { 12.92*Clinear,                Clinear <= 0.0031308
+   * Csrgb = {                1/2.4
+   *         { (1.055)*Clinear      - 0.055, Clinear >  0.0031308
+   */
+  if (Clinear <= 0.0031308) {
+    return 12.92*Clinear;
+  } else {
+    return 1.055*pow(Clinear, 1.0/2.4) - 0.055;
+  }
+}
+
 dmnsn_sRGB
 dmnsn_sRGB_from_color(dmnsn_color color)
 {
@@ -209,31 +226,9 @@ dmnsn_sRGB_from_color(dmnsn_color color)
   Glinear = -0.9692*color.X + 1.8760*color.Y + 0.0416*color.Z;
   Blinear =  0.0556*color.X - 0.2040*color.Y + 1.0570*color.Z;
 
-  /*
-   * If C represents R, G, and B, then the sRGB values are now found as follows:
-   *
-   *         { 12.92*Clinear,                Clinear <= 0.0031308
-   * Csrgb = {                1/2.4
-   *         { (1.055)*Clinear      - 0.055, Clinear >  0.0031308
-   */
-
-  if (Rlinear <= 0.0031308) {
-    ret.R = 12.92*Rlinear;
-  } else {
-    ret.R = 1.055*pow(Rlinear, 1.0/2.4) - 0.055;
-  }
-
-  if (Glinear <= 0.0031308) {
-    ret.G = 12.92*Glinear;
-  } else {
-    ret.G = 1.055*pow(Glinear, 1.0/2.4) - 0.055;
-  }
-
-  if (Blinear <= 0.0031308) {
-    ret.B = 12.92*Blinear;
-  } else {
-    ret.B = 1.055*pow(Blinear, 1.0/2.4) - 0.055;
-  }
+  ret.R = sRGB_C(Rlinear);
+  ret.G = sRGB_C(Glinear);
+  ret.B = sRGB_C(Blinear);
 
   return ret;
 }
