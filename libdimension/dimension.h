@@ -28,6 +28,10 @@
 extern "C" {
 #endif
 
+#ifndef DMNSN_INLINE
+#define DMNSN_INLINE extern inline
+#endif
+
 #include <dimension/geometry.h>
 #include <dimension/color.h>
 #include <dimension/canvas.h>

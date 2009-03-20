@@ -29,16 +29,57 @@
 extern "C" {
 #endif
 
-/* CIE 1931 xyY color. */
+/* Internally, we use CIE 1931 XYZ color. */
+typedef struct {
+  double X, Y, Z;
+  double filter, trans; /* Filter transparancy only lets light of this color
+                           through; regular transparancy lets all colors
+                           through.  filter + trans should be <= 1.0. */
+} dmnsn_color;
+
+typedef struct {
+  double X, Y, Z; /* X, Y, and Z are tristimulus values, unbounded above zero.
+                     Diffuse white is (0.9505, 1, 1.089). */
+} dmnsn_CIE_XYZ;
+
 typedef struct {
   double x, y, Y; /* x and y are chromaticity coordinates, and Y is luminance,
                      in the CIE 1931 xyZ color space.  We use an unlimited light
                      model, so x,y in [0, 1] and Y >= 0, with 1 = diffuse
                      white */
-  double filter, trans; /* Filter transparancy only lets light of this color
-                           through; regular transparancy lets all colors
-                           through */
-} dmnsn_color;
+} dmnsn_CIE_xyY;
+
+typedef struct {
+  double L, a, b; /* L is luminence (100 = diffuse white); a and b are color-
+                     opponent dimensions.  This color space is used for color
+                     arithmetic. */
+} dmnsn_CIE_Lab;
+
+typedef struct {
+  double L, u, v; /* L is luminence (100 = diffuse white); u and v are
+                     chromaticity coordinates. */
+} dmnsn_CIE_Luv;
+
+typedef struct {
+  double R, G, B; /* sRGB R, G, and B values */
+} dmnsn_sRGB;
+
+/* Standard whitepoint, determined by the conversion of sRGB white to XYZ */
+extern dmnsn_CIE_XYZ whitepoint;
+
+dmnsn_color dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ);
+dmnsn_color dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY);
+dmnsn_color dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white);
+dmnsn_color dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white);
+dmnsn_color dmnsn_color_from_sRGB(dmnsn_sRGB sRGB);
+
+dmnsn_CIE_XYZ dmnsn_XYZ_from_color(dmnsn_color color);
+dmnsn_CIE_xyY dmnsn_xyY_from_color(dmnsn_color color);
+dmnsn_CIE_Lab dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
+dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
+dmnsn_sRGB    dmnsn_sRGB_from_color(dmnsn_color color);
+
+dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
 
 #ifdef __cplusplus
 }

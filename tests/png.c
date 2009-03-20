@@ -6,6 +6,7 @@
 
 int main() {
   dmnsn_canvas *canvas;
+  dmnsn_sRGB sRGB;
   FILE *ofile, *ifile;
   unsigned int x, y;
 
@@ -15,37 +16,40 @@ int main() {
     return EXIT_FAILURE;
   }
 
-  ofile = fopen("dimension.png", "wb");
+  ofile = fopen("dimension1.png", "wb");
   if (!ofile) {
-    fprintf(stderr, "--- Opening 'dimension.png' for writing failed! ---\n");
+    fprintf(stderr, "--- Opening 'dimension1.png' for writing failed! ---\n");
     return EXIT_FAILURE;
   }
 
   for (x = 0; x < canvas->x; ++x) {
     for (y = 0; y < canvas->y; ++y) {
       if (x < canvas->x/3) {
-        canvas->pixels[y*canvas->x + x].r = UINT16_MAX;
-        canvas->pixels[y*canvas->x + x].g = 0;
-        canvas->pixels[y*canvas->x + x].b = 0;
+        sRGB.R = 1.0;
+        sRGB.G = 0.0;
+        sRGB.B = 0.0;
+        canvas->pixels[y*canvas->x + x] = dmnsn_color_from_sRGB(sRGB);
       } else if (x < 2*canvas->x/3) {
-        canvas->pixels[y*canvas->x + x].r = 0;
-        canvas->pixels[y*canvas->x + x].g = UINT16_MAX;
-        canvas->pixels[y*canvas->x + x].b = 0;
+        sRGB.R = 0.0;
+        sRGB.G = 1.0;
+        sRGB.B = 0.0;
+        canvas->pixels[y*canvas->x + x] = dmnsn_color_from_sRGB(sRGB);
       } else {
-        canvas->pixels[y*canvas->x + x].r = 0;
-        canvas->pixels[y*canvas->x + x].g = 0;
-        canvas->pixels[y*canvas->x + x].b = UINT16_MAX;
+        sRGB.R = 0.0;
+        sRGB.G = 0.0;
+        sRGB.B = 1.0;
+        canvas->pixels[y*canvas->x + x] = dmnsn_color_from_sRGB(sRGB);
       }
 
       if (y < canvas->y/3) {
-        canvas->pixels[y*canvas->x + x].a = 0;
-        canvas->pixels[y*canvas->x + x].t = 0;
+        canvas->pixels[y*canvas->x + x].filter = 0.0;
+        canvas->pixels[y*canvas->x + x].trans  = 0.0;
       } else if (y < 2*canvas->y/3) {
-        canvas->pixels[y*canvas->x + x].a = UINT16_MAX/4;
-        canvas->pixels[y*canvas->x + x].t = 0;
+        canvas->pixels[y*canvas->x + x].filter = 1.0/3.0;
+        canvas->pixels[y*canvas->x + x].trans  = 0.0;
       } else {
-        canvas->pixels[y*canvas->x + x].a = UINT16_MAX/4;
-        canvas->pixels[y*canvas->x + x].t = UINT16_MAX/2;
+        canvas->pixels[y*canvas->x + x].filter = 1.0/3.0;
+        canvas->pixels[y*canvas->x + x].trans  = 1.0/3.0;
       }
     }
   }
@@ -58,9 +62,9 @@ int main() {
   dmnsn_delete_canvas(canvas);
 
   fclose(ofile);
-  ifile = fopen("dimension.png", "rb");
+  ifile = fopen("dimension1.png", "rb");
   if (!ifile) {
-    fprintf(stderr, "--- Opening 'dimension.png' for reading failed! ---\n");
+    fprintf(stderr, "--- Opening 'dimension1.png' for reading failed! ---\n");
     return EXIT_FAILURE;
   }
 
@@ -70,9 +74,9 @@ int main() {
   }
 
   fclose(ifile);
-  ofile = fopen("dimension.png", "wb");
+  ofile = fopen("dimension2.png", "wb");
   if (!ofile) {
-    fprintf(stderr, "--- Opening 'dimension.png' for writing failed! ---\n");
+    fprintf(stderr, "--- Opening 'dimension2.png' for writing failed! ---\n");
     return EXIT_FAILURE;
   }
 

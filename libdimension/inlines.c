@@ -18,24 +18,5 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * A canvas which is rendered to.
- */
-
-#ifndef DIMENSION_CANVAS_H
-#define DIMENSION_CANVAS_H
-
-typedef struct {
-  unsigned int x, y;
-
-  /*
-   * Stored in first-quadrant representation (origin is bottom-left).  The pixel
-   * at (a,b) is accessible as pixels[b*x + a].
-   */
-  dmnsn_color *pixels;
-} dmnsn_canvas;
-
-dmnsn_canvas *dmnsn_new_canvas(unsigned int x, unsigned int y);
-void dmnsn_delete_canvas(dmnsn_canvas *canvas);
-
-#endif /* DIMENSION_CANVAS_H */
+#define DMNSN_INLINE
+#include "dimension.h"
