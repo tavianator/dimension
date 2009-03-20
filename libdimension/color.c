@@ -127,12 +127,12 @@ dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
    *   [Y] = [0.2126 0.7152 0.0722]*[Glinear]
    *   [X]   [0.0193 0.1192 0.9505] [Blinear]
    */
-  ret.X = 0.4123808838268995*Rlinear + 0.3575728355732478*Blinear
-    + 0.1804522977447919*Glinear;
-  ret.Y = 0.2126198631048975*Rlinear + 0.7151387878413206*Blinear
-    + 0.0721499433963131*Glinear;
-  ret.Z = 0.0193434956789248*Rlinear + 0.1192121694056356*Blinear
-    + 0.9505065664127130*Glinear;
+  ret.X = 0.4123808838268995*Rlinear + 0.3575728355732478*Glinear
+    + 0.1804522977447919*Blinear;
+  ret.Y = 0.2126198631048975*Rlinear + 0.7151387878413206*Glinear
+    + 0.0721499433963131*Blinear;
+  ret.Z = 0.0193434956789248*Rlinear + 0.1192121694056356*Glinear
+    + 0.9505065664127130*Blinear;
   ret.filter = 0.0;
   ret.trans  = 0.0;
 
