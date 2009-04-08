@@ -21,5 +21,5 @@ nobase_include_HEADERS = dimension.h dimension/geometry.h dimension/color.h dime
 
 lib_LTLIBRARIES = libdimension.la
 
-libdimension_la_SOURCES = dimension.h dimension/geometry.h dimension/color.h dimension/canvas.h canvas.c color.c inlines.c
+libdimension_la_SOURCES = dimension.h dimension/geometry.h dimension/color.h dimension/canvas.h canvas.c color.c geometry.c
 libdimension_la_LDFLAGS = -version-info 0:0:0

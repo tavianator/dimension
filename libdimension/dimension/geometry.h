@@ -31,50 +31,17 @@ typedef struct { dmnsn_scalar x, y, z; } dmnsn_vector;
 
 /* Vector arithmetic */
 
-DMNSN_INLINE dmnsn_vector
-dmnsn_vector_construct(dmnsn_scalar x, dmnsn_scalar y, dmnsn_scalar z)
-{
-  dmnsn_vector v = { .x = x, .y = y, .z = z };
-  return v;
-}
+dmnsn_vector dmnsn_vector_construct(dmnsn_scalar x,
+                                    dmnsn_scalar y,
+                                    dmnsn_scalar z);
 
-DMNSN_INLINE dmnsn_vector
-dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
-{
-  return dmnsn_vector_construct(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
-}
+dmnsn_vector dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_mul(dmnsn_scalar lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_div(dmnsn_vector lhs, dmnsn_scalar rhs);
 
-DMNSN_INLINE dmnsn_vector
-dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
-{
-  return dmnsn_vector_construct(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
-}
-
-DMNSN_INLINE dmnsn_vector
-dmnsn_vector_mul(dmnsn_scalar lhs, dmnsn_vector rhs)
-{
-  return dmnsn_vector_construct(lhs*rhs.x, lhs*rhs.y, lhs*rhs.z);
-}
-
-DMNSN_INLINE dmnsn_vector
-dmnsn_vector_div(dmnsn_vector lhs, dmnsn_scalar rhs)
-{
-  return dmnsn_vector_construct(lhs.x/rhs, lhs.y/rhs, lhs.z/rhs);
-}
-
-DMNSN_INLINE dmnsn_scalar
-dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs)
-{
-  return lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z;
-}
-
-DMNSN_INLINE dmnsn_vector
-dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
-{
-  return dmnsn_vector_construct(lhs.y*rhs.z - lhs.z*rhs.y,
-                                lhs.z*rhs.x - lhs.x*rhs.z,
-                                lhs.x*rhs.y - lhs.y*rhs.x);
-}
+dmnsn_scalar dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs);
 
 /* A line, or ray. */
 typedef struct {
@@ -83,10 +50,6 @@ typedef struct {
 } dmnsn_line;
 
 /* A point on a line, defined by x0 + t*n */
-DMNSN_INLINE dmnsn_vector
-dmnsn_line_point(dmnsn_line l, dmnsn_scalar t)
-{
-  return dmnsn_vector_add(l.x0, dmnsn_vector_mul(t, l.n));
-}
+dmnsn_vector dmnsn_line_point(dmnsn_line l, dmnsn_scalar t);
 
 #endif /* DIMENSION_GEOMETRY_H */
