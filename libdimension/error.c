@@ -31,7 +31,7 @@ dmnsn_report_error(dmnsn_severity severity, const char *func, const char *str)
 {
   if (severity >= dmnsn_get_resilience()) {
     fprintf(stderr, "Dimension ERROR:   %s(): %s\n", func, str);
-    exit(1);
+    exit(EXIT_FAILURE);
   } else {
     fprintf(stderr, "Dimension WARNING: %s(): %s\n", func, str);
   }
@@ -59,7 +59,7 @@ dmnsn_set_resilience(dmnsn_severity resilience)
   if (resilience > DMNSN_SEVERITY_HIGH) {
     fprintf(stderr, "Dimension ERROR: %s(): %s\n", __func__,
             "Resilience has wrong value.");
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   if (pthread_mutex_lock(&dmnsn_resilience_mutex) != 0) {
