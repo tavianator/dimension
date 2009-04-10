@@ -19,6 +19,8 @@
 
 nobase_include_HEADERS = dimensionxx.hpp dimensionxx/geometry.hpp dimensionxx/color.hpp dimensionxx/canvas.hpp
 
+INCLUDES = -I../libdimension -I../libdimension-png
+
 lib_LTLIBRARIES = libdimensionxx.la
 
 libdimensionxx_la_SOURCES = dimensionxx.hpp dimensionxx/geometry.hpp dimensionxx/color.hpp dimensionxx/canvas.hpp canvas.cpp color.cpp geometry.cpp
