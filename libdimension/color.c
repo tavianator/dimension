@@ -22,9 +22,9 @@
 #include <math.h> /* For pow() */
 
 /* sRGB white point (D50) */
-dmnsn_CIE_XYZ dmnsn_whitepoint = { .X = 0.9504060171449392,
-                                   .Y = 0.9999085943425312,
-                                   .Z = 1.089062231497274 };
+const dmnsn_CIE_XYZ dmnsn_whitepoint = { .X = 0.9504060171449392,
+                                         .Y = 0.9999085943425312,
+                                         .Z = 1.089062231497274 };
 
 dmnsn_color
 dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ)

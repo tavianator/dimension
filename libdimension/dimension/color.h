@@ -65,7 +65,7 @@ typedef struct {
 } dmnsn_sRGB;
 
 /* Standard whitepoint, determined by the conversion of sRGB white to XYZ */
-extern dmnsn_CIE_XYZ dmnsn_whitepoint;
+extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
 
 dmnsn_color dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ);
 dmnsn_color dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY);
