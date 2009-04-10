@@ -27,6 +27,7 @@
 int main() {
   dmnsn_canvas *canvas;
   dmnsn_sRGB sRGB;
+  dmnsn_color color;
   FILE *ofile, *ifile;
   unsigned int x, y;
 
@@ -48,29 +49,29 @@ int main() {
         sRGB.R = 1.0;
         sRGB.G = 0.0;
         sRGB.B = 0.0;
-        canvas->pixels[y*canvas->x + x] = dmnsn_color_from_sRGB(sRGB);
       } else if (x < 2*canvas->x/3) {
         sRGB.R = 0.0;
         sRGB.G = 1.0;
         sRGB.B = 0.0;
-        canvas->pixels[y*canvas->x + x] = dmnsn_color_from_sRGB(sRGB);
       } else {
         sRGB.R = 0.0;
         sRGB.G = 0.0;
         sRGB.B = 1.0;
-        canvas->pixels[y*canvas->x + x] = dmnsn_color_from_sRGB(sRGB);
       }
+      color = dmnsn_color_from_sRGB(sRGB);
 
       if (y < canvas->y/3) {
-        canvas->pixels[y*canvas->x + x].filter = 0.0;
-        canvas->pixels[y*canvas->x + x].trans  = 0.0;
+        color.filter = 0.0;
+        color.trans  = 0.0;
       } else if (y < 2*canvas->y/3) {
-        canvas->pixels[y*canvas->x + x].filter = 1.0/3.0;
-        canvas->pixels[y*canvas->x + x].trans  = 0.0;
+        color.filter = 1.0/3.0;
+        color.trans  = 0.0;
       } else {
-        canvas->pixels[y*canvas->x + x].filter = 1.0/3.0;
-        canvas->pixels[y*canvas->x + x].trans  = 1.0/3.0;
+        color.filter = 1.0/3.0;
+        color.trans  = 1.0/3.0;
       }
+
+      dmnsn_set_pixel(canvas, color, x, y);
     }
   }
 
