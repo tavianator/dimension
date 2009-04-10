@@ -22,6 +22,8 @@
 
 int main()
 {
+  if (dmnsn_get_resilience() != DMNSN_SEVERITY_MEDIUM) return 1;
+
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
   if (dmnsn_get_resilience() != DMNSN_SEVERITY_LOW) return 1;
 
