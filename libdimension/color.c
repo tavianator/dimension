@@ -22,9 +22,9 @@
 #include <math.h> /* For pow() */
 
 /* sRGB white point (D50) */
-dmnsn_CIE_XYZ whitepoint = { .X = 0.9504060171449392,
-                             .Y = 0.9999085943425312,
-                             .Z = 1.089062231497274 };
+dmnsn_CIE_XYZ dmnsn_whitepoint = { .X = 0.9504060171449392,
+                                   .Y = 0.9999085943425312,
+                                   .Z = 1.089062231497274 };
 
 dmnsn_color
 dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ)
@@ -236,14 +236,14 @@ dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
   dmnsn_CIE_Lab Lab, Lab1, Lab2;
   dmnsn_color ret;
 
-  Lab1 = dmnsn_Lab_from_color(color1, whitepoint);
-  Lab2 = dmnsn_Lab_from_color(color2, whitepoint);
+  Lab1 = dmnsn_Lab_from_color(color1, dmnsn_whitepoint);
+  Lab2 = dmnsn_Lab_from_color(color2, dmnsn_whitepoint);
 
   Lab.L = Lab1.L + Lab2.L;
   Lab.a = Lab1.a + Lab2.a;
   Lab.b = Lab1.b + Lab2.b;
 
-  ret = dmnsn_color_from_Lab(Lab, whitepoint);
+  ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
   ret.filter = (Lab1.L*color1.filter + Lab2.L*color2.filter)/Lab.L;
   ret.trans  = (Lab1.L*color1.trans  + Lab2.L*color2.trans)/Lab.L;
 
