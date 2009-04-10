@@ -26,14 +26,18 @@
 
 int main() {
   dmnsn_canvas *canvas;
-  dmnsn_sRGB sRGB;
   dmnsn_color color;
+  dmnsn_CIE_xyY xyY;
+  dmnsn_CIE_Lab Lab;
+  dmnsn_CIE_Luv Luv;
+  dmnsn_sRGB sRGB;
   FILE *ofile, *ifile;
-  unsigned int x, y;
+  unsigned int i, j;
+  const unsigned int x = 300, y = 300;
 
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
-  canvas = dmnsn_new_canvas(333, 300);
+  canvas = dmnsn_new_canvas(3*x, y);
   if (!canvas) {
     fprintf(stderr, "--- Allocation of canvas failed! ---\n");
     return EXIT_FAILURE;
@@ -45,35 +49,61 @@ int main() {
     return EXIT_FAILURE;
   }
 
-  for (x = 0; x < canvas->x; ++x) {
-    for (y = 0; y < canvas->y; ++y) {
-      if (x < canvas->x/3) {
-        sRGB.R = 1.0;
-        sRGB.G = 0.0;
-        sRGB.B = 0.0;
-      } else if (x < 2*canvas->x/3) {
-        sRGB.R = 0.0;
-        sRGB.G = 1.0;
-        sRGB.B = 0.0;
-      } else {
-        sRGB.R = 0.0;
-        sRGB.G = 0.0;
-        sRGB.B = 1.0;
-      }
-      color = dmnsn_color_from_sRGB(sRGB);
+  for (i = 0; i < x; ++i) {
+    for (j = 0; j < y; ++j) {
+      /*
+       * CIE xyY colorspace
+       */
+      xyY.Y = 0.5;
+      xyY.x = ((double)i)/(x - 1);
+      xyY.y = ((double)j)/(y - 1);
 
-      if (y < canvas->y/3) {
-        color.filter = 0.0;
-        color.trans  = 0.0;
-      } else if (y < 2*canvas->y/3) {
-        color.filter = 1.0/3.0;
-        color.trans  = 0.0;
-      } else {
-        color.filter = 1.0/3.0;
-        color.trans  = 1.0/3.0;
+      color = dmnsn_color_from_xyY(xyY);
+      sRGB  = dmnsn_sRGB_from_color(color);
+
+      if (sRGB.R > 1.0 || sRGB.G > 1.0 || sRGB.B > 1.0
+          || sRGB.R < 0.0 || sRGB.G < 0.0 || sRGB.B < 0.0) {
+        /* Out of sRGB gamut */
+        color.trans = 0.5;
       }
 
-      dmnsn_set_pixel(canvas, color, x, y);
+      dmnsn_set_pixel(canvas, color, i, j);
+
+      /*
+       * CIE Lab colorspace
+       */
+      Lab.L = 75.0;
+      Lab.a = 200.0*(((double)i)/(x - 1) - 0.5);
+      Lab.b = 200.0*(((double)j)/(y - 1) - 0.5);
+
+      color = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
+      sRGB  = dmnsn_sRGB_from_color(color);
+
+      if (sRGB.R > 1.0 || sRGB.G > 1.0 || sRGB.B > 1.0
+          || sRGB.R < 0.0 || sRGB.G < 0.0 || sRGB.B < 0.0) {
+        /* Out of sRGB gamut */
+        color.trans = 0.5;
+      }
+
+      dmnsn_set_pixel(canvas, color, i + x, j);
+
+      /*
+       * CIE Luv colorspace
+       */
+      Luv.L = 75.0;
+      Luv.u = 200.0*(((double)i)/(x - 1) - 0.5);
+      Luv.v = 200.0*(((double)j)/(y - 1) - 0.5);
+
+      color = dmnsn_color_from_Luv(Luv, dmnsn_whitepoint);
+      sRGB  = dmnsn_sRGB_from_color(color);
+
+      if (sRGB.R > 1.0 || sRGB.G > 1.0 || sRGB.B > 1.0
+          || sRGB.R < 0.0 || sRGB.G < 0.0 || sRGB.B < 0.0) {
+        /* Out of sRGB gamut */
+        color.trans = 0.5;
+      }
+
+      dmnsn_set_pixel(canvas, color, i + 2*x, j);
     }
   }
 
