@@ -1,6 +1,6 @@
 dnl Copyright (C) 2008 Tavian Barnes <tavianator@gmail.com>
 dnl
-dnl This file is part of the Dimension Build Suite.
+dnl This file is part of The Dimension Build Suite.
 dnl
 dnl The Dimension Build Suite is free software; you can redistribute it
 dnl and/or modify it under the terms of the GNU General Public License as
@@ -34,5 +34,6 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile
                  libdimension/Makefile
                  libdimension-png/Makefile
+                 libdimensionxx/Makefile
                  tests/Makefile])
 AC_OUTPUT

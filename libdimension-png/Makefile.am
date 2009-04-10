@@ -1,7 +1,7 @@
 ###########################################################################
 ## Copyright (C) 2008 Tavian Barnes <tavianator@gmail.com>               ##
 ##                                                                       ##
-## This file is part of the Dimension Build Suite.                       ##
+## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
 ## The Dimension Build Suite is free software; you can redistribute it   ##
 ## and/or modify it under the terms of the GNU General Public License as ##

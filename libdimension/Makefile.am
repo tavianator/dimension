@@ -1,7 +1,7 @@
 ###########################################################################
 ## Copyright (C) 2008 Tavian Barnes <tavianator@gmail.com>               ##
 ##                                                                       ##
-## This file is part of the Dimension Build Suite.                       ##
+## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
 ## The Dimension Build Suite is free software; you can redistribute it   ##
 ## and/or modify it under the terms of the GNU General Public License as ##
@@ -21,6 +21,6 @@ nobase_include_HEADERS = dimension.h dimension/geometry.h dimension/color.h dime
 
 lib_LTLIBRARIES = libdimension.la
 
-libdimension_la_SOURCES = dimension.h dimension/geometry.h dimension/color.h dimension/canvas.h canvas.c color.c geometry.c error.c
+libdimension_la_SOURCES = dimension.h dimension/geometry.h dimension/color.h dimension/canvas.h canvas.c color.c error.c geometry.c
 libdimension_la_LDFLAGS = -version-info 0:0:0
 libdimension_la_LIBADD  = -lm -lpthread

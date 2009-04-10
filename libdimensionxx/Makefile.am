@@ -17,7 +17,10 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = libdimension libdimension-png libdimensionxx tests
+nobase_include_HEADERS = dimensionxx.hpp dimensionxx/geometry.hpp dimensionxx/color.hpp dimensionxx/canvas.hpp
 
-EXTRA_DIST = autogen.sh
+lib_LTLIBRARIES = libdimensionxx.la
+
+libdimensionxx_la_SOURCES = dimensionxx.hpp dimensionxx/geometry.hpp dimensionxx/color.hpp dimensionxx/canvas.hpp canvas.cpp color.cpp geometry.cpp
+libdimensionxx_la_LDFLAGS = -version-info 0:0:0
+libdimensionxx_la_LIBADD  = ../libdimension/libdimension.la ../libdimension-png/libdimension-png.la

@@ -18,38 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_H
-#define DIMENSION_H
-
-#include <stdbool.h>
-#include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Debug and error handling stuff */
-
-typedef enum {
-  DMNSN_SEVERITY_LOW,    /* Only die on low resilience */
-  DMNSN_SEVERITY_MEDIUM, /* Die on low or medium resilience */
-  DMNSN_SEVERITY_HIGH    /* Always die */
-} dmnsn_severity;
-
-#define dmnsn_error(severity, str) dmnsn_report_error(severity, __func__, str)
-
-void dmnsn_report_error(dmnsn_severity severity,
-                        const char *func, const char *str);
-dmnsn_severity dmnsn_get_resilience();
-void dmnsn_set_resilience(dmnsn_severity resilience);
+#ifndef DIMENSIONXX_HPP
+#define DIMENSIONXX_HPP
 
 /* More includes */
-#include <dimension/geometry.h>
-#include <dimension/color.h>
-#include <dimension/canvas.h>
+#include <dimensionxx/geometry.hpp>
+#include <dimensionxx/color.hpp>
+#include <dimensionxx/canvas.hpp>
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* DIMENSION_H */
+#endif /* DIMENSIONXX_HPP */

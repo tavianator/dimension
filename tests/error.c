@@ -1,7 +1,7 @@
 /*************************************************************************
  * Copyright (C) 2008 Tavian Barnes <tavianator@gmail.com>               *
  *                                                                       *
- * This file is part of the Dimension Test Suite.                        *
+ * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
  * Dimension is free software; you can redistribute it and/or modify it  *
  * under the terms of the GNU Lesser General Public License as published *
