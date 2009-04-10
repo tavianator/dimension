@@ -21,7 +21,7 @@
 #ifndef DIMENSIONXX_CANVAS_HPP
 #define DIMENSIONXX_CANVAS_HPP
 
-namespace dimension
+namespace Dimension
 {
 }
 

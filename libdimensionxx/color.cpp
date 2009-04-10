@@ -19,3 +19,8 @@
  *************************************************************************/
 
 #include "dimensionxx.hpp"
+
+namespace Dimension
+{
+  const CIE_XYZ whitepoint(dmnsn_whitepoint);
+}

@@ -23,32 +23,32 @@
 
 #include <dimension.h>
 
-namespace dimension
+namespace Dimension
 {
-  typedef dmnsn_scalar scalar;
+  typedef dmnsn_scalar Scalar;
 
-  class vector
+  class Vector
   {
   public:
-    vector() { }
-    vector(scalar x, scalar y, scalar z)
+    Vector() { }
+    Vector(Scalar x, Scalar y, Scalar z)
       : m_vector(dmnsn_vector_construct(x, y, z)) { }
-    explicit vector(dmnsn_vector v) : m_vector(v) { }
-    // vector(const vector& v);
-    // ~vector();
+    explicit Vector(dmnsn_vector v) : m_vector(v) { }
+    // Vector(const Vector& v);
+    // ~Vector();
 
-    scalar x() const { return m_vector.x; }
-    scalar y() const { return m_vector.y; }
-    scalar z() const { return m_vector.z; }
+    Scalar x() const { return m_vector.x; }
+    Scalar y() const { return m_vector.y; }
+    Scalar z() const { return m_vector.z; }
 
-    // vector& operator=(const vector& rhs);
-    vector& operator+=(const vector& rhs)
+    // Vector& operator=(const Vector& rhs);
+    Vector& operator+=(const Vector& rhs)
       { m_vector = dmnsn_vector_add(m_vector, rhs.m_vector); return *this; }
-    vector& operator-=(const vector& rhs)
+    Vector& operator-=(const Vector& rhs)
       { m_vector = dmnsn_vector_sub(m_vector, rhs.m_vector); return *this; }
-    vector& operator*=(scalar rhs)
+    Vector& operator*=(Scalar rhs)
       { m_vector = dmnsn_vector_mul(rhs, m_vector); return *this; }
-    vector& operator/=(scalar rhs)
+    Vector& operator/=(Scalar rhs)
       { m_vector = dmnsn_vector_div(m_vector, rhs); return *this; }
 
     dmnsn_vector dmnsn() const { return m_vector; }
@@ -61,16 +61,16 @@ namespace dimension
   {
   public:
     line() { }
-    line(const vector& x0, const vector& n)
+    line(const Vector& x0, const Vector& n)
       { m_line.x0 = x0.dmnsn(); m_line.n = n.dmnsn(); }
     // line(const line& l);
     // ~line();
 
-    vector x0() const { return vector(m_line.x0); }
-    vector n()  const { return vector(m_line.n); }
+    Vector x0() const { return Vector(m_line.x0); }
+    Vector n()  const { return Vector(m_line.n); }
 
     // line& operator=(const line& l);
-    vector operator()(scalar t) { return vector(dmnsn_line_point(m_line, t)); }
+    Vector operator()(Scalar t) { return Vector(dmnsn_line_point(m_line, t)); }
 
     dmnsn_line dmnsn() const { return m_line; }
 
@@ -80,56 +80,56 @@ namespace dimension
 
   // Vector operators
 
-  inline vector
-  operator+(const vector& lhs, const vector& rhs)
+  inline Vector
+  operator+(const Vector& lhs, const Vector& rhs)
   {
-    vector r = lhs;
+    Vector r = lhs;
     r += rhs;
     return r;
   }
 
-  inline vector
-  operator-(const vector& lhs, const vector& rhs)
+  inline Vector
+  operator-(const Vector& lhs, const Vector& rhs)
   {
-    vector r = lhs;
+    Vector r = lhs;
     r -= rhs;
     return r;
   }
 
-  inline vector
-  operator*(const vector& lhs, scalar rhs)
+  inline Vector
+  operator*(const Vector& lhs, Scalar rhs)
   {
-    vector r = lhs;
+    Vector r = lhs;
     r *= rhs;
     return r;
   }
 
-  inline vector
-  operator*(scalar lhs, const vector& rhs)
+  inline Vector
+  operator*(Scalar lhs, const Vector& rhs)
   {
-    vector r = rhs;
+    Vector r = rhs;
     r *= lhs;
     return r;
   }
 
-  inline vector
-  operator/(const vector& lhs, scalar rhs)
+  inline Vector
+  operator/(const Vector& lhs, Scalar rhs)
   {
-    vector r = lhs;
+    Vector r = lhs;
     r /= rhs;
     return r;
   }
 
-  inline scalar
-  dot(const vector& lhs, const vector& rhs)
+  inline Scalar
+  dot(const Vector& lhs, const Vector& rhs)
   {
     return dmnsn_vector_dot(lhs.dmnsn(), rhs.dmnsn());
   }
 
-  inline vector
-  cross(const vector& lhs, const vector& rhs)
+  inline Vector
+  cross(const Vector& lhs, const Vector& rhs)
   {
-    return vector(dmnsn_vector_cross(lhs.dmnsn(), rhs.dmnsn()));
+    return Vector(dmnsn_vector_cross(lhs.dmnsn(), rhs.dmnsn()));
   }
 }
 
