@@ -39,7 +39,7 @@ dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY)
 {
   dmnsn_color ret = { .X = xyY.Y*xyY.x/xyY.y,
                       .Y = xyY.Y,
-                      .Z = xyY.Y*(1.0 - xyY.x - xyY.Y)/xyY.y,
+                      .Z = xyY.Y*(1.0 - xyY.x - xyY.y)/xyY.y,
                       .filter = 0.0, .trans = 0.0 };
   return ret;
 }
@@ -65,6 +65,8 @@ dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white)
   ret.X = white.X*dmnsn_Lab_finv(fx);
   ret.Y = white.Y*dmnsn_Lab_finv(fy);
   ret.Z = white.Z*dmnsn_Lab_finv(fz);
+  ret.filter = 0.0;
+  ret.trans  = 0.0;
 
   return ret;
 }
@@ -86,6 +88,8 @@ dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white)
   ret.Y = white.Y*dmnsn_Lab_finv(fy);
   ret.X = ret.Y*9.0*uprime/vprime/4.0;
   ret.Z = ret.Y*(12.0 - 3*uprime - 20*vprime)/vprime/4.0;
+  ret.filter = 0.0;
+  ret.trans  = 0.0;
 
   return ret;
 }
