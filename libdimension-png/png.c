@@ -32,7 +32,7 @@ dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
   png_uint_32 width, height;
   unsigned int x, y;
   uint16_t *row = NULL;
-  dmnsn_color *pixel;
+  dmnsn_color color;
   dmnsn_sRGB sRGB;
 
   width = canvas->x;
@@ -80,8 +80,8 @@ dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
   for (y = 0; y < height; ++y) {
     for (x = 0; x < width; ++x) {
       /* Invert the rows.  PNG coordinates are fourth quadrant. */
-      pixel = canvas->pixels + (height - y - 1)*width + x;
-      sRGB = dmnsn_sRGB_from_color(*pixel);
+      color = dmnsn_get_pixel(canvas, x, height - y - 1);
+      sRGB = dmnsn_sRGB_from_color(color);
 
       if (sRGB.R <= 0.0) {
         row[4*x] = 0;
@@ -107,7 +107,7 @@ dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
         row[4*x + 2] = sRGB.B*UINT16_MAX;
       }
 
-      row[4*x + 3] = (pixel->filter + pixel->trans)*UINT16_MAX;
+      row[4*x + 3] = (color.filter + color.trans)*UINT16_MAX;
     }
     png_write_row(png_ptr, (png_bytep)row);
   }
@@ -130,7 +130,7 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
   png_bytep image = NULL;
   png_bytep *row_pointers = NULL;
   unsigned int x, y;
-  dmnsn_color *pixel;
+  dmnsn_color color;
   dmnsn_sRGB sRGB;
   png_bytep png_pixel;
 
@@ -219,7 +219,6 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
     if (color_type & PNG_COLOR_MASK_ALPHA) {
       for (x = 0; x < width; ++x) {
         for (y = 0; y < height; ++y) {
-          pixel = (*canvas)->pixels + (height - y - 1)*width + x;
           png_pixel = image + 8*(y*width + x);
 
           sRGB.R = ((double)((png_pixel[0] << UINT16_C(8)) + png_pixel[1]))
@@ -229,17 +228,15 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
           sRGB.B = ((double)((png_pixel[4] << UINT16_C(8)) + png_pixel[5]))
             /UINT16_MAX;
 
-          *pixel = dmnsn_color_from_sRGB(sRGB);
-
-          pixel->filter = 0.0;
-          pixel->trans  = ((double)((png_pixel[6] << UINT16_C(8))
-                                    + png_pixel[7]))/UINT16_MAX;
+          color       = dmnsn_color_from_sRGB(sRGB);
+          color.trans = ((double)((png_pixel[6] << UINT16_C(8))
+                                  + png_pixel[7]))/UINT16_MAX;
+          dmnsn_set_pixel(*canvas, color, x, height - y - 1);
         }
       }
     } else {
       for (x = 0; x < width; ++x) {
         for (y = 0; y < height; ++y) {
-          pixel = (*canvas)->pixels + (height - y - 1)*width + x;
           png_pixel = image + 6*(y*width + x);
 
           sRGB.R = ((double)((png_pixel[0] << UINT16_C(8)) + png_pixel[1]))
@@ -249,10 +246,8 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
           sRGB.B = ((double)((png_pixel[4] << UINT16_C(8)) + png_pixel[5]))
             /UINT16_MAX;
 
-          *pixel = dmnsn_color_from_sRGB(sRGB);
-
-          pixel->filter = 0.0;
-          pixel->trans  = 0.0;
+          color = dmnsn_color_from_sRGB(sRGB);
+          dmnsn_set_pixel(*canvas, color, x, height - y - 1);
         }
       }
     }
@@ -261,33 +256,28 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
     if (color_type & PNG_COLOR_MASK_ALPHA) {
       for (x = 0; x < width; ++x) {
         for (y = 0; y < height; ++y) {
-          pixel = (*canvas)->pixels + (height - y - 1)*width + x;
           png_pixel = image + 4*(y*width + x);
 
           sRGB.R = ((double)png_pixel[0])/UINT8_MAX;
           sRGB.G = ((double)png_pixel[1])/UINT8_MAX;
           sRGB.B = ((double)png_pixel[2])/UINT8_MAX;
 
-          *pixel = dmnsn_color_from_sRGB(sRGB);
-
-          pixel->filter = 0.0;
-          pixel->trans  = ((double)png_pixel[3])/UINT8_MAX;
+          color       = dmnsn_color_from_sRGB(sRGB);
+          color.trans = ((double)png_pixel[3])/UINT8_MAX;
+          dmnsn_set_pixel(*canvas, color, x, height - y - 1);
         }
       }
     } else {
       for (x = 0; x < width; ++x) {
         for (y = 0; y < height; ++y) {
-          pixel = (*canvas)->pixels + (height - y - 1)*width + x;
           png_pixel = image + 3*(y*width + x);
 
           sRGB.R = ((double)png_pixel[0])/UINT8_MAX;
           sRGB.G = ((double)png_pixel[1])/UINT8_MAX;
           sRGB.B = ((double)png_pixel[2])/UINT8_MAX;
 
-          *pixel = dmnsn_color_from_sRGB(sRGB);
-
-          pixel->filter = 0.0;
-          pixel->trans  = 0.0;
+          color = dmnsn_color_from_sRGB(sRGB);
+          dmnsn_set_pixel(*canvas, color, x, height - y - 1);
         }
       }
     }
