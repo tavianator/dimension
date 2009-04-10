@@ -18,6 +18,8 @@ Makefile.in
 /doc/texinfo.tex
 
 # Files created by `make check'
+/tests/warning
+/tests/error
 /tests/png
 /tests/dimension*.png
 
