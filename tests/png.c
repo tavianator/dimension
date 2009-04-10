@@ -31,6 +31,8 @@ int main() {
   FILE *ofile, *ifile;
   unsigned int x, y;
 
+  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
+
   canvas = dmnsn_new_canvas(333, 300);
   if (!canvas) {
     fprintf(stderr, "--- Allocation of canvas failed! ---\n");
