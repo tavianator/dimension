@@ -34,7 +34,7 @@ namespace Dimension
       try {
         write();
       } catch (...) {
-        dmnsn_error(DMNSN_SEVERITY_MEDIUM,
+        dmnsn_error(SEVERITY_MEDIUM,
                     "Writing canvas to PNG failed in PNG_Canvas destructor.");
       }
     }

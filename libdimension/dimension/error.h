@@ -32,8 +32,9 @@ typedef enum {
 } dmnsn_severity;
 
 /* Use this to report an error */
-#define dmnsn_error(severity, str)                              \
-  dmnsn_report_error(severity, __PRETTY_FUNCTION__, __LINE__, str)
+#define dmnsn_error(severity, str)                                            \
+  dmnsn_report_error((dmnsn_severity)severity, __PRETTY_FUNCTION__, __LINE__, \
+                     str)
 
 /* Called by dmnsn_error() - don't call directly */
 void dmnsn_report_error(dmnsn_severity severity,
