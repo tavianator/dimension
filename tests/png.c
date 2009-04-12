@@ -67,7 +67,7 @@ int main() {
         color.trans = 0.5;
       }
 
-      dmnsn_set_pixel(canvas, color, i, j);
+      dmnsn_set_pixel(canvas, i, j, color);
 
       /*
        * CIE Lab colorspace
@@ -85,7 +85,7 @@ int main() {
         color.trans = 0.5;
       }
 
-      dmnsn_set_pixel(canvas, color, i + x, j);
+      dmnsn_set_pixel(canvas, i + x, j, color);
 
       /*
        * CIE Luv colorspace
@@ -103,7 +103,7 @@ int main() {
         color.trans = 0.5;
       }
 
-      dmnsn_set_pixel(canvas, color, i + 2*x, j);
+      dmnsn_set_pixel(canvas, i + 2*x, j, color);
     }
   }
 

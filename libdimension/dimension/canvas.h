@@ -46,8 +46,8 @@ void dmnsn_delete_canvas(dmnsn_canvas *canvas);
 /* These handle the rwlocks correctly */
 dmnsn_color dmnsn_get_pixel(const dmnsn_canvas *canvas,
                             unsigned int x, unsigned int y);
-void dmnsn_set_pixel(dmnsn_canvas *canvas, dmnsn_color color,
-                     unsigned int x, unsigned int y);
+void dmnsn_set_pixel(dmnsn_canvas *canvas,
+                     unsigned int x, unsigned int y, dmnsn_color color);
 
 /* Manual locking */
 void dmnsn_rdlock_pixel(const dmnsn_canvas *canvas,

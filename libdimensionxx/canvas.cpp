@@ -19,3 +19,11 @@
  *************************************************************************/
 
 #include "dimensionxx.hpp"
+
+namespace Dimension
+{
+  Canvas::~Canvas()
+  {
+    dmnsn_delete_canvas(m_canvas);
+  }
+}

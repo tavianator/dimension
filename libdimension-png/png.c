@@ -231,7 +231,7 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
           color       = dmnsn_color_from_sRGB(sRGB);
           color.trans = ((double)((png_pixel[6] << UINT16_C(8))
                                   + png_pixel[7]))/UINT16_MAX;
-          dmnsn_set_pixel(*canvas, color, x, height - y - 1);
+          dmnsn_set_pixel(*canvas, x, height - y - 1, color);
         }
       }
     } else {
@@ -247,7 +247,7 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
             /UINT16_MAX;
 
           color = dmnsn_color_from_sRGB(sRGB);
-          dmnsn_set_pixel(*canvas, color, x, height - y - 1);
+          dmnsn_set_pixel(*canvas, x, height - y - 1, color);
         }
       }
     }
@@ -264,7 +264,7 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
 
           color       = dmnsn_color_from_sRGB(sRGB);
           color.trans = ((double)png_pixel[3])/UINT8_MAX;
-          dmnsn_set_pixel(*canvas, color, x, height - y - 1);
+          dmnsn_set_pixel(*canvas, x, height - y - 1, color);
         }
       }
     } else {
@@ -277,7 +277,7 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
           sRGB.B = ((double)png_pixel[2])/UINT8_MAX;
 
           color = dmnsn_color_from_sRGB(sRGB);
-          dmnsn_set_pixel(*canvas, color, x, height - y - 1);
+          dmnsn_set_pixel(*canvas, x, height - y - 1, color);
         }
       }
     }

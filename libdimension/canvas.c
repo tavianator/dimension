@@ -111,8 +111,8 @@ dmnsn_get_pixel(const dmnsn_canvas *canvas, unsigned int x, unsigned int y)
 }
 
 void
-dmnsn_set_pixel(dmnsn_canvas *canvas, dmnsn_color color,
-                unsigned int x, unsigned int y)
+dmnsn_set_pixel(dmnsn_canvas *canvas,
+                unsigned int x, unsigned int y, dmnsn_color color)
 {
   dmnsn_wrlock_pixel(canvas, x, y);
   canvas->pixels[y*canvas->x + x] = color;

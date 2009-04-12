@@ -23,6 +23,28 @@
 
 namespace Dimension
 {
+  class Canvas
+  {
+  public:
+    Canvas(unsigned int x, unsigned int y)
+      : m_canvas(dmnsn_new_canvas(x, y)) { }
+    virtual ~Canvas();
+
+    Color pixel(unsigned int x, unsigned int y) const
+      { return Color(dmnsn_get_pixel(m_canvas, x, y)); }
+    void pixel(unsigned int x, unsigned int y, const Color& c)
+      { dmnsn_set_pixel(m_canvas, x, y, c.dmnsn()); }
+
+    dmnsn_canvas*       dmnsn()       { return m_canvas; }
+    const dmnsn_canvas* dmnsn() const { return m_canvas; }
+
+  private:
+    dmnsn_canvas* m_canvas;
+
+    // Copying prohibited
+    Canvas(const Canvas&);
+    Canvas& operator=(const Canvas&);
+  };
 }
 
 #endif /* DIMENSIONXX_CANVAS_HPP */
