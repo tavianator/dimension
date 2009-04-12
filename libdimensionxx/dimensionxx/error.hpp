@@ -22,6 +22,8 @@
 #define DIMENSIONXX_ERROR_HPP
 
 #include <dimension.h>
+#include <stdexcept>
+#include <string>
 
 namespace Dimension
 {
@@ -33,6 +35,12 @@ namespace Dimension
 
   Severity resilience();
   void resilience(Severity resilience);
+
+  class Dimension_Error : public std::runtime_error
+  {
+  public:
+    Dimension_Error(const std::string& str);
+  };
 }
 
 #endif /* DIMENSIONXX_ERROR_HPP */

@@ -20,6 +20,8 @@
 
 #include "dimensionxx.hpp"
 #include "../libdimension-png/dimension-png.h"
+#include <cstdio>
+#include <stdexcept>
 
 namespace Dimension
 {
@@ -38,59 +40,47 @@ namespace Dimension
   void PNG_Canvas::write()
   {
     if (m_written) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Attempt to write canvas to PNG twice.");
-      return;
+      throw Dimension_Error("Attempt to write canvas to PNG twice.");
     }
 
     if (!m_ostr) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Attempt to write canvas to PNG without an output stream.");
-      return;
+      throw Dimension_Error("Attempt to write canvas to PNG without an output"
+                            " stream.");
     }      
 
     FILE* file = fcookie(*m_ostr);
     if (!file) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Couldn't create C++/C IO interface when writing canvas"
-                  " to PNG.");
-      return;
+      throw Dimension_Error("Couldn't create C++/C IO interface when writing"
+                            " canvas to PNG.");
     }      
 
     if (dmnsn_png_write_canvas(m_canvas, file)) {
-      fclose(file);
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Writing canvas to PNG failed.");
-      return;
+      std::fclose(file);
+      throw Dimension_Error("Writing canvas to PNG failed.");
     }
 
-    fclose(file);
+    std::fclose(file);
     m_written = true;
   }
 
   void PNG_Canvas::read()
   {
     if (!m_istr) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Attempt to read canvas from PNG without an input stream.");
-      return;
+      throw Dimension_Error("Attempt to read canvas from PNG without an input"
+                            " stream.");
     }      
 
     FILE* file = fcookie(*m_istr);
     if (!file) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Couldn't create C++/C IO interface when reading canvas"
-                  " from PNG.");
-      return;
+      throw Dimension_Error("Couldn't create C++/C IO interface when reading"
+                            " canvas from PNG.");
     }      
 
     if (!(m_canvas = dmnsn_png_read_canvas(file))) {
-      fclose(file);
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Reading canvas from PNG failed.");
-      return;
+      std::fclose(file);
+      throw Dimension_Error("Reading canvas from PNG failed.");
     }
 
-    fclose(file);
+    std::fclose(file);
   }
 }

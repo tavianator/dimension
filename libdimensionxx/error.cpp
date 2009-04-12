@@ -19,6 +19,8 @@
  *************************************************************************/
 
 #include "dimensionxx.hpp"
+#include <stdexcept>
+#include <string>
 
 namespace Dimension
 {
@@ -33,4 +35,7 @@ namespace Dimension
   {
     dmnsn_set_resilience(static_cast<dmnsn_severity>(resilience));
   }
+
+  Dimension_Error::Dimension_Error(const std::string& str)
+    : std::runtime_error(str) { }
 }
