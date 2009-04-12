@@ -25,8 +25,6 @@
 #ifndef DIMENSION_ERROR_H
 #define DIMENSION_ERROR_H
 
-/* Debug and error handling stuff */
-
 typedef enum {
   DMNSN_SEVERITY_LOW,    /* Only die on low resilience */
   DMNSN_SEVERITY_MEDIUM, /* Die on low or medium resilience */

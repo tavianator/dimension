@@ -19,3 +19,18 @@
  *************************************************************************/
 
 #include "dimensionxx.hpp"
+
+namespace Dimension
+{
+  Severity
+  resilience()
+  {
+    return static_cast<Severity>(dmnsn_get_resilience());
+  }
+
+  void
+  resilience(Severity resilience)
+  {
+    dmnsn_set_resilience(static_cast<dmnsn_severity>(resilience));
+  }
+}

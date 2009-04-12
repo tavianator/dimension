@@ -25,6 +25,14 @@
 
 namespace Dimension
 {
+  enum Severity {
+    SEVERITY_LOW    = DMNSN_SEVERITY_LOW,
+    SEVERITY_MEDIUM = DMNSN_SEVERITY_MEDIUM,
+    SEVERITY_HIGH   = DMNSN_SEVERITY_HIGH
+  };
+
+  Severity resilience();
+  void resilience(Severity resilience);
 }
 
 #endif /* DIMENSIONXX_ERROR_HPP */

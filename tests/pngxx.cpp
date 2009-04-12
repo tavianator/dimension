@@ -24,7 +24,7 @@
 int
 main()
 {
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
+  Dimension::resilience(Dimension::SEVERITY_LOW);
 
   const unsigned int width = 333, height = 300;
 
