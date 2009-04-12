@@ -27,13 +27,14 @@ static dmnsn_severity dmnsn_resilience = DMNSN_SEVERITY_MEDIUM;
 static pthread_mutex_t dmnsn_resilience_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void
-dmnsn_report_error(dmnsn_severity severity, const char *func, const char *str)
+dmnsn_report_error(dmnsn_severity severity, const char *func, unsigned int line,
+                   const char *str)
 {
   if (severity >= dmnsn_get_resilience()) {
-    fprintf(stderr, "Dimension ERROR:   %s: %s\n", func, str);
+    fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n", func, line, str);
     exit(EXIT_FAILURE);
   } else {
-    fprintf(stderr, "Dimension WARNING: %s: %s\n", func, str);
+    fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n", func, line, str);
   }
 }
 
@@ -42,12 +43,14 @@ dmnsn_get_resilience()
 {
   dmnsn_severity resilience;
   if (pthread_mutex_lock(&dmnsn_resilience_mutex) != 0) {
-    fprintf(stderr, "Dimension WARNING: %s: %s\n", __PRETTY_FUNCTION__,
+    fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
+            __PRETTY_FUNCTION__, __LINE__,
             "Couldn't lock resilience mutex.");
   }
   resilience = dmnsn_resilience;
   if (pthread_mutex_unlock(&dmnsn_resilience_mutex) != 0) {
-    fprintf(stderr, "Dimension WARNING: %s: %s\n", __PRETTY_FUNCTION__,
+    fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
+            __PRETTY_FUNCTION__, __LINE__,
             "Couldn't unlock resilience mutex.");
   }
   return resilience;
@@ -57,18 +60,21 @@ void
 dmnsn_set_resilience(dmnsn_severity resilience)
 {
   if (resilience > DMNSN_SEVERITY_HIGH) {
-    fprintf(stderr, "Dimension ERROR: %s: %s\n", __PRETTY_FUNCTION__,
+    fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n",
+            __PRETTY_FUNCTION__, __LINE__,
             "Resilience has wrong value.");
     exit(EXIT_FAILURE);
   }
 
   if (pthread_mutex_lock(&dmnsn_resilience_mutex) != 0) {
-    fprintf(stderr, "Dimension WARNING: %s: %s\n", __PRETTY_FUNCTION__,
+    fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
+            __PRETTY_FUNCTION__, __LINE__,
             "Couldn't lock resilience mutex.");
   }
   dmnsn_resilience = resilience;
   if (pthread_mutex_unlock(&dmnsn_resilience_mutex) != 0) {
-    fprintf(stderr, "Dimension WARNING: %s: %s\n", __PRETTY_FUNCTION__,
+    fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
+            __PRETTY_FUNCTION__, __LINE__,
             "Couldn't unlock resilience mutex.");
   }
 }
