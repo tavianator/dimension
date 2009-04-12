@@ -17,12 +17,12 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-nobase_include_HEADERS = dimensionxx.hpp dimensionxx/geometry.hpp dimensionxx/color.hpp dimensionxx/canvas.hpp
+nobase_include_HEADERS = dimensionxx.hpp dimensionxx/canvas.hpp dimensionxx/color.hpp dimensionxx/cookie.hpp dimensionxx/geometry.hpp dimensionxx/png.hpp
 
 INCLUDES = -I../libdimension -I../libdimension-png
 
 lib_LTLIBRARIES = libdimensionxx.la
 
-libdimensionxx_la_SOURCES = dimensionxx.hpp dimensionxx/geometry.hpp dimensionxx/color.hpp dimensionxx/canvas.hpp canvas.cpp color.cpp geometry.cpp
+libdimensionxx_la_SOURCES = $(nobase_include_HEADERS) canvas.cpp color.cpp cookie.cpp geometry.cpp png.cpp
 libdimensionxx_la_LDFLAGS = -version-info 0:0:0
 libdimensionxx_la_LIBADD  = ../libdimension/libdimension.la ../libdimension-png/libdimension-png.la

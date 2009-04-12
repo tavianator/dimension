@@ -18,21 +18,18 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_PNG_H
-#define DIMENSION_PNG_H
+#ifndef DIMENSIONXX_COOKIE_HPP
+#define DIMENSIONXX_COOKIE_HPP
 
-#include <dimension.h>
-#include <stdio.h>
+#include <istream>
+#include <ostream>
+#include <cstdio>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file);
-dmnsn_canvas *dmnsn_png_read_canvas(FILE *file);
-
-#ifdef __cplusplus
+namespace Dimension
+{
+  std::FILE* fcookie(std::istream& istr);
+  std::FILE* fcookie(std::ostream& ostr);
+  std::FILE* fcookie(std::iostream& iostr);
 }
-#endif
 
-#endif /* DIMENSION_PNG_H */
+#endif /* DIMENSIONXX_COOKIE_HPP */

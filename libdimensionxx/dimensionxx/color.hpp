@@ -51,6 +51,8 @@ namespace Dimension
     double trans(double t)  { m_color.trans = t; }
 
     // Color& operator=(const Color& c);
+    Color& operator+=(const Color& c)
+      { m_color = dmnsn_color_add(m_color, c.m_color); return *this; }
 
     dmnsn_color dmnsn() const { return m_color; }
 
@@ -61,6 +63,7 @@ namespace Dimension
   class CIE_XYZ
   {
   public:
+    CIE_XYZ() { }
     CIE_XYZ(double X, double Y, double Z)
       { m_XYZ.X = X; m_XYZ.Y = Y; m_XYZ.Z = Z; }
     CIE_XYZ(const Color& c) : m_XYZ(dmnsn_XYZ_from_color(c.dmnsn())) { }
@@ -85,6 +88,7 @@ namespace Dimension
   class CIE_xyY
   {
   public:
+    CIE_xyY() { }
     CIE_xyY(double x, double y, double Y)
       { m_xyY.x = x; m_xyY.y = y; m_xyY.Y = Y; }
     CIE_xyY(const Color& c) : m_xyY(dmnsn_xyY_from_color(c.dmnsn())) { }
@@ -109,6 +113,7 @@ namespace Dimension
   class CIE_Lab
   {
   public:
+    CIE_Lab() { }
     CIE_Lab(double L, double a, double b)
       { m_Lab.L = L; m_Lab.a = a; m_Lab.b = b; }
     CIE_Lab(const Color& c, const CIE_XYZ& white = whitepoint)
@@ -134,6 +139,7 @@ namespace Dimension
   class CIE_Luv
   {
   public:
+    CIE_Luv() { }
     CIE_Luv(double L, double u, double v)
       { m_Luv.L = L; m_Luv.u = u; m_Luv.v = v; }
     CIE_Luv(const Color& c, const CIE_XYZ& white = whitepoint)
@@ -159,6 +165,7 @@ namespace Dimension
   class sRGB
   {
   public:
+    sRGB() { }
     sRGB(double R, double G, double B)
       { m_RGB.R = R; m_RGB.G = G; m_RGB.B = B; }
     sRGB(const Color& c) : m_RGB(dmnsn_sRGB_from_color(c.dmnsn())) { }
@@ -180,6 +187,8 @@ namespace Dimension
     dmnsn_sRGB m_RGB;
   };
 
+  // Color inline constructors
+
   inline Color::Color(const CIE_XYZ& XYZ)
     : m_color(dmnsn_color_from_XYZ(XYZ.dmnsn())) { }
 
@@ -194,6 +203,22 @@ namespace Dimension
 
   inline Color::Color(const sRGB& RGB)
     : m_color(dmnsn_color_from_sRGB(RGB.dmnsn())) { }
+
+  // Color operators
+
+  inline Color
+  operator+(const Color& lhs, const Color& rhs)
+  {
+    Color temp = lhs;
+    temp += rhs;
+    return temp;
+  }
+
+  inline double
+  operator-(const Color& lhs, const Color& rhs)
+  {
+    return dmnsn_color_difference(lhs.dmnsn(), rhs.dmnsn());
+  }
 }
 
 #endif /* DIMENSIONXX_COLOR_HPP */

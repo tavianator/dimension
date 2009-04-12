@@ -119,9 +119,10 @@ dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
   return 0;
 }
 
-int
-dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
+dmnsn_canvas *
+dmnsn_png_read_canvas(FILE *file)
 {
+  dmnsn_canvas *canvas;
   png_byte header[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
   png_structp png_ptr;
   png_infop info_ptr;
@@ -134,28 +135,25 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
   dmnsn_sRGB sRGB;
   png_bytep png_pixel;
 
-  /* Ensure that *canvas can always be deleted. */
-  *canvas = NULL;
-
-  if (!file) return 1;
+  if (!file) return NULL;
 
   fread(header, 1, 8, file);
-  if (png_sig_cmp(header, 0, 8)) return 1;
+  if (png_sig_cmp(header, 0, 8)) return NULL;
 
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (!png_ptr) return 1;
+  if (!png_ptr) return NULL;
 
   info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr) {
     png_destroy_read_struct(&png_ptr, NULL, NULL);
-    return 1;
+    return NULL;
   }
 
   if (setjmp(png_jmpbuf(png_ptr))) {
     if (row_pointers) free(row_pointers);
     if (image) free(image);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    return 1;
+    return NULL;
   }
 
   png_init_io(png_ptr, file);
@@ -190,14 +188,14 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
   image = malloc(rowbytes*height);
   if (!image) {
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    return 1;
+    return NULL;
   }
 
   row_pointers = malloc(sizeof(png_bytep)*height);
   if (!row_pointers) {
     free(image);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    return 1;
+    return NULL;
   }
 
   for (y = 0; y < height; ++y) {
@@ -206,13 +204,13 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
 
   png_read_image(png_ptr, row_pointers);
 
-  *canvas = dmnsn_new_canvas(width, height);
-  if (!*canvas) {
+  canvas = dmnsn_new_canvas(width, height);
+  if (!canvas) {
     free(row_pointers);
     free(image);
     png_read_end(png_ptr, NULL);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    return 1;
+    return NULL;
   }
 
   if (bit_depth == 16) {
@@ -231,7 +229,7 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
           color       = dmnsn_color_from_sRGB(sRGB);
           color.trans = ((double)((png_pixel[6] << UINT16_C(8))
                                   + png_pixel[7]))/UINT16_MAX;
-          dmnsn_set_pixel(*canvas, x, height - y - 1, color);
+          dmnsn_set_pixel(canvas, x, height - y - 1, color);
         }
       }
     } else {
@@ -247,7 +245,7 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
             /UINT16_MAX;
 
           color = dmnsn_color_from_sRGB(sRGB);
-          dmnsn_set_pixel(*canvas, x, height - y - 1, color);
+          dmnsn_set_pixel(canvas, x, height - y - 1, color);
         }
       }
     }
@@ -264,7 +262,7 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
 
           color       = dmnsn_color_from_sRGB(sRGB);
           color.trans = ((double)png_pixel[3])/UINT8_MAX;
-          dmnsn_set_pixel(*canvas, x, height - y - 1, color);
+          dmnsn_set_pixel(canvas, x, height - y - 1, color);
         }
       }
     } else {
@@ -277,7 +275,7 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
           sRGB.B = ((double)png_pixel[2])/UINT8_MAX;
 
           color = dmnsn_color_from_sRGB(sRGB);
-          dmnsn_set_pixel(*canvas, x, height - y - 1, color);
+          dmnsn_set_pixel(canvas, x, height - y - 1, color);
         }
       }
     }
@@ -287,5 +285,5 @@ dmnsn_png_read_canvas(dmnsn_canvas **canvas, FILE *file)
   free(image);
   png_read_end(png_ptr, NULL);
   png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-  return 0;
+  return canvas;
 }

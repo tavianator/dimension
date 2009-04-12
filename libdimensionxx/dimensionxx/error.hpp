@@ -18,21 +18,13 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_PNG_H
-#define DIMENSION_PNG_H
+#ifndef DIMENSIONXX_ERROR_HPP
+#define DIMENSIONXX_ERROR_HPP
 
 #include <dimension.h>
-#include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file);
-dmnsn_canvas *dmnsn_png_read_canvas(FILE *file);
-
-#ifdef __cplusplus
+namespace Dimension
+{
 }
-#endif
 
-#endif /* DIMENSION_PNG_H */
+#endif /* DIMENSIONXX_ERROR_HPP */

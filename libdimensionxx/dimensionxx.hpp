@@ -21,9 +21,16 @@
 #ifndef DIMENSIONXX_HPP
 #define DIMENSIONXX_HPP
 
-/* More includes */
+// Internal helpers
+#include <dimensionxx/cookie.hpp>
+
+// libdimension wrappers
+#include <dimensionxx/error.hpp>
 #include <dimensionxx/geometry.hpp>
 #include <dimensionxx/color.hpp>
 #include <dimensionxx/canvas.hpp>
+
+// libdimension-png wrapper
+#include <dimensionxx/png.hpp>
 
 #endif /* DIMENSIONXX_HPP */

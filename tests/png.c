@@ -33,7 +33,7 @@ int main() {
   dmnsn_sRGB sRGB;
   FILE *ofile, *ifile;
   unsigned int i, j;
-  const unsigned int x = 300, y = 300;
+  const unsigned int x = 333, y = 300;
 
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
@@ -121,7 +121,7 @@ int main() {
     return EXIT_FAILURE;
   }
 
-  if (dmnsn_png_read_canvas(&canvas, ifile)) {
+  if (!(canvas = dmnsn_png_read_canvas(ifile))) {
     fprintf(stderr, "--- Reading canvas failed! ---\n");
     return EXIT_FAILURE;
   }

@@ -80,6 +80,7 @@ dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 dmnsn_sRGB    dmnsn_sRGB_from_color(dmnsn_color color);
 
 dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
+double dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2);
 
 #ifdef __cplusplus
 }

@@ -17,11 +17,11 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-check_PROGRAMS = warning error png
+check_PROGRAMS = warning error png pngxx
 TESTS          = $(check_PROGRAMS)
 XFAIL_TESTS    = error
 
-INCLUDES = -I../libdimension -I../libdimension-png
+INCLUDES = -I../libdimension -I../libdimension-png -I../libdimensionxx
 
 warning_SOURCES = warning.c
 warning_LDADD   = ../libdimension/libdimension.la
@@ -31,3 +31,6 @@ error_LDADD   = ../libdimension/libdimension.la
 
 png_SOURCES = png.c
 png_LDADD   = ../libdimension/libdimension.la ../libdimension-png/libdimension-png.la
+
+pngxx_SOURCES = pngxx.cpp
+pngxx_LDADD   = ../libdimensionxx/libdimensionxx.la

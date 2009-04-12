@@ -26,9 +26,13 @@ namespace Dimension
   class Canvas
   {
   public:
-    Canvas(unsigned int x, unsigned int y)
-      : m_canvas(dmnsn_new_canvas(x, y)) { }
+    Canvas(unsigned int width, unsigned int height)
+      : m_canvas(dmnsn_new_canvas(width, height)) { }
+    explicit Canvas(dmnsn_canvas* canvas) : m_canvas(canvas) { }
     virtual ~Canvas();
+
+    unsigned int width()  const { return m_canvas->x; }
+    unsigned int height() const { return m_canvas->y; }
 
     Color pixel(unsigned int x, unsigned int y) const
       { return Color(dmnsn_get_pixel(m_canvas, x, y)); }
@@ -38,9 +42,12 @@ namespace Dimension
     dmnsn_canvas*       dmnsn()       { return m_canvas; }
     const dmnsn_canvas* dmnsn() const { return m_canvas; }
 
-  private:
+  protected:
+    Canvas() : m_canvas(0) { }
+
     dmnsn_canvas* m_canvas;
 
+  private:
     // Copying prohibited
     Canvas(const Canvas&);
     Canvas& operator=(const Canvas&);

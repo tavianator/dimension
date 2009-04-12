@@ -19,7 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <math.h> /* For pow() */
+#include <math.h> /* For pow(), sqrt() */
 
 /* sRGB white point (D50) */
 const dmnsn_CIE_XYZ dmnsn_whitepoint = { .X = 0.9504060171449392,
@@ -252,4 +252,18 @@ dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
   ret.trans  = (Lab1.L*color1.trans  + Lab2.L*color2.trans)/Lab.L;
 
   return ret;
+}
+
+double
+dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2)
+{
+  dmnsn_CIE_Lab Lab, Lab1, Lab2;
+  dmnsn_color ret;
+
+  Lab1 = dmnsn_Lab_from_color(color1, dmnsn_whitepoint);
+  Lab2 = dmnsn_Lab_from_color(color2, dmnsn_whitepoint);
+
+  return sqrt((Lab1.L - Lab2.L)*(Lab1.L - Lab2.L)
+              + (Lab1.a - Lab2.a)*(Lab1.a - Lab2.a)
+              + (Lab1.b - Lab2.b)*(Lab1.b - Lab2.b));
 }

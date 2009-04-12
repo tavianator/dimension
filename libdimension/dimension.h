@@ -36,7 +36,8 @@ typedef enum {
   DMNSN_SEVERITY_HIGH    /* Always die */
 } dmnsn_severity;
 
-#define dmnsn_error(severity, str) dmnsn_report_error(severity, __func__, str)
+#define dmnsn_error(severity, str)                              \
+  dmnsn_report_error(severity, __PRETTY_FUNCTION__, str)
 
 void dmnsn_report_error(dmnsn_severity severity,
                         const char *func, const char *str);

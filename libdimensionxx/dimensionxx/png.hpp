@@ -18,21 +18,42 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_PNG_H
-#define DIMENSION_PNG_H
+#ifndef DIMENSIONXX_PNG_HPP
+#define DIMENSIONXX_PNG_HPP
 
-#include <dimension.h>
-#include <stdio.h>
+#include <istream>
+#include <ostream>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace Dimension
+{
+  class PNG_Canvas : public Canvas
+  {
+  public:
+    explicit PNG_Canvas(std::istream& istr)
+      : Canvas(), m_istr(&istr), m_ostr(0), m_written(false) { read(); }
+    PNG_Canvas(unsigned int x, unsigned int y, std::ostream& ostr)
+      : Canvas(x, y), m_istr(0), m_ostr(&ostr), m_written(false) { }
+    PNG_Canvas(std::istream& istr, std::ostream& ostr)
+      : Canvas(), m_istr(&istr), m_ostr(&ostr), m_written(false) { read(); }
+    virtual ~PNG_Canvas();
 
-int dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file);
-dmnsn_canvas *dmnsn_png_read_canvas(FILE *file);
+    void write();
 
-#ifdef __cplusplus
+  protected:
+    PNG_Canvas(std::ostream* ostr)
+      : Canvas(), m_istr(0), m_ostr(ostr), m_written(false) { }
+
+  private:
+    std::istream* m_istr;
+    std::ostream* m_ostr;
+    bool m_written;
+
+    void read();
+
+    // Copying prohibited
+    PNG_Canvas(const PNG_Canvas&);
+    PNG_Canvas& operator=(const PNG_Canvas&);
+  };
 }
-#endif
 
-#endif /* DIMENSION_PNG_H */
+#endif /* DIMENSIONXX_PNG_HPP */
