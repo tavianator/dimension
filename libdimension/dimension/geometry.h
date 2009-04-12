@@ -29,11 +29,12 @@
 typedef double                           dmnsn_scalar;
 typedef struct { dmnsn_scalar x, y, z; } dmnsn_vector;
 
-/* Vector arithmetic */
-
+/* Shorthand for vector construction */
 dmnsn_vector dmnsn_vector_construct(dmnsn_scalar x,
                                     dmnsn_scalar y,
                                     dmnsn_scalar z);
+
+/* Vector arithmetic */
 
 dmnsn_vector dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs);
 dmnsn_vector dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs);

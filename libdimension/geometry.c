@@ -20,6 +20,7 @@
 
 #include "dimension.h"
 
+/* Construct a vector from x, y, and z.  Just for convienence. */
 dmnsn_vector
 dmnsn_vector_construct(dmnsn_scalar x, dmnsn_scalar y, dmnsn_scalar z)
 {
@@ -27,6 +28,7 @@ dmnsn_vector_construct(dmnsn_scalar x, dmnsn_scalar y, dmnsn_scalar z)
   return v;
 }
 
+/* Add two vectors */
 dmnsn_vector
 dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
 {
@@ -36,6 +38,7 @@ dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
   return v;
 }
 
+/* Subtract two vectors */
 dmnsn_vector
 dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
 {
@@ -45,6 +48,7 @@ dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
   return v;
 }
 
+/* Multiply a vector by a scalar */
 dmnsn_vector
 dmnsn_vector_mul(dmnsn_scalar lhs, dmnsn_vector rhs)
 {
@@ -52,6 +56,7 @@ dmnsn_vector_mul(dmnsn_scalar lhs, dmnsn_vector rhs)
   return v;
 }
 
+/* Divide a vector by a scalar */
 dmnsn_vector
 dmnsn_vector_div(dmnsn_vector lhs, dmnsn_scalar rhs)
 {
@@ -59,12 +64,14 @@ dmnsn_vector_div(dmnsn_vector lhs, dmnsn_scalar rhs)
   return v;
 }
 
+/* Dot product */
 dmnsn_scalar
 dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs)
 {
   return lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z;
 }
 
+/* Cross product */
 dmnsn_vector
 dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
 {
@@ -74,6 +81,7 @@ dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
   return v;
 }
 
+/* A point on a line, l.  Returns l.x0 + t*l.n */
 dmnsn_vector
 dmnsn_line_point(dmnsn_line l, dmnsn_scalar t)
 {

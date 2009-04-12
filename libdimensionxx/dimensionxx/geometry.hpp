@@ -21,12 +21,15 @@
 #ifndef DIMENSIONXX_GEOMETRY_HPP
 #define DIMENSIONXX_GEOMETRY_HPP
 
+// Wrappers for geometric types (Scalars, Vectors, Lines (rays)).
+
 #include <dimension.h>
 
 namespace Dimension
 {
-  typedef dmnsn_scalar Scalar;
+  typedef dmnsn_scalar Scalar; // This is really `double'
 
+  // Wrapper for dmnsn_vector
   class Vector
   {
   public:
@@ -37,9 +40,12 @@ namespace Dimension
     // Vector(const Vector& v);
     // ~Vector();
 
+    // Get the x, y, and z components.
     Scalar x() const { return m_vector.x; }
     Scalar y() const { return m_vector.y; }
     Scalar z() const { return m_vector.z; }
+
+    // Vector arithmetic
 
     // Vector& operator=(const Vector& rhs);
     Vector& operator+=(const Vector& rhs)
@@ -51,12 +57,14 @@ namespace Dimension
     Vector& operator/=(Scalar rhs)
       { m_vector = dmnsn_vector_div(m_vector, rhs); return *this; }
 
+    // Get the wrapped vector
     dmnsn_vector dmnsn() const { return m_vector; }
 
   private:
     dmnsn_vector m_vector;
   };
 
+  // Wrapper for dmnsn_line
   class line
   {
   public:
@@ -70,8 +78,11 @@ namespace Dimension
     Vector n()  const { return Vector(m_line.n); }
 
     // line& operator=(const line& l);
+
+    // Get the point `t' on the line (x0 + t*n)
     Vector operator()(Scalar t) { return Vector(dmnsn_line_point(m_line, t)); }
 
+    // Get the wrapped line
     dmnsn_line dmnsn() const { return m_line; }
 
   private:
@@ -120,12 +131,14 @@ namespace Dimension
     return r;
   }
 
+  // Dot product
   inline Scalar
   dot(const Vector& lhs, const Vector& rhs)
   {
     return dmnsn_vector_dot(lhs.dmnsn(), rhs.dmnsn());
   }
 
+  // Cross product
   inline Vector
   cross(const Vector& lhs, const Vector& rhs)
   {

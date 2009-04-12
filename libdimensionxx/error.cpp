@@ -24,18 +24,21 @@
 
 namespace Dimension
 {
+  // Get the resilience, thread-safely, with dmnsn_get_resilience().
   Severity
   resilience()
   {
     return static_cast<Severity>(dmnsn_get_resilience());
   }
 
+  // Set the resilience, thread-safely, with dmnsn_set_resilience().
   void
   resilience(Severity resilience)
   {
     dmnsn_set_resilience(static_cast<dmnsn_severity>(resilience));
   }
 
+  // Dimension_Error constructor
   Dimension_Error::Dimension_Error(const std::string& str)
     : std::runtime_error(str) { }
 }

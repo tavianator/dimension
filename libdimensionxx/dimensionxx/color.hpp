@@ -21,16 +21,21 @@
 #ifndef DIMENSIONXX_COLOR_HPP
 #define DIMENSIONXX_COLOR_HPP
 
+// Wrappers for libdimension colors.
+
 namespace Dimension
 {
+  // Forward declarations
   class CIE_XYZ;
   class CIE_xyY;
   class CIE_Lab;
   class CIE_Luv;
   class sRGB;
 
+  // Default whitepoint (D50)
   extern const CIE_XYZ whitepoint;
 
+  // Wrapper for dmnsn_color
   class Color
   {
   public:
@@ -44,6 +49,7 @@ namespace Dimension
     // Color(const Color& c);
     // ~Color();
 
+    // Get and set filtered and unfiltered transparancy
     double filter() const { return m_color.filter; }
     double trans()  const { return m_color.trans; }
 
@@ -51,14 +57,19 @@ namespace Dimension
     double trans(double t)  { m_color.trans = t; }
 
     // Color& operator=(const Color& c);
+
+    // Add a color to this one in a perceptually correct manner
     Color& operator+=(const Color& c)
       { m_color = dmnsn_color_add(m_color, c.m_color); return *this; }
 
+    // Access the wrapped color
     dmnsn_color dmnsn() const { return m_color; }
 
   private:
     dmnsn_color m_color;
   };
+
+  // Wrappers for all libdimension color types
 
   class CIE_XYZ
   {
@@ -206,6 +217,7 @@ namespace Dimension
 
   // Color operators
 
+  // Perceptually correct color combination
   inline Color
   operator+(const Color& lhs, const Color& rhs)
   {
@@ -214,6 +226,7 @@ namespace Dimension
     return temp;
   }
 
+  // Perceptual color difference
   inline double
   operator-(const Color& lhs, const Color& rhs)
   {

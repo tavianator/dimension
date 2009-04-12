@@ -18,12 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+#ifndef DIMENSION_ERROR_H
+#define DIMENSION_ERROR_H
+
 /*
  * Error handling.
  */
-
-#ifndef DIMENSION_ERROR_H
-#define DIMENSION_ERROR_H
 
 typedef enum {
   DMNSN_SEVERITY_LOW,    /* Only die on low resilience */
@@ -31,11 +31,15 @@ typedef enum {
   DMNSN_SEVERITY_HIGH    /* Always die */
 } dmnsn_severity;
 
+/* Use this to report an error */
 #define dmnsn_error(severity, str)                              \
   dmnsn_report_error(severity, __PRETTY_FUNCTION__, __LINE__, str)
 
+/* Called by dmnsn_error() - don't call directly */
 void dmnsn_report_error(dmnsn_severity severity,
                         const char *func, unsigned int line, const char *str);
+
+/* Get and set the library resilience, thread-safely */
 dmnsn_severity dmnsn_get_resilience();
 void dmnsn_set_resilience(dmnsn_severity resilience);
 

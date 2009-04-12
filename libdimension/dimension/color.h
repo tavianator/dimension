@@ -25,10 +25,6 @@
 #ifndef DIMENSION_COLOR_H
 #define DIMENSION_COLOR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* Internally, we use CIE 1931 XYZ color. */
 typedef struct {
   double X, Y, Z;
@@ -67,6 +63,8 @@ typedef struct {
 /* Standard whitepoint, determined by the conversion of sRGB white to XYZ */
 extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
 
+/* Color conversions */
+
 dmnsn_color dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ);
 dmnsn_color dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY);
 dmnsn_color dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white);
@@ -79,11 +77,10 @@ dmnsn_CIE_Lab dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 dmnsn_sRGB    dmnsn_sRGB_from_color(dmnsn_color color);
 
+/* Perceptually correct color combination */
 dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
-double dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2);
 
-#ifdef __cplusplus
-}
-#endif
+/* Perceptual color difference */
+double dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2);
 
 #endif /* DIMENSION_COLOR_H */

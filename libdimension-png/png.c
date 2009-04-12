@@ -24,6 +24,8 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
+/* Write a canvas to a png file, using libpng.  Return 0 on success, nonzero on
+   failure. */
 int
 dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
 {
@@ -35,53 +37,64 @@ dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
   dmnsn_color color;
   dmnsn_sRGB sRGB;
 
+  if (!file) return 1; /* file was NULL */
+
   width = canvas->x;
   height = canvas->y;
 
-  if (!file) return 1;
-
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (!png_ptr) return 1;
+  if (!png_ptr) return 1; /* Couldn't create libpng write struct */
 
   info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr) {
+    /* Couldn't create libpng info struct */
     png_destroy_write_struct(&png_ptr, NULL);
     return 1;
   }
 
+  /* libpng will longjmp here if it encounters an error from here on */
   if (setjmp(png_jmpbuf(png_ptr))) {
+    /* libpng error */
     if (row) free(row);
     png_destroy_write_struct(&png_ptr, &info_ptr);
     return 1;
   }
 
+  /* Associate file with the libpng write struct */
   png_init_io(png_ptr, file);
 
+  /* Set header correctly for 16-bit sRGB image */
   png_set_IHDR(png_ptr, info_ptr, width, height, 16,
                PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
                PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-
   png_set_sRGB_gAMA_and_cHRM(png_ptr, info_ptr, PNG_sRGB_INTENT_ABSOLUTE);
 
+  /* We think of transparency in the opposite way that PNG does */
   png_set_invert_alpha(png_ptr);
+
+  /* Write the info struct */
   png_write_info(png_ptr, info_ptr);
 
   if (htonl(1) != 1) {
-    /* We are little-endian */
+    /* We are little-endian; swap the byte order of the pixels */
     png_set_swap(png_ptr);
   }
 
+  /* Allocate the temporary row of RGBA values */
   row = malloc(4*sizeof(uint16_t)*width);
   if (!row) {
     png_destroy_write_struct(&png_ptr, &info_ptr);
     return 1;
   }
 
+  /* Write the pixels */
   for (y = 0; y < height; ++y) {
     for (x = 0; x < width; ++x) {
       /* Invert the rows.  PNG coordinates are fourth quadrant. */
       color = dmnsn_get_pixel(canvas, x, height - y - 1);
       sRGB = dmnsn_sRGB_from_color(color);
+
+      /* Saturate R, G, and B to [0, UINT16_MAX] */
 
       if (sRGB.R <= 0.0) {
         row[4*x] = 0;
@@ -107,11 +120,15 @@ dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
         row[4*x + 2] = sRGB.B*UINT16_MAX;
       }
 
+      /* color.filter + color.trans is in [0.0, 1.0] by definition */
       row[4*x + 3] = (color.filter + color.trans)*UINT16_MAX;
     }
+
+    /* Write the row */
     png_write_row(png_ptr, (png_bytep)row);
   }
 
+  /* Finish the PNG file */
   png_write_end(png_ptr, info_ptr);
 
   free(row);
@@ -119,6 +136,7 @@ dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
   return 0;
 }
 
+/* Read a canvas from the PNG file `file'.  Return NULL on error. */
 dmnsn_canvas *
 dmnsn_png_read_canvas(FILE *file)
 {
@@ -135,32 +153,40 @@ dmnsn_png_read_canvas(FILE *file)
   dmnsn_sRGB sRGB;
   png_bytep png_pixel;
 
-  if (!file) return NULL;
+  if (!file) return NULL; /* file was NULL */
 
   fread(header, 1, 8, file);
-  if (png_sig_cmp(header, 0, 8)) return NULL;
+  if (png_sig_cmp(header, 0, 8)) return NULL; /* file is not a PNG file */
 
+  /* Create the libpng read struct */
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (!png_ptr) return NULL;
 
+  /* Create the libpng info struct */
   info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr) {
     png_destroy_read_struct(&png_ptr, NULL, NULL);
     return NULL;
   }
 
+  /* libpng will longjmp here if it encounters an error from here on */
   if (setjmp(png_jmpbuf(png_ptr))) {
+    /* libpng error */
     if (row_pointers) free(row_pointers);
     if (image) free(image);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     return NULL;
   }
 
+  /* Associate the read struct with the file, and tell it we've already checked
+     8 bytes of signature */
   png_init_io(png_ptr, file);
   png_set_sig_bytes(png_ptr, 8);
 
+  /* Read the PNG header into info struct */
   png_read_info(png_ptr, info_ptr);
 
+  /* Get useful information from the info struct */
   png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
                &interlace_type, &compression_type, &filter_method);
 
@@ -182,14 +208,20 @@ dmnsn_png_read_canvas(FILE *file)
   }
   png_set_invert_alpha(png_ptr);
 
+  /* Update the info struct */
   png_read_update_info(png_ptr, info_ptr);
+
+  /* Get bytes/image row */
   rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
+  /* Allocate the temporary image buffer */
   image = malloc(rowbytes*height);
   if (!image) {
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     return NULL;
   }
+
+  /* Allocate and set an array of pointers to rows in image */
 
   row_pointers = malloc(sizeof(png_bytep)*height);
   if (!row_pointers) {
@@ -202,8 +234,11 @@ dmnsn_png_read_canvas(FILE *file)
     row_pointers[y] = image + y*rowbytes;
   }
 
+  /* Read the image to image all at once.  At the expense of greater memory use,
+     this handles interlacing for us. */
   png_read_image(png_ptr, row_pointers);
 
+  /* Allocate the canvas */
   canvas = dmnsn_new_canvas(width, height);
   if (!canvas) {
     free(row_pointers);
@@ -213,6 +248,10 @@ dmnsn_png_read_canvas(FILE *file)
     return NULL;
   }
 
+  /* Now we convert the image to our canvas format.  This depends on the image
+     bit depth (which has been scaled up to at least 8 or 16), and the presence
+     of an alpha channel.  For performance reasons, the tests are outside the
+     loops, although that doesn't really matter for a decent compiler. */
   if (bit_depth == 16) {
     if (color_type & PNG_COLOR_MASK_ALPHA) {
       for (x = 0; x < width; ++x) {

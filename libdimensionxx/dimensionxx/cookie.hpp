@@ -21,6 +21,9 @@
 #ifndef DIMENSIONXX_COOKIE_HPP
 #define DIMENSIONXX_COOKIE_HPP
 
+// Some internal magic to use C FILE* I/O with C++ streams.  Currently this ties
+// us to Linux and glibc, but in the future, this will be portable.
+
 #include <istream>
 #include <ostream>
 #include <cstdio>

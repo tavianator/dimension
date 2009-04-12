@@ -21,10 +21,8 @@
 #ifndef DIMENSION_H
 #define DIMENSION_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #ifdef __cplusplus
+/* We've been included from a C++ file; mark everything here as extern "C" */
 extern "C" {
 #endif
 

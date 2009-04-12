@@ -26,6 +26,7 @@ const dmnsn_CIE_XYZ dmnsn_whitepoint = { .X = 0.9504060171449392,
                                          .Y = 0.9999085943425312,
                                          .Z = 1.089062231497274 };
 
+/* Convert a CIE XYZ color to a dmnsn_color (actually a no-op) */
 dmnsn_color
 dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ)
 {
@@ -34,6 +35,7 @@ dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ)
   return ret;
 }
 
+/* Convert a CIE xyY color to a dmnsn_color */
 dmnsn_color
 dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY)
 {
@@ -44,6 +46,7 @@ dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY)
   return ret;
 }
 
+/* Inverse function of CIE L*a*b*'s `f' function, for the reverse conversion */
 static double dmnsn_Lab_finv(double t) {
   if (t > 6.0/29.0) {
     return t*t*t;
@@ -52,6 +55,8 @@ static double dmnsn_Lab_finv(double t) {
   }
 }
 
+/* Convert a CIE L*a*b* color to a dmnsn_color, relative to the given
+   whitepoint. */
 dmnsn_color
 dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white)
 {
@@ -71,6 +76,8 @@ dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white)
   return ret;
 }
 
+/* Convert a CIE L*u*v* color to a dmnsn_color, relative to the given
+   whitepoint. */
 dmnsn_color
 dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white)
 {
@@ -94,6 +101,7 @@ dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white)
   return ret;
 }
 
+/* Inverse function of sRGB's `C' function, for the reverse conversion */
 static double dmnsn_sRGB_Cinv(double CsRGB) {
   /*
    * If C represents R, G, and B, then the Clinear values are now found as
@@ -110,6 +118,7 @@ static double dmnsn_sRGB_Cinv(double CsRGB) {
   }
 }
 
+/* Convert an sRGB value to a dmnsn_color */
 dmnsn_color
 dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
 {
@@ -140,6 +149,7 @@ dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
   return ret;
 }
 
+/* Convert a dmnsn_color to a CIE XYZ color (actually a no-op) */
 dmnsn_CIE_XYZ
 dmnsn_XYZ_from_color(dmnsn_color color)
 {
@@ -147,6 +157,7 @@ dmnsn_XYZ_from_color(dmnsn_color color)
   return ret;
 }
 
+/* Convert a dmnsn_color to a CIE xyY color */
 dmnsn_CIE_xyY
 dmnsn_xyY_from_color(dmnsn_color color)
 {
@@ -156,6 +167,7 @@ dmnsn_xyY_from_color(dmnsn_color color)
   return ret;
 }
 
+/* CIE L*a*b*'s `f' function */
 static double dmnsn_Lab_f(double t) {
   if (t > 216.0/24389.0) {
     return pow(t, 1.0/3.0);
@@ -164,6 +176,8 @@ static double dmnsn_Lab_f(double t) {
   }
 }
 
+/* Convert a dmnsn_color to a CIE L*a*b* color, relative to the given
+   whitepoint */
 dmnsn_CIE_Lab
 dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white)
 {
@@ -176,6 +190,8 @@ dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white)
   return ret;
 }
 
+/* Convert a dmnsn_color to a CIE L*u*v* color, relative to the given
+   whitepoint */
 dmnsn_CIE_Luv
 dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white)
 {
@@ -194,6 +210,7 @@ dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white)
   return ret;
 }
 
+/* sRGB's `C' function */
 static double dmnsn_sRGB_C(double Clinear) {
   /*
    * If C represents R, G, and B, then the sRGB values are now found as follows:
@@ -209,6 +226,7 @@ static double dmnsn_sRGB_C(double Clinear) {
   }
 }
 
+/* Convert a dmnsn_color to an sRGB color */
 dmnsn_sRGB
 dmnsn_sRGB_from_color(dmnsn_color color)
 {
@@ -234,6 +252,7 @@ dmnsn_sRGB_from_color(dmnsn_color color)
   return ret;
 }
 
+/* Add two colors in a perceptually correct manner, using CIE L*a*b*. */
 dmnsn_color
 dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
 {
@@ -254,6 +273,7 @@ dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
   return ret;
 }
 
+/* Find the perceptual difference between two colors, using CIE L*a*b*. */
 double
 dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2)
 {

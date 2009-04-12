@@ -21,10 +21,20 @@
 #include "dimensionxx.hpp"
 #include <stdio.h>
 
+// The conundrum: libdimension and libdimension-* use C I/O, with FILE*'s.
+// We want to use C++ I/O with std::i/ostreams.  Unfortunately, there's no
+// standard way to map between them, so we use the nonportable GNU stdio
+// extension fopencookie(), which creates a FILE* with custom read/write/seek
+// functions.  BSD also has a similar function, funopen(), which we should
+// use too.  Failing in all that, we should fall back on a tmpfile() buffer,
+// but that would require an fclosecookie() function as well, to copy the
+// buffer to the stream potentially.
+
 namespace Dimension
 {
   namespace
   {
+    // Internal cookie type to hold the C++ streams.
     struct Cookie
     {
     public:
@@ -32,43 +42,50 @@ namespace Dimension
       std::ostream* ostr;
     };
 
+    // Cookie read function
     ssize_t
     cookie_read(void* cookie, char* buf, size_t size)
     {
       Cookie* streams = reinterpret_cast<Cookie*>(cookie);
 
+      // Do the unformatted read
       streams->istr->read(buf, size);
 
-      if (streams->istr->eof()) {
-        return streams->istr->gcount();
-      } else if (!streams->istr->good()) {
-        return -1;
+      if (streams->istr->eof() || streams->istr->good()) {
+        return streams->istr->gcount(); // This returns 0 on an immediate EOF
+                                        // for us.
       } else {
-        return streams->istr->gcount();
+        // Some non-EOF error
+        return -1;
       }
     }
 
+    // Cookie write function
     ssize_t
     cookie_write(void* cookie, const char* buf, size_t size)
     {
       Cookie* streams = reinterpret_cast<Cookie*>(cookie);
 
+      // Do the unformatted write
       streams->ostr->write(buf, size);
 
-      if (!streams->ostr->good()) {
-        return -1;
-      } else {
+      if (streams->ostr->good()) {
+        // Write operation succeeded, so we must've written size bytes
         return size;
+      } else {
+        // Write operation failed
+        return -1;
       }
     }
 
+    // Cookie seek function
     int
     cookie_seek(void* cookie, off64_t* offset, int whence)
     {
       Cookie* streams = reinterpret_cast<Cookie*>(cookie);
-      bool success = true;
 
       if (streams->istr) {
+        // If we have an input stream, seek it
         switch (whence) {
         case SEEK_SET:
           streams->istr->seekg(*offset, std::ios::beg);
@@ -82,11 +99,13 @@ namespace Dimension
         }
 
         if (!streams->istr->good()) {
-          success = false;
+          // Seek failed
+          return 1;
         }
       }
 
       if (streams->ostr) {
+        // If we have an output stream, seek it too
         switch (whence) {
         case SEEK_SET:
           streams->ostr->seekp(*offset, std::ios::beg);
@@ -99,20 +118,25 @@ namespace Dimension
         }
 
         if (!streams->ostr->good()) {
-          success = false;
+          // Seek failed
+          return 1;
         }
       }
 
-      return !success;
+      // Seek succeeded
+      return 0;
     }
 
+    // Cookie delete function
     int
     cookie_close(void* cookie)
     {
+      // Free the cookie
       delete reinterpret_cast<Cookie*>(cookie);
     }
   }
 
+  // Make an input FILE*
   std::FILE*
   fcookie(std::istream& istr)
   {
@@ -129,6 +153,7 @@ namespace Dimension
     return fopencookie(reinterpret_cast<void*>(cookie), "r", io_funcs);
   }
 
+  // Make an output FILE*
   std::FILE*
   fcookie(std::ostream& ostr)
   {
@@ -145,6 +170,7 @@ namespace Dimension
     return fopencookie(reinterpret_cast<void*>(cookie), "w", io_funcs);
   }
 
+  // Make an I/O FILE*
   std::FILE*
   fcookie(std::iostream& iostr)
   {

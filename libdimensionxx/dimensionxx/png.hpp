@@ -21,25 +21,43 @@
 #ifndef DIMENSIONXX_PNG_HPP
 #define DIMENSIONXX_PNG_HPP
 
+// C++ wrapper for libdimension-png.  PNG_Canvas derives from Canvas.
+
 #include <istream>
 #include <ostream>
 
 namespace Dimension
 {
+  // PNG_Canvas handles reading a Canvas from a PNG file, writing one to a PNG
+  // file, or both, depending on what type of stream(s) are given to the
+  // constructor.
   class PNG_Canvas : public Canvas
   {
   public:
+    // Input PNG_Canvas; read the Canvas from istr now
     explicit PNG_Canvas(std::istream& istr)
       : Canvas(), m_istr(&istr), m_ostr(0), m_written(false) { read(); }
+
+    // Output PNG_Canvas; write the Canvas to ostr at destruction, or when
+    // write() is called.
     PNG_Canvas(unsigned int x, unsigned int y, std::ostream& ostr)
       : Canvas(x, y), m_istr(0), m_ostr(&ostr), m_written(false) { }
+
+    // I/O PNG_Canvas; read the Canvas from istr now, and write to ostr at
+    // destruction or then write() is called.
     PNG_Canvas(std::istream& istr, std::ostream& ostr)
       : Canvas(), m_istr(&istr), m_ostr(&ostr), m_written(false) { read(); }
+
+    // Call write() if we're an output PNG_Canvas, but trap any exceptions and
+    // report a dmnsn_error() instead.
     virtual ~PNG_Canvas();
 
+    // Write the Canvas to the output stream, throwing a Dimension_Error on
+    // error.
     void write();
 
   protected:
+    // In case a derived class needs to set m_canvas after we're constructed
     PNG_Canvas(std::ostream* ostr)
       : Canvas(), m_istr(0), m_ostr(ostr), m_written(false) { }
 
@@ -48,6 +66,8 @@ namespace Dimension
     std::ostream* m_ostr;
     bool m_written;
 
+    // Read the Canvas from a PNG file, and throw a Dimension_Error upon
+    // failure.
     void read();
 
     // Copying prohibited

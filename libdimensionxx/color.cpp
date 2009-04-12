@@ -22,5 +22,6 @@
 
 namespace Dimension
 {
+  // Definition of whitepoint
   const CIE_XYZ whitepoint(dmnsn_whitepoint);
 }

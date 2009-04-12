@@ -21,21 +21,29 @@
 #ifndef DIMENSIONXX_ERROR_HPP
 #define DIMENSIONXX_ERROR_HPP
 
+// Wrappers for libdimension error handling, and an exception class.
+// dmnsn_error is still used by libdimensionxx whenever an exception shouldn't
+// be thrown, like in destructors, and whenever libdimension or libdimension-*
+// use it internally.  Exceptions are thrown otherwise to report errors.
+
 #include <dimension.h>
 #include <stdexcept>
 #include <string>
 
 namespace Dimension
 {
+  // Wrapper for dmnsn_severity
   enum Severity {
     SEVERITY_LOW    = DMNSN_SEVERITY_LOW,
     SEVERITY_MEDIUM = DMNSN_SEVERITY_MEDIUM,
     SEVERITY_HIGH   = DMNSN_SEVERITY_HIGH
   };
 
+  // Get or set the resilience, thread-safely
   Severity resilience();
   void resilience(Severity resilience);
 
+  // Generic exception class, derives from std::runtime_error
   class Dimension_Error : public std::runtime_error
   {
   public:

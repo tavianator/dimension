@@ -21,29 +21,39 @@
 #ifndef DIMENSIONXX_CANVAS_HPP
 #define DIMENSIONXX_CANVAS_HPP
 
+// dmnsn_canvas* wrapper.
+
 namespace Dimension
 {
+  // Base canvas class.  Wraps a dmnsn_canvas*.
   class Canvas
   {
   public:
-    Canvas(unsigned int width, unsigned int height)
-      : m_canvas(dmnsn_new_canvas(width, height)) { }
+    // Allocate a dmnsn_canvas specified width and height.
+    Canvas(unsigned int width, unsigned int height);
+
+    // Wrap an existing canvas.
     explicit Canvas(dmnsn_canvas* canvas) : m_canvas(canvas) { }
+
+    // Delete the canvas.  (dmnsn_delete_canvas(m_canvas).)
     virtual ~Canvas();
 
-    unsigned int width()  const { return m_canvas->x; }
-    unsigned int height() const { return m_canvas->y; }
+    // Get the width and height.
+    unsigned int width() const;
+    unsigned int height() const;
 
-    Color pixel(unsigned int x, unsigned int y) const
-      { return Color(dmnsn_get_pixel(m_canvas, x, y)); }
-    void pixel(unsigned int x, unsigned int y, const Color& c)
-      { dmnsn_set_pixel(m_canvas, x, y, c.dmnsn()); }
+    // Get and set a pixel, thread-safely.
+    Color pixel(unsigned int x, unsigned int y) const;
+    void pixel(unsigned int x, unsigned int y, const Color& c);
 
-    dmnsn_canvas*       dmnsn()       { return m_canvas; }
-    const dmnsn_canvas* dmnsn() const { return m_canvas; }
+    // Access the wrapped C object.
+    dmnsn_canvas*       dmnsn();
+    const dmnsn_canvas* dmnsn() const;
 
   protected:
-    Canvas() : m_canvas(0) { }
+    // Derived classes may want to set m_canvas later.  Set it to NULL now, so
+    // that the destructor can still dmnsn_delete_canvas it.
+    Canvas();
 
     dmnsn_canvas* m_canvas;
 
