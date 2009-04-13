@@ -40,7 +40,7 @@ namespace Dimension
     }
   }
 
-  // Write the PNG file.  Uses the fcookie() interface to make a FILE*
+  // Write the PNG file.  Uses the FILE_Cookie() interface to make a FILE*
   // corresponding to an std::ostream (including std::ostringstream, etc).
   void PNG_Canvas::write()
   {
@@ -55,25 +55,19 @@ namespace Dimension
                             " stream.");
     }      
 
-    FILE* file = fcookie(*m_ostr);
-    if (!file) {
-      // fcookie() shouldn't fail, really
-      throw Dimension_Error("Couldn't create C++/C IO interface when writing"
-                            " canvas to PNG.");
-    }      
+    // Make the C++/C I/O interface
+    FILE_Cookie cookie(*m_ostr);
 
     // Write the PNG file
-    if (dmnsn_png_write_canvas(m_canvas, file)) {
+    if (dmnsn_png_write_canvas(m_canvas, cookie.file())) {
       // The actual write operation failed, for some reason.
-      std::fclose(file);
       throw Dimension_Error("Writing canvas to PNG failed.");
     }
 
-    std::fclose(file);
     m_written = true; // We've written the file now, don't do it again
   }
 
-  // Read a canvas from a  PNG file.  Uses the fcookie() interface to make a
+  // Read a canvas from a  PNG file.  Uses the FILE_Cookie() interface to make a
   // FILE* corresponding to an std::istream (including std::istringstream, etc).
   void PNG_Canvas::read()
   {
@@ -84,20 +78,13 @@ namespace Dimension
                             " stream.");
     }      
 
-    FILE* file = fcookie(*m_istr);
-    if (!file) {
-      // fcookie() shouldn't fail, really
-      throw Dimension_Error("Couldn't create C++/C IO interface when reading"
-                            " canvas from PNG.");
-    }      
+    // Make the C++/C I/O interface
+    FILE_Cookie cookie(*m_istr);
 
     // Read the canvas from a PNG file
-    if (!(m_canvas = dmnsn_png_read_canvas(file))) {
+    if (!(m_canvas = dmnsn_png_read_canvas(cookie.file()))) {
       // The read operation failed
-      std::fclose(file);
       throw Dimension_Error("Reading canvas from PNG failed.");
     }
-
-    std::fclose(file);
   }
 }

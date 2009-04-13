@@ -30,9 +30,35 @@
 
 namespace Dimension
 {
-  std::FILE* fcookie(std::istream& istr);
-  std::FILE* fcookie(std::ostream& ostr);
-  std::FILE* fcookie(std::iostream& iostr);
+  // Simple RAII class for FILE*'s which interface with a C++ stream.
+  class FILE_Cookie
+  {
+  public:
+    FILE_Cookie(std::istream& istr);
+    FILE_Cookie(std::ostream& ostr);
+    FILE_Cookie(std::istream& istr, std::ostream& ostr);
+    ~FILE_Cookie();
+
+    FILE*       file();
+    const FILE* file() const;
+
+    bool is_input() const;
+    bool is_output() const;
+
+    std::istream&       istr();
+    const std::istream& istr() const;
+    std::ostream&       ostr();
+    const std::ostream& ostr() const;
+
+  private:
+    std::FILE* m_file;
+    std::istream* m_istr;
+    std::ostream* m_ostr;
+
+    // Copying prohibited
+    FILE_Cookie(const FILE_Cookie& cookie);
+    FILE_Cookie& operator=(const FILE_Cookie& cookie);
+  };
 }
 
 #endif /* DIMENSIONXX_COOKIE_HPP */
