@@ -277,8 +277,7 @@ dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
 double
 dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2)
 {
-  dmnsn_CIE_Lab Lab, Lab1, Lab2;
-  dmnsn_color ret;
+  dmnsn_CIE_Lab Lab1, Lab2;
 
   Lab1 = dmnsn_Lab_from_color(color1, dmnsn_whitepoint);
   Lab2 = dmnsn_Lab_from_color(color2, dmnsn_whitepoint);
