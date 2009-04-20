@@ -23,6 +23,13 @@ INCLUDES = -I../libdimension -I../libdimension-png
 
 lib_LTLIBRARIES = libdimensionxx.la
 
-libdimensionxx_la_SOURCES = $(nobase_include_HEADERS) canvas.cpp color.cpp cookie.cpp error.cpp png.cpp
+libdimensionxx_la_SOURCES = $(nobase_include_HEADERS) canvas.cpp color.cpp error.cpp png.cpp
+
+if FOPENCOOKIE
+  libdimensionxx_la_SOURCES += cookie-fopencookie.cpp
+else
+  libdimensionxx_la_SOURCES += cookie-tmpfile.cpp
+endif
+
 libdimensionxx_la_LDFLAGS = -version-info 0:0:0
 libdimensionxx_la_LIBADD  = ../libdimension/libdimension.la ../libdimension-png/libdimension-png.la

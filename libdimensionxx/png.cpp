@@ -67,7 +67,7 @@ namespace Dimension
     m_written = true; // We've written the file now, don't do it again
   }
 
-  // Read a canvas from a  PNG file.  Uses the FILE_Cookie() interface to make a
+  // Read a canvas from a PNG file.  Uses the FILE_Cookie() interface to make a
   // FILE* corresponding to an std::istream (including std::istringstream, etc).
   void PNG_Canvas::read()
   {

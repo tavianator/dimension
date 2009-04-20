@@ -21,8 +21,7 @@
 #ifndef DIMENSIONXX_COOKIE_HPP
 #define DIMENSIONXX_COOKIE_HPP
 
-// Some internal magic to use C FILE* I/O with C++ streams.  Currently this ties
-// us to Linux and glibc, but in the future, this will be portable.
+// Some internal magic to use C FILE* I/O with C++ streams.
 
 #include <istream>
 #include <ostream>
@@ -36,7 +35,7 @@ namespace Dimension
   public:
     FILE_Cookie(std::istream& istr);
     FILE_Cookie(std::ostream& ostr);
-    FILE_Cookie(std::istream& istr, std::ostream& ostr);
+    FILE_Cookie(std::iostream& iostr);
     ~FILE_Cookie();
 
     FILE*       file();
