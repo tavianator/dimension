@@ -19,6 +19,10 @@
  *************************************************************************/
 
 #include "dimensionxx.hpp"
+
+#ifndef _GNU_SOURCE
+#  define _GNU_SOURCE
+#endif
 #include <stdio.h>
 
 // The conundrum: libdimension and libdimension-* use C I/O, with FILE*'s.
@@ -145,8 +149,8 @@ namespace Dimension
   }
 
   // Make an I/O FILE_Cookie
-  FILE_Cookie::FILE_Cookie(std::istream& istr, std::ostream& ostr)
-    : m_istr(&istr), m_ostr(&ostr)
+  FILE_Cookie::FILE_Cookie(std::iostream& iostr)
+    : m_istr(&iostr), m_ostr(&iostr)
   {
     cookie_io_functions_t io_funcs;
     io_funcs.read  = &cookie_read;

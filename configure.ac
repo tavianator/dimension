@@ -29,7 +29,17 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
-AM_CONDITIONAL([FOPENCOOKIE], false)
+AC_MSG_CHECKING([for fopencookie()])
+AC_LINK_IFELSE(AC_LANG_PROGRAM(
+  [[ #define _GNU_SOURCE
+     #include <stdio.h> ]],
+  [[ cookie_io_functions_t io_funcs; 
+     FILE* file = fopencookie(NULL, "r", io_funcs); ]]),
+               [fopencookie=yes
+                AC_MSG_RESULT([yes])],
+               [AC_MSG_RESULT([no])])
+
+AM_CONDITIONAL([FOPENCOOKIE], [test "$fopencookie" = "yes"])
 
 dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])
