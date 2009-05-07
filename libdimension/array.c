@@ -24,14 +24,14 @@
 dmnsn_array *
 dmnsn_new_array(size_t obj_size)
 {
-  dmnsn_array array = malloc(sizeof(array));
+  dmnsn_array *array = malloc(sizeof(array));
   if (array) {
-    array.obj_size = obj_size;
-    array.length   = 0;
-    array.capacity = 4; /* Start with capacity of 4 */
+    array->obj_size = obj_size;
+    array->length   = 0;
+    array->capacity = 4; /* Start with capacity of 4 */
 
-    array.ptr = malloc(array.capacity*array.obj_size);
-    if (!array.ptr) {
+    array->ptr = malloc(array->capacity*array->obj_size);
+    if (!array->ptr) {
       free(array);
       return NULL;
     }
@@ -89,7 +89,7 @@ dmnsn_array_resize(dmnsn_array *array, size_t length)
 
 void dmnsn_delete_array(dmnsn_array *array) {
   if (array) {
-    free(array.ptr);
+    free(array->ptr);
     free(array);
   }
 }
