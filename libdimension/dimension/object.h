@@ -18,23 +18,17 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_H
-#define DIMENSION_H
+#ifndef DIMENSION_OBJECT_H
+#define DIMENSION_OBJECT_H
 
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
+/*
+ * Objects.
+ */
 
-#include <dimension/error.h>
-#include <dimension/array.h>
-#include <dimension/geometry.h>
-#include <dimension/color.h>
-#include <dimension/canvas.h>
-#include <dimension/object.h>
+typedef dmnsn_array *dmnsn_object_intersections_fn(dmnsn_line line);
 
-#ifdef __cplusplus
-}
-#endif
+typedef struct {
+  dmnsn_object_intersections_fn *intersections_fn;
+} dmnsn_object;
 
-#endif /* DIMENSION_H */
+#endif /* DIMENSION_OBJECT_H */
