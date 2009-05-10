@@ -29,8 +29,6 @@
 #include <dimensionxx/geometry.hpp>
 #include <dimensionxx/color.hpp>
 #include <dimensionxx/canvas.hpp>
-
-// libdimension-png wrapper
 #include <dimensionxx/png.hpp>
 
 #endif /* DIMENSIONXX_HPP */

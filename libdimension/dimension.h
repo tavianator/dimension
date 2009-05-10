@@ -32,6 +32,7 @@ extern "C" {
 #include <dimension/color.h>
 #include <dimension/canvas.h>
 #include <dimension/object.h>
+#include <dimension/png.h>
 
 #ifdef __cplusplus
 }

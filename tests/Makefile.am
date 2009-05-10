@@ -21,7 +21,7 @@ check_PROGRAMS = warning error png pngxx
 TESTS          = $(check_PROGRAMS)
 XFAIL_TESTS    = error
 
-INCLUDES = -I../libdimension -I../libdimension-png -I../libdimensionxx
+INCLUDES = -I../libdimension -I../libdimensionxx
 
 warning_SOURCES = warning.c
 warning_LDADD   = ../libdimension/libdimension.la
@@ -30,7 +30,7 @@ error_SOURCES = error.c
 error_LDADD   = ../libdimension/libdimension.la
 
 png_SOURCES = png.c
-png_LDADD   = ../libdimension/libdimension.la ../libdimension-png/libdimension-png.la
+png_LDADD   = ../libdimension/libdimension.la
 
 pngxx_SOURCES = pngxx.cpp
 pngxx_LDADD   = ../libdimensionxx/libdimensionxx.la

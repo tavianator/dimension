@@ -19,7 +19,7 @@
 
 nobase_include_HEADERS = dimensionxx.hpp dimensionxx/canvas.hpp dimensionxx/color.hpp dimensionxx/cookie.hpp dimensionxx/geometry.hpp dimensionxx/png.hpp
 
-INCLUDES = -I../libdimension -I../libdimension-png
+INCLUDES = -I../libdimension
 
 lib_LTLIBRARIES = libdimensionxx.la
 
@@ -32,4 +32,4 @@ else
 endif
 
 libdimensionxx_la_LDFLAGS = -version-info 0:0:0
-libdimensionxx_la_LIBADD  = ../libdimension/libdimension.la ../libdimension-png/libdimension-png.la
+libdimensionxx_la_LIBADD  = ../libdimension/libdimension.la

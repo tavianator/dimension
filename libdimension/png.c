@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension-png.h"
+#include "dimension.h"
 #include <png.h>
 #include <setjmp.h>
 #include <arpa/inet.h>

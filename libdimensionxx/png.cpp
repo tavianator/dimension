@@ -19,7 +19,6 @@
  *************************************************************************/
 
 #include "dimensionxx.hpp"
-#include "../libdimension-png/dimension-png.h"
 #include <cstdio>
 #include <stdexcept>
 
