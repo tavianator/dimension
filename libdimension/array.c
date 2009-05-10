@@ -32,8 +32,7 @@ dmnsn_new_array(size_t obj_size)
 
     array->ptr = malloc(array->capacity*array->obj_size);
     if (!array->ptr) {
-      free(array);
-      return NULL;
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Array allocation failed.");
     }
   }
 
@@ -60,7 +59,6 @@ dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
   if (i >= array->length) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
   }
-
   memcpy(obj, array->ptr + array->obj_size*i, array->obj_size);
 }
 
