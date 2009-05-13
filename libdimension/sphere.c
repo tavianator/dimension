@@ -18,26 +18,52 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_OBJECT_H
-#define DIMENSION_OBJECT_H
+#include "dimension.h"
+#include <stdlib.h> /* For malloc */
+#include <math.h>   /* For sqrt   */
 
-/*
- * Objects.
- */
+static dmnsn_array *dmnsn_sphere_intersections_fn(dmnsn_line line);
+static int dmnsn_sphere_inside_fn(dmnsn_vector point);
 
-typedef dmnsn_array *dmnsn_object_intersections_fn(dmnsn_line line);
-typedef int dmnsn_object_inside_fn(dmnsn_vector point);
+dmnsn_object *
+dmnsn_new_sphere()
+{
+  dmnsn_object *sphere = dmnsn_new_object();
+  sphere->intersections_fn = &dmnsn_sphere_intersections_fn;
+  sphere->inside_fn        = &dmnsn_sphere_inside_fn;
+  return sphere;
+}
 
-typedef struct {
-  /* Generic pointer for object info */
-  void *ptr;
+void
+dmnsn_delete_sphere(dmnsn_object *sphere)
+{
+  dmnsn_delete_object(sphere);
+}
 
-  /* Callback functions */
-  dmnsn_object_intersections_fn *intersections_fn;
-  dmnsn_object_inside_fn        *inside_fn;
-} dmnsn_object;
+static dmnsn_array *
+dmnsn_sphere_intersections_fn(dmnsn_line line)
+{
+  double a, b, c, t[2];
+  dmnsn_array *array = dmnsn_new_array(sizeof(double));
 
-dmnsn_object *dmnsn_new_object();
-void dmnsn_delete_object(dmnsn_object *object);
+  // Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1
 
-#endif /* DIMENSION_OBJECT_H */
+  a = line.n.x*line.n.x + line.n.y*line.n.y + line.n.z*line.n.z;
+  b = 2.0*(line.n.x*line.x0.x + line.n.y*line.x0.y + line.n.z*line.x0.z);
+  c = line.x0.x*line.x0.x + line.x0.y*line.x0.y + line.x0.z*line.x0.z - 1.0;
+
+  if (b*b - 4.0*a*c >= 0) {
+    t[0] = (-b + sqrt(b*b - 4.0*a*c))/(2*a);
+    t[1] = (-b - sqrt(b*b - 4.0*a*c))/(2*a);
+    dmnsn_array_set(array, 0, &t[0]);
+    dmnsn_array_set(array, 1, &t[1]);
+  }
+
+  return array;
+}
+
+static int
+dmnsn_sphere_inside_fn(dmnsn_vector point)
+{
+  return sqrt(point.x*point.x + point.y*point.y + point.z*point.z) < 1.0;
+}

@@ -24,7 +24,7 @@
 dmnsn_array *
 dmnsn_new_array(size_t obj_size)
 {
-  dmnsn_array *array = malloc(sizeof(array));
+  dmnsn_array *array = malloc(sizeof(dmnsn_array));
   if (array) {
     array->obj_size = obj_size;
     array->length   = 0;

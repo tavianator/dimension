@@ -18,26 +18,17 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_OBJECT_H
-#define DIMENSION_OBJECT_H
+#include "dimension.h"
+#include <stdlib.h> /* For malloc */
 
-/*
- * Objects.
- */
+dmnsn_object *
+dmnsn_new_object()
+{
+  return malloc(sizeof(dmnsn_object));
+}
 
-typedef dmnsn_array *dmnsn_object_intersections_fn(dmnsn_line line);
-typedef int dmnsn_object_inside_fn(dmnsn_vector point);
-
-typedef struct {
-  /* Generic pointer for object info */
-  void *ptr;
-
-  /* Callback functions */
-  dmnsn_object_intersections_fn *intersections_fn;
-  dmnsn_object_inside_fn        *inside_fn;
-} dmnsn_object;
-
-dmnsn_object *dmnsn_new_object();
-void dmnsn_delete_object(dmnsn_object *object);
-
-#endif /* DIMENSION_OBJECT_H */
+void
+dmnsn_delete_object(dmnsn_object *object)
+{
+  free(object);
+}

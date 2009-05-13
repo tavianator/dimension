@@ -18,26 +18,14 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_OBJECT_H
-#define DIMENSION_OBJECT_H
+#ifndef DIMENSION_SPHERE_H
+#define DIMENSION_SPHERE_H
 
 /*
- * Objects.
+ * A sphere object, of radius 1, centered at the origin.
  */
 
-typedef dmnsn_array *dmnsn_object_intersections_fn(dmnsn_line line);
-typedef int dmnsn_object_inside_fn(dmnsn_vector point);
+dmnsn_object *dmnsn_new_sphere();
+void dmnsn_delete_sphere(dmnsn_object *sphere);
 
-typedef struct {
-  /* Generic pointer for object info */
-  void *ptr;
-
-  /* Callback functions */
-  dmnsn_object_intersections_fn *intersections_fn;
-  dmnsn_object_inside_fn        *inside_fn;
-} dmnsn_object;
-
-dmnsn_object *dmnsn_new_object();
-void dmnsn_delete_object(dmnsn_object *object);
-
-#endif /* DIMENSION_OBJECT_H */
+#endif /* DIMENSION_SPHERE_H */
