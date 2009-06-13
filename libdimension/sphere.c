@@ -29,8 +29,10 @@ dmnsn_object *
 dmnsn_new_sphere()
 {
   dmnsn_object *sphere = dmnsn_new_object();
-  sphere->intersections_fn = &dmnsn_sphere_intersections_fn;
-  sphere->inside_fn        = &dmnsn_sphere_inside_fn;
+  if (sphere) {
+    sphere->intersections_fn = &dmnsn_sphere_intersections_fn;
+    sphere->inside_fn        = &dmnsn_sphere_inside_fn;
+  }
   return sphere;
 }
 
