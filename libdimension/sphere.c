@@ -22,9 +22,9 @@
 #include <stdlib.h> /* For malloc */
 #include <math.h>   /* For sqrt   */
 
-static dmnsn_array *dmnsn_sphere_intersections_fn(const dmnsn_sphere *sphere,
+static dmnsn_array *dmnsn_sphere_intersections_fn(const dmnsn_object *sphere,
                                                   dmnsn_line line);
-static int dmnsn_sphere_inside_fn(const dmnsn_sphere *sphere,
+static int dmnsn_sphere_inside_fn(const dmnsn_object *sphere,
                                   dmnsn_vector point);
 
 dmnsn_object *

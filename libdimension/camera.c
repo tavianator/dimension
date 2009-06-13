@@ -35,32 +35,49 @@ dmnsn_delete_camera(dmnsn_camera *camera)
 
 /* Perspective camera */
 
-static dmnsn_line dmnsn_perspective_camera_ray_fn(const dmnsn_canvas *canvas,
+static dmnsn_line dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
+                                                  const dmnsn_canvas *canvas,
                                                   unsigned int x,
                                                   unsigned int y);
 
 dmnsn_camera *
-dmnsn_new_perspective_camera()
+dmnsn_new_perspective_camera(dmnsn_matrix trans)
 {
   dmnsn_camera *camera = dmnsn_new_camera();
-  camera->ray_fn = &dmnsn_perspective_camera_ray_fn;
+  if (camera) {
+    camera->ray_fn = &dmnsn_perspective_camera_ray_fn;
+
+    camera->ptr = malloc(sizeof(dmnsn_matrix));
+    if (!camera->ptr) {
+      dmnsn_delete_camera(camera);
+      return NULL;
+    }
+    *((dmnsn_matrix*)camera->ptr) = trans;
+  }
   return camera;
 }
 
 void
 dmnsn_delete_perspective_camera(dmnsn_camera *camera)
 {
-  dmnsn_delete_camera(camera);
+  if (camera) {
+    free(camera->ptr);
+    dmnsn_delete_camera(camera);
+  }
 }
 
 static dmnsn_line
-dmnsn_perspective_camera_ray_fn(const dmnsn_canvas *canvas,
+dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
+                                const dmnsn_canvas *canvas,
                                 unsigned int x, unsigned int y)
 {
+  dmnsn_matrix *trans = (dmnsn_matrix *)camera->ptr;
   dmnsn_line l;
+
   l.x0 = dmnsn_vector_construct(0.0, 0.0, 0.0);
   l.n.x = ((double)x)/(canvas->x - 1) - 0.5;
   l.n.y = ((double)y)/(canvas->y - 1) - 0.5;
   l.n.z = 1.0;
-  return l;
+
+  return dmnsn_matrix_line_mul(*trans, l);
 }

@@ -25,23 +25,29 @@
  * A camera.
  */
 
-typedef dmnsn_line dmnsn_camera_ray_fn(const dmnsn_canvas *canvas,
+/* Forward-declare dmnsn_camera */
+typedef struct dmnsn_camera dmnsn_camera;
+
+/* Camera callback types */
+typedef dmnsn_line dmnsn_camera_ray_fn(const dmnsn_camera *camera,
+                                       const dmnsn_canvas *canvas,
                                        unsigned int x, unsigned int y);
 
-typedef struct {
+struct dmnsn_camera {
   /* Generic pointer for camera info */
   void *ptr;
 
   /* Callback function */
   dmnsn_camera_ray_fn *ray_fn;
-} dmnsn_camera;
+};
 
 dmnsn_camera *dmnsn_new_camera();
 void dmnsn_delete_camera(dmnsn_camera *camera);
 
-/* A perspective camera, at the origin, looking at (0, 0, 1) */
+/* A perspective camera, at the origin, looking at (0, 0, 1).  Rays are
+   transformed by the transformation matrix `trans'. */
 
-dmnsn_camera *dmnsn_new_perspective_camera();
+dmnsn_camera *dmnsn_new_perspective_camera(dmnsn_matrix trans);
 void dmnsn_delete_perspective_camera(dmnsn_camera *camera);
 
 #endif /* DIMENSION_CAMERA_H */

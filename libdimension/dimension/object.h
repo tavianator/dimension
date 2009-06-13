@@ -25,19 +25,23 @@
  * Objects.
  */
 
+/* Forward-declare dmnsn_object */
+typedef struct dmnsn_object dmnsn_object;
+
+/* Object callback types */
 typedef dmnsn_array *dmnsn_object_intersections_fn(const dmnsn_object *object,
                                                    dmnsn_line line);
 typedef int dmnsn_object_inside_fn(const dmnsn_object *object,
                                    dmnsn_vector point);
 
-typedef struct {
+struct dmnsn_object {
   /* Generic pointer for object info */
   void *ptr;
 
   /* Callback functions */
   dmnsn_object_intersections_fn *intersections_fn;
   dmnsn_object_inside_fn        *inside_fn;
-} dmnsn_object;
+};
 
 dmnsn_object *dmnsn_new_object();
 void dmnsn_delete_object(dmnsn_object *object);
