@@ -22,19 +22,11 @@
 #include <stdlib.h> /* For malloc */
 
 dmnsn_scene *
-dmnsn_new_scene(unsigned int x, unsigned int y)
+dmnsn_new_scene()
 {
   dmnsn_scene *scene = malloc(sizeof(dmnsn_scene));
-  if (scene) {
+  if (scene)
     scene->objects = dmnsn_new_array(sizeof(dmnsn_object*));
-
-    scene->canvas = dmnsn_new_canvas(x, y);
-    if (!scene->canvas) {
-      dmnsn_delete_array(scene->objects);
-      return NULL;
-    }
-  }
-
   return scene;
 }
 
@@ -52,18 +44,14 @@ dmnsn_raytrace_scene(dmnsn_scene *scene)
 {
   unsigned int i, j;
   dmnsn_object *object;
-  dmnsn_line l;
+  dmnsn_line ray;
 
-  l.x0 = dmnsn_vector_construct(0.0, 0.0, -3.0);
   dmnsn_array_get(scene->objects, 0, &object);
 
   for (i = 0; i < scene->canvas->x; ++i) {
     for (j = 0; j < scene->canvas->y; ++j) {
-      l.n.x = 1.6*(((double)i)/(scene->canvas->x - 1) - 0.5);
-      l.n.y = ((double)j)/(scene->canvas->y - 1) - 0.5;
-      l.n.z = 1.0;
-
-      if ((*object->intersections_fn)(l)->length > 0) {
+      ray = (*scene->camera->ray_fn)(scene->canvas, i, j);
+      if ((*object->intersections_fn)(ray)->length > 0) {
         dmnsn_set_pixel(scene->canvas, i, j,
                         dmnsn_color_from_XYZ(dmnsn_whitepoint));
       } else {

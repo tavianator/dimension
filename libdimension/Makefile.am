@@ -17,10 +17,10 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-nobase_include_HEADERS = dimension.h dimension/array.h dimension/canvas.h dimension/color.h dimension/error.h dimension/geometry.h dimension/png.h dimension/object.h dimension/scene.h dimension/sphere.h
+nobase_include_HEADERS = dimension.h dimension/array.h dimension/camera.h dimension/canvas.h dimension/color.h dimension/error.h dimension/geometry.h dimension/png.h dimension/object.h dimension/scene.h dimension/sphere.h
 
 lib_LTLIBRARIES = libdimension.la
 
-libdimension_la_SOURCES = $(nobase_include_HEADERS) array.c canvas.c color.c error.c geometry.c png.c object.c scene.c sphere.c
+libdimension_la_SOURCES = $(nobase_include_HEADERS) array.c camera.c canvas.c color.c error.c geometry.c png.c object.c scene.c sphere.c
 libdimension_la_LDFLAGS = -version-info 0:0:0
 libdimension_la_LIBADD  = -lm -lpthread -lpng

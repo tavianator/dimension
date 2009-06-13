@@ -18,27 +18,49 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_H
-#define DIMENSION_H
+#include "dimension.h"
+#include <stdlib.h> /* For malloc */
 
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
-
-#include <dimension/error.h>
-#include <dimension/array.h>
-#include <dimension/geometry.h>
-#include <dimension/color.h>
-#include <dimension/canvas.h>
-#include <dimension/object.h>
-#include <dimension/sphere.h>
-#include <dimension/camera.h>
-#include <dimension/scene.h>
-#include <dimension/png.h>
-
-#ifdef __cplusplus
+dmnsn_camera *
+dmnsn_new_camera()
+{
+  return malloc(sizeof(dmnsn_camera));
 }
-#endif
 
-#endif /* DIMENSION_H */
+void
+dmnsn_delete_camera(dmnsn_camera *camera)
+{
+  free(camera);
+}
+
+/* Perspective camera */
+
+static dmnsn_line dmnsn_perspective_camera_ray_fn(const dmnsn_canvas *canvas,
+                                                  unsigned int x,
+                                                  unsigned int y);
+
+dmnsn_camera *
+dmnsn_new_perspective_camera()
+{
+  dmnsn_camera *camera = dmnsn_new_camera();
+  camera->ray_fn = &dmnsn_perspective_camera_ray_fn;
+  return camera;
+}
+
+void
+dmnsn_delete_perspective_camera(dmnsn_camera *camera)
+{
+  dmnsn_delete_camera(camera);
+}
+
+static dmnsn_line
+dmnsn_perspective_camera_ray_fn(const dmnsn_canvas *canvas,
+                                unsigned int x, unsigned int y)
+{
+  dmnsn_line l;
+  l.x0 = dmnsn_vector_construct(0.0, 0.0, 0.0);
+  l.n.x = ((double)x)/(canvas->x - 1) - 0.5;
+  l.n.y = ((double)y)/(canvas->y - 1) - 0.5;
+  l.n.z = 1.0;
+  return l;
+}

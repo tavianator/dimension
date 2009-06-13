@@ -18,27 +18,30 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_H
-#define DIMENSION_H
+#ifndef DIMENSION_CAMERA_H
+#define DIMENSION_CAMERA_H
 
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
+/*
+ * A camera.
+ */
 
-#include <dimension/error.h>
-#include <dimension/array.h>
-#include <dimension/geometry.h>
-#include <dimension/color.h>
-#include <dimension/canvas.h>
-#include <dimension/object.h>
-#include <dimension/sphere.h>
-#include <dimension/camera.h>
-#include <dimension/scene.h>
-#include <dimension/png.h>
+typedef dmnsn_line dmnsn_camera_ray_fn(const dmnsn_canvas *canvas,
+                                       unsigned int x, unsigned int y);
 
-#ifdef __cplusplus
-}
-#endif
+typedef struct {
+  /* Generic pointer for camera info */
+  void *ptr;
 
-#endif /* DIMENSION_H */
+  /* Callback function */
+  dmnsn_camera_ray_fn *ray_fn;
+} dmnsn_camera;
+
+dmnsn_camera *dmnsn_new_camera();
+void dmnsn_delete_camera(dmnsn_camera *camera);
+
+/* A perspective camera, at the origin, looking at (0, 0, 1) */
+
+dmnsn_camera *dmnsn_new_perspective_camera();
+void dmnsn_delete_perspective_camera(dmnsn_camera *camera);
+
+#endif /* DIMENSION_CAMERA_H */

@@ -31,7 +31,9 @@ int main() {
 
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
-  scene = dmnsn_new_scene(768, 480);
+  scene = dmnsn_new_scene();
+  scene->canvas = dmnsn_new_canvas(768, 480);
+  scene->camera = dmnsn_new_perspective_camera();
 
   sRGB.R = 0.0;
   sRGB.G = 0.0;
@@ -47,6 +49,10 @@ int main() {
 
   file = fopen("raytrace.png", "wb");
   dmnsn_png_write_canvas(scene->canvas, file);
+
+  dmnsn_delete_perspective_camera(scene->camera);
+  dmnsn_delete_canvas(scene->canvas);
+  dmnsn_delete_scene(scene);
 
   return EXIT_SUCCESS;
 }

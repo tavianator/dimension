@@ -28,10 +28,11 @@
 typedef struct {
   dmnsn_color background;
   dmnsn_array *objects;
+  dmnsn_camera *camera;
   dmnsn_canvas *canvas;
 } dmnsn_scene;
 
-dmnsn_scene *dmnsn_new_scene(unsigned int x, unsigned int y);
+dmnsn_scene *dmnsn_new_scene();
 void dmnsn_delete_scene(dmnsn_scene *scene);
 
 void dmnsn_raytrace_scene(dmnsn_scene *scene);
