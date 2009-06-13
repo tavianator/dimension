@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
+#include "../libdimension/dimension.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
