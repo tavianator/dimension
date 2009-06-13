@@ -25,24 +25,16 @@
 #ifndef DIMENSION_GEOMETRY_H
 #define DIMENSION_GEOMETRY_H
 
-/* Scalar and vector types. */
-typedef double                           dmnsn_scalar;
-typedef struct { dmnsn_scalar x, y, z; } dmnsn_vector;
+/* Vector and matrix types. */
 
-/* Shorthand for vector construction */
-dmnsn_vector dmnsn_vector_construct(dmnsn_scalar x,
-                                    dmnsn_scalar y,
-                                    dmnsn_scalar z);
+typedef struct { double x, y, z; } dmnsn_vector;
 
-/* Vector arithmetic */
-
-dmnsn_vector dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs);
-dmnsn_vector dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs);
-dmnsn_vector dmnsn_vector_mul(dmnsn_scalar lhs, dmnsn_vector rhs);
-dmnsn_vector dmnsn_vector_div(dmnsn_vector lhs, dmnsn_scalar rhs);
-
-dmnsn_scalar dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs);
-dmnsn_vector dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs);
+typedef struct {
+  double n00, n01, n02, n03,
+         n10, n11, n12, n13,
+         n20, n21, n22, n23,
+         n30, n31, n32, n33;
+} dmnsn_matrix;
 
 /* A line, or ray. */
 typedef struct {
@@ -50,7 +42,36 @@ typedef struct {
   dmnsn_vector n;  /* A normal vector; the direction of the line */
 } dmnsn_line;
 
+/* Shorthand for vector/matrix construction */
+
+dmnsn_vector dmnsn_vector_construct(double x, double y, double z);
+
+dmnsn_matrix dmnsn_matrix_construct(double a0, double a1, double a2, double a3,
+                                    double b0, double b1, double b2, double b3,
+                                    double c0, double c1, double c2, double c3,
+                                    double d0, double d1, double d2, double d3);
+dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d);
+/* theta/|theta| = axis, |theta| = angle */
+dmnsn_matrix dmnsn_rotation_matrix(dmnsn_vector theta);
+
+/* Vector and matrix arithmetic */
+
+dmnsn_vector dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_mul(double lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_div(dmnsn_vector lhs, double rhs);
+
+double       dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs);
+
+double       dmnsn_vector_norm(dmnsn_vector n);
+dmnsn_vector dmnsn_vector_normalize(dmnsn_vector n);
+
+dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
+dmnsn_vector dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs);
+dmnsn_line   dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs);
+
 /* A point on a line, defined by x0 + t*n */
-dmnsn_vector dmnsn_line_point(dmnsn_line l, dmnsn_scalar t);
+dmnsn_vector dmnsn_line_point(dmnsn_line l, double t);
 
 #endif /* DIMENSION_GEOMETRY_H */

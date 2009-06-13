@@ -21,29 +21,27 @@
 #ifndef DIMENSIONXX_GEOMETRY_HPP
 #define DIMENSIONXX_GEOMETRY_HPP
 
-// Wrappers for geometric types (Scalars, Vectors, Lines (rays)).
+// Wrappers for geometric types (Vectors, Matricies, Lines (rays)).
 
 #include <dimension.h>
 
 namespace Dimension
 {
-  typedef dmnsn_scalar Scalar; // This is really `double'
-
   // Wrapper for dmnsn_vector
   class Vector
   {
   public:
     Vector() { }
-    Vector(Scalar x, Scalar y, Scalar z)
+    Vector(double x, double y, double z)
       : m_vector(dmnsn_vector_construct(x, y, z)) { }
     explicit Vector(dmnsn_vector v) : m_vector(v) { }
     // Vector(const Vector& v);
     // ~Vector();
 
     // Get the x, y, and z components.
-    Scalar x() const { return m_vector.x; }
-    Scalar y() const { return m_vector.y; }
-    Scalar z() const { return m_vector.z; }
+    double x() const { return m_vector.x; }
+    double y() const { return m_vector.y; }
+    double z() const { return m_vector.z; }
 
     // Vector arithmetic
 
@@ -52,9 +50,9 @@ namespace Dimension
       { m_vector = dmnsn_vector_add(m_vector, rhs.m_vector); return *this; }
     Vector& operator-=(const Vector& rhs)
       { m_vector = dmnsn_vector_sub(m_vector, rhs.m_vector); return *this; }
-    Vector& operator*=(Scalar rhs)
+    Vector& operator*=(double rhs)
       { m_vector = dmnsn_vector_mul(rhs, m_vector); return *this; }
-    Vector& operator/=(Scalar rhs)
+    Vector& operator/=(double rhs)
       { m_vector = dmnsn_vector_div(m_vector, rhs); return *this; }
 
     // Get the wrapped vector
@@ -80,7 +78,7 @@ namespace Dimension
     // line& operator=(const line& l);
 
     // Get the point `t' on the line (x0 + t*n)
-    Vector operator()(Scalar t) { return Vector(dmnsn_line_point(m_line, t)); }
+    Vector operator()(double t) { return Vector(dmnsn_line_point(m_line, t)); }
 
     // Get the wrapped line
     dmnsn_line dmnsn() const { return m_line; }
@@ -108,7 +106,7 @@ namespace Dimension
   }
 
   inline Vector
-  operator*(const Vector& lhs, Scalar rhs)
+  operator*(const Vector& lhs, double rhs)
   {
     Vector r = lhs;
     r *= rhs;
@@ -116,7 +114,7 @@ namespace Dimension
   }
 
   inline Vector
-  operator*(Scalar lhs, const Vector& rhs)
+  operator*(double lhs, const Vector& rhs)
   {
     Vector r = rhs;
     r *= lhs;
@@ -124,7 +122,7 @@ namespace Dimension
   }
 
   inline Vector
-  operator/(const Vector& lhs, Scalar rhs)
+  operator/(const Vector& lhs, double rhs)
   {
     Vector r = lhs;
     r /= rhs;
@@ -132,7 +130,7 @@ namespace Dimension
   }
 
   // Dot product
-  inline Scalar
+  inline double
   dot(const Vector& lhs, const Vector& rhs)
   {
     return dmnsn_vector_dot(lhs.dmnsn(), rhs.dmnsn());
