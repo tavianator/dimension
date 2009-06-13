@@ -18,25 +18,22 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_H
-#define DIMENSION_H
+#ifndef DIMENSION_SCENE_H
+#define DIMENSION_SCENE_H
 
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
+/*
+ * A scene.
+ */
 
-#include <dimension/error.h>
-#include <dimension/array.h>
-#include <dimension/geometry.h>
-#include <dimension/color.h>
-#include <dimension/canvas.h>
-#include <dimension/object.h>
-#include <dimension/scene.h>
-#include <dimension/png.h>
+typedef struct {
+  dmnsn_color background;
+  dmnsn_array *objects;
+  dmnsn_canvas *canvas;
+} dmnsn_scene;
 
-#ifdef __cplusplus
-}
-#endif
+dmnsn_scene *dmnsn_new_scene(unsigned int x, unsigned int y);
+void dmnsn_delete_scene(dmnsn_scene *scene);
 
-#endif /* DIMENSION_H */
+void dmnsn_raytrace_scene(dmnsn_scene *scene);
+
+#endif /* DIMENSION_SCENE_H */

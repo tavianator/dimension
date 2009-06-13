@@ -22,7 +22,8 @@ Makefile.in
 /tests/error
 /tests/png
 /tests/pngxx
-/tests/dimension*.png
+/tests/raytrace
+/tests/*.png
 
 # Files and folders created by libtool
 .libs/

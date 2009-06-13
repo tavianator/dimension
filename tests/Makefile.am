@@ -17,7 +17,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-check_PROGRAMS = warning error png pngxx
+check_PROGRAMS = warning error png pngxx raytrace
 TESTS          = $(check_PROGRAMS)
 XFAIL_TESTS    = error
 
@@ -34,3 +34,6 @@ png_LDADD   = ../libdimension/libdimension.la
 
 pngxx_SOURCES = pngxx.cpp
 pngxx_LDADD   = ../libdimensionxx/libdimensionxx.la
+
+raytrace_SOURCES = raytrace.c
+raytrace_LDADD   = ../libdimension/libdimension.la

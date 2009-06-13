@@ -18,25 +18,57 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_H
-#define DIMENSION_H
+#include "dimension.h"
+#include <stdlib.h> /* For malloc */
 
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
+dmnsn_scene *
+dmnsn_new_scene(unsigned int x, unsigned int y)
+{
+  dmnsn_scene *scene = malloc(sizeof(dmnsn_scene));
+  if (scene) {
+    scene->objects = dmnsn_new_array(sizeof(dmnsn_object*));
 
-#include <dimension/error.h>
-#include <dimension/array.h>
-#include <dimension/geometry.h>
-#include <dimension/color.h>
-#include <dimension/canvas.h>
-#include <dimension/object.h>
-#include <dimension/scene.h>
-#include <dimension/png.h>
+    scene->canvas = dmnsn_new_canvas(x, y);
+    if (!scene->canvas) {
+      dmnsn_delete_array(scene->objects);
+      return NULL;
+    }
+  }
 
-#ifdef __cplusplus
+  return scene;
 }
-#endif
 
-#endif /* DIMENSION_H */
+void
+dmnsn_delete_scene(dmnsn_scene *scene)
+{
+  if (scene) {
+    dmnsn_delete_array(scene->objects);
+    free(scene);
+  }
+}
+
+void
+dmnsn_raytrace_scene(dmnsn_scene *scene)
+{
+  unsigned int i, j;
+  dmnsn_object *object;
+  dmnsn_line l;
+
+  l.x0 = dmnsn_vector_construct(0.0, 0.0, -3.0);
+  dmnsn_array_get(scene->objects, 0, &object);
+
+  for (i = 0; i < scene->canvas->x; ++i) {
+    for (j = 0; j < scene->canvas->y; ++j) {
+      l.n.x = 1.6*(((double)i)/(scene->canvas->x - 1) - 0.5);
+      l.n.y = ((double)j)/(scene->canvas->y - 1) - 0.5;
+      l.n.z = 1.0;
+
+      if ((*object->intersections_fn)(l)->length > 0) {
+        dmnsn_set_pixel(scene->canvas, i, j,
+                        dmnsn_color_from_XYZ(dmnsn_whitepoint));
+      } else {
+        dmnsn_set_pixel(scene->canvas, i, j, scene->background);
+      }
+    }
+  }
+}
