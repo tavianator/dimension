@@ -196,8 +196,8 @@ dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs)
   double w;
 
   r.x = lhs.n00*rhs.x + lhs.n01*rhs.y + lhs.n02*rhs.z + lhs.n03;
-  r.x = lhs.n10*rhs.x + lhs.n11*rhs.y + lhs.n12*rhs.z + lhs.n13;
-  r.x = lhs.n20*rhs.x + lhs.n21*rhs.y + lhs.n22*rhs.z + lhs.n23;
+  r.y = lhs.n10*rhs.x + lhs.n11*rhs.y + lhs.n12*rhs.z + lhs.n13;
+  r.z = lhs.n20*rhs.x + lhs.n21*rhs.y + lhs.n22*rhs.z + lhs.n23;
   w   = lhs.n30*rhs.x + lhs.n31*rhs.y + lhs.n32*rhs.z + lhs.n33;
 
   return dmnsn_vector_div(r, w);
