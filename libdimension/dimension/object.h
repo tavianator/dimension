@@ -25,8 +25,10 @@
  * Objects.
  */
 
-typedef dmnsn_array *dmnsn_object_intersections_fn(dmnsn_line line);
-typedef int dmnsn_object_inside_fn(dmnsn_vector point);
+typedef dmnsn_array *dmnsn_object_intersections_fn(const dmnsn_object *object,
+                                                   dmnsn_line line);
+typedef int dmnsn_object_inside_fn(const dmnsn_object *object,
+                                   dmnsn_vector point);
 
 typedef struct {
   /* Generic pointer for object info */
