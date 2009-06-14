@@ -59,6 +59,7 @@ int main() {
   scene->background = color;
 
   cube = dmnsn_new_cube();
+  cube->trans = dmnsn_rotation_matrix(dmnsn_vector_construct(0.75, 0.0, 0.0));
   dmnsn_array_push(scene->objects, &cube);
 
   dmnsn_raytrace_scene(scene);

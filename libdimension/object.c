@@ -24,7 +24,11 @@
 dmnsn_object *
 dmnsn_new_object()
 {
-  return malloc(sizeof(dmnsn_object));
+  dmnsn_object *object = malloc(sizeof(dmnsn_object));
+  if (object) {
+    object->trans = dmnsn_identity_matrix();
+  }
+  return object;
 }
 
 void

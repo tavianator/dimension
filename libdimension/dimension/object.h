@@ -38,6 +38,9 @@ struct dmnsn_object {
   /* Generic pointer for object info */
   void *ptr;
 
+  /* Transformation matrix */
+  dmnsn_matrix trans;
+
   /* Callback functions */
   dmnsn_object_intersections_fn *intersections_fn;
   dmnsn_object_inside_fn        *inside_fn;

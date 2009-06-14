@@ -68,7 +68,7 @@ dmnsn_raytrace_scene_thread(void *arg)
 {
   unsigned int i, j, k;
   dmnsn_object *object;
-  dmnsn_line ray;
+  dmnsn_line ray, ray_trans;
   dmnsn_raytrace_thread_payload *payload = (dmnsn_raytrace_thread_payload *)arg;
   dmnsn_scene *scene = payload->scene;
   dmnsn_array *intersections;
@@ -83,11 +83,15 @@ dmnsn_raytrace_scene_thread(void *arg)
 
         /* Get the ray corresponding to the (i,j)th pixel */
         ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, i, j);
-        
+
         for (k = 0; k < scene->objects->length; ++k) {
           dmnsn_array_get(scene->objects, k, &object);
+
+          /* Transform the ray according to the object */
+          ray_trans = dmnsn_matrix_line_mul(object->trans, ray);
+
           /* Test for an intersection with an object */
-          intersections = (*object->intersections_fn)(object, ray);
+          intersections = (*object->intersections_fn)(object, ray_trans);
           if (intersections->length > 0) {
             /* Mark intersections white */
             dmnsn_set_pixel(scene->canvas, i, j,
