@@ -66,12 +66,15 @@ dmnsn_raytrace_scene(dmnsn_scene *scene)
 static void *
 dmnsn_raytrace_scene_thread(void *arg)
 {
-  unsigned int i, j, k;
+  unsigned int i, j, k, l;
+  double t, t_temp;
   dmnsn_object *object;
   dmnsn_line ray, ray_trans;
   dmnsn_raytrace_thread_payload *payload = (dmnsn_raytrace_thread_payload *)arg;
   dmnsn_scene *scene = payload->scene;
   dmnsn_array *intersections;
+  dmnsn_color color;
+  dmnsn_sRGB sRGB;
 
   /* Iterate through each pixel */
   for (i = 0; i < scene->canvas->x; ++i) {
@@ -79,7 +82,8 @@ dmnsn_raytrace_scene_thread(void *arg)
       /* Only do the pixels assigned to this thread */
       if ((j*scene->canvas->x + i)%payload->n == payload->i) {
         /* Set the pixel to the background color */
-        dmnsn_set_pixel(scene->canvas, i, j, scene->background);
+        color = scene->background;
+        t = 0.0;
 
         /* Get the ray corresponding to the (i,j)th pixel */
         ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, i, j);
@@ -90,17 +94,23 @@ dmnsn_raytrace_scene_thread(void *arg)
           /* Transform the ray according to the object */
           ray_trans = dmnsn_matrix_line_mul(object->trans, ray);
 
-          /* Test for an intersection with an object */
+          /* Test for intersections with objects */
           intersections = (*object->intersections_fn)(object, ray_trans);
-          if (intersections->length > 0) {
-            /* Mark intersections white */
-            dmnsn_set_pixel(scene->canvas, i, j,
-                            dmnsn_color_from_XYZ(dmnsn_whitepoint));
-            dmnsn_delete_array(intersections);
-            break;
+          for (l = 0; l < intersections->length; ++l) {
+            dmnsn_array_get(intersections, l, &t_temp);
+            if (t_temp < t || t == 0.0) t = t_temp;
           }
           dmnsn_delete_array(intersections);
         }
+
+        if (t != 0.0) {
+          sRGB.R = 1.0 - (t - 2.25)/2.25;
+          sRGB.G = sRGB.R;
+          sRGB.B = sRGB.R;
+          color = dmnsn_color_from_sRGB(sRGB);
+        }
+
+        dmnsn_set_pixel(scene->canvas, i, j, color);
       }
     }
   }

@@ -25,7 +25,7 @@
 int main() {
   FILE *file;
   dmnsn_scene *scene;
-  dmnsn_object *cube;
+  dmnsn_object *sphere, *cube;
   dmnsn_sRGB sRGB;
   dmnsn_color color;
   dmnsn_matrix trans;
@@ -58,6 +58,10 @@ int main() {
   color.filter = 0.1;
   scene->background = color;
 
+  sphere = dmnsn_new_sphere();
+  sphere->trans = dmnsn_scale_matrix(dmnsn_vector_construct(0.8, 0.8, 0.8));
+  dmnsn_array_push(scene->objects, &sphere);
+
   cube = dmnsn_new_cube();
   cube->trans = dmnsn_rotation_matrix(dmnsn_vector_construct(0.75, 0.0, 0.0));
   dmnsn_array_push(scene->objects, &cube);
@@ -68,6 +72,7 @@ int main() {
   dmnsn_png_write_canvas(scene->canvas, file);
 
   dmnsn_delete_cube(cube);
+  dmnsn_delete_sphere(sphere);
   dmnsn_delete_perspective_camera(scene->camera);
   dmnsn_delete_canvas(scene->canvas);
   dmnsn_delete_scene(scene);
