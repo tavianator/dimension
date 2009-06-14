@@ -100,4 +100,6 @@ dmnsn_raytrace_scene_thread(void *arg)
       }
     }
   }
+
+  return NULL;
 }
