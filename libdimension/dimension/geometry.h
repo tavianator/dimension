@@ -51,9 +51,10 @@ dmnsn_matrix dmnsn_matrix_construct(double a0, double a1, double a2, double a3,
                                     double c0, double c1, double c2, double c3,
                                     double d0, double d1, double d2, double d3);
 
+dmnsn_matrix dmnsn_identity_matrix();
 dmnsn_matrix dmnsn_scale_matrix(dmnsn_vector s);
 dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d);
-/* theta/|theta| = axis, |theta| = angle */
+/* Left-handed rotation; theta/|theta| = axis, |theta| = angle */
 dmnsn_matrix dmnsn_rotation_matrix(dmnsn_vector theta);
 
 /* Vector and matrix arithmetic */

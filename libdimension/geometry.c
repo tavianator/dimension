@@ -43,6 +43,17 @@ dmnsn_matrix_construct(double a0, double a1, double a2, double a3,
   return m;
 }
 
+/* Identity matrix */
+dmnsn_matrix
+dmnsn_identity_matrix()
+{
+  return dmnsn_matrix_construct(1.0, 0.0, 0.0, 0.0,
+                                0.0, 1.0, 0.0, 0.0,
+                                0.0, 0.0, 1.0, 0.0,
+                                0.0, 0.0, 0.0, 1.0);
+}
+
+/* Scaling matrix */
 dmnsn_matrix
 dmnsn_scale_matrix(dmnsn_vector s)
 {
@@ -62,7 +73,7 @@ dmnsn_translation_matrix(dmnsn_vector d)
                                 0.0, 0.0, 0.0, 1.0);
 }
 
-/* Rotation matrix; theta/|theta| = axis, |theta| = angle */
+/* Left-handed rotation matrix; theta/|theta| = axis, |theta| = angle */
 dmnsn_matrix
 dmnsn_rotation_matrix(dmnsn_vector theta)
 {
