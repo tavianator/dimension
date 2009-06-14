@@ -38,25 +38,3 @@ dmnsn_delete_scene(dmnsn_scene *scene)
     free(scene);
   }
 }
-
-void
-dmnsn_raytrace_scene(dmnsn_scene *scene)
-{
-  unsigned int i, j;
-  dmnsn_object *object;
-  dmnsn_line ray;
-
-  dmnsn_array_get(scene->objects, 0, &object);
-
-  for (i = 0; i < scene->canvas->x; ++i) {
-    for (j = 0; j < scene->canvas->y; ++j) {
-      ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, i, j);
-      if ((*object->intersections_fn)(object, ray)->length > 0) {
-        dmnsn_set_pixel(scene->canvas, i, j,
-                        dmnsn_color_from_XYZ(dmnsn_whitepoint));
-      } else {
-        dmnsn_set_pixel(scene->canvas, i, j, scene->background);
-      }
-    }
-  }
-}

@@ -25,7 +25,7 @@
 int main() {
   FILE *file;
   dmnsn_scene *scene;
-  dmnsn_object *object;
+  dmnsn_object *cube;
   dmnsn_sRGB sRGB;
   dmnsn_color color;
   dmnsn_matrix trans;
@@ -58,14 +58,15 @@ int main() {
   color.filter = 0.1;
   scene->background = color;
 
-  object = dmnsn_new_cube();
-  dmnsn_array_push(scene->objects, &object);
+  cube = dmnsn_new_cube();
+  dmnsn_array_push(scene->objects, &cube);
 
   dmnsn_raytrace_scene(scene);
 
   file = fopen("raytrace.png", "wb");
   dmnsn_png_write_canvas(scene->canvas, file);
 
+  dmnsn_delete_cube(cube);
   dmnsn_delete_perspective_camera(scene->camera);
   dmnsn_delete_canvas(scene->canvas);
   dmnsn_delete_scene(scene);

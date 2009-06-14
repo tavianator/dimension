@@ -38,8 +38,9 @@ dmnsn_array *dmnsn_new_array(size_t obj_size);
 void dmnsn_array_push(dmnsn_array *array, const void *obj);
 void dmnsn_array_pop(dmnsn_array *array, void *obj);
 
-void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
-void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
+void *dmnsn_array_at(dmnsn_array *array, size_t i);
+void  dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
+void  dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
 
 void dmnsn_array_resize(dmnsn_array *array, size_t length);
 

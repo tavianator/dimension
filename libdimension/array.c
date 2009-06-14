@@ -53,6 +53,15 @@ dmnsn_array_pop(dmnsn_array *array, void *obj)
   dmnsn_array_resize(array, array->length - 1);
 }
 
+void *
+dmnsn_array_at(dmnsn_array *array, size_t i)
+{
+  if (i >= array->length) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
+  }
+  return array->ptr + array->obj_size*i;
+}
+
 void
 dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
 {

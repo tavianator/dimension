@@ -21,6 +21,6 @@ nobase_include_HEADERS = dimension.h dimension/array.h dimension/camera.h dimens
 
 lib_LTLIBRARIES = libdimension.la
 
-libdimension_la_SOURCES = $(nobase_include_HEADERS) array.c camera.c canvas.c color.c cube.c error.c geometry.c png.c object.c scene.c sphere.c
+libdimension_la_SOURCES = $(nobase_include_HEADERS) array.c camera.c canvas.c color.c cube.c error.c geometry.c png.c object.c raytrace.c scene.c sphere.c
 libdimension_la_LDFLAGS = -version-info 0:0:0
 libdimension_la_LIBADD  = -lm -lpthread -lpng
