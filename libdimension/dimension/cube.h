@@ -18,28 +18,14 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_H
-#define DIMENSION_H
+#ifndef DIMENSION_CUBE_H
+#define DIMENSION_CUBE_H
 
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
+/*
+ * A cube, axis-aligned, from (-1, -1, -1) to (1, 1, 1)
+ */
 
-#include <dimension/error.h>
-#include <dimension/array.h>
-#include <dimension/geometry.h>
-#include <dimension/color.h>
-#include <dimension/canvas.h>
-#include <dimension/object.h>
-#include <dimension/sphere.h>
-#include <dimension/cube.h>
-#include <dimension/camera.h>
-#include <dimension/scene.h>
-#include <dimension/png.h>
+dmnsn_object *dmnsn_new_cube();
+void dmnsn_delete_cube(dmnsn_object *cube);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* DIMENSION_H */
+#endif /* DIMENSION_CUBE_H */

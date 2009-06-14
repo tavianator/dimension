@@ -25,24 +25,31 @@
 int main() {
   FILE *file;
   dmnsn_scene *scene;
-  dmnsn_object *sphere;
+  dmnsn_object *object;
   dmnsn_sRGB sRGB;
   dmnsn_color color;
+  dmnsn_matrix trans;
 
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
   scene = dmnsn_new_scene();
   scene->canvas = dmnsn_new_canvas(768, 480);
-  scene->camera = dmnsn_new_perspective_camera(
-    dmnsn_matrix_mul(
-      dmnsn_translation_matrix(dmnsn_vector_construct(0.0, 0.0, -3.0)),
-      dmnsn_scale_matrix(
-        dmnsn_vector_construct(
-          ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
-        )
-      )
+
+  trans = dmnsn_scale_matrix(
+    dmnsn_vector_construct(
+      ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
     )
   );
+  trans = dmnsn_matrix_mul(
+    dmnsn_translation_matrix(dmnsn_vector_construct(0.0, 0.0, -4.0)),
+    trans
+  );
+  trans = dmnsn_matrix_mul(
+    dmnsn_rotation_matrix(dmnsn_vector_construct(0.0, 1.0, 0.0)),
+    trans
+  );
+
+  scene->camera = dmnsn_new_perspective_camera(trans);
 
   sRGB.R = 0.0;
   sRGB.G = 0.0;
@@ -51,8 +58,8 @@ int main() {
   color.filter = 0.1;
   scene->background = color;
 
-  sphere = dmnsn_new_sphere();
-  dmnsn_array_push(scene->objects, &sphere);
+  object = dmnsn_new_cube();
+  dmnsn_array_push(scene->objects, &object);
 
   dmnsn_raytrace_scene(scene);
 
