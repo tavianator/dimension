@@ -76,5 +76,7 @@ dmnsn_line   dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs);
 
 /* A point on a line, defined by x0 + t*n */
 dmnsn_vector dmnsn_line_point(dmnsn_line l, double t);
+/* Solve for the t value such that x0 + t*n = x */
+double       dmnsn_line_index(dmnsn_line l, dmnsn_vector x);
 
 #endif /* DIMENSION_GEOMETRY_H */

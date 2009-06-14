@@ -235,7 +235,8 @@ dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs)
   l.x0 = dmnsn_matrix_vector_mul(lhs, rhs.x0);
   l.n  = dmnsn_vector_sub(
     dmnsn_matrix_vector_mul(lhs, dmnsn_vector_add(rhs.x0, rhs.n)),
-    l.x0);
+    l.x0
+  );
   return l;
 }
 
@@ -244,4 +245,29 @@ dmnsn_vector
 dmnsn_line_point(dmnsn_line l, double t)
 {
   return dmnsn_vector_add(l.x0, dmnsn_vector_mul(t, l.n));
+}
+
+/* Solve for the t value such that x0 + t*n = x */
+double
+dmnsn_line_index(dmnsn_line l, dmnsn_vector x)
+{
+  double d = 0.0;
+  unsigned int nz = 0;
+
+  if (l.n.x != 0.0) {
+    d += (x.x - l.x0.x)/l.n.x;
+    ++nz;
+  }
+
+  if (l.n.y != 0.0) {
+    d += (x.y - l.x0.y)/l.n.y;
+    ++nz;
+  }
+
+  if (l.n.z != 0.0) {
+    d += (x.z - l.x0.z)/l.n.z;
+    ++nz;
+  }
+
+  return d/nz;
 }
