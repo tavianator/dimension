@@ -80,35 +80,39 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
   dmnsn_vector axis, n1, n2, n3;
   double angle, s, t, x, y, z;
 
-  axis = dmnsn_vector_normalize(theta);
   angle = dmnsn_vector_norm(theta);
+  if (angle != 0.0) {
+    axis = dmnsn_vector_normalize(theta);
 
-  /* Shorthand to fit logical lines on one line */
+    /* Shorthand to fit logical lines on one line */
 
-  s = sin(angle);
-  t = 1.0 - cos(angle);
+    s = sin(angle);
+    t = 1.0 - cos(angle);
 
-  x = axis.x;
-  y = axis.y;
-  z = axis.z;
+    x = axis.x;
+    y = axis.y;
+    z = axis.z;
 
-  /* Construct vectors, then a matrix, so our dmnsn_matrix_construct() call
-     is reasonably small */
+    /* Construct vectors, then a matrix, so our dmnsn_matrix_construct() call
+       is reasonably small */
 
-  n1 = dmnsn_vector_construct(1.0 + t*(x*x - 1.0),
-                              z*s + t*x*y,
-                              -y*s + t*x*z);
-  n2 = dmnsn_vector_construct(-z*s + t*x*y,
-                              1.0 + t*(y*y - 1.0),
-                              x*s + t*y*z);
-  n3 = dmnsn_vector_construct(y*s + t*x*z,
-                              -x*s + t*y*z,
-                              1.0 + t*(z*z - 1.0));
+    n1 = dmnsn_vector_construct(1.0 + t*(x*x - 1.0),
+                                z*s + t*x*y,
+                                -y*s + t*x*z);
+    n2 = dmnsn_vector_construct(-z*s + t*x*y,
+                                1.0 + t*(y*y - 1.0),
+                                x*s + t*y*z);
+    n3 = dmnsn_vector_construct(y*s + t*x*z,
+                                -x*s + t*y*z,
+                                1.0 + t*(z*z - 1.0));
 
-  return dmnsn_matrix_construct(n1.x, n2.x, n3.x, 0.0,
-                                n1.y, n2.y, n3.y, 0.0,
-                                n1.z, n2.z, n3.z, 0.0,
-                                0.0,  0.0,  0.0,  1.0);
+    return dmnsn_matrix_construct(n1.x, n2.x, n3.x, 0.0,
+                                  n1.y, n2.y, n3.y, 0.0,
+                                  n1.z, n2.z, n3.z, 0.0,
+                                  0.0,  0.0,  0.0,  1.0);
+  } else {
+    return dmnsn_identity_matrix();
+  }
 }
 
 /* Add two vectors */
