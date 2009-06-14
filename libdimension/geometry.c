@@ -43,6 +43,15 @@ dmnsn_matrix_construct(double a0, double a1, double a2, double a3,
   return m;
 }
 
+dmnsn_matrix
+dmnsn_scale_matrix(dmnsn_vector s)
+{
+  return dmnsn_matrix_construct(s.x, 0.0, 0.0, 0.0,
+                                0.0, s.y, 0.0, 0.0,
+                                0.0, 0.0, s.z, 0.0,
+                                0.0, 0.0, 0.0, 1.0);
+}
+
 /* Translation matrix */
 dmnsn_matrix
 dmnsn_translation_matrix(dmnsn_vector d)

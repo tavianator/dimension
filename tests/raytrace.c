@@ -34,7 +34,14 @@ int main() {
   scene = dmnsn_new_scene();
   scene->canvas = dmnsn_new_canvas(768, 480);
   scene->camera = dmnsn_new_perspective_camera(
-    dmnsn_translation_matrix(dmnsn_vector_construct(0.0, 0.0, -3.0))
+    dmnsn_matrix_mul(
+      dmnsn_translation_matrix(dmnsn_vector_construct(0.0, 0.0, -3.0)),
+      dmnsn_scale_matrix(
+        dmnsn_vector_construct(
+          ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
+        )
+      )
+    )
   );
 
   sRGB.R = 0.0;
