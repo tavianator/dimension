@@ -36,10 +36,10 @@ dmnsn_matrix_construct(double a0, double a1, double a2, double a3,
                        double c0, double c1, double c2, double c3,
                        double d0, double d1, double d2, double d3)
 {
-  dmnsn_matrix m = { .n00 = a0, .n01 = a1, .n02 = a2, .n03 = a3,
-                     .n10 = b0, .n11 = b1, .n12 = b2, .n13 = b3,
-                     .n20 = c0, .n21 = c1, .n22 = c2, .n23 = c3,
-                     .n30 = d0, .n31 = d1, .n32 = d2, .n33 = d3 };
+  dmnsn_matrix m = { { { a0, a1, a2, a3 },
+                       { b0, b1, b2, b3 },
+                       { c0, c1, c2, c3 },
+                       { d0, d1, d2, d3 } } };
   return m;
 }
 
@@ -182,31 +182,104 @@ dmnsn_vector_normalize(dmnsn_vector n)
   return dmnsn_vector_div(n, dmnsn_vector_norm(n));
 }
 
+/* Matrix inversion helper function */
+static double dmnsn_matrix_cofactor(dmnsn_matrix A,
+                                    unsigned int row, unsigned int col);
+
+/* Invert a matrix */
+dmnsn_matrix
+dmnsn_matrix_inverse(dmnsn_matrix A)
+{
+  dmnsn_matrix adj;
+  double det = 0.0, C;
+  unsigned int i, j;
+
+  for (j = 0; j < 4; ++j) {
+    C = dmnsn_matrix_cofactor(A, 0, j);
+    det += A.n[0][j]*C;
+    adj.n[j][0] = C;
+  }
+
+  for (j = 0; j < 4; ++j) {
+    adj.n[j][0] /= det;
+  }
+
+  for (i = 1; i < 4; ++i) {
+    for (j = 0; j < 4; ++j) {
+      adj.n[j][i] = dmnsn_matrix_cofactor(A, i, j)/det;
+    }
+  }
+
+  return adj;
+}
+
+/* Gives the cofactor at row, col; the determinant of the matrix formed from A
+   by ignoring row `row' and column `col', times (-1)**(row + col) */
+static double
+dmnsn_matrix_cofactor(dmnsn_matrix A, unsigned int row, unsigned int col)
+{
+  double n[9], C;
+  unsigned int i, j, k = 0;
+
+  for (i = 0; i < 4; ++i) {
+    for (j = 0; j < 4; ++j) {
+      if (i != row && j != col) {
+        n[k] = A.n[i][j];
+        ++k;
+      }
+    }
+  }
+
+  C = n[0]*(n[4]*n[8] - n[5]*n[7]) + n[1]*(n[5]*n[6] - n[3]*n[8])
+    + n[2]*(n[3]*n[7] - n[4]*n[6]);
+  if ((row + col)%2 == 0) {
+    return C;
+  } else {
+    return -C;
+  }
+}
+
 /* 4x4 matrix multiplication */
 dmnsn_matrix
 dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs)
 {
   dmnsn_matrix r;
 
-  r.n00 = lhs.n00*rhs.n00 + lhs.n01*rhs.n10 + lhs.n02*rhs.n20 + lhs.n03*rhs.n30;
-  r.n01 = lhs.n00*rhs.n01 + lhs.n01*rhs.n11 + lhs.n02*rhs.n21 + lhs.n03*rhs.n31;
-  r.n02 = lhs.n00*rhs.n02 + lhs.n01*rhs.n12 + lhs.n02*rhs.n22 + lhs.n03*rhs.n32;
-  r.n03 = lhs.n00*rhs.n03 + lhs.n01*rhs.n13 + lhs.n02*rhs.n23 + lhs.n03*rhs.n33;
+  r.n[0][0] = lhs.n[0][0]*rhs.n[0][0] + lhs.n[0][1]*rhs.n[1][0]
+    + lhs.n[0][2]*rhs.n[2][0] + lhs.n[0][3]*rhs.n[3][0];
+  r.n[0][1] = lhs.n[0][0]*rhs.n[0][1] + lhs.n[0][1]*rhs.n[1][1]
+    + lhs.n[0][2]*rhs.n[2][1] + lhs.n[0][3]*rhs.n[3][1];
+  r.n[0][2] = lhs.n[0][0]*rhs.n[0][2] + lhs.n[0][1]*rhs.n[1][2]
+    + lhs.n[0][2]*rhs.n[2][2] + lhs.n[0][3]*rhs.n[3][2];
+  r.n[0][3] = lhs.n[0][0]*rhs.n[0][3] + lhs.n[0][1]*rhs.n[1][3]
+    + lhs.n[0][2]*rhs.n[2][3] + lhs.n[0][3]*rhs.n[3][3];
 
-  r.n10 = lhs.n10*rhs.n00 + lhs.n11*rhs.n10 + lhs.n12*rhs.n20 + lhs.n13*rhs.n30;
-  r.n11 = lhs.n10*rhs.n01 + lhs.n11*rhs.n11 + lhs.n12*rhs.n21 + lhs.n13*rhs.n31;
-  r.n12 = lhs.n10*rhs.n02 + lhs.n11*rhs.n12 + lhs.n12*rhs.n22 + lhs.n13*rhs.n32;
-  r.n13 = lhs.n10*rhs.n03 + lhs.n11*rhs.n13 + lhs.n12*rhs.n23 + lhs.n13*rhs.n33;
+  r.n[1][0] = lhs.n[1][0]*rhs.n[0][0] + lhs.n[1][1]*rhs.n[1][0]
+    + lhs.n[1][2]*rhs.n[2][0] + lhs.n[1][3]*rhs.n[3][0];
+  r.n[1][1] = lhs.n[1][0]*rhs.n[0][1] + lhs.n[1][1]*rhs.n[1][1]
+    + lhs.n[1][2]*rhs.n[2][1] + lhs.n[1][3]*rhs.n[3][1];
+  r.n[1][2] = lhs.n[1][0]*rhs.n[0][2] + lhs.n[1][1]*rhs.n[1][2]
+    + lhs.n[1][2]*rhs.n[2][2] + lhs.n[1][3]*rhs.n[3][2];
+  r.n[1][3] = lhs.n[1][0]*rhs.n[0][3] + lhs.n[1][1]*rhs.n[1][3]
+    + lhs.n[1][2]*rhs.n[2][3] + lhs.n[1][3]*rhs.n[3][3];
 
-  r.n20 = lhs.n20*rhs.n00 + lhs.n21*rhs.n10 + lhs.n22*rhs.n20 + lhs.n23*rhs.n30;
-  r.n21 = lhs.n20*rhs.n01 + lhs.n21*rhs.n11 + lhs.n22*rhs.n21 + lhs.n23*rhs.n31;
-  r.n22 = lhs.n20*rhs.n02 + lhs.n21*rhs.n12 + lhs.n22*rhs.n22 + lhs.n23*rhs.n32;
-  r.n23 = lhs.n20*rhs.n03 + lhs.n21*rhs.n13 + lhs.n22*rhs.n23 + lhs.n23*rhs.n33;
+  r.n[2][0] = lhs.n[2][0]*rhs.n[0][0] + lhs.n[2][1]*rhs.n[1][0]
+    + lhs.n[2][2]*rhs.n[2][0] + lhs.n[2][3]*rhs.n[3][0];
+  r.n[2][1] = lhs.n[2][0]*rhs.n[0][1] + lhs.n[2][1]*rhs.n[1][1]
+    + lhs.n[2][2]*rhs.n[2][1] + lhs.n[2][3]*rhs.n[3][1];
+  r.n[2][2] = lhs.n[2][0]*rhs.n[0][2] + lhs.n[2][1]*rhs.n[1][2]
+    + lhs.n[2][2]*rhs.n[2][2] + lhs.n[2][3]*rhs.n[3][2];
+  r.n[2][3] = lhs.n[2][0]*rhs.n[0][3] + lhs.n[2][1]*rhs.n[1][3]
+    + lhs.n[2][2]*rhs.n[2][3] + lhs.n[2][3]*rhs.n[3][3];
 
-  r.n30 = lhs.n30*rhs.n00 + lhs.n31*rhs.n10 + lhs.n32*rhs.n20 + lhs.n33*rhs.n30;
-  r.n31 = lhs.n30*rhs.n01 + lhs.n31*rhs.n11 + lhs.n32*rhs.n21 + lhs.n33*rhs.n31;
-  r.n32 = lhs.n30*rhs.n02 + lhs.n31*rhs.n12 + lhs.n32*rhs.n22 + lhs.n33*rhs.n32;
-  r.n33 = lhs.n30*rhs.n03 + lhs.n31*rhs.n13 + lhs.n32*rhs.n23 + lhs.n33*rhs.n33;
+  r.n[3][0] = lhs.n[3][0]*rhs.n[0][0] + lhs.n[3][1]*rhs.n[1][0]
+    + lhs.n[3][2]*rhs.n[2][0] + lhs.n[3][3]*rhs.n[3][0];
+  r.n[3][1] = lhs.n[3][0]*rhs.n[0][1] + lhs.n[3][1]*rhs.n[1][1]
+    + lhs.n[3][2]*rhs.n[2][1] + lhs.n[3][3]*rhs.n[3][1];
+  r.n[3][2] = lhs.n[3][0]*rhs.n[0][2] + lhs.n[3][1]*rhs.n[1][2]
+    + lhs.n[3][2]*rhs.n[2][2] + lhs.n[3][3]*rhs.n[3][2];
+  r.n[3][3] = lhs.n[3][0]*rhs.n[0][3] + lhs.n[3][1]*rhs.n[1][3]
+    + lhs.n[3][2]*rhs.n[2][3] + lhs.n[3][3]*rhs.n[3][3];
 
   return r;
 }
@@ -219,10 +292,10 @@ dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs)
   dmnsn_vector r;
   double w;
 
-  r.x = lhs.n00*rhs.x + lhs.n01*rhs.y + lhs.n02*rhs.z + lhs.n03;
-  r.y = lhs.n10*rhs.x + lhs.n11*rhs.y + lhs.n12*rhs.z + lhs.n13;
-  r.z = lhs.n20*rhs.x + lhs.n21*rhs.y + lhs.n22*rhs.z + lhs.n23;
-  w   = lhs.n30*rhs.x + lhs.n31*rhs.y + lhs.n32*rhs.z + lhs.n33;
+  r.x = lhs.n[0][0]*rhs.x + lhs.n[0][1]*rhs.y + lhs.n[0][2]*rhs.z + lhs.n[0][3];
+  r.y = lhs.n[1][0]*rhs.x + lhs.n[1][1]*rhs.y + lhs.n[1][2]*rhs.z + lhs.n[1][3];
+  r.z = lhs.n[2][0]*rhs.x + lhs.n[2][1]*rhs.y + lhs.n[2][2]*rhs.z + lhs.n[2][3];
+  w   = lhs.n[3][0]*rhs.x + lhs.n[3][1]*rhs.y + lhs.n[3][2]*rhs.z + lhs.n[3][3];
 
   return dmnsn_vector_div(r, w);
 }

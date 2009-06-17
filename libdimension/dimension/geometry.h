@@ -29,12 +29,7 @@
 
 typedef struct { double x, y, z; } dmnsn_vector;
 
-typedef struct {
-  double n00, n01, n02, n03,
-         n10, n11, n12, n13,
-         n20, n21, n22, n23,
-         n30, n31, n32, n33;
-} dmnsn_matrix;
+typedef struct { double n[4][4]; } dmnsn_matrix;
 
 /* A line, or ray. */
 typedef struct {
@@ -70,6 +65,7 @@ dmnsn_vector dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs);
 double       dmnsn_vector_norm(dmnsn_vector n);
 dmnsn_vector dmnsn_vector_normalize(dmnsn_vector n);
 
+dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
 dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
 dmnsn_vector dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs);
 dmnsn_line   dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs);

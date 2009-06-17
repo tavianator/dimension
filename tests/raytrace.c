@@ -59,11 +59,15 @@ int main() {
   scene->background = color;
 
   sphere = dmnsn_new_sphere();
-  sphere->trans = dmnsn_scale_matrix(dmnsn_vector_construct(0.8, 0.8, 0.8));
+  sphere->trans = dmnsn_matrix_inverse(
+    dmnsn_scale_matrix(dmnsn_vector_construct(1.25, 1.25, 1.25))
+  );
   dmnsn_array_push(scene->objects, &sphere);
 
   cube = dmnsn_new_cube();
-  cube->trans = dmnsn_rotation_matrix(dmnsn_vector_construct(0.75, 0.0, 0.0));
+  cube->trans = dmnsn_matrix_inverse(
+    dmnsn_rotation_matrix(dmnsn_vector_construct(0.75, 0.0, 0.0))
+  );
   dmnsn_array_push(scene->objects, &cube);
 
   dmnsn_raytrace_scene(scene);
