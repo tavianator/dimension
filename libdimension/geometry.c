@@ -81,38 +81,37 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
   double angle, s, t, x, y, z;
 
   angle = dmnsn_vector_norm(theta);
-  if (angle != 0.0) {
-    axis = dmnsn_vector_normalize(theta);
-
-    /* Shorthand to fit logical lines on one line */
-
-    s = sin(angle);
-    t = 1.0 - cos(angle);
-
-    x = axis.x;
-    y = axis.y;
-    z = axis.z;
-
-    /* Construct vectors, then a matrix, so our dmnsn_matrix_construct() call
-       is reasonably small */
-
-    n1 = dmnsn_vector_construct(1.0 + t*(x*x - 1.0),
-                                z*s + t*x*y,
-                                -y*s + t*x*z);
-    n2 = dmnsn_vector_construct(-z*s + t*x*y,
-                                1.0 + t*(y*y - 1.0),
-                                x*s + t*y*z);
-    n3 = dmnsn_vector_construct(y*s + t*x*z,
-                                -x*s + t*y*z,
-                                1.0 + t*(z*z - 1.0));
-
-    return dmnsn_matrix_construct(n1.x, n2.x, n3.x, 0.0,
-                                  n1.y, n2.y, n3.y, 0.0,
-                                  n1.z, n2.z, n3.z, 0.0,
-                                  0.0,  0.0,  0.0,  1.0);
-  } else {
+  if (angle == 0.0) {
     return dmnsn_identity_matrix();
   }
+  axis = dmnsn_vector_normalize(theta);
+
+  /* Shorthand to fit logical lines on one line */
+
+  s = sin(angle);
+  t = 1.0 - cos(angle);
+
+  x = axis.x;
+  y = axis.y;
+  z = axis.z;
+
+  /* Construct vectors, then a matrix, so our dmnsn_matrix_construct() call
+      is reasonably small */
+
+  n1 = dmnsn_vector_construct(1.0 + t*(x*x - 1.0),
+                              z*s + t*x*y,
+                              -y*s + t*x*z);
+  n2 = dmnsn_vector_construct(-z*s + t*x*y,
+                              1.0 + t*(y*y - 1.0),
+                              x*s + t*y*z);
+  n3 = dmnsn_vector_construct(y*s + t*x*z,
+                              -x*s + t*y*z,
+                              1.0 + t*(z*z - 1.0));
+
+  return dmnsn_matrix_construct(n1.x, n2.x, n3.x, 0.0,
+                                n1.y, n2.y, n3.y, 0.0,
+                                n1.z, n2.z, n3.z, 0.0,
+                                0.0,  0.0,  0.0,  1.0);
 }
 
 /* Add two vectors */
@@ -182,35 +181,167 @@ dmnsn_vector_normalize(dmnsn_vector n)
   return dmnsn_vector_div(n, dmnsn_vector_norm(n));
 }
 
-/* Matrix inversion helper function */
+/* Matrix inversion helper functions */
+
+typedef struct { double n[2][2]; } dmnsn_matrix2;
+
+static dmnsn_matrix2 dmnsn_matrix2_construct(double a1, double a2,
+                                             double b1, double b2);
+static dmnsn_matrix2 dmnsn_matrix2_inverse(dmnsn_matrix2 A);
+static dmnsn_matrix2 dmnsn_matrix2_negate(dmnsn_matrix2 A);
+static dmnsn_matrix2 dmnsn_matrix2_sub(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs);
+static dmnsn_matrix2 dmnsn_matrix2_mul(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs);
+
+static dmnsn_matrix dmnsn_matrix_inverse_generic(dmnsn_matrix A);
 static double dmnsn_matrix_cofactor(dmnsn_matrix A,
                                     unsigned int row, unsigned int col);
 
-/* Invert a matrix */
+/* Invert a matrix, by partitioning */
 dmnsn_matrix
-dmnsn_matrix_inverse(dmnsn_matrix A)
+dmnsn_matrix_inverse(dmnsn_matrix A) {
+  /*
+   * Use partitioning to invert a matrix:
+   *
+   *     ( P Q ) -1
+   *     ( R S )
+   *
+   *   = ( PP QQ )
+   *     ( RR SS ),
+   *
+   * with PP = inv(P) - inv(P)*Q*RR,
+   *      QQ = -inv(P)*Q*SS,
+   *      RR = -SS*R*inv(P), and
+   *      SS = inv(S - R*inv(P)*Q).
+   */
+
+  /* The algorithm uses 2 inversions, 6 multiplications, and 2 subtractions,
+     giving 52 multiplications, 34 additions, and 8 divisions. */
+
+  dmnsn_matrix2 P, Q, R, S, Pi, RPi, PiQ, RPiQ, PP, QQ, RR, SS;
+  double Pdet = A.n[0][0]*A.n[1][1] - A.n[0][1]*A.n[1][0];
+
+  if (Pdet == 0.0) {
+    /* If we can't invert P, try a more generic algorithm */
+    return dmnsn_matrix_inverse_generic(A);
+  }
+
+  /* Partition the matrix */
+  P = dmnsn_matrix2_construct(A.n[0][0], A.n[0][1],
+                              A.n[1][0], A.n[1][1]);
+  Q = dmnsn_matrix2_construct(A.n[0][2], A.n[0][3],
+                              A.n[1][2], A.n[1][3]);
+  R = dmnsn_matrix2_construct(A.n[2][0], A.n[2][1],
+                              A.n[3][0], A.n[3][1]);
+  S = dmnsn_matrix2_construct(A.n[2][2], A.n[2][3],
+                              A.n[3][2], A.n[3][3]);
+
+  /* Do this inversion ourselves, since we already have the determinant */
+  Pi = dmnsn_matrix2_construct( P.n[1][1]/Pdet, -P.n[0][1]/Pdet,
+                               -P.n[1][0]/Pdet,  P.n[0][0]/Pdet);
+
+  /* Calculate R*inv(P), inv(P)*Q, and R*inv(P)*Q */
+  RPi  = dmnsn_matrix2_mul(R, Pi);
+  PiQ  = dmnsn_matrix2_mul(Pi, Q);
+  RPiQ = dmnsn_matrix2_mul(R, PiQ);
+
+  SS = dmnsn_matrix2_inverse(dmnsn_matrix2_sub(S, RPiQ));
+  RR = dmnsn_matrix2_negate(dmnsn_matrix2_mul(SS, RPi));
+  QQ = dmnsn_matrix2_negate(dmnsn_matrix2_mul(PiQ, SS));
+  PP = dmnsn_matrix2_sub(Pi, dmnsn_matrix2_mul(PiQ, RR));
+
+  /* Reconstruct the matrix */
+  return dmnsn_matrix_construct(PP.n[0][0], PP.n[0][1], QQ.n[0][0], QQ.n[0][1],
+                                PP.n[1][0], PP.n[1][1], QQ.n[1][0], QQ.n[1][1],
+                                RR.n[0][0], RR.n[0][1], SS.n[0][0], SS.n[0][1],
+                                RR.n[1][0], RR.n[1][1], SS.n[1][0], SS.n[1][1]);
+}
+
+/* For nice shorthand */
+static dmnsn_matrix2
+dmnsn_matrix2_construct(double a1, double a2, double b1, double b2)
 {
-  dmnsn_matrix adj;
+  dmnsn_matrix2 m = { { { a1, a2 },
+                        { b1, b2 } } };
+  return m;
+}
+
+/* Invert a 2x2 matrix */
+static dmnsn_matrix2
+dmnsn_matrix2_inverse(dmnsn_matrix2 A)
+{
+  /* 4 divisions, 2 multiplications, 1 addition */
+  double det = A.n[0][0]*A.n[1][1] - A.n[0][1]*A.n[1][0];
+  return dmnsn_matrix2_construct( A.n[1][1]/det, -A.n[0][1]/det,
+                                 -A.n[1][0]/det,  A.n[0][0]/det);
+}
+
+/* Also basically a shorthand */
+static dmnsn_matrix2
+dmnsn_matrix2_negate(dmnsn_matrix2 A)
+{
+  return dmnsn_matrix2_construct(-A.n[0][0], -A.n[0][1],
+                                 -A.n[1][0], -A.n[1][1]);
+}
+
+/* 2x2 matrix subtraction */
+static dmnsn_matrix2
+dmnsn_matrix2_sub(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs)
+{
+  /* 4 additions */
+  return dmnsn_matrix2_construct(
+    lhs.n[0][0] - rhs.n[0][0], lhs.n[0][1] - rhs.n[0][1],
+    lhs.n[1][0] - rhs.n[1][0], lhs.n[1][1] - rhs.n[1][1]
+  );
+}
+
+/* 2x2 matrix multiplication */
+static dmnsn_matrix2
+dmnsn_matrix2_mul(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs)
+{
+  /* 8 multiplications, 4 additions */
+  return dmnsn_matrix2_construct(
+    lhs.n[0][0]*rhs.n[0][0] + lhs.n[0][1]*rhs.n[1][0],
+      lhs.n[0][0]*rhs.n[0][1] + lhs.n[0][1]*rhs.n[1][1],
+    lhs.n[1][0]*rhs.n[0][0] + lhs.n[1][1]*rhs.n[1][0],
+      lhs.n[1][0]*rhs.n[0][1] + lhs.n[1][1]*rhs.n[1][1]
+  );
+}
+
+/* Invert a matrix, if partitioning failed (|P| == 0) */
+static dmnsn_matrix
+dmnsn_matrix_inverse_generic(dmnsn_matrix A)
+{
+  /*
+   * Simply form the matrix's adjugate and divide each element by the
+   * determinant as we go.  The routine itself has 4 additions and 16 divisions
+   * plus 16 cofactor calculations, giving 144 multiplications, 84 additions,
+   * and 16 divisions.
+   */
+  dmnsn_matrix inv;
   double det = 0.0, C;
   unsigned int i, j;
 
+  /* Perform a Laplace expansion along the first row to give us the adjugate's
+     first column and the determinant */
   for (j = 0; j < 4; ++j) {
     C = dmnsn_matrix_cofactor(A, 0, j);
     det += A.n[0][j]*C;
-    adj.n[j][0] = C;
+    inv.n[j][0] = C;
   }
 
+  /* Divide the first column by the determinant */
   for (j = 0; j < 4; ++j) {
-    adj.n[j][0] /= det;
+    inv.n[j][0] /= det;
   }
 
+  /* Find columns 2 through 4 */
   for (i = 1; i < 4; ++i) {
     for (j = 0; j < 4; ++j) {
-      adj.n[j][i] = dmnsn_matrix_cofactor(A, i, j)/det;
+      inv.n[j][i] = dmnsn_matrix_cofactor(A, i, j)/det;
     }
   }
 
-  return adj;
+  return inv;
 }
 
 /* Gives the cofactor at row, col; the determinant of the matrix formed from A
@@ -218,6 +349,8 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
 static double
 dmnsn_matrix_cofactor(dmnsn_matrix A, unsigned int row, unsigned int col)
 {
+  /* Return the cofactor at (row, col) of matrix A.  9 multiplications, 5
+     additions */
   double n[9], C;
   unsigned int i, j, k = 0;
 
