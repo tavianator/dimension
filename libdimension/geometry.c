@@ -77,7 +77,8 @@ dmnsn_translation_matrix(dmnsn_vector d)
 dmnsn_matrix
 dmnsn_rotation_matrix(dmnsn_vector theta)
 {
-  dmnsn_vector axis, n1, n2, n3;
+  /* Two trig calls, 25 multiplications, 13 additions */
+  dmnsn_vector axis;
   double angle, s, t, x, y, z;
 
   angle = dmnsn_vector_norm(theta);
@@ -86,7 +87,7 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
   }
   axis = dmnsn_vector_normalize(theta);
 
-  /* Shorthand to fit logical lines on one line */
+  /* Shorthand to make dmnsn_matrix_construct call legible */
 
   s = sin(angle);
   t = 1.0 - cos(angle);
@@ -95,29 +96,19 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
   y = axis.y;
   z = axis.z;
 
-  /* Construct vectors, then a matrix, so our dmnsn_matrix_construct() call
-      is reasonably small */
-
-  n1 = dmnsn_vector_construct(1.0 + t*(x*x - 1.0),
-                              z*s + t*x*y,
-                              -y*s + t*x*z);
-  n2 = dmnsn_vector_construct(-z*s + t*x*y,
-                              1.0 + t*(y*y - 1.0),
-                              x*s + t*y*z);
-  n3 = dmnsn_vector_construct(y*s + t*x*z,
-                              -x*s + t*y*z,
-                              1.0 + t*(z*z - 1.0));
-
-  return dmnsn_matrix_construct(n1.x, n2.x, n3.x, 0.0,
-                                n1.y, n2.y, n3.y, 0.0,
-                                n1.z, n2.z, n3.z, 0.0,
-                                0.0,  0.0,  0.0,  1.0);
+  return dmnsn_matrix_construct(
+    1.0 + t*(x*x - 1.0), -z*s + t*x*y,        y*s + t*x*z,         0.0,
+    z*s + t*x*y,         1.0 + t*(y*y - 1.0), -x*s + t*y*z,        0.0,
+    -y*s + t*x*z,        x*s + t*y*z,         1.0 + t*(z*z - 1.0), 0.0,
+    0.0,                 0.0,                 0.0,                 1.0
+  );
 }
 
 /* Add two vectors */
 dmnsn_vector
 dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
 {
+  /* 3 additions */
   dmnsn_vector v = { .x = lhs.x + rhs.x,
                      .y = lhs.y + rhs.y,
                      .z = lhs.z + rhs.z };
@@ -128,6 +119,7 @@ dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
 dmnsn_vector
 dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
 {
+  /* 3 additions */
   dmnsn_vector v = { .x = lhs.x - rhs.x,
                      .y = lhs.y - rhs.y,
                      .z = lhs.z - rhs.z };
@@ -138,6 +130,7 @@ dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
 dmnsn_vector
 dmnsn_vector_mul(double lhs, dmnsn_vector rhs)
 {
+  /* 3 multiplications */
   dmnsn_vector v = { .x = lhs*rhs.x, .y = lhs*rhs.y, .z = lhs*rhs.z };
   return v;
 }
@@ -146,6 +139,7 @@ dmnsn_vector_mul(double lhs, dmnsn_vector rhs)
 dmnsn_vector
 dmnsn_vector_div(dmnsn_vector lhs, double rhs)
 {
+  /* 3 divisions */
   dmnsn_vector v = { .x = lhs.x/rhs, .y = lhs.y/rhs, .z = lhs.z/rhs };
   return v;
 }
@@ -154,6 +148,7 @@ dmnsn_vector_div(dmnsn_vector lhs, double rhs)
 double
 dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs)
 {
+  /* 3 multiplications, 2 additions */
   return lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z;
 }
 
@@ -161,6 +156,7 @@ dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs)
 dmnsn_vector
 dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
 {
+  /* 6 multiplications, 3 additions */
   dmnsn_vector v = { .x = lhs.y*rhs.z - lhs.z*rhs.y,
                      .y = lhs.z*rhs.x - lhs.x*rhs.z,
                      .z = lhs.x*rhs.y - lhs.y*rhs.x };
@@ -171,6 +167,7 @@ dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
 double
 dmnsn_vector_norm(dmnsn_vector n)
 {
+  /* 1 sqrt, 3 multiplications, 2 additions */
   return sqrt(n.x*n.x + n.y*n.y + n.z*n.z);
 }
 
@@ -178,6 +175,7 @@ dmnsn_vector_norm(dmnsn_vector n)
 dmnsn_vector
 dmnsn_vector_normalize(dmnsn_vector n)
 {
+  /* 1 sqrt, 3 divisions, 3 multiplications, 2 additions */
   return dmnsn_vector_div(n, dmnsn_vector_norm(n));
 }
 
@@ -349,8 +347,7 @@ dmnsn_matrix_inverse_generic(dmnsn_matrix A)
 static double
 dmnsn_matrix_cofactor(dmnsn_matrix A, unsigned int row, unsigned int col)
 {
-  /* Return the cofactor at (row, col) of matrix A.  9 multiplications, 5
-     additions */
+  /* 9 multiplications, 5 additions */
   double n[9], C;
   unsigned int i, j, k = 0;
 
@@ -376,6 +373,7 @@ dmnsn_matrix_cofactor(dmnsn_matrix A, unsigned int row, unsigned int col)
 dmnsn_matrix
 dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs)
 {
+  /* 64 multiplications, 48 additions */
   dmnsn_matrix r;
 
   r.n[0][0] = lhs.n[0][0]*rhs.n[0][0] + lhs.n[0][1]*rhs.n[1][0]
@@ -422,6 +420,7 @@ dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs)
 dmnsn_vector
 dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs)
 {
+  /* 12 multiplications, 3 divisions, 12 additions */
   dmnsn_vector r;
   double w;
 
@@ -437,6 +436,7 @@ dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs)
 dmnsn_line
 dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs)
 {
+  /* 24 multiplications, 6 divisions, 30 additions */
   dmnsn_line l;
   l.x0 = dmnsn_matrix_vector_mul(lhs, rhs.x0);
   l.n  = dmnsn_vector_sub(
@@ -450,6 +450,7 @@ dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs)
 dmnsn_vector
 dmnsn_line_point(dmnsn_line l, double t)
 {
+  /* 3 multiplications, 3 additions */
   return dmnsn_vector_add(l.x0, dmnsn_vector_mul(t, l.n));
 }
 
@@ -457,6 +458,7 @@ dmnsn_line_point(dmnsn_line l, double t)
 double
 dmnsn_line_index(dmnsn_line l, dmnsn_vector x)
 {
+  /* nz + 1 divisions, nz additions */
   double d = 0.0;
   unsigned int nz = 0;
 
