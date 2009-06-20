@@ -27,6 +27,39 @@
 
 namespace Dimension
 {
+  // Wrapper for dmnsn_matrix
+  class Matrix
+  {
+  public:
+    Matrix() { }
+    Matrix(double a0, double a1, double a2, double a3,
+           double b0, double b1, double b2, double b3,
+           double c0, double c1, double c2, double c3,
+           double d0, double d1, double d2, double d3)
+      : m_matrix(dmnsn_matrix_construct(a0, a1, a2, a3,
+                                        b0, b1, b2, b3,
+                                        c0, c1, c2, c3,
+                                        d0, d1, d2, d3)) { }
+    explicit Matrix(dmnsn_matrix m) : m_matrix(m) { }
+    // Matrix(const Matrix& m);
+    // ~Matrix();
+
+    // Element access
+    double* operator[](unsigned int i) { return m_matrix.n[i]; }
+
+    // Matrix arithmetic
+
+    // Matrix& operator=(const Matrix& rhs);
+    Matrix& operator*=(const Matrix& rhs)
+      { m_matrix = dmnsn_matrix_mul(rhs.m_matrix, m_matrix); return *this; }
+
+    // Get the wrapped matrix
+    dmnsn_matrix dmnsn() const { return m_matrix; }
+
+  private:
+    dmnsn_matrix m_matrix;
+  };
+
   // Wrapper for dmnsn_vector
   class Vector
   {
@@ -52,6 +85,8 @@ namespace Dimension
       { m_vector = dmnsn_vector_sub(m_vector, rhs.m_vector); return *this; }
     Vector& operator*=(double rhs)
       { m_vector = dmnsn_vector_mul(rhs, m_vector); return *this; }
+    Vector& operator*=(const Matrix& m)
+      { m_vector = dmnsn_matrix_vector_mul(m.dmnsn(), m_vector); return *this; }
     Vector& operator/=(double rhs)
       { m_vector = dmnsn_vector_div(m_vector, rhs); return *this; }
 
@@ -63,19 +98,22 @@ namespace Dimension
   };
 
   // Wrapper for dmnsn_line
-  class line
+  class Line
   {
   public:
-    line() { }
-    line(const Vector& x0, const Vector& n)
+    Line() { }
+    Line(const Vector& x0, const Vector& n)
       { m_line.x0 = x0.dmnsn(); m_line.n = n.dmnsn(); }
-    // line(const line& l);
-    // ~line();
+    // Line(const Line& l);
+    // ~Line();
 
     Vector x0() const { return Vector(m_line.x0); }
     Vector n()  const { return Vector(m_line.n); }
+    double t(const Vector& v) { return dmnsn_line_index(m_line, v.dmnsn()); }
 
-    // line& operator=(const line& l);
+    // Line& operator=(const Line& l);
+    Line& operator*=(const Matrix& m)
+      { m_line = dmnsn_matrix_line_mul(m.dmnsn(), m_line); return *this; }
 
     // Get the point `t' on the line (x0 + t*n)
     Vector operator()(double t) { return Vector(dmnsn_line_point(m_line, t)); }
@@ -122,6 +160,14 @@ namespace Dimension
   }
 
   inline Vector
+  operator*(const Matrix& lhs, const Vector& rhs)
+  {
+    Vector r = rhs;
+    r *= lhs;
+    return r;
+  }
+
+  inline Vector
   operator/(const Vector& lhs, double rhs)
   {
     Vector r = lhs;
@@ -141,6 +187,15 @@ namespace Dimension
   cross(const Vector& lhs, const Vector& rhs)
   {
     return Vector(dmnsn_vector_cross(lhs.dmnsn(), rhs.dmnsn()));
+  }
+
+  // Line transformation
+  inline Line
+  operator*(const Matrix& lhs, const Line& rhs)
+  {
+    Line r = rhs;
+    r *= lhs;
+    return r;
   }
 }
 
