@@ -53,8 +53,8 @@ namespace Dimension
     double filter() const { return m_color.filter; }
     double trans()  const { return m_color.trans; }
 
-    double filter(double f) { m_color.filter = f; }
-    double trans(double t)  { m_color.trans = t; }
+    void filter(double f) { m_color.filter = f; }
+    void trans(double t)  { m_color.trans = t; }
 
     // Color& operator=(const Color& c);
 
@@ -88,7 +88,7 @@ namespace Dimension
 
     // CIE_XYZ& operator=(const CIE_XYZ& XYZ);
     CIE_XYZ& operator=(const Color& c)
-      { m_XYZ = dmnsn_XYZ_from_color(c.dmnsn()); }
+      { m_XYZ = dmnsn_XYZ_from_color(c.dmnsn()); return *this; }
 
     dmnsn_CIE_XYZ dmnsn() const { return m_XYZ; }
 
@@ -113,7 +113,7 @@ namespace Dimension
 
     // CIE_xyY& operator=(const CIE_xyY& xyY);
     CIE_xyY& operator=(const Color& c)
-      { m_xyY = dmnsn_xyY_from_color(c.dmnsn()); }
+      { m_xyY = dmnsn_xyY_from_color(c.dmnsn()); return *this; }
 
     dmnsn_CIE_xyY dmnsn() const { return m_xyY; }
 
@@ -139,7 +139,8 @@ namespace Dimension
 
     // CIE_Lab& operator=(const CIE_Lab& Lab);
     CIE_Lab& operator=(const Color& c)
-      { m_Lab = dmnsn_Lab_from_color(c.dmnsn(), whitepoint.dmnsn()); }
+      { m_Lab = dmnsn_Lab_from_color(c.dmnsn(), whitepoint.dmnsn());
+        return *this; }
 
     dmnsn_CIE_Lab dmnsn() const { return m_Lab; }
 
@@ -165,7 +166,8 @@ namespace Dimension
 
     // CIE_Luv& operator=(const CIE_Luv& Luv);
     CIE_Luv& operator=(const Color& c)
-      { m_Luv = dmnsn_Luv_from_color(c.dmnsn(), whitepoint.dmnsn()); }
+      { m_Luv = dmnsn_Luv_from_color(c.dmnsn(), whitepoint.dmnsn());
+        return *this; }
 
     dmnsn_CIE_Luv dmnsn() const { return m_Luv; }
 
@@ -190,7 +192,7 @@ namespace Dimension
 
     // sRGB& operator=(const sRGB& RGB);
     sRGB& operator=(const Color& c)
-      { m_RGB = dmnsn_sRGB_from_color(c.dmnsn()); }
+      { m_RGB = dmnsn_sRGB_from_color(c.dmnsn()); return *this; }
 
     dmnsn_sRGB dmnsn() const { return m_RGB; }
 
