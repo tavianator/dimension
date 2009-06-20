@@ -18,19 +18,51 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSIONXX_HPP
-#define DIMENSIONXX_HPP
+#ifndef DIMENSIONXX_OBJECT_HPP
+#define DIMENSIONXX_OBJECT_HPP
 
-// Internal helpers
-#include <dimensionxx/cookie.hpp>
+// dmnsn_object* wrapper.
 
-// libdimension wrappers
-#include <dimensionxx/error.hpp>
-#include <dimensionxx/array.hpp>
-#include <dimensionxx/geometry.hpp>
-#include <dimensionxx/color.hpp>
-#include <dimensionxx/canvas.hpp>
-#include <dimensionxx/object.hpp>
-#include <dimensionxx/png.hpp>
+namespace Dimension
+{
+  // Abstract base object class.  Wraps a dmnsn_object*.
+  class Object
+  {
+  public:
+    // No-op, made pure virtual
+    virtual ~Object() = 0;
 
-#endif /* DIMENSIONXX_HPP */
+    virtual Array<double> intersections(const Line& l);
+    virtual bool inside(const Vector& point);
+
+    // Access the wrapped C object.
+    dmnsn_object*       dmnsn();
+    const dmnsn_object* dmnsn() const;
+
+  protected:
+    // No-op
+    Object();
+    // Wrap an existing object.
+    explicit Object(dmnsn_object* object) : m_object(object) { }
+
+    dmnsn_object* m_object;
+
+  private:
+    // Copying prohibited
+    Object(const Object&);
+    Object& operator=(const Object&);
+  };
+
+  // A custom object abstract base class, for creating your own object types
+  class Custom_Object : public Object
+  {
+    public:
+      Custom_Object();
+      virtual ~Custom_Object();
+
+      virtual Array<double> intersections(const Line& l) = 0;
+      virtual bool inside(const Vector& point) = 0;
+  };
+}
+
+#endif /* DIMENSIONXX_OBJECT_HPP */

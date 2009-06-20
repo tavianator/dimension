@@ -104,6 +104,7 @@ namespace Dimension
     Line() { }
     Line(const Vector& x0, const Vector& n)
       { m_line.x0 = x0.dmnsn(); m_line.n = n.dmnsn(); }
+    explicit Line(dmnsn_line l) : m_line(l) { }
     // Line(const Line& l);
     // ~Line();
 
