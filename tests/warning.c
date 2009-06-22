@@ -19,24 +19,26 @@
  *************************************************************************/
 
 #include "../libdimension/dimension.h"
+#include <stdlib.h>
 
-int main()
+int
+main()
 {
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_MEDIUM) return 1;
+  if (dmnsn_get_resilience() != DMNSN_SEVERITY_MEDIUM) return EXIT_FAILURE;
 
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_LOW) return 1;
+  if (dmnsn_get_resilience() != DMNSN_SEVERITY_LOW) return EXIT_FAILURE;
 
   dmnsn_set_resilience(DMNSN_SEVERITY_MEDIUM);
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_MEDIUM) return 1;
+  if (dmnsn_get_resilience() != DMNSN_SEVERITY_MEDIUM) return EXIT_FAILURE;
 
   dmnsn_error(DMNSN_SEVERITY_LOW, "This warning is expected.");
 
   dmnsn_set_resilience(DMNSN_SEVERITY_HIGH);
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_HIGH) return 1;
+  if (dmnsn_get_resilience() != DMNSN_SEVERITY_HIGH) return EXIT_FAILURE;
 
   dmnsn_error(DMNSN_SEVERITY_LOW, "This warning is expected.");
   dmnsn_error(DMNSN_SEVERITY_MEDIUM, "This warning is expected.");
 
-  return 0;
+  return EXIT_SUCCESS;
 }

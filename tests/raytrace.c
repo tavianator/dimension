@@ -22,7 +22,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int main() {
+int
+main() {
   FILE *file;
   dmnsn_scene *scene;
   dmnsn_object *sphere, *cube;

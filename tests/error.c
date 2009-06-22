@@ -19,11 +19,13 @@
  *************************************************************************/
 
 #include "../libdimension/dimension.h"
+#include <stdlib.h>
 
-int main()
+int
+main()
 {
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
   dmnsn_error(DMNSN_SEVERITY_LOW, "This error is expected.");
 
-  return 0;
+  return EXIT_SUCCESS;
 }
