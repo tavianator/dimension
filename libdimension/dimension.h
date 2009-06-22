@@ -28,6 +28,7 @@ extern "C" {
 
 #include <dimension/error.h>
 #include <dimension/array.h>
+#include <dimension/progress.h>
 #include <dimension/geometry.h>
 #include <dimension/color.h>
 #include <dimension/canvas.h>

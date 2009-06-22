@@ -25,7 +25,6 @@
 /* The raw implementations, which don't do any thread synchronicity */
 static void dmnsn_array_get_impl(const dmnsn_array *array, size_t i, void *obj);
 static void dmnsn_array_set_impl(dmnsn_array *array, size_t i, const void *obj);
-static void dmnsn_array_resize_impl(dmnsn_array *array, size_t length);
 
 dmnsn_array *
 dmnsn_new_array(size_t obj_size)
@@ -73,7 +72,7 @@ dmnsn_array_pop(dmnsn_array *array, void *obj)
 {
   dmnsn_array_wrlock(array);
   dmnsn_array_get_impl(array, array->length - 1, obj);
-  dmnsn_array_resize_impl(array, array->length - 1);
+  dmnsn_array_resize_unlocked(array, array->length - 1);
   dmnsn_array_unlock(array);
 }
 
@@ -97,30 +96,21 @@ void
 dmnsn_array_resize(dmnsn_array *array, size_t length)
 {
   dmnsn_array_wrlock(array);
-  dmnsn_array_resize_impl(array, length);
+  dmnsn_array_resize_unlocked(array, length);
   dmnsn_array_unlock(array);
 }
 
-static void
-dmnsn_array_get_impl(const dmnsn_array *array, size_t i, void *obj)
+void *
+dmnsn_array_at(dmnsn_array *array, size_t i)
 {
   if (i >= array->length) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
   }
-  memcpy(obj, array->ptr + array->obj_size*i, array->obj_size);
+  return array->ptr + array->obj_size*i;
 }
 
-static void
-dmnsn_array_set_impl(dmnsn_array *array, size_t i, const void *obj)
-{
-  if (i >= array->length) {
-    dmnsn_array_resize_impl(array, i + 1);
-  }
-  memcpy(array->ptr + array->obj_size*i, obj, array->obj_size);
-}
-
-static void
-dmnsn_array_resize_impl(dmnsn_array *array, size_t length)
+void
+dmnsn_array_resize_unlocked(dmnsn_array *array, size_t length)
 {
   if (length > array->capacity) {
     array->capacity = length*2; /* We are greedy */
@@ -131,15 +121,6 @@ dmnsn_array_resize_impl(dmnsn_array *array, size_t length)
   }
 
   array->length = length;
-}
-
-void *
-dmnsn_array_at(dmnsn_array *array, size_t i)
-{
-  if (i >= array->length) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
-  }
-  return array->ptr + array->obj_size*i;
 }
 
 void
@@ -172,4 +153,22 @@ dmnsn_array_unlock(const dmnsn_array *array)
        the next time we try to read or write it */
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock array.");
   }
+}
+
+static void
+dmnsn_array_get_impl(const dmnsn_array *array, size_t i, void *obj)
+{
+  if (i >= array->length) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
+  }
+  memcpy(obj, array->ptr + array->obj_size*i, array->obj_size);
+}
+
+static void
+dmnsn_array_set_impl(dmnsn_array *array, size_t i, const void *obj)
+{
+  if (i >= array->length) {
+    dmnsn_array_resize_unlocked(array, i + 1);
+  }
+  memcpy(array->ptr + array->obj_size*i, obj, array->obj_size);
 }

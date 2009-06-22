@@ -18,43 +18,36 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_ARRAY_H
-#define DIMENSION_ARRAY_H
+#ifndef DIMENSION_PROGRESS_H
+#define DIMENSION_PROGRESS_H
 
-/*
- * Simple thread-safe generalized arrays, for returning variable-length arrays
- * from functions, and other fun stuff.
- */
+#include <pthread.h>
 
-#include <pthread.h> /* For pthread_rwlock_t */
-#include <stdlib.h>  /* For size_t */
+/* A single element in an array for dmnsn_progress.  Progress of this item is
+   progress/total. */
+typedef struct {
+  unsigned int progress, total;
+} dmnsn_progress_element;
 
 typedef struct {
-  void *ptr;
-  size_t obj_size, length, capacity;
+  /* Array of progress elements.  Progress is given by P(0), where
+     P(i) = (elements[i].progress + P(i + 1))/elements[i].total. */
+  dmnsn_array *elements;
 
-  /* Synchronicity control (pointer so it's not const) */
-  pthread_rwlock_t *rwlock;
-} dmnsn_array;
+  /* The worker thread */
+  pthread_t thread;
+} dmnsn_progress;
 
-dmnsn_array *dmnsn_new_array(size_t obj_size);
-void dmnsn_delete_array(dmnsn_array *array);
+dmnsn_progress *dmnsn_new_progress();
+void dmnsn_delete_progress(dmnsn_progress *progress);
 
-void dmnsn_array_push(dmnsn_array *array, const void *obj);
-void dmnsn_array_pop(dmnsn_array *array, void *obj);
+/* This joins the worker thread and returns it's integer return value in
+   addition to deleting `progress' */
+int dmnsn_finish_progress(dmnsn_progress *progress);
 
-void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
-void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
+double dmnsn_get_progress(const dmnsn_progress* progress);
 
-void dmnsn_array_resize(dmnsn_array *array, size_t length);
+void dmnsn_new_progress_element(dmnsn_progress* progress, unsigned int total);
+void dmnsn_increment_progress(dmnsn_progress* progress);
 
-/* Manual locking */
-
-void *dmnsn_array_at(dmnsn_array *array, size_t i);
-void dmnsn_array_resize_unlocked(dmnsn_array *array, size_t length);
-
-void dmnsn_array_rdlock(const dmnsn_array *array);
-void dmnsn_array_wrlock(dmnsn_array *array);
-void dmnsn_array_unlock(const dmnsn_array *array);
-
-#endif /* DIMENSION_ARRAY_H */
+#endif /* DIMENSION_PROGRESS_H */
