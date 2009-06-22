@@ -24,20 +24,14 @@
 #include <dimension.h>
 #include <stdio.h>
 
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
-
 /* Write canvas to file in PNG format.  Returns 0 on success, nonzero on
    failure */
 int dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file);
+dmnsn_progress *dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas,
+                                             FILE *file);
 
 /* Read a canvas from a PNG file.  Returns NULL on failure. */
 dmnsn_canvas *dmnsn_png_read_canvas(FILE *file);
-
-#ifdef __cplusplus
-}
-#endif
+dmnsn_progress *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file);
 
 #endif /* DIMENSION_PNG_H */

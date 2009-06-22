@@ -19,15 +19,120 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <pthread.h>
 #include <png.h>
 #include <setjmp.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
 
+typedef struct {
+  dmnsn_progress *progress;
+  const dmnsn_canvas *canvas;
+  FILE *file;
+} dmnsn_png_write_payload;
+
+typedef struct {
+  dmnsn_progress *progress;
+  dmnsn_canvas **canvas;
+  FILE *file;
+} dmnsn_png_read_payload;
+
+static void *dmnsn_png_write_canvas_thread(void *ptr);
+static int dmnsn_png_write_canvas_impl(const dmnsn_canvas *canvas, FILE *file);
+
+static void *dmnsn_png_read_canvas_thread(void *ptr);
+static dmnsn_canvas *dmnsn_png_read_canvas_impl(FILE *file);
+
 /* Write a canvas to a png file, using libpng.  Return 0 on success, nonzero on
    failure. */
 int
 dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
+{
+  dmnsn_progress *progress = dmnsn_png_write_canvas_async(canvas, file);
+  return dmnsn_finish_progress(progress);
+}
+
+/* Write a canvas to a png file in the background */
+dmnsn_progress *
+dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
+{
+  dmnsn_progress *progress = dmnsn_new_progress();
+  dmnsn_png_write_payload *payload;
+
+  if (progress) {
+    payload = malloc(sizeof(dmnsn_png_write_payload));
+    if (!payload) {
+      dmnsn_delete_progress(progress);
+      return NULL;
+    }
+
+    payload->progress = progress;
+    payload->canvas   = canvas;
+    payload->file     = file;
+
+    if (pthread_create(&progress->thread, NULL, &dmnsn_png_write_canvas_thread,
+                       payload)
+        != 0) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
+                  "Creating png writing worker thread failed.");
+    }
+  }
+
+  return progress;
+}
+
+/* Read a canvas from the PNG file `file'.  Return NULL on error. */
+dmnsn_canvas *
+dmnsn_png_read_canvas(FILE *file)
+{
+  dmnsn_canvas *canvas;
+  dmnsn_progress *progress = dmnsn_png_read_canvas_async(&canvas, file);
+  dmnsn_finish_progress(progress);
+  return canvas;
+}
+
+/* Read a canvas from a png file in the background */
+dmnsn_progress *
+dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
+{
+  dmnsn_progress *progress = dmnsn_new_progress();
+  dmnsn_png_read_payload *payload;
+
+  if (progress) {
+    payload = malloc(sizeof(dmnsn_png_write_payload));
+    if (!payload) {
+      dmnsn_delete_progress(progress);
+      return NULL;
+    }
+
+    payload->progress = progress;
+    payload->canvas   = canvas;
+    payload->file     = file;
+
+    if (pthread_create(&progress->thread, NULL, &dmnsn_png_read_canvas_thread,
+                       payload)
+        != 0) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
+                  "Creating png writing worker thread failed.");
+    }
+  }
+
+  return progress;
+}
+
+static void *
+dmnsn_png_write_canvas_thread(void *ptr)
+{
+  dmnsn_png_write_payload *payload = ptr;
+  int *retval = malloc(sizeof(int));
+  if (retval) {
+    *retval = dmnsn_png_write_canvas_impl(payload->canvas, payload->file);
+  }
+  return retval;
+}
+
+static int
+dmnsn_png_write_canvas_impl(const dmnsn_canvas *canvas, FILE *file)
 {
   png_structp png_ptr;
   png_infop info_ptr;
@@ -136,9 +241,20 @@ dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
   return 0;
 }
 
-/* Read a canvas from the PNG file `file'.  Return NULL on error. */
-dmnsn_canvas *
-dmnsn_png_read_canvas(FILE *file)
+static void *
+dmnsn_png_read_canvas_thread(void *ptr)
+{
+  dmnsn_png_read_payload *payload = ptr;
+  int *retval = malloc(sizeof(int));
+  if (retval) {
+    *payload->canvas = dmnsn_png_read_canvas_impl(payload->file);
+    *retval = payload->canvas ? 1 : 0;
+  }
+  return retval;
+}
+
+static dmnsn_canvas *
+dmnsn_png_read_canvas_impl(FILE *file)
 {
   dmnsn_canvas *canvas;
   png_byte header[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
