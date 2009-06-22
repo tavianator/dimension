@@ -196,7 +196,8 @@ static double dmnsn_matrix_cofactor(dmnsn_matrix A,
 
 /* Invert a matrix, by partitioning */
 dmnsn_matrix
-dmnsn_matrix_inverse(dmnsn_matrix A) {
+dmnsn_matrix_inverse(dmnsn_matrix A)
+{
   /*
    * Use partitioning to invert a matrix:
    *

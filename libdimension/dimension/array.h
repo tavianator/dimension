@@ -22,28 +22,38 @@
 #define DIMENSION_ARRAY_H
 
 /*
- * Simple generalized arrays, for returning variable-length arrays from
- * functions, and other fun stuff.
+ * Simple thread-safe generalized arrays, for returning variable-length arrays
+ * from functions, and other fun stuff.
  */
 
-#include <stdlib.h> /* For size_t */
+#include <pthread.h> /* For pthread_rwlock_t */
+#include <stdlib.h>  /* For size_t */
 
 typedef struct {
   void *ptr;
   size_t obj_size, length, capacity;
+
+  /* Synchronicity control (pointer so it's not const) */
+  pthread_rwlock_t *rwlock;
 } dmnsn_array;
 
 dmnsn_array *dmnsn_new_array(size_t obj_size);
+void dmnsn_delete_array(dmnsn_array *array);
 
 void dmnsn_array_push(dmnsn_array *array, const void *obj);
 void dmnsn_array_pop(dmnsn_array *array, void *obj);
 
-void *dmnsn_array_at(dmnsn_array *array, size_t i);
-void  dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
-void  dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
+void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
+void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
 
 void dmnsn_array_resize(dmnsn_array *array, size_t length);
 
-void dmnsn_delete_array(dmnsn_array *array);
+/* Thread-unsafe!  Don't give multiple threads the same raw pointer... */
+void *dmnsn_array_at(dmnsn_array *array, size_t i);
+
+/* Manual locking */
+void dmnsn_array_rdlock(const dmnsn_array *array);
+void dmnsn_array_wrlock(dmnsn_array *array);
+void dmnsn_array_unlock(const dmnsn_array *array);
 
 #endif /* DIMENSION_ARRAY_H */

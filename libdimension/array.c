@@ -19,7 +19,13 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <pthread.h>
 #include <string.h> /* For memcpy */
+
+/* The raw implementations, which don't do any thread synchronicity */
+static void dmnsn_array_get_impl(const dmnsn_array *array, size_t i, void *obj);
+static void dmnsn_array_set_impl(dmnsn_array *array, size_t i, const void *obj);
+static void dmnsn_array_resize_impl(dmnsn_array *array, size_t length);
 
 dmnsn_array *
 dmnsn_new_array(size_t obj_size)
@@ -34,9 +40,26 @@ dmnsn_new_array(size_t obj_size)
     if (!array->ptr) {
       dmnsn_error(DMNSN_SEVERITY_HIGH, "Array allocation failed.");
     }
+
+    array->rwlock = malloc(sizeof(pthread_rwlock_t));
+    if (!array->rwlock || pthread_rwlock_init(array->rwlock, NULL) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Array rwlock allocation failed.");
+    }
   }
 
   return array;
+}
+
+void dmnsn_delete_array(dmnsn_array *array) {
+  if (array) {
+    if (pthread_rwlock_destroy(array->rwlock) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking rwlock in array deallocation.");
+    }
+
+    free(array->rwlock);
+    free(array->ptr);
+    free(array);
+  }
 }
 
 void
@@ -45,25 +68,41 @@ dmnsn_array_push(dmnsn_array *array, const void *obj)
   dmnsn_array_set(array, array->length, obj);
 }
 
-
 void
 dmnsn_array_pop(dmnsn_array *array, void *obj)
 {
-  dmnsn_array_get(array, array->length - 1, obj);
-  dmnsn_array_resize(array, array->length - 1);
-}
-
-void *
-dmnsn_array_at(dmnsn_array *array, size_t i)
-{
-  if (i >= array->length) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
-  }
-  return array->ptr + array->obj_size*i;
+  dmnsn_array_wrlock(array);
+  dmnsn_array_get_impl(array, array->length - 1, obj);
+  dmnsn_array_resize_impl(array, array->length - 1);
+  dmnsn_array_unlock(array);
 }
 
 void
 dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
+{
+  dmnsn_array_rdlock(array);
+  dmnsn_array_get_impl(array, i, obj);
+  dmnsn_array_unlock(array);
+}
+
+void
+dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj)
+{
+  dmnsn_array_wrlock(array);
+  dmnsn_array_set_impl(array, i, obj);
+  dmnsn_array_unlock(array);
+}
+
+void
+dmnsn_array_resize(dmnsn_array *array, size_t length)
+{
+  dmnsn_array_wrlock(array);
+  dmnsn_array_resize_impl(array, length);
+  dmnsn_array_unlock(array);
+}
+
+static void
+dmnsn_array_get_impl(const dmnsn_array *array, size_t i, void *obj)
 {
   if (i >= array->length) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
@@ -71,17 +110,17 @@ dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
   memcpy(obj, array->ptr + array->obj_size*i, array->obj_size);
 }
 
-void
-dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj)
+static void
+dmnsn_array_set_impl(dmnsn_array *array, size_t i, const void *obj)
 {
   if (i >= array->length) {
-    dmnsn_array_resize(array, i + 1);
+    dmnsn_array_resize_impl(array, i + 1);
   }
   memcpy(array->ptr + array->obj_size*i, obj, array->obj_size);
 }
 
-void
-dmnsn_array_resize(dmnsn_array *array, size_t length)
+static void
+dmnsn_array_resize_impl(dmnsn_array *array, size_t length)
 {
   if (length > array->capacity) {
     array->capacity = length*2; /* We are greedy */
@@ -94,9 +133,43 @@ dmnsn_array_resize(dmnsn_array *array, size_t length)
   array->length = length;
 }
 
-void dmnsn_delete_array(dmnsn_array *array) {
-  if (array) {
-    free(array->ptr);
-    free(array);
+void *
+dmnsn_array_at(dmnsn_array *array, size_t i)
+{
+  if (i >= array->length) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
+  }
+  return array->ptr + array->obj_size*i;
+}
+
+void
+dmnsn_array_rdlock(const dmnsn_array *array)
+{
+  if (pthread_rwlock_rdlock(array->rwlock) != 0) {
+    /* Medium severity, because undefined behaviour is pretty likely if our
+       reads and writes aren't synced */
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM,
+                "Couldn't acquire read-lock for array.");
+  }
+}
+
+void
+dmnsn_array_wrlock(dmnsn_array *array)
+{
+  if (pthread_rwlock_wrlock(array->rwlock) != 0) {
+    /* Medium severity, because undefined behaviour is pretty likely if our
+       reads and writes aren't synced */
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM,
+                "Couldn't acquire write-lock for array.");
+  }
+}
+
+void
+dmnsn_array_unlock(const dmnsn_array *array)
+{
+  if (pthread_rwlock_unlock(array->rwlock) != 0) {
+    /* Medium severity, because if the array is locked, we're likely to hang
+       the next time we try to read or write it */
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock array.");
   }
 }
