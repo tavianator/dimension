@@ -36,6 +36,10 @@ typedef struct {
 
   /* The worker thread */
   pthread_t thread;
+
+  /* Condition variable for waiting for a particular amount of progress */
+  pthread_cond_t  cond;
+  pthread_mutex_t mutex;
 } dmnsn_progress;
 
 dmnsn_progress *dmnsn_new_progress();
@@ -47,7 +51,10 @@ int dmnsn_finish_progress(dmnsn_progress *progress);
 
 double dmnsn_get_progress(const dmnsn_progress* progress);
 
-void dmnsn_new_progress_element(dmnsn_progress* progress, unsigned int total);
-void dmnsn_increment_progress(dmnsn_progress* progress);
+void dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total);
+void dmnsn_increment_progress(dmnsn_progress *progress);
+void dmnsn_progress_done(dmnsn_progress *progress);
+
+void dmnsn_wait_progress(dmnsn_progress *progress, double prog);
 
 #endif /* DIMENSION_PROGRESS_H */

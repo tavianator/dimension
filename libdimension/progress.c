@@ -25,9 +25,19 @@
 dmnsn_progress *
 dmnsn_new_progress()
 {
+  dmnsn_progress_element element = { .progress = 0, .total = 1 };
   dmnsn_progress *progress = malloc(sizeof(dmnsn_progress));
   if (progress) {
     progress->elements = dmnsn_new_array(sizeof(dmnsn_progress_element));
+    dmnsn_array_push(progress->elements, &element);
+
+    if (pthread_cond_init(&progress->cond, NULL) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
+                  "Couldn't initialize condition variable.");
+    }
+    if (pthread_mutex_init(&progress->mutex, NULL) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't initialize mutex.");
+    }
   }
   return progress;
 }
@@ -36,6 +46,13 @@ void
 dmnsn_delete_progress(dmnsn_progress *progress)
 {
   if (progress) {
+    if (pthread_mutex_destroy(&progress->mutex) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking mutex.");
+    }
+    if (pthread_cond_destroy(&progress->cond) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking condition variable.");
+    }
+
     dmnsn_delete_array(progress->elements);
     free(progress);
   }
@@ -47,6 +64,10 @@ int dmnsn_finish_progress(dmnsn_progress *progress)
   int retval = 1;
 
   if (progress) {
+    if (pthread_cond_broadcast(&progress->cond) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
+    }
+
     if (pthread_join(progress->thread, &ptr) != 0) {
       /* Medium severity because an unjoined thread likely means that the thread
          is incomplete or invalid */
@@ -62,7 +83,7 @@ int dmnsn_finish_progress(dmnsn_progress *progress)
 }
 
 double
-dmnsn_get_progress(const dmnsn_progress* progress)
+dmnsn_get_progress(const dmnsn_progress *progress)
 {
   dmnsn_progress_element *element;
   double prog = 0.0;
@@ -81,23 +102,68 @@ dmnsn_get_progress(const dmnsn_progress* progress)
 }
 
 void
-dmnsn_new_progress_element(dmnsn_progress* progress, unsigned int total)
+dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total)
 {
   dmnsn_progress_element element = { .progress = 0, .total = total };
   dmnsn_array_push(progress->elements, &element);
 }
 
 void
-dmnsn_increment_progress(dmnsn_progress* progress)
+dmnsn_increment_progress(dmnsn_progress *progress)
 {
   dmnsn_progress_element *element;
 
   dmnsn_array_wrlock(progress->elements);
-  element = dmnsn_array_at(progress->elements, progress->elements->length - 1);
-  ++element->progress;
-  if (element->progress >= element->total) {
-    dmnsn_array_resize_unlocked(progress->elements,
-                                progress->elements->length - 1);
-  }
+    element = dmnsn_array_at(progress->elements, progress->elements->length - 1);
+    ++element->progress;
+
+    while (element->progress >= element->total
+          && progress->elements->length > 1) {
+      dmnsn_array_resize_unlocked(progress->elements,
+                                  progress->elements->length - 1);
+      element = dmnsn_array_at(progress->elements, progress->elements->length - 1);
+      ++element->progress;
+    }
+
+    if (pthread_cond_broadcast(&progress->cond) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
+    }
   dmnsn_array_unlock(progress->elements);
+}
+
+/* Immediately set to 100% completion */
+void
+dmnsn_progress_done(dmnsn_progress *progress)
+{
+  dmnsn_progress_element *element;
+
+  dmnsn_array_wrlock(progress->elements);
+    dmnsn_array_resize_unlocked(progress->elements, 1);
+    element = dmnsn_array_at(progress->elements, progress->elements->length - 1);
+    element->progress = element->total;
+
+    if (pthread_cond_broadcast(&progress->cond) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
+    }
+  dmnsn_array_unlock(progress->elements);
+}
+
+/* Wait until dmnsn_get_progress(progress) >= prog */
+void
+dmnsn_wait_progress(dmnsn_progress *progress, double prog)
+{
+  if (pthread_mutex_lock(&progress->mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock condition mutex.");
+  }
+
+  while (dmnsn_get_progress(progress) < prog) {
+    if (pthread_cond_wait(&progress->cond, &progress->mutex) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
+                  "Couldn't wait on condition variable.");
+    }
+  }
+
+  if (pthread_mutex_unlock(&progress->mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock condition mutex.");
+  }
 }

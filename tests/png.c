@@ -23,8 +23,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
-int main() {
+int
+main() {
   dmnsn_canvas *canvas;
+  dmnsn_progress *progress;
+  double prog;
   dmnsn_color color;
   dmnsn_CIE_xyY xyY;
   dmnsn_CIE_Lab Lab;
@@ -39,12 +42,6 @@ int main() {
   canvas = dmnsn_new_canvas(3*x, y);
   if (!canvas) {
     fprintf(stderr, "--- Allocation of canvas failed! ---\n");
-    return EXIT_FAILURE;
-  }
-
-  ofile = fopen("dimension1.png", "wb");
-  if (!ofile) {
-    fprintf(stderr, "--- Opening 'dimension1.png' for writing failed! ---\n");
     return EXIT_FAILURE;
   }
 
@@ -106,37 +103,101 @@ int main() {
     }
   }
 
-  if (dmnsn_png_write_canvas(canvas, ofile)) {
-    fprintf(stderr, "--- Writing canvas failed! ---\n");
+  ofile = fopen("dimension1.png", "wb");
+  if (!ofile) {
+    fprintf(stderr, "--- Opening 'dimension1.png' for writing failed! ---\n");
+    dmnsn_delete_canvas(canvas);
     return EXIT_FAILURE;
   }
 
-  dmnsn_delete_canvas(canvas);
+  progress = dmnsn_png_write_canvas_async(canvas, ofile);
+  if (!progress) {
+    fprintf(stderr, "--- Creating PNG writing worker thread failed! ---\n");
+    fclose(ofile);
+    dmnsn_delete_canvas(canvas);
+    return EXIT_FAILURE;
+  }
+
+  /* Give an ellipsis progress indication */
+  prog = 0.0;
+  while ((prog += 1.0/10.0) < 1.0) {
+    dmnsn_wait_progress(progress, prog);
+    printf(".");
+    fflush(stdout);
+  }
+  printf("\n");
+
+  if (dmnsn_finish_progress(progress) != 0) {
+    fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
+    fclose(ofile);
+    dmnsn_delete_canvas(canvas);
+    return EXIT_FAILURE;
+  }
 
   fclose(ofile);
+  dmnsn_delete_canvas(canvas);
+
   ifile = fopen("dimension1.png", "rb");
   if (!ifile) {
     fprintf(stderr, "--- Opening 'dimension1.png' for reading failed! ---\n");
     return EXIT_FAILURE;
   }
 
-  if (!(canvas = dmnsn_png_read_canvas(ifile))) {
-    fprintf(stderr, "--- Reading canvas failed! ---\n");
+  progress = dmnsn_png_read_canvas_async(&canvas, ifile);
+  if (!progress) {
+    fprintf(stderr, "--- Creating PNG reading worker thread failed! ---\n");
+    fclose(ifile);
+    return EXIT_FAILURE;
+  }
+
+  /* Give an ellipsis progress indication */
+  prog = 0.0;
+  while ((prog += 1.0/10.0) < 1.0) {
+    dmnsn_wait_progress(progress, prog);
+    printf(".");
+    fflush(stdout);
+  }
+  printf("\n");
+
+  if (dmnsn_finish_progress(progress) != 0) {
+    fprintf(stderr, "--- Reading canvas from PNG failed! ---\n");
+    fclose(ifile);
     return EXIT_FAILURE;
   }
 
   fclose(ifile);
+
   ofile = fopen("dimension2.png", "wb");
   if (!ofile) {
     fprintf(stderr, "--- Opening 'dimension2.png' for writing failed! ---\n");
     return EXIT_FAILURE;
   }
 
-  if (dmnsn_png_write_canvas(canvas, ofile)) {
-    fprintf(stderr, "--- Writing canvas failed! ---\n");
+  progress = dmnsn_png_write_canvas_async(canvas, ofile);
+  if (!progress) {
+    fprintf(stderr, "--- Creating PNG writing worker thread failed! ---\n");
+    fclose(ofile);
+    dmnsn_delete_canvas(canvas);
     return EXIT_FAILURE;
   }
 
+  /* Give an ellipsis progress indication */
+  prog = 0.0;
+  while ((prog += 1.0/10.0) < 1.0) {
+    dmnsn_wait_progress(progress, prog);
+    printf(".");
+    fflush(stdout);
+  }
+  printf("\n");
+
+  if (dmnsn_finish_progress(progress) != 0) {
+    fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
+    fclose(ofile);
+    dmnsn_delete_canvas(canvas);
+    return EXIT_FAILURE;
+  }
+
+  fclose(ofile);
   dmnsn_delete_canvas(canvas);
   return EXIT_SUCCESS;
 }
