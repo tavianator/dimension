@@ -50,7 +50,7 @@ dmnsn_sphere_intersections_fn(const dmnsn_object *sphere, dmnsn_line line)
   double a, b, c, t[2];
   dmnsn_array *array = dmnsn_new_array(sizeof(double));
 
-  // Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1
+  /* Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1 */
 
   a = line.n.x*line.n.x + line.n.y*line.n.y + line.n.z*line.n.z;
   b = 2.0*(line.n.x*line.x0.x + line.n.y*line.x0.y + line.n.z*line.x0.z);
