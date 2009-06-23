@@ -22,6 +22,7 @@
 #include <pthread.h>
 #include <stdlib.h> /* For malloc */
 
+/* Allocate a new dmnsn_progress*, returning NULL on failure */
 dmnsn_progress *
 dmnsn_new_progress()
 {
@@ -42,6 +43,8 @@ dmnsn_new_progress()
   return progress;
 }
 
+/* Delete a dmnsn_progress*, which has not yet been associated with a thread;
+   mostly for failed returns from *_async() functions. */
 void
 dmnsn_delete_progress(dmnsn_progress *progress)
 {
@@ -58,6 +61,7 @@ dmnsn_delete_progress(dmnsn_progress *progress)
   }
 }
 
+/* Join the worker thread and delete `progress'. */
 int dmnsn_finish_progress(dmnsn_progress *progress)
 {
   void *ptr;
@@ -82,25 +86,27 @@ int dmnsn_finish_progress(dmnsn_progress *progress)
   return retval;
 }
 
+/* Get the current progress of the worker thread, in [0.0, 1.0] */
 double
 dmnsn_get_progress(const dmnsn_progress *progress)
 {
   dmnsn_progress_element *element;
   double prog = 0.0;
-  unsigned int i;
+  unsigned int i, size;
 
   dmnsn_array_rdlock(progress->elements);
-  for (i = 0; i < progress->elements->length; ++i) {
-    element = dmnsn_array_at(progress->elements,
-                             progress->elements->length - i - 1);
-    prog += element->progress;
-    prog /= element->total;
-  }
+    size = dmnsn_array_size_unlocked(progress->elements);
+    for (i = 0; i < size; ++i) {
+      element = dmnsn_array_at(progress->elements, size - i - 1);
+      prog += element->progress;
+      prog /= element->total;
+    }
   dmnsn_array_unlock(progress->elements);
 
   return prog;
 }
 
+/* A new level of algorithmic nesting */
 void
 dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total)
 {
@@ -108,20 +114,23 @@ dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total)
   dmnsn_array_push(progress->elements, &element);
 }
 
+/* Only the innermost loop needs to call this function - it handles the rest
+   upon loop completion (progress == total) */
 void
 dmnsn_increment_progress(dmnsn_progress *progress)
 {
   dmnsn_progress_element *element;
+  size_t size;
 
   dmnsn_array_wrlock(progress->elements);
-    element = dmnsn_array_at(progress->elements, progress->elements->length - 1);
+    size = dmnsn_array_size_unlocked(progress->elements);
+    element = dmnsn_array_at(progress->elements, size - 1);
     ++element->progress;
 
-    while (element->progress >= element->total
-          && progress->elements->length > 1) {
-      dmnsn_array_resize_unlocked(progress->elements,
-                                  progress->elements->length - 1);
-      element = dmnsn_array_at(progress->elements, progress->elements->length - 1);
+    while (element->progress >= element->total && size > 1) {
+      --size;
+      dmnsn_array_resize_unlocked(progress->elements, size);
+      element = dmnsn_array_at(progress->elements, size - 1);
       ++element->progress;
     }
 
@@ -139,7 +148,7 @@ dmnsn_progress_done(dmnsn_progress *progress)
 
   dmnsn_array_wrlock(progress->elements);
     dmnsn_array_resize_unlocked(progress->elements, 1);
-    element = dmnsn_array_at(progress->elements, progress->elements->length - 1);
+    element = dmnsn_array_at(progress->elements, 0);
     element->progress = element->total;
 
     if (pthread_cond_broadcast(&progress->cond) != 0) {

@@ -64,15 +64,20 @@ void dmnsn_delete_array(dmnsn_array *array) {
 void
 dmnsn_array_push(dmnsn_array *array, const void *obj)
 {
-  dmnsn_array_set(array, array->length, obj);
+  dmnsn_array_wrlock(array);
+    dmnsn_array_set_impl(array, dmnsn_array_size_unlocked(array), obj);
+  dmnsn_array_unlock(array);
 }
 
 void
 dmnsn_array_pop(dmnsn_array *array, void *obj)
 {
+  size_t size;
+
   dmnsn_array_wrlock(array);
-  dmnsn_array_get_impl(array, array->length - 1, obj);
-  dmnsn_array_resize_unlocked(array, array->length - 1);
+    size = dmnsn_array_size_unlocked(array);
+    dmnsn_array_get_impl(array, size - 1, obj);
+    dmnsn_array_resize_unlocked(array, size - 1);
   dmnsn_array_unlock(array);
 }
 
@@ -80,7 +85,7 @@ void
 dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
 {
   dmnsn_array_rdlock(array);
-  dmnsn_array_get_impl(array, i, obj);
+    dmnsn_array_get_impl(array, i, obj);
   dmnsn_array_unlock(array);
 }
 
@@ -88,25 +93,43 @@ void
 dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj)
 {
   dmnsn_array_wrlock(array);
-  dmnsn_array_set_impl(array, i, obj);
+    dmnsn_array_set_impl(array, i, obj);
   dmnsn_array_unlock(array);
+}
+
+size_t
+dmnsn_array_size(const dmnsn_array *array)
+{
+  size_t size;
+
+  dmnsn_array_rdlock(array);
+    size = dmnsn_array_size_unlocked(array);
+  dmnsn_array_unlock(array);
+
+  return size;
 }
 
 void
 dmnsn_array_resize(dmnsn_array *array, size_t length)
 {
   dmnsn_array_wrlock(array);
-  dmnsn_array_resize_unlocked(array, length);
+    dmnsn_array_resize_unlocked(array, length);
   dmnsn_array_unlock(array);
 }
 
 void *
 dmnsn_array_at(dmnsn_array *array, size_t i)
 {
-  if (i >= array->length) {
+  if (i >= dmnsn_array_size_unlocked(array)) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
   }
-  return array->ptr + array->obj_size*i;
+  return (char *)array->ptr + array->obj_size*i;
+}
+
+size_t
+dmnsn_array_size_unlocked(const dmnsn_array *array)
+{
+  return array->length;
 }
 
 void
@@ -158,7 +181,7 @@ dmnsn_array_unlock(const dmnsn_array *array)
 static void
 dmnsn_array_get_impl(const dmnsn_array *array, size_t i, void *obj)
 {
-  if (i >= array->length) {
+  if (i >= dmnsn_array_size_unlocked(array)) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
   }
   memcpy(obj, array->ptr + array->obj_size*i, array->obj_size);
@@ -167,7 +190,7 @@ dmnsn_array_get_impl(const dmnsn_array *array, size_t i, void *obj)
 static void
 dmnsn_array_set_impl(dmnsn_array *array, size_t i, const void *obj)
 {
-  if (i >= array->length) {
+  if (i >= dmnsn_array_size_unlocked(array)) {
     dmnsn_array_resize_unlocked(array, i + 1);
   }
   memcpy(array->ptr + array->obj_size*i, obj, array->obj_size);

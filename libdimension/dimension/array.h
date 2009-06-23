@@ -46,11 +46,13 @@ void dmnsn_array_pop(dmnsn_array *array, void *obj);
 void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
 void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
 
-void dmnsn_array_resize(dmnsn_array *array, size_t length);
+size_t dmnsn_array_size(const dmnsn_array *array);
+void   dmnsn_array_resize(dmnsn_array *array, size_t length);
 
 /* Manual locking */
 
 void *dmnsn_array_at(dmnsn_array *array, size_t i);
+size_t dmnsn_array_size_unlocked(const dmnsn_array *array);
 void dmnsn_array_resize_unlocked(dmnsn_array *array, size_t length);
 
 void dmnsn_array_rdlock(const dmnsn_array *array);
