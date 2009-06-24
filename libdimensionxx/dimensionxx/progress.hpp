@@ -18,20 +18,45 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSIONXX_HPP
-#define DIMENSIONXX_HPP
+#ifndef DIMENSIONXX_PROGRESS_HPP
+#define DIMENSIONXX_PROGRESS_HPP
 
-// Internal helpers
-#include <dimensionxx/cookie.hpp>
+#include <tr1/memory> // For tr1::shared_ptr
 
-// libdimension wrappers
-#include <dimensionxx/error.hpp>
-#include <dimensionxx/array.hpp>
-#include <dimensionxx/progress.hpp>
-#include <dimensionxx/geometry.hpp>
-#include <dimensionxx/color.hpp>
-#include <dimensionxx/canvas.hpp>
-#include <dimensionxx/object.hpp>
-#include <dimensionxx/png.hpp>
+// dmnsn_canvas* wrapper.
 
-#endif /* DIMENSIONXX_HPP */
+namespace Dimension
+{
+  // dmnsn_progress* wrapper class to represent an asynchronous worker thread
+  class Progress
+  {
+  public:
+    explicit Progress(dmnsn_progress* progress);
+    // Progress(const Progress& progress);
+
+    // Finishes the job without throwing
+    ~Progress();
+
+    double progress() const;
+    void wait(double progress) const;
+
+    void new_element(unsigned int total);
+    void increment();
+    void done();
+
+    // Wait for job to finish, throwing if the job failed
+    void finish();
+
+    // Access the wrapped C object.
+    dmnsn_progress*       dmnsn();
+    const dmnsn_progress* dmnsn() const;
+
+  private:
+    // Copy assignment prohibited
+    Progress& operator=(const Progress&);
+
+    std::tr1::shared_ptr<dmnsn_progress*> m_progress;
+  };
+}
+
+#endif /* DIMENSIONXX_PROGRESS_HPP */

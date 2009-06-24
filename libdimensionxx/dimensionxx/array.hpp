@@ -21,8 +21,8 @@
 #ifndef DIMENSIONXX_ARRAY_HPP
 #define DIMENSIONXX_ARRAY_HPP
 
-#include <tr1/memory>
-#include <cstdlib> // For size_t
+#include <tr1/memory> // For tr1::shared_ptr
+#include <cstdlib>    // For size_t
 
 // dmnsn_array* wrapper.
 
