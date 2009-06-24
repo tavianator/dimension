@@ -25,6 +25,7 @@
 
 #include <istream>
 #include <ostream>
+#include <memory>
 
 namespace Dimension
 {
@@ -35,18 +36,15 @@ namespace Dimension
   {
   public:
     // Input PNG_Canvas; read the Canvas from istr now
-    explicit PNG_Canvas(std::istream& istr)
-      : Canvas(), m_istr(&istr), m_ostr(0), m_written(false) { read(); }
+    explicit PNG_Canvas(std::istream& istr);
 
     // Output PNG_Canvas; write the Canvas to ostr at destruction, or when
     // write() is called.
-    PNG_Canvas(unsigned int x, unsigned int y, std::ostream& ostr)
-      : Canvas(x, y), m_istr(0), m_ostr(&ostr), m_written(false) { }
+    PNG_Canvas(unsigned int x, unsigned int y, std::ostream& ostr);
 
     // I/O PNG_Canvas; read the Canvas from istr now, and write to ostr at
     // destruction or then write() is called.
-    PNG_Canvas(std::istream& istr, std::ostream& ostr)
-      : Canvas(), m_istr(&istr), m_ostr(&ostr), m_written(false) { read(); }
+    PNG_Canvas(std::istream& istr, std::ostream& ostr);
 
     // Call write() if we're an output PNG_Canvas, but trap any exceptions and
     // report a dmnsn_error() instead.
@@ -56,12 +54,23 @@ namespace Dimension
     // error.
     void write();
 
+    // Write the Canvas to the output stream in the background
+    Progress write_async();
+
+    // Construct an input or I/O PNG_Canvas in the background
+    static Progress read_async(std::istream& istr);
+    explicit PNG_Canvas(Progress& progress);
+    explicit PNG_Canvas(Progress& progress, std::ostream& ostr);
+
   protected:
     // In case a derived class needs to set m_canvas after we're constructed
-    PNG_Canvas(std::ostream* ostr)
-      : Canvas(), m_istr(0), m_ostr(ostr), m_written(false) { }
+    explicit PNG_Canvas(std::ostream& ostr);
 
   private:
+    // Copying prohibited
+    PNG_Canvas(const PNG_Canvas&);
+    PNG_Canvas& operator=(const PNG_Canvas&);
+
     std::istream* m_istr;
     std::ostream* m_ostr;
     bool m_written;
@@ -69,10 +78,6 @@ namespace Dimension
     // Read the Canvas from a PNG file, and throw a Dimension_Error upon
     // failure.
     void read();
-
-    // Copying prohibited
-    PNG_Canvas(const PNG_Canvas&);
-    PNG_Canvas& operator=(const PNG_Canvas&);
   };
 }
 

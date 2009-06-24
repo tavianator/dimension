@@ -22,16 +22,71 @@
 #define DIMENSIONXX_PROGRESS_HPP
 
 #include <tr1/memory> // For tr1::shared_ptr
+#include <list>
 
 // dmnsn_canvas* wrapper.
 
 namespace Dimension
 {
+  // Base class for persisting objects
+  class Persist_Base
+  {
+  public:
+    virtual ~Persist_Base() = 0;
+
+  protected:
+    Persist_Base() { }
+
+  private:
+    // Copying prohibited
+    Persist_Base(const Persist_Base&);
+    Persist_Base& operator=(const Persist_Base&);
+  };
+
+  // Class for persisting objects
+  template <typename T>
+  class Persist : public Persist_Base
+  {
+  public:
+    Persist(T* t) : m_t(t) { }
+    virtual ~Persist() { delete m_t; }
+
+    T* persisted() const { return m_t; }
+
+  private:
+    T* m_t;
+  };
+
+  // Class for persisting many objects
+  class Persister
+  {
+  public:
+    // Persister();
+    // Persister(const Persister& persister);
+    // ~Persister();
+
+    // Persister& operator=(const Persister& persister);
+
+    template <typename T>
+    void persist(T* t);
+
+    // Access the first persisted element
+    template <typename T>
+    Persist<T>& first();
+
+  private:
+    // Copy-assignment prohibited
+    Persister& operator=(const Persister&);
+
+    std::list<std::tr1::shared_ptr<Persist_Base> > m_persists;
+  };
+
   // dmnsn_progress* wrapper class to represent an asynchronous worker thread
   class Progress
   {
   public:
     explicit Progress(dmnsn_progress* progress);
+    Progress(dmnsn_progress* progress, const Persister& persister);
     // Progress(const Progress& progress);
 
     // Finishes the job without throwing
@@ -47,6 +102,9 @@ namespace Dimension
     // Wait for job to finish, throwing if the job failed
     void finish();
 
+    // Access the set of persisted objects
+    Persister& persister();
+
     // Access the wrapped C object.
     dmnsn_progress*       dmnsn();
     const dmnsn_progress* dmnsn() const;
@@ -56,7 +114,22 @@ namespace Dimension
     Progress& operator=(const Progress&);
 
     std::tr1::shared_ptr<dmnsn_progress*> m_progress;
+    Persister m_persister;
   };
+
+  template <typename T>
+  void
+  Persister::persist(T* t)
+  {
+    m_persists.push_back(std::tr1::shared_ptr<Persist_Base>(new Persist<T>(t)));
+  }
+
+  template <typename T>
+  Persist<T>&
+  Persister::first()
+  {
+    return dynamic_cast<Persist<T>&>(*m_persists.front());
+  }
 }
 
 #endif /* DIMENSIONXX_PROGRESS_HPP */

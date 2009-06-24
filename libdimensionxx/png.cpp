@@ -24,6 +24,22 @@
 
 namespace Dimension
 {
+  PNG_Canvas::PNG_Canvas(std::istream& istr)
+    : Canvas(), m_istr(&istr), m_ostr(0), m_written(false)
+  {
+    read();
+  }
+
+  PNG_Canvas::PNG_Canvas(unsigned int x, unsigned int y, std::ostream& ostr)
+    : Canvas(x, y), m_istr(0), m_ostr(&ostr), m_written(false)
+  { }
+
+  PNG_Canvas::PNG_Canvas(std::istream& istr, std::ostream& ostr)
+    : Canvas(), m_istr(&istr), m_ostr(&ostr), m_written(false)
+  {
+    read();
+  }
+
   // PNG_Canvas destructor.  Call write() to write the PNG file if not already
   // written, but catch any exceptions and instead report the error with
   // dmnsn_error() to avoid throwing from a destructor.
@@ -52,19 +68,108 @@ namespace Dimension
       // Don't call write() if we're not an output PNG_Canvas...
       throw Dimension_Error("Attempt to write canvas to PNG without an output"
                             " stream.");
-    }      
+    }
 
     // Make the C++/C I/O interface
     FILE_Cookie cookie(*m_ostr);
 
     // Write the PNG file
     if (dmnsn_png_write_canvas(m_canvas, cookie.file())) {
-      // The actual write operation failed, for some reason.
+      // The actual write operation failed, for some reason
       throw Dimension_Error("Writing canvas to PNG failed.");
     }
 
     m_written = true; // We've written the file now, don't do it again
   }
+
+  // Write a PNG file in the background
+  Progress
+  PNG_Canvas::write_async()
+  {
+    if (m_written) {
+      // Does writing a PNG file twice make sense?
+      throw Dimension_Error("Attempt to write canvas to PNG twice.");
+    }
+
+    if (!m_ostr) {
+      // Don't call write_async() if we're not an output PNG_Canvas...
+      throw Dimension_Error("Attempt to write canvas to PNG without an output"
+                            " stream.");
+    }
+
+    m_written = true; // We've written the file now, don't do it again
+
+    // Object to persist local variables past function return
+    Persister persister;
+
+    // Make the C++/C I/O interface
+    FILE_Cookie* cookie = new FILE_Cookie(*m_ostr);
+    persister.persist(cookie);
+
+    // Return the Progress object
+    return Progress(dmnsn_png_write_canvas_async(m_canvas, cookie->file()),
+                    persister);
+  }
+
+  // Read a PNG file in the background
+  Progress
+  PNG_Canvas::read_async(std::istream& istr)
+  {
+    // Object to persist local variables past function return
+    Persister persister;
+
+    // Store a pointer to a dmnsn_canvas* in the persister to later construct
+    // the PNG_Canvas
+    dmnsn_canvas** canvas = new dmnsn_canvas*;
+    persister.persist(canvas);
+
+    // Make the C++/C I/O interface
+    FILE_Cookie* cookie = new FILE_Cookie(istr);
+    persister.persist(cookie);
+
+    // Return the Progress object
+    return Progress(dmnsn_png_read_canvas_async(canvas, cookie->file()),
+                    persister);
+  }
+
+  // Construct an input PNG_Canvas from a background task
+  PNG_Canvas::PNG_Canvas(Progress& progress)
+    : Canvas(), m_istr(0), m_ostr(0), m_written(false)
+  {
+    dmnsn_canvas** canvas
+      = progress.persister().first<dmnsn_canvas*>().persisted();
+
+    try {
+      progress.finish();
+    } catch (...) {
+      dmnsn_delete_canvas(*canvas);
+      throw;
+    }
+
+    m_canvas = *canvas;
+  }
+
+  // Construct an I/O PNG_Canvas from a background task
+  PNG_Canvas::PNG_Canvas(Progress& progress, std::ostream& ostr)
+    : Canvas(), m_istr(0), m_ostr(&ostr), m_written(false)
+  {
+    dmnsn_canvas** canvas
+      = progress.persister().first<dmnsn_canvas*>().persisted();
+
+    try {
+      progress.finish();
+    } catch (...) {
+      dmnsn_delete_canvas(*canvas);
+      throw;
+    }
+
+    m_canvas = *canvas;
+  }
+
+  // Protected constructor which sets the canvas to NULL for now
+  PNG_Canvas::PNG_Canvas(std::ostream& ostr)
+    : Canvas(), m_istr(0), m_ostr(&ostr), m_written(false)
+  { }
 
   // Read a canvas from a PNG file.  Uses the FILE_Cookie() interface to make a
   // FILE* corresponding to an std::istream (including std::istringstream, etc).
@@ -75,7 +180,7 @@ namespace Dimension
       // so this REALLY shouldn't happen.
       throw Dimension_Error("Attempt to read canvas from PNG without an input"
                             " stream.");
-    }      
+    }
 
     // Make the C++/C I/O interface
     FILE_Cookie cookie(*m_istr);

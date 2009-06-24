@@ -22,13 +22,20 @@
 
 namespace Dimension
 {
+  Persist_Base::~Persist_Base()
+  { }
+
   Progress::Progress(dmnsn_progress* progress)
     : m_progress(new dmnsn_progress*(progress))
   { }
 
+  Progress::Progress(dmnsn_progress* progress, const Persister& persister)
+    : m_progress(new dmnsn_progress*(progress)), m_persister(persister)
+  { }
+
   Progress::~Progress()
   {
-    if (m_progress.unique()) {
+    if (m_progress && m_progress.unique()) {
       try {
         dmnsn_finish_progress(dmnsn());
       } catch (...) {
@@ -73,20 +80,36 @@ namespace Dimension
   {
     if (m_progress.unique()) {
       dmnsn_finish_progress(dmnsn());
+      m_progress.reset();
     } else {
       throw Dimension_Error("Attempt to finish non-unique Progress.");
     }
   }
 
+  // Access the set of persisted objects
+  Persister&
+  Progress::persister()
+  {
+    return m_persister;
+  }
+
   dmnsn_progress*
   Progress::dmnsn()
   {
+    if (!m_progress) {
+      throw Dimension_Error("Attempting to access finished array.");
+    }
+
     return *m_progress;
   }
 
   const dmnsn_progress*
   Progress::dmnsn() const
   {
+    if (!m_progress) {
+      throw Dimension_Error("Attempting to access finished array.");
+    }
+
     return *m_progress;
   }
 }

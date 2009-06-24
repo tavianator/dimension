@@ -20,6 +20,7 @@
 
 #include "../libdimensionxx/dimensionxx.hpp"
 #include <fstream>
+#include <iostream>
 
 int
 main()
@@ -92,11 +93,41 @@ main()
         ocanvas.pixel(x + 2*width, y, color);
       }
     }
+
+    Dimension::Progress progress = ocanvas.write_async();
+
+    // Display ellipsis progress bar
+    double prog = 0.0;
+    while ((prog += 1.0/10.0) <= 1.0) {
+      progress.wait(prog);
+      std::cout << "." << std::flush;
+    }
+    std::cout << std::endl;
   }
 
   std::ifstream ifstr("dimensionxx1.png", std::ios::binary);
   std::ofstream ofstr("dimensionxx2.png", std::ios::binary);
-  Dimension::PNG_Canvas iocanvas(ifstr, ofstr);
+
+  Dimension::Progress iprogress
+    = Dimension::PNG_Canvas::read_async(ifstr);
+
+  double iprog = 0.0;
+  while ((iprog += 1.0/10.0) <= 1.0) {
+    iprogress.wait(iprog);
+    std::cout << "." << std::flush;
+  }
+  std::cout << std::endl;
+
+  Dimension::PNG_Canvas iocanvas(iprogress, ofstr);
+
+  Dimension::Progress oprogress = iocanvas.write_async();
+
+  double oprog = 0.0;
+  while ((oprog += 1.0/10.0) <= 1.0) {
+    oprogress.wait(oprog);
+    std::cout << "." << std::flush;
+  }
+  std::cout << std::endl;
 
   return 0;
 }
