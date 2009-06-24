@@ -18,9 +18,8 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "../libdimensionxx/dimensionxx.hpp"
+#include "testsxx.hpp"
 #include <fstream>
-#include <iostream>
 
 int
 main()
@@ -95,14 +94,7 @@ main()
     }
 
     Dimension::Progress progress = ocanvas.write_async();
-
-    // Display ellipsis progress bar
-    double prog = 0.0;
-    while ((prog += 1.0/10.0) <= 1.0) {
-      progress.wait(prog);
-      std::cout << "." << std::flush;
-    }
-    std::cout << std::endl;
+    std::cout << "Writing PNG file: " << progress << std::endl;
   }
 
   std::ifstream ifstr("dimensionxx1.png", std::ios::binary);
@@ -110,24 +102,12 @@ main()
 
   Dimension::Progress iprogress
     = Dimension::PNG_Canvas::read_async(ifstr);
-
-  double iprog = 0.0;
-  while ((iprog += 1.0/10.0) <= 1.0) {
-    iprogress.wait(iprog);
-    std::cout << "." << std::flush;
-  }
-  std::cout << std::endl;
+  std::cout << "Reading PNG file: " << iprogress << std::endl;
 
   Dimension::PNG_Canvas iocanvas(iprogress, ofstr);
 
   Dimension::Progress oprogress = iocanvas.write_async();
-
-  double oprog = 0.0;
-  while ((oprog += 1.0/10.0) <= 1.0) {
-    oprogress.wait(oprog);
-    std::cout << "." << std::flush;
-  }
-  std::cout << std::endl;
+  std::cout << "Writing PNG file: " << oprogress << std::endl;
 
   return 0;
 }

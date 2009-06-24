@@ -18,14 +18,8 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "tests.h"
-#include <stdlib.h>
+#include "../libdimensionxx/dimensionxx.hpp"
+#include <iostream>
 
-int
-main()
-{
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
-  dmnsn_error(DMNSN_SEVERITY_LOW, "This error is expected.");
-
-  return EXIT_SUCCESS;
-}
+std::ostream& operator<<(std::ostream& ostr,
+                         const Dimension::Progress& progress);

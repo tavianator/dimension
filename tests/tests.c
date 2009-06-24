@@ -19,13 +19,21 @@
  *************************************************************************/
 
 #include "tests.h"
-#include <stdlib.h>
 
-int
-main()
+void
+progressbar(const char *str, const dmnsn_progress *progress)
 {
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
-  dmnsn_error(DMNSN_SEVERITY_LOW, "This error is expected.");
+  const unsigned int increments = 32;
+  unsigned int i;
 
-  return EXIT_SUCCESS;
+  printf("%s|", str);
+  fflush(stdout);
+  for (i = 0; i < increments; ++i) {
+    dmnsn_wait_progress(progress, ((double)(i + 1))/increments);
+
+    printf("=");
+    fflush(stdout);
+  }
+  printf("|\n");
+  fflush(stdout);
 }

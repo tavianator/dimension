@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "../libdimension/dimension.h"
+#include "tests.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -27,7 +27,6 @@ int
 main() {
   dmnsn_canvas *canvas;
   dmnsn_progress *progress;
-  double prog;
   dmnsn_color color;
   dmnsn_CIE_xyY xyY;
   dmnsn_CIE_Lab Lab;
@@ -118,14 +117,7 @@ main() {
     return EXIT_FAILURE;
   }
 
-  /* Give an ellipsis progress indication */
-  prog = 0.0;
-  while ((prog += 1.0/10.0) < 1.0) {
-    dmnsn_wait_progress(progress, prog);
-    printf(".");
-    fflush(stdout);
-  }
-  printf("\n");
+  progressbar("Writing PNG file: ", progress);
 
   if (dmnsn_finish_progress(progress) != 0) {
     fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
@@ -150,14 +142,7 @@ main() {
     return EXIT_FAILURE;
   }
 
-  /* Give an ellipsis progress indication */
-  prog = 0.0;
-  while ((prog += 1.0/10.0) < 1.0) {
-    dmnsn_wait_progress(progress, prog);
-    printf(".");
-    fflush(stdout);
-  }
-  printf("\n");
+  progressbar("Reading PNG file: ", progress);
 
   if (dmnsn_finish_progress(progress) != 0) {
     fprintf(stderr, "--- Reading canvas from PNG failed! ---\n");
@@ -181,14 +166,7 @@ main() {
     return EXIT_FAILURE;
   }
 
-  /* Give an ellipsis progress indication */
-  prog = 0.0;
-  while ((prog += 1.0/10.0) < 1.0) {
-    dmnsn_wait_progress(progress, prog);
-    printf(".");
-    fflush(stdout);
-  }
-  printf("\n");
+  progressbar("Writing PNG file: ", progress);
 
   if (dmnsn_finish_progress(progress) != 0) {
     fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");

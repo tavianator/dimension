@@ -17,23 +17,30 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-check_PROGRAMS = warning error png pngxx raytrace
-TESTS          = $(check_PROGRAMS)
-XFAIL_TESTS    = error
+check_LTLIBRARIES = libdimension-tests.la libdimensionxx-tests.la
+check_PROGRAMS    = warning error png pngxx raytrace
+TESTS             = $(check_PROGRAMS)
+XFAIL_TESTS       = error
 
 INCLUDES = -I../libdimension -I../libdimensionxx
 
-warning_SOURCES = warning.c
-warning_LDADD   = ../libdimension/libdimension.la
+libdimension_tests_la_SOURCES = tests.h tests.c
+libdimension_tests_la_LIBADD  = ../libdimension/libdimension.la
 
-error_SOURCES = error.c
-error_LDADD   = ../libdimension/libdimension.la
+libdimensionxx_tests_la_SOURCES = testsxx.hpp testsxx.cpp
+libdimensionxx_tests_la_LIBADD  = ../libdimensionxx/libdimensionxx.la
 
-png_SOURCES = png.c
-png_LDADD   = ../libdimension/libdimension.la
+warning_SOURCES  = warning.c
+warning_LDADD    = ./libdimension-tests.la
 
-pngxx_SOURCES = pngxx.cpp
-pngxx_LDADD   = ../libdimensionxx/libdimensionxx.la
+error_SOURCES    = error.c
+error_LDADD      = ./libdimension-tests.la
+
+png_SOURCES      = png.c
+png_LDADD        = ./libdimension-tests.la
+
+pngxx_SOURCES    = pngxx.cpp
+pngxx_LDADD      = ./libdimensionxx-tests.la
 
 raytrace_SOURCES = raytrace.c
-raytrace_LDADD   = ../libdimension/libdimension.la
+raytrace_LDADD   = ./libdimension-tests.la

@@ -18,14 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "tests.h"
-#include <stdlib.h>
+#include "../libdimension/dimension.h"
+#include <stdio.h>
 
-int
-main()
-{
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
-  dmnsn_error(DMNSN_SEVERITY_LOW, "This error is expected.");
-
-  return EXIT_SUCCESS;
-}
+void progressbar(const char *str, const dmnsn_progress *progress);

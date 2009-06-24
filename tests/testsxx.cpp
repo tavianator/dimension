@@ -18,14 +18,17 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "tests.h"
-#include <stdlib.h>
+#include "testsxx.hpp"
 
-int
-main()
+std::ostream&
+operator<<(std::ostream& ostr, const Dimension::Progress& progress)
 {
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
-  dmnsn_error(DMNSN_SEVERITY_LOW, "This error is expected.");
+  const unsigned int increments = 32;
 
-  return EXIT_SUCCESS;
+  ostr << "|" << std::flush;
+  for (unsigned int i = 0; i < increments; ++i) {
+    progress.wait(static_cast<double>(i + 1)/increments);
+    ostr << "=" << std::flush;
+  }
+  return ostr << "|" << std::flush;
 }
