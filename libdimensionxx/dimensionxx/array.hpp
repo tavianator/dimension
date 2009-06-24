@@ -22,11 +22,46 @@
 #define DIMENSIONXX_ARRAY_HPP
 
 #include <tr1/memory>
+#include <cstdlib> // For size_t
 
 // dmnsn_array* wrapper.
 
 namespace Dimension
 {
+  // RAII scoped read-lock
+  class Array_Read_Lock
+  {
+  public:
+    explicit Array_Read_Lock(const dmnsn_array* array)
+      : m_array(new const dmnsn_array*(array)) { dmnsn_array_rdlock(*m_array); }
+    // Array_Read_Lock(const Array_Read_Lock& lock);
+    ~Array_Read_Lock()
+    { if (m_array.unique()) { dmnsn_array_unlock(*m_array); } }
+
+  private:
+    // Copy assignment prohibited
+    Array_Read_Lock& operator=(const Array_Read_Lock&);
+
+    std::tr1::shared_ptr<const dmnsn_array*> m_array;
+  };
+
+  // RAII scoped write-lock
+  class Array_Write_Lock
+  {
+  public:
+    explicit Array_Write_Lock(dmnsn_array* array)
+      : m_array(new dmnsn_array*(array)) { dmnsn_array_wrlock(*m_array); }
+    // Array_Write_Lock(const Array_Write_Lock& lock);
+    ~Array_Write_Lock()
+    { if (m_array.unique()) { dmnsn_array_unlock(*m_array); } }
+
+  private:
+    // Copy assignment prohibited
+    Array_Write_Lock& operator=(const Array_Write_Lock&);
+
+    std::tr1::shared_ptr<dmnsn_array*> m_array;
+  };
+
   // Array template class, wraps a dmnsn_array*.  Copying is possible, but
   // copies refer to the same object, which is reference counted.  T must be
   // a POD type.
@@ -37,13 +72,34 @@ namespace Dimension
     Array();
     explicit Array(dmnsn_array* array);
     // Array(const Array& a);
-    ~Array();
+    ~Array()
+    { if (m_array && m_array.unique()) { dmnsn_delete_array(dmnsn()); } }
 
     // Array& operator=(const Array& a);
 
+    inline T at(std::size_t i) const;
+    void set(std::size_t i, T object) { dmnsn_array_set(dmnsn(), i, &object); }
+
+    std::size_t size() const { return dmnsn_array_size(dmnsn()); }
+    void resize(std::size_t size) { dmnsn_array_resize(dmnsn(), size); }
+
+    // For manual locking
+
+    Array_Read_Lock read_lock() const { return Array_Read_Lock(dmnsn()); }
+    Array_Write_Lock write_lock() { return Array_Write_Lock(dmnsn()); }
+
+    T& operator[](std::size_t i)
+    { return *reinterpret_cast<T*>(dmnsn_array_at(dmnsn(), i)); }
+    const T& operator[](std::size_t i) const
+    { return *reinterpret_cast<const T*>(dmnsn_array_at(dmnsn(), i)); }
+    std::size_t size_unlocked() const
+    { return dmnsn_array_size_unlocked(dmnsn()); }
+    void resize_unlocked(std::size_t size)
+    { dmnsn_array_resize_unlocked(dmnsn(), size); }
+
     // Access the wrapped C object.
-    dmnsn_array*       dmnsn()       { return *m_array; }
-    const dmnsn_array* dmnsn() const { return *m_array; }
+    dmnsn_array*       dmnsn();
+    const dmnsn_array* dmnsn() const;
 
     // Release ownership of the dmnsn_array*, needed for returning a
     // dmnsn_array* from a function.
@@ -84,24 +140,48 @@ namespace Dimension
   }
 
   template <typename T>
-  Array<T>::~Array()
+  inline T
+  Array<T>::at(std::size_t i) const
   {
-    if (m_array.unique()) {
-      dmnsn_delete_array(*m_array);
+    T ret;
+    dmnsn_array_get(dmnsn(), i, &ret);
+    return ret;
+  }
+
+  template <typename T>
+  dmnsn_array*
+  Array<T>::dmnsn()
+  {
+    if (!m_array) {
+      throw Dimension_Error("Attempting to access released array.");
     }
+
+    return *m_array;
+  }
+
+  template <typename T>
+  const dmnsn_array*
+  Array<T>::dmnsn() const
+  {
+    if (!m_array) {
+      throw Dimension_Error("Attempting to access released array.");
+    }
+
+    return *m_array;
   }
 
   template <typename T>
   dmnsn_array*
   Array<T>::release()
   {
+    dmnsn_array* array = dmnsn();
+
     if (!m_array.unique()) {
       throw Dimension_Error("Attempting to release non-unique array.");
+    } else {
+      m_array.reset();
+      return array;
     }
-
-    dmnsn_array* array = *m_array;
-    m_array.reset();
-    return array;
   }
 }
 
