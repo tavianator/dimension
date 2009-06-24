@@ -25,7 +25,6 @@
 
 #include <istream>
 #include <ostream>
-#include <memory>
 
 namespace Dimension
 {
