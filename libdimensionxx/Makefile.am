@@ -17,13 +17,27 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-nobase_include_HEADERS = dimensionxx.hpp dimensionxx/array.hpp dimensionxx/canvas.hpp dimensionxx/color.hpp dimensionxx/cookie.hpp dimensionxx/geometry.hpp dimensionxx/object.hpp dimensionxx/png.hpp dimensionxx/progress.hpp
+nobase_include_HEADERS = dimensionxx.hpp                                       \
+                         dimensionxx/array.hpp                                 \
+                         dimensionxx/canvas.hpp                                \
+                         dimensionxx/color.hpp                                 \
+                         dimensionxx/cookie.hpp                                \
+                         dimensionxx/geometry.hpp                              \
+                         dimensionxx/object.hpp                                \
+                         dimensionxx/png.hpp                                   \
+                         dimensionxx/progress.hpp
 
 INCLUDES = -I../libdimension
 
 lib_LTLIBRARIES = libdimensionxx.la
 
-libdimensionxx_la_SOURCES = $(nobase_include_HEADERS) canvas.cpp color.cpp error.cpp object.cpp png.cpp progress.cpp
+libdimensionxx_la_SOURCES = $(nobase_include_HEADERS)                          \
+                            canvas.cpp                                         \
+                            color.cpp                                          \
+                            error.cpp                                          \
+                            object.cpp                                         \
+                            png.cpp                                            \
+                            progress.cpp
 
 if FOPENCOOKIE
   libdimensionxx_la_SOURCES += cookie-fopencookie.cpp

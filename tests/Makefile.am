@@ -17,17 +17,24 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-check_LTLIBRARIES = libdimension-tests.la libdimensionxx-tests.la
-check_PROGRAMS    = warning error png pngxx raytrace
+check_LTLIBRARIES = libdimension-tests.la                                      \
+                    libdimensionxx-tests.la
+check_PROGRAMS    = warning                                                    \
+                    error                                                      \
+                    png                                                        \
+                    pngxx                                                      \
+                    raytrace
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error
 
 INCLUDES = -I../libdimension -I../libdimensionxx
 
-libdimension_tests_la_SOURCES = tests.h tests.c
+libdimension_tests_la_SOURCES = tests.h                                        \
+                                tests.c
 libdimension_tests_la_LIBADD  = ../libdimension/libdimension.la
 
-libdimensionxx_tests_la_SOURCES = testsxx.hpp testsxx.cpp
+libdimensionxx_tests_la_SOURCES = testsxx.hpp                                  \
+                                  testsxx.cpp
 libdimensionxx_tests_la_LIBADD  = ../libdimensionxx/libdimensionxx.la
 
 warning_SOURCES  = warning.c
