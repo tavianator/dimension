@@ -21,7 +21,6 @@
 #ifndef DIMENSION_PNG_H
 #define DIMENSION_PNG_H
 
-#include <dimension.h>
 #include <stdio.h>
 
 /* Write canvas to file in PNG format.  Returns 0 on success, nonzero on
