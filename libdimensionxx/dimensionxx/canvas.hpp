@@ -42,7 +42,7 @@ namespace Dimension
     unsigned int width() const;
     unsigned int height() const;
 
-    // Get and set a pixel, thread-safely.
+    // Get and set a pixel
     Color pixel(unsigned int x, unsigned int y) const;
     void pixel(unsigned int x, unsigned int y, const Color& c);
 

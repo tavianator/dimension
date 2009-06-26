@@ -46,14 +46,14 @@ namespace Dimension
     return m_canvas->y;
   }
 
-  // Get a particular pixel, thread-safely, with dmnsn_get_pixel().
+  // Get a particular pixel
   Color
   Canvas::pixel(unsigned int x, unsigned int y) const
   {
     return Color(dmnsn_get_pixel(m_canvas, x, y));
   }
 
-  // Set a particular pixel, thread-safely, with dmnsn_set_pixel().
+  // Set a particular pixel
   void
   Canvas::pixel(unsigned int x, unsigned int y, const Color& c)
   {

@@ -25,8 +25,6 @@
 #ifndef DIMENSION_CANVAS_H
 #define DIMENSION_CANVAS_H
 
-#include <pthread.h>
-
 typedef struct {
   unsigned int x, y;
 
@@ -35,26 +33,18 @@ typedef struct {
    * at (a,b) is accessible as pixels[b*x + a].
    */
   dmnsn_color *pixels;
-
-  /* Read-write locks for each pixel */
-  pthread_rwlock_t *rwlocks;
 } dmnsn_canvas;
 
 /* Allocate and free a canvas */
 dmnsn_canvas *dmnsn_new_canvas(unsigned int x, unsigned int y);
 void dmnsn_delete_canvas(dmnsn_canvas *canvas);
 
-/* These handle the rwlocks correctly */
+/* Pixel accessors */
 dmnsn_color dmnsn_get_pixel(const dmnsn_canvas *canvas,
                             unsigned int x, unsigned int y);
 void dmnsn_set_pixel(dmnsn_canvas *canvas,
                      unsigned int x, unsigned int y, dmnsn_color color);
-
-/* Manual locking */
-void dmnsn_rdlock_pixel(const dmnsn_canvas *canvas,
-                        unsigned int x, unsigned int y);
-void dmnsn_wrlock_pixel(dmnsn_canvas *canvas, unsigned int x, unsigned int y);
-void dmnsn_unlock_pixel(const dmnsn_canvas *canvas,
-                        unsigned int x, unsigned int y);
+dmnsn_color *dmnsn_pixel_at(dmnsn_canvas *canvas,
+                            unsigned int x, unsigned int y);
 
 #endif /* DIMENSION_CANVAS_H */
