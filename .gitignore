@@ -14,7 +14,23 @@ Makefile
 Makefile.in
 
 # Documentation files created by make
-/doc/dimension.info
+/doc/*.aux
+/doc/*.cp
+/doc/*.cps
+/doc/*.dvi
+/doc/*.fn
+/doc/*.fns
+/doc/*.html/
+/doc/*.info
+/doc/*.ky
+/doc/*.log
+/doc/*.pdf
+/doc/*.pg
+/doc/*.ps
+/doc/*.toc
+/doc/*.tp
+/doc/*.tps
+/doc/*.vr
 /doc/texinfo.tex
 
 # Files created by `make check'

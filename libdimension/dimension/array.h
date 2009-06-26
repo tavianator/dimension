@@ -37,7 +37,8 @@ typedef struct {
   pthread_rwlock_t *rwlock;
 } dmnsn_array;
 
-/* Array allocation never returns NULL - if dmnsn_new_array, it succeeded */
+/* Array allocation never returns NULL - if dmnsn_new_array returns, it
+   succeeded */
 dmnsn_array *dmnsn_new_array(size_t obj_size);
 void dmnsn_delete_array(dmnsn_array *array);
 

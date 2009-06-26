@@ -1,0 +1,243 @@
+\input texinfo       @c                    -*- Texinfo -*-
+@c %**start of header
+@setfilename libdimension.info
+@settitle The Dimension 3-D Rendering Library
+@c %**end of header
+
+@c Wrap code examples at 77 chars, please
+
+@copying
+Copyright @copyright{} 2009 Tavian Barnes
+@end copying
+
+@titlepage
+@title The Dimension Library
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top The Dimension Library
+
+@insertcopying
+@end ifnottex
+
+@menu
+* Introduction:: An introduction to the Dimension library
+* Error Handling:: How libdimension handles warnings and errors
+* Arrays:: A generic interface for arrays of arbitrary objects
+* Asynchronicity:: An interface for controlling background tasks
+@ignore
+* Geometry:: Geometric types like vectors, transformation matricies, and lines
+* Color:: Correct color handling
+* Canvases:: Where the results of rendering are stored
+* Objects:: Physical objects in a scene
+* Cameras:: How a 3-D image is seen in 2-D
+* Scenes:: Scene objects which hold everything needed to render an image
+* Rendering:: Methods of rendering scenes
+@end ignore
+* Type Index::
+* Function Index::
+* Concept Index::
+@end menu
+
+
+@node Introduction
+@chapter Introduction
+
+@cindex introduction
+@cindex overview
+
+The Dimension Library is a C library for rendering photo-realistic 3-D scenes.  It is designed to be the workhorse for the future ``dimension'' program.  The Dimension Library will in the future be a full-fledged high-performance raytracing library, but right now is in very early stages and heavy development.
+
+
+@node Error Handling
+@chapter Error Handling
+
+@tindex dmnsn_severity
+
+@findex dmnsn_error
+@findex dmnsn_get_resilience
+@findex dmnsn_set_resilience
+
+@cindex errors
+@cindex warnings
+
+@cartouche
+@example
+typedef enum @{
+  DMNSN_SEVERITY_LOW,    /* Only die on low resilience */
+  DMNSN_SEVERITY_MEDIUM, /* Die on low or medium resilience */
+  DMNSN_SEVERITY_HIGH    /* Always die */
+@} dmnsn_severity;
+
+#define dmnsn_error(severity, str) ...
+
+dmnsn_severity dmnsn_get_resilience();
+void dmnsn_set_resilience(dmnsn_severity resilience);
+@end example
+@end cartouche
+
+When it makes sense, libdimension reports errors by returning error codes from its functions.  However, when errors are not severe, when said function should not fail, or when the error is very serious, libdimension reports errors using the macro @code{dmnsn_error()}.  @code{dmnsn_error()} takes two parameters: the severity of the error, and a string description of the error.  The macro will conveniently report the description, as well as the function name and code line where the error occured, to standard error.  The severity can be either @code{DMNSN_SEVERITY_LOW}, @code{DMNSN_SEVERITY_MEDIUM}, or @code{DMNSN_SEVERITY_HIGH}.
+
+The Dimension Library has also has a user-settable resilience.  The resilience controls the minimum severity at which the library considers an error to be fatal, and calls @code{exit(EXIT_FAILURE)}.  As such, errors of severity @code{DMNSN_SEVERITY_HIGH} are always fatal.  libdimension's resilience defaults to @code{DMNSN_SEVERITY_MEDIUM}, but can be inspected or changed thread-safely by @code{dmnsn_get_resilience()} or @code{dmnsn_set_resilience()}, respectively.  Warnings (non-fatal errors) are formatted like this:
+
+@example
+Dimension WARNING: <function>, line <line>: <description>
+@end example
+
+@noindent while errors are formatted like this:
+
+@example
+Dimension ERROR: <function>, line <line>: <description>
+@end example
+
+
+@node Arrays
+@chapter Arrays
+
+@tindex dmnsn_array*
+
+@findex dmnsn_new_array
+@findex dmnsn_delete_array
+@findex dmnsn_array_push
+@findex dmnsn_array_pop
+@findex dmnsn_array_get
+@findex dmnsn_array_set
+@findex dmnsn_array_size
+@findex dmnsn_array_resize
+@findex dmnsn_array_at
+@findex dmnsn_array_size_unlocked
+@findex dmnsn_array_resize_unlocked
+@findex dmnsn_array_rdlock
+@findex dmnsn_array_wrlock
+@findex dmnsn_array_unlock
+
+@cindex array
+
+@cartouche
+@example
+typedef struct @{
+  ...
+@} dmnsn_array;
+
+/* Array allocation */
+dmnsn_array *dmnsn_new_array(size_t obj_size);
+void dmnsn_delete_array(dmnsn_array *array);
+
+/* Thread-safe atomic array access */
+
+void dmnsn_array_push(dmnsn_array *array, const void *obj);
+void dmnsn_array_pop(dmnsn_array *array, void *obj);
+void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
+void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
+
+size_t dmnsn_array_size(const dmnsn_array *array);
+void   dmnsn_array_resize(dmnsn_array *array, size_t length);
+
+/* Non-atomic operations for manual locking */
+void *dmnsn_array_at(dmnsn_array *array, size_t i);
+size_t dmnsn_array_size_unlocked(const dmnsn_array *array);
+void dmnsn_array_resize_unlocked(dmnsn_array *array, size_t length);
+
+/* Manual locking */
+void dmnsn_array_rdlock(const dmnsn_array *array);
+void dmnsn_array_wrlock(dmnsn_array *array);
+void dmnsn_array_unlock(const dmnsn_array *array);
+@end example
+@end cartouche
+
+The Dimension Library often has cause to work with adjustable-size arrays.  It provides an interface for dynamically-allocated arrays of arbitrary objects.  Arrays allocated with the @code{dmnsn_new_array()} function, and freed with the @code{dmnsn_delete_array()} function, a pattern common in libdimension.  @code{dmnsn_new_array()} takes the size of the new array's elements as its parameter.  Unlike other allocation functions throughout libdimension, @code{dmnsn_new_array()} cannot fail if it returns (other allocators may return NULL).  In fact, all array operations are guaranteed to either succeed or report a fatal error, which may happen if memory allocation fails.
+
+Arrays in libdimension are thread-safe; every individual operation is atomic.  libdimension provides push, pop, get, and set operations for arrays, taking a pointer to an object to read or write as their last parameter, the array index when applicable as the second-last parameter, and the @code{dmnsn_array*} as the first parameter.  The array's length may be queried with @code{dmnsn_array_size()}, or set with @code{dmnsn_array_resize()}.
+
+When sets of array operations must be atomic, one may use the manual locking array interface.  Implemented as a read-write lock, applications should call @code{dmnsn_array_rdlock()} to set a read-lock, @code{dmnsn_array_wrlock()} to set a write-lock, and @code{dmnsn_array_unlock()} to unlock the array.  While the array is locked, one may call @code{dmnsn_array_at()} to get a pointer to the @code{i}'th element of the array, or the @code{*_unlocked} suffixed versions of the @code{..._size()} and @code{..._resize()} functions to get or set the size, respectively.
+
+
+@node Asynchronicity
+@chapter Asynchronicity
+
+@tindex dmnsn_progress*
+
+@findex dmnsn_new_progress
+@findex dmnsn_delete_progress
+@findex dmnsn_finish_progress
+@findex dmnsn_get_progress
+@findex dmnsn_wait_progress
+@findex dmnsn_new_progress_element
+@findex dmnsn_increment_progress
+@findex dmnsn_done_progress
+
+@cindex asynchronous
+@cindex background
+@cindex progress indicator
+
+@cartouche
+@example
+typedef struct @{
+  ...
+@} dmnsn_progress;
+
+/* Progress allocation */
+dmnsn_progress *dmnsn_new_progress();
+void dmnsn_delete_progress(dmnsn_progress *progress);
+
+/* Ensures completion of the worker thread */
+int dmnsn_finish_progress(dmnsn_progress *progress);
+
+/* Routines for user */
+double dmnsn_get_progress(const dmnsn_progress *progress);
+void dmnsn_wait_progress(const dmnsn_progress *progress, double prog);
+
+/* Routines for worker thread */
+void dmnsn_new_progress_element(dmnsn_progress *progress,
+                                unsigned int total);
+void dmnsn_increment_progress(dmnsn_progress *progress);
+void dmnsn_done_progress(dmnsn_progress *progress);
+@end example
+@end cartouche
+
+As The Dimension Library is a raytracing engine, some routines are likely to take a long time.  These routines may be run in a background thread, and controlled with a common interface.  Routines supporting this interface end in @code{_async}, such as @code{dmnsn_raytrace_scene_async()}, and return a dmnsn_progress* object, so named because it allows an application to be query the progress of the background task.  By necessity, all @code{dmnsn_progress*} operations are atomic and thread-safe.
+
+Progress objects are allocated and deallocated in the standard libdimension way, but also support a unique @code{dmnsn_finish_progress()} function.  This function waits for the background thread to complete, and then destroys the @code{dmnsn_progress*} object.  Never use the result of a background task before calling @code{dmnsn_finish_progress()}, even if the progress seems to be at 100%!  @code{dmnsn_delete_progress()} should only be called from within failed @code{*_async()} functions, to deallocate a progress object before it is associated with a running thread.
+
+Users of these asynchronous tasks will mainly be interested in the functions @code{dmnsn_get_progress()} and @code{dmnsn_wait_progress()}.  @code{dmnsn_get_progress()} returns the progress of the background task, a value between 0.0 and 1.0.  @code{dmnsn_wait_progress()} simply waits for @code{dmnsn_get_progress()} to be >= @code{prog}, but in a much better way than spinlocking (internally, a condition variable is used).
+
+Background tasks themselves will be interested in three more functions.  To indicate progress to the user, progress objects store one "element" for each level of loop nesting a task would like to report the progress of.  Only the innermost loop need increment the progress counter, as in this example:
+
+@example
+dmnsn_new_progress_element(progress, i_max);
+for (i = 0; i < i_max; ++i) @{
+  dmnsn_new_progress_element(progress, j_max);
+  for (j = 0; j < j_max; ++j) @{
+    /* Do stuff */
+    dmnsn_increment_progress(progress);
+  @}
+@}
+@end example
+
+For robustness, tasks should call @code{dmnsn_done_progress()} when they finish, even if they fail.  This function immediately sets the progress to 100%, which wakes up all waiters.  Otherwise, a user's application may hang calling @code{dmnsn_wait_progress()}.
+
+
+@node Type Index
+@unnumbered Type Index
+
+@printindex tp
+
+
+@node Function Index
+@unnumbered Function Index
+
+@printindex fn
+
+
+@node Concept Index
+@unnumbered Concept Index
+
+@printindex cp
+
+@bye
