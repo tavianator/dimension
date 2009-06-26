@@ -106,9 +106,15 @@ namespace Dimension
     FILE_Cookie* cookie = new FILE_Cookie(*m_ostr);
     persister.persist(cookie);
 
+    // Start the asynchronous task
+    dmnsn_progress *progress
+      = dmnsn_png_write_canvas_async(canvas, cookie->file());
+    if (!progress) {
+      throw Dimension_Error("Starting background PNG write failed.");
+    }
+
     // Return the Progress object
-    return Progress(dmnsn_png_write_canvas_async(m_canvas, cookie->file()),
-                    persister);
+    return Progress(progresss, persister);
   }
 
   // Read a PNG file in the background
@@ -127,15 +133,22 @@ namespace Dimension
     FILE_Cookie* cookie = new FILE_Cookie(istr);
     persister.persist(cookie);
 
+    // Start the asynchronous task
+    dmnsn_progress *progress
+      = dmnsn_png_read_canvas_async(canvas, cookie->file());
+    if (!progress) {
+      throw Dimension_Error("Starting background PNG read failed.");
+    }
+
     // Return the Progress object
-    return Progress(dmnsn_png_read_canvas_async(canvas, cookie->file()),
-                    persister);
+    return Progress(progresss, persister);
   }
 
   // Construct an input PNG_Canvas from a background task
   PNG_Canvas::PNG_Canvas(Progress& progress)
     : Canvas(), m_istr(0), m_ostr(0), m_written(false)
   {
+    // Will throw if progress is not from a PNG_Canvas::read_async call
     dmnsn_canvas** canvas
       = progress.persister().first<dmnsn_canvas*>().persisted();
 
@@ -153,6 +166,7 @@ namespace Dimension
   PNG_Canvas::PNG_Canvas(Progress& progress, std::ostream& ostr)
     : Canvas(), m_istr(0), m_ostr(&ostr), m_written(false)
   {
+    // Will throw if progress is not from a PNG_Canvas::read_async call
     dmnsn_canvas** canvas
       = progress.persister().first<dmnsn_canvas*>().persisted();
 
