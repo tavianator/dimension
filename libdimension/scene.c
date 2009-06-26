@@ -21,6 +21,7 @@
 #include "dimension.h"
 #include <stdlib.h> /* For malloc */
 
+/* Allocate an empty scene */
 dmnsn_scene *
 dmnsn_new_scene()
 {
@@ -30,6 +31,7 @@ dmnsn_new_scene()
   return scene;
 }
 
+/* Free a scene */
 void
 dmnsn_delete_scene(dmnsn_scene *scene)
 {

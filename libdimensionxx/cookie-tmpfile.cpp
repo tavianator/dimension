@@ -27,74 +27,85 @@ namespace Dimension
 {
   namespace
   {
+    // Write an input stream completely to a FILE*; this works poorly for
+    // console input, which may not have an EOF in the near future
     void
     write_cookie(FILE* file, std::istream& istr)
     {
+      const unsigned int bs = 8192; // Bytes to read at once
       unsigned int count, pos;
-      const unsigned int bs = 8192;
       char buffer[bs];
 
-      pos = istr.tellg();
-      istr.seekg(0);
+      pos = istr.tellg(); // Get the stream's current position
+      istr.seekg(0);      // Seek to the beginning
       while (true) {
+        // Read the whole stream into `file', `bs' bytes at a time
         istr.read(buffer, bs);
         count = istr.gcount();
 
         if (count != bs) {
           if (istr.eof()) {
+            // We reached EOF; write the last count bytes
             fwrite(buffer, 1, count, file);
             break;
           } else {
+            // Some other error
             throw Dimension_Error("Error reading from input stream.");
           }
         }
 
+        // Write the next `bs' bytes
         fwrite(buffer, 1, bs, file);
       }
-      fseek(file, pos, SEEK_SET);
+      fseek(file, pos, SEEK_SET); // Seek to the stream's initial position
     }
 
+    // Read a C++ stream completely from a file
     void
     read_cookie(std::ostream& ostr, FILE* file)
     {
+      const unsigned int bs = 8192; // Bytes to read at a time
       unsigned int count, pos;
-      const unsigned int bs = 8192;
       char buffer[bs];
 
-      pos = ftell(file);
-      rewind(file);
+      pos = ftell(file); // Get the initial position
+      rewind(file);      // Seek to the beginning
       while (true) {
         count = fread(buffer, 1, bs, file);
         if (count != bs) {
           if (feof(file)) {
+            // Reached EOF, write the last `count' bytes
             ostr.write(buffer, count);
             break;
           } else {
+            // Some other error
             throw Dimension_Error("Error reading from temporary file.");
           }
         }
 
+        // Write the next `bs' bytes
         ostr.write(buffer, bs);
       }
-      ostr.seekp(pos);
+      ostr.seekp(pos); // Seek to the initial position of `file'
     }
   }
 
   // Make an input FILE_Cookie
   FILE_Cookie::FILE_Cookie(std::istream& istr)
-    : m_file(tmpfile()), m_istr(&istr), m_ostr(0)
+    : m_file(std::tmpfile()), m_istr(&istr), m_ostr(0)
   {
     if (!m_file) {
       throw Dimension_Error("Error opening temporary file for C++/C I/O"
                             " interface.");
     }
 
+    // Write the input stream to the temporary file
     write_cookie(m_file, *m_istr);
   }
 
   // Make an output FILE_Cookie
   FILE_Cookie::FILE_Cookie(std::ostream& ostr)
-    : m_file(tmpfile()), m_istr(0), m_ostr(&ostr)
+    : m_file(std::tmpfile()), m_istr(0), m_ostr(&ostr)
   {
     if (!m_file) {
       throw Dimension_Error("Error opening temporary file for C++/C I/O"
@@ -104,13 +115,14 @@ namespace Dimension
 
   // Make an I/O FILE_Cookie
   FILE_Cookie::FILE_Cookie(std::iostream& iostr)
-    : m_file(tmpfile()), m_istr(&iostr), m_ostr(&iostr)
+    : m_file(std::tmpfile()), m_istr(&iostr), m_ostr(&iostr)
   {
     if (!m_file) {
       throw Dimension_Error("Error opening temporary file for C++/C I/O"
                             " interface.");
     }
 
+    // Write the input stream to the temporary file
     write_cookie(m_file, *m_istr);
   }
 
@@ -123,14 +135,55 @@ namespace Dimension
     std::fclose(m_file);
   }
 
+  // Get the FILE*
   FILE*       FILE_Cookie::file()       { return m_file; }
   const FILE* FILE_Cookie::file() const { return m_file; }
 
   bool FILE_Cookie::is_input()  const { return m_istr; }
   bool FILE_Cookie::is_output() const { return m_ostr; }
 
-  std::istream&       FILE_Cookie::istr()       { return *m_istr; }
-  const std::istream& FILE_Cookie::istr() const { return *m_istr; }
-  std::ostream&       FILE_Cookie::ostr()       { return *m_ostr; }
-  const std::ostream& FILE_Cookie::ostr() const { return *m_ostr; }
+  // Get the C++ streams
+
+  std::istream&
+  FILE_Cookie::istr()
+  {
+    if (is_input()) {
+      return *m_istr;
+    } else {
+      throw Dimension_Error("Attempted to get input stream from non-input"
+                            " FILE_Cookie.");
+    }
+  }
+
+  const std::istream&
+  FILE_Cookie::istr() const
+  {
+    if (is_input()) {
+      return *m_istr;
+    } else {
+      throw Dimension_Error("Attempted to get input stream from non-input"
+                            " FILE_Cookie.");
+    }
+  }
+
+  std::ostream&
+  FILE_Cookie::ostr()
+  {
+    if (is_output()) {
+      return *m_ostr;
+    } else {
+      throw Dimension_Error("Attempted to get output stream from non-input"
+                            " FILE_Cookie.");
+    }
+  }
+
+  const std::ostream& FILE_Cookie::ostr() const
+  {
+    if (is_output()) {
+      return *m_ostr;
+    } else {
+      throw Dimension_Error("Attempted to get output stream from non-input"
+                            " FILE_Cookie.");
+    }
+  }
 }

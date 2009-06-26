@@ -18,6 +18,10 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/*
+ * Render a scene by raytracing
+ */
+
 #ifndef DIMENSION_RAYTRACE_H
 #define DIMENSION_RAYTRACE_H
 

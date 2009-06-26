@@ -18,6 +18,10 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/*
+ * Support for exporting/importing canvases to/from PNG files
+ */
+
 #ifndef DIMENSION_PNG_H
 #define DIMENSION_PNG_H
 

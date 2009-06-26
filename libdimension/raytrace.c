@@ -21,13 +21,17 @@
 #include "dimension.h"
 #include <unistd.h> /* For sysconf */
 
+/* Payload type for passing arguments to worker thread */
+
 typedef struct {
   dmnsn_progress *progress;
   dmnsn_scene *scene;
 } dmnsn_raytrace_payload;
 
+/* Thread callback */
 static void *dmnsn_raytrace_scene_thread(void *ptr);
 
+/* Raytrace a scene */
 void
 dmnsn_raytrace_scene(dmnsn_scene *scene)
 {
@@ -35,6 +39,7 @@ dmnsn_raytrace_scene(dmnsn_scene *scene)
   dmnsn_finish_progress(progress);
 }
 
+/* Raytrace a scene in the background */
 dmnsn_progress *
 dmnsn_raytrace_scene_async(dmnsn_scene *scene)
 {
@@ -54,8 +59,7 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
     if (pthread_create(&progress->thread, NULL, &dmnsn_raytrace_scene_thread,
                        payload)
         != 0) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Creating raytracing worker thread failed.");
+      free(payload);
       dmnsn_delete_progress(progress);
       return NULL;
     }
@@ -64,9 +68,11 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
   return progress;
 }
 
+/* Actual raytracing implementation */
 static void dmnsn_raytrace_scene_impl(dmnsn_progress *progress,
                                       dmnsn_scene *scene);
 
+/* Thread callback */
 static void *
 dmnsn_raytrace_scene_thread(void *ptr)
 {
@@ -76,7 +82,8 @@ dmnsn_raytrace_scene_thread(void *ptr)
     dmnsn_raytrace_scene_impl(payload->progress, payload->scene);
     *retval = 0;
   }
-  dmnsn_progress_done(payload->progress);
+  dmnsn_done_progress(payload->progress);
+  free(payload);
   return retval;
 }
 
@@ -116,6 +123,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene)
 
         /* Test for intersections with objects */
         intersections = (*object->intersections_fn)(object, ray_trans);
+        /* Find the closest intersection */
         for (l = 0; l < dmnsn_array_size(intersections); ++l) {
           dmnsn_array_get(intersections, l, &t_temp);
           if (t_temp < t || t == 0.0) t = t_temp;
@@ -123,6 +131,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene)
         dmnsn_delete_array(intersections);
       }
 
+      /* Shade according to distance from camera */
       if (t != 0.0) {
         sRGB.R = 1.0 - (t - 2.25)/2.25;
         sRGB.G = sRGB.R;

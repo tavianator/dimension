@@ -21,4 +21,5 @@
 #include "../libdimension/dimension.h"
 #include <stdio.h>
 
+/* Print a progress bar of the progress of `progress' */
 void progressbar(const char *str, const dmnsn_progress *progress);

@@ -18,12 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_COLOR_H
-#define DIMENSION_COLOR_H
-
 /*
  * Types to represent color.
  */
+
+#ifndef DIMENSION_COLOR_H
+#define DIMENSION_COLOR_H
 
 /* Internally, we use CIE 1931 XYZ color. */
 typedef struct {

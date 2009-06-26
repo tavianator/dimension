@@ -32,6 +32,8 @@ dmnsn_new_progress()
     progress->elements = dmnsn_new_array(sizeof(dmnsn_progress_element));
     dmnsn_array_push(progress->elements, &element);
 
+    /* Allocate space for the condition variable and mutex */
+
     progress->cond = malloc(sizeof(pthread_cond_t));
     if (!progress->cond) {
       dmnsn_delete_array(progress->elements);
@@ -139,22 +141,22 @@ void
 dmnsn_wait_progress(const dmnsn_progress *progress, double prog)
 {
   if (pthread_mutex_lock(progress->mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock condition mutex.");
-  }
-
-  while (dmnsn_get_progress(progress) < prog) {
-    if (pthread_cond_wait(progress->cond, progress->mutex) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Couldn't wait on condition variable.");
+    dmnsn_error(DMNSN_SEVERITY_LOW, "Couldn't lock condition mutex.");
+  } else {
+    while (dmnsn_get_progress(progress) < prog) {
+      if (pthread_cond_wait(progress->cond, progress->mutex) != 0) {
+        dmnsn_error(DMNSN_SEVERITY_LOW,
+                    "Couldn't wait on condition variable.");
+      }
     }
-  }
 
-  if (pthread_mutex_unlock(progress->mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock condition mutex.");
+    if (pthread_mutex_unlock(progress->mutex) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_LOW, "Couldn't unlock condition mutex.");
+    }
   }
 }
 
-/* A new level of algorithmic nesting */
+/* Start a new level of algorithmic nesting */
 void
 dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total)
 {
@@ -173,13 +175,14 @@ dmnsn_increment_progress(dmnsn_progress *progress)
   dmnsn_array_wrlock(progress->elements);
     size = dmnsn_array_size_unlocked(progress->elements);
     element = dmnsn_array_at(progress->elements, size - 1);
-    ++element->progress;
+    ++element->progress; /* Increment the last element */
 
     while (element->progress >= element->total && size > 1) {
+      /* As long as the last element is complete, pop it */
       --size;
       dmnsn_array_resize_unlocked(progress->elements, size);
       element = dmnsn_array_at(progress->elements, size - 1);
-      ++element->progress;
+      ++element->progress; /* Increment the next element */
     }
 
     if (pthread_cond_broadcast(progress->cond) != 0) {
@@ -190,7 +193,7 @@ dmnsn_increment_progress(dmnsn_progress *progress)
 
 /* Immediately set to 100% completion */
 void
-dmnsn_progress_done(dmnsn_progress *progress)
+dmnsn_done_progress(dmnsn_progress *progress)
 {
   dmnsn_progress_element *element;
 

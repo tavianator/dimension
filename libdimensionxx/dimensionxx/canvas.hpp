@@ -18,10 +18,10 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+// dmnsn_canvas* wrapper.
+
 #ifndef DIMENSIONXX_CANVAS_HPP
 #define DIMENSIONXX_CANVAS_HPP
-
-// dmnsn_canvas* wrapper.
 
 namespace Dimension
 {

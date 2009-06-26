@@ -18,12 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_CUBE_H
-#define DIMENSION_CUBE_H
-
 /*
  * A cube, axis-aligned, from (-1, -1, -1) to (1, 1, 1)
  */
+
+#ifndef DIMENSION_CUBE_H
+#define DIMENSION_CUBE_H
 
 dmnsn_object *dmnsn_new_cube();
 void dmnsn_delete_cube(dmnsn_object *cube);

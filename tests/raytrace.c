@@ -32,6 +32,7 @@ main() {
   dmnsn_color color;
   dmnsn_matrix trans;
 
+  /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
   scene = dmnsn_new_scene();
@@ -80,6 +81,7 @@ main() {
   progress = dmnsn_png_write_canvas_async(scene->canvas, file);
   progressbar("Writing PNG file: ", progress);
   dmnsn_finish_progress(progress);
+  fclose(file);
 
   dmnsn_delete_cube(cube);
   dmnsn_delete_sphere(sphere);

@@ -20,6 +20,7 @@
 
 #include "testsxx.hpp"
 
+// Print a progress bar of the progress of `progress'
 std::ostream&
 operator<<(std::ostream& ostr, const Dimension::Progress& progress)
 {

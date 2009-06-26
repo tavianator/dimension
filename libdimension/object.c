@@ -21,6 +21,7 @@
 #include "dimension.h"
 #include <stdlib.h> /* For malloc */
 
+/* Allocate a dummy object */
 dmnsn_object *
 dmnsn_new_object()
 {
@@ -31,6 +32,7 @@ dmnsn_new_object()
   return object;
 }
 
+/* Free a dummy object */
 void
 dmnsn_delete_object(dmnsn_object *object)
 {

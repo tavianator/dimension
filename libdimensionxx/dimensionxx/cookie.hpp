@@ -18,10 +18,10 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+// Some internal magic to use C FILE* I/O with C++ streams.
+
 #ifndef DIMENSIONXX_COOKIE_HPP
 #define DIMENSIONXX_COOKIE_HPP
-
-// Some internal magic to use C FILE* I/O with C++ streams.
 
 #include <istream>
 #include <ostream>

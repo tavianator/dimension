@@ -27,6 +27,7 @@ static dmnsn_array *dmnsn_cube_intersections_fn(const dmnsn_object *cube,
 static int dmnsn_cube_inside_fn(const dmnsn_object *cube,
                                   dmnsn_vector point);
 
+/* Allocate a new cube object */
 dmnsn_object *
 dmnsn_new_cube()
 {
@@ -38,12 +39,14 @@ dmnsn_new_cube()
   return cube;
 }
 
+/* Delete a cube */
 void
 dmnsn_delete_cube(dmnsn_object *cube)
 {
   dmnsn_delete_object(cube);
 }
 
+/* Intersections callback for a cube */
 static dmnsn_array *
 dmnsn_cube_intersections_fn(const dmnsn_object *cube, dmnsn_line line)
 {
@@ -104,6 +107,7 @@ dmnsn_cube_intersections_fn(const dmnsn_object *cube, dmnsn_line line)
   return array;
 }
 
+/* Inside callback for a cube */
 static int
 dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
 {

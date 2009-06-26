@@ -18,12 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_OBJECT_H
-#define DIMENSION_OBJECT_H
-
 /*
  * Objects.
  */
+
+#ifndef DIMENSION_OBJECT_H
+#define DIMENSION_OBJECT_H
 
 /* Forward-declare dmnsn_object */
 typedef struct dmnsn_object dmnsn_object;
@@ -46,6 +46,7 @@ struct dmnsn_object {
   dmnsn_object_inside_fn        *inside_fn;
 };
 
+/* Allocate a dummy object */
 dmnsn_object *dmnsn_new_object();
 void dmnsn_delete_object(dmnsn_object *object);
 

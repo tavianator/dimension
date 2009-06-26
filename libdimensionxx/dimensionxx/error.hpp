@@ -18,13 +18,13 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSIONXX_ERROR_HPP
-#define DIMENSIONXX_ERROR_HPP
-
 // Wrappers for libdimension error handling, and an exception class.
 // dmnsn_error is still used by libdimensionxx whenever an exception shouldn't
 // be thrown, like in destructors, and whenever libdimension or libdimension-*
 // use it internally.  Exceptions are thrown otherwise to report errors.
+
+#ifndef DIMENSIONXX_ERROR_HPP
+#define DIMENSIONXX_ERROR_HPP
 
 #include <dimension.h>
 #include <stdexcept>

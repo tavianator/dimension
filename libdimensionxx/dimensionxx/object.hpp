@@ -18,10 +18,10 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+// dmnsn_object* wrapper.
+
 #ifndef DIMENSIONXX_OBJECT_HPP
 #define DIMENSIONXX_OBJECT_HPP
-
-// dmnsn_object* wrapper.
 
 namespace Dimension
 {

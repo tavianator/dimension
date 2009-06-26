@@ -21,7 +21,7 @@
 #include "dimension.h"
 #include <math.h> /* For pow(), sqrt() */
 
-/* sRGB white point (D50) */
+/* sRGB white point (CIE D50) */
 const dmnsn_CIE_XYZ dmnsn_whitepoint = { .X = 0.9504060171449392,
                                          .Y = 0.9999085943425312,
                                          .Z = 1.089062231497274 };
@@ -42,7 +42,8 @@ dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY)
   dmnsn_color ret = { .X = xyY.Y*xyY.x/xyY.y,
                       .Y = xyY.Y,
                       .Z = xyY.Y*(1.0 - xyY.x - xyY.y)/xyY.y,
-                      .filter = 0.0, .trans = 0.0 };
+                      .filter = 0.0,
+                      .trans = 0.0 };
   return ret;
 }
 
@@ -267,6 +268,7 @@ dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
   Lab.b = Lab1.b + Lab2.b;
 
   ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
+  /* Waited average of transparencies by intensity */
   ret.filter = (Lab1.L*color1.filter + Lab2.L*color2.filter)/Lab.L;
   ret.trans  = (Lab1.L*color1.trans  + Lab2.L*color2.trans)/Lab.L;
 

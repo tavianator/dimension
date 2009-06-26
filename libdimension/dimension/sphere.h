@@ -18,12 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_SPHERE_H
-#define DIMENSION_SPHERE_H
-
 /*
  * A sphere object, of radius 1, centered at the origin.
  */
+
+#ifndef DIMENSION_SPHERE_H
+#define DIMENSION_SPHERE_H
 
 dmnsn_object *dmnsn_new_sphere();
 void dmnsn_delete_sphere(dmnsn_object *sphere);

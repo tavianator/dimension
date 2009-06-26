@@ -18,6 +18,8 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/* Test PNG file I/O */
+
 #include "tests.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,6 +38,7 @@ main() {
   unsigned int i, j;
   const unsigned int x = 333, y = 300;
 
+  /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
   canvas = dmnsn_new_canvas(3*x, y);

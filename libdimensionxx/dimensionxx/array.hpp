@@ -18,13 +18,13 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+// dmnsn_array* wrapper.
+
 #ifndef DIMENSIONXX_ARRAY_HPP
 #define DIMENSIONXX_ARRAY_HPP
 
 #include <tr1/memory> // For tr1::shared_ptr
 #include <cstdlib>    // For size_t
-
-// dmnsn_array* wrapper.
 
 namespace Dimension
 {
@@ -148,6 +148,8 @@ namespace Dimension
     return ret;
   }
 
+  // Access the underlying dmnsn_array*
+
   template <typename T>
   dmnsn_array*
   Array<T>::dmnsn()
@@ -170,6 +172,7 @@ namespace Dimension
     return *m_array;
   }
 
+  // Release the dmnsn_array*, if we are the only Array holding it
   template <typename T>
   dmnsn_array*
   Array<T>::release()

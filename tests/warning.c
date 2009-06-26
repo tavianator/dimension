@@ -18,6 +18,8 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+// Make sure warnings don't kill us - this test should pass
+
 #include "tests.h"
 #include <stdlib.h>
 

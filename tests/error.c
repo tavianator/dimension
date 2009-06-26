@@ -18,6 +18,8 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/* Make sure that errors terminate us - this test should fail */
+
 #include "tests.h"
 #include <stdlib.h>
 

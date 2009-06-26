@@ -21,12 +21,14 @@
 #include "dimension.h"
 #include <stdlib.h> /* For malloc */
 
+/* Allocate a new dummy camera */
 dmnsn_camera *
 dmnsn_new_camera()
 {
   return malloc(sizeof(dmnsn_camera));
 }
 
+/* Free a dummy camera */
 void
 dmnsn_delete_camera(dmnsn_camera *camera)
 {
@@ -35,11 +37,15 @@ dmnsn_delete_camera(dmnsn_camera *camera)
 
 /* Perspective camera */
 
+/* Perspective camera ray callback */
 static dmnsn_line dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
                                                   const dmnsn_canvas *canvas,
                                                   unsigned int x,
                                                   unsigned int y);
 
+/* Create a new perspective camera.  Rays are aimed from the origin to a screen
+   located on the z = 1 frame, from (-0.5, -0.5) to (0.5, 0.5).  Rays are then
+   transformed by the matrix `trans'. */
 dmnsn_camera *
 dmnsn_new_perspective_camera(dmnsn_matrix trans)
 {
@@ -57,6 +63,7 @@ dmnsn_new_perspective_camera(dmnsn_matrix trans)
   return camera;
 }
 
+/* Delete a perspective camera */
 void
 dmnsn_delete_perspective_camera(dmnsn_camera *camera)
 {
@@ -74,7 +81,10 @@ dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
   dmnsn_matrix *trans = (dmnsn_matrix *)camera->ptr;
   dmnsn_line l;
 
+  /* Rays originate at the origin, oddly enough */
   l.x0 = dmnsn_vector_construct(0.0, 0.0, 0.0);
+
+  /* Aim at the z = 1 plane */
   l.n.x = ((double)x)/(canvas->x - 1) - 0.5;
   l.n.y = ((double)y)/(canvas->y - 1) - 0.5;
   l.n.z = 1.0;

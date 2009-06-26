@@ -63,6 +63,7 @@ dmnsn_get_resilience()
   return resilience;
 }
 
+/* Set the resilience, thread-safely */
 void
 dmnsn_set_resilience(dmnsn_severity resilience)
 {

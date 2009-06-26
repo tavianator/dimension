@@ -18,14 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/*
+ * A canvas which is rendered to.
+ */
+
 #ifndef DIMENSION_CANVAS_H
 #define DIMENSION_CANVAS_H
 
 #include <pthread.h>
 
-/*
- * A canvas which is rendered to.
- */
 typedef struct {
   unsigned int x, y;
 

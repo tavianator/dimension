@@ -18,12 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+// Test C++ PNG file I/O
+
 #include "testsxx.hpp"
 #include <fstream>
 
 int
 main()
 {
+  // Set the resilience low for tests
   Dimension::resilience(Dimension::SEVERITY_LOW);
 
   const unsigned int width = 333, height = 300;

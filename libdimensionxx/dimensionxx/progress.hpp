@@ -18,13 +18,13 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+// dmnsn_progress* wrapper.
+
 #ifndef DIMENSIONXX_PROGRESS_HPP
 #define DIMENSIONXX_PROGRESS_HPP
 
 #include <tr1/memory> // For tr1::shared_ptr
 #include <list>
-
-// dmnsn_canvas* wrapper.
 
 namespace Dimension
 {

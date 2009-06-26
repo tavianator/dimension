@@ -18,12 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_CAMERA_H
-#define DIMENSION_CAMERA_H
-
 /*
  * A camera.
  */
+
+#ifndef DIMENSION_CAMERA_H
+#define DIMENSION_CAMERA_H
 
 /* Forward-declare dmnsn_camera */
 typedef struct dmnsn_camera dmnsn_camera;
@@ -47,7 +47,6 @@ void dmnsn_delete_camera(dmnsn_camera *camera);
 /* A perspective camera, at the origin, looking at (0, 0, 1).  The feild of view
    is the section of the plane z = 1 from (-0.5, -0.5) to (0.5, 0.5).  Rays are
    transformed by the transformation matrix `trans'. */
-
 dmnsn_camera *dmnsn_new_perspective_camera(dmnsn_matrix trans);
 void dmnsn_delete_perspective_camera(dmnsn_camera *camera);
 

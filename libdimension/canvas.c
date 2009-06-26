@@ -32,8 +32,6 @@ dmnsn_new_canvas(unsigned int x, unsigned int y)
   dmnsn_canvas *canvas = malloc(sizeof(dmnsn_canvas));
 
   if (canvas) {
-    /* *canvas exists */
-
     /* Set the width and height */
     canvas->x = x;
     canvas->y = y;
@@ -60,6 +58,7 @@ dmnsn_new_canvas(unsigned int x, unsigned int y)
           /* pthread_rwlock_init failed.  Destroy the locks we've already made,
              free the canvas, and return NULL.  We leak memory if destruction
              fails (i.e. someone is somehow using an rwlock already). */
+
           for (l = 0; l < j; ++l) {
             for (k = 0; k < x; ++k) {
               if (pthread_rwlock_destroy(&canvas->rwlocks[l*x + k]) != 0) {
@@ -96,8 +95,6 @@ dmnsn_delete_canvas(dmnsn_canvas *canvas)
   unsigned int i, j;
 
   if (canvas) {
-    /* *canvas exists */
-
     /* Destroy the rwlocks */
     for (i = 0; i < canvas->x; ++i) {
       for (j = 0; j < canvas->y; ++j) {
@@ -121,7 +118,7 @@ dmnsn_get_pixel(const dmnsn_canvas *canvas, unsigned int x, unsigned int y)
 {
   dmnsn_color color;
   dmnsn_rdlock_pixel(canvas, x, y);
-  color = canvas->pixels[y*canvas->x + x];
+    color = canvas->pixels[y*canvas->x + x];
   dmnsn_unlock_pixel(canvas, x, y);
   return color;
 }
@@ -132,7 +129,7 @@ dmnsn_set_pixel(dmnsn_canvas *canvas,
                 unsigned int x, unsigned int y, dmnsn_color color)
 {
   dmnsn_wrlock_pixel(canvas, x, y);
-  canvas->pixels[y*canvas->x + x] = color;
+    canvas->pixels[y*canvas->x + x] = color;
   dmnsn_unlock_pixel(canvas, x, y);
 }
 

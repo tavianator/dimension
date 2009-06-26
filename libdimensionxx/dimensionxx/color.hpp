@@ -18,10 +18,10 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+// Wrappers for libdimension colors.
+
 #ifndef DIMENSIONXX_COLOR_HPP
 #define DIMENSIONXX_COLOR_HPP
-
-// Wrappers for libdimension colors.
 
 namespace Dimension
 {

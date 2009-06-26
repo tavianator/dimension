@@ -18,12 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_SCENE_H
-#define DIMENSION_SCENE_H
-
 /*
  * A scene.
  */
+
+#ifndef DIMENSION_SCENE_H
+#define DIMENSION_SCENE_H
 
 typedef struct {
   dmnsn_color background;

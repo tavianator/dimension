@@ -25,6 +25,8 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
+/* Payload to store function arguments for thread callbacks */
+
 typedef struct {
   dmnsn_progress *progress;
   const dmnsn_canvas *canvas;
@@ -37,6 +39,7 @@ typedef struct {
   FILE *file;
 } dmnsn_png_read_payload;
 
+/* Thread callbacks */
 static void *dmnsn_png_write_canvas_thread(void *ptr);
 static void *dmnsn_png_read_canvas_thread(void *ptr);
 
@@ -67,11 +70,11 @@ dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
     payload->canvas   = canvas;
     payload->file     = file;
 
+    /* Create the worker thread */
     if (pthread_create(&progress->thread, NULL, &dmnsn_png_write_canvas_thread,
                        payload)
         != 0) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Creating png writing worker thread failed.");
+      free(payload);
       dmnsn_delete_progress(progress);
       return NULL;
     }
@@ -108,11 +111,11 @@ dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
     payload->canvas   = canvas;
     payload->file     = file;
 
+    /* Create the worker thread */
     if (pthread_create(&progress->thread, NULL, &dmnsn_png_read_canvas_thread,
                        payload)
         != 0) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Creating png writing worker thread failed.");
+      free(payload);
       dmnsn_delete_progress(progress);
       return NULL;
     }
@@ -121,10 +124,14 @@ dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
   return progress;
 }
 
+/* Actual implementations */
 static int dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
                                        const dmnsn_canvas *canvas, FILE *file);
 static dmnsn_canvas *dmnsn_png_read_canvas_impl(dmnsn_progress *progress,
                                                 FILE *file);
+
+/* Thread callbacks */
+
 static void *
 dmnsn_png_write_canvas_thread(void *ptr)
 {
@@ -134,7 +141,8 @@ dmnsn_png_write_canvas_thread(void *ptr)
     *retval = dmnsn_png_write_canvas_impl(payload->progress,
                                           payload->canvas, payload->file);
   }
-  dmnsn_progress_done(payload->progress);
+  dmnsn_done_progress(payload->progress);
+  free(payload);
   return retval;
 }
 
@@ -146,12 +154,14 @@ dmnsn_png_read_canvas_thread(void *ptr)
   if (retval) {
     *payload->canvas = dmnsn_png_read_canvas_impl(payload->progress,
                                                   payload->file);
-    *retval = payload->canvas ? 0 : 1;
+    *retval = payload->canvas ? 0 : 1; /* Fail if it returned NULL */
   }
-  dmnsn_progress_done(payload->progress);
+  dmnsn_done_progress(payload->progress);
+  free(payload);
   return retval;
 }
 
+/* Actually write the PNG file */
 static int
 dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
                             const dmnsn_canvas *canvas, FILE *file)
@@ -272,9 +282,11 @@ static pthread_key_t progress_key;
 static pthread_mutex_t progress_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int progress_key_init = 0;
 
+/* Callback to increment the progress after a row has been read */
 static void dmnsn_png_read_row_callback(png_structp png_ptr, png_uint_32 row,
                                         int pass);
 
+/* Actually read a PNG file */
 static dmnsn_canvas *
 dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
 {
@@ -301,9 +313,7 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
 
   if (progress_key_init == 0) {
     if (pthread_key_create(&progress_key, NULL) != 0) {
-      /* High severity because dmnsn_png_read_row_callback will surely segfault
-         if it can't get the dmnsn_progress* from the key */
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
                   "Couldn't create thread-specific pointer.");
     }
 
@@ -311,7 +321,7 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
   }
 
   if (pthread_setspecific(progress_key, progress) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't set thread-specific pointer.");
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't set thread-specific pointer.");
   }
 
   if (pthread_mutex_unlock(&progress_mutex) != 0) {
@@ -506,5 +516,7 @@ static void
 dmnsn_png_read_row_callback(png_structp png_ptr, png_uint_32 row, int pass)
 {
   dmnsn_progress *progress = pthread_getspecific(progress_key);
-  dmnsn_increment_progress(progress);
+  if (progress) {
+    dmnsn_increment_progress(progress);
+  }
 }

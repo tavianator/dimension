@@ -18,10 +18,10 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+// C++ wrapper for libdimension PNG support.  PNG_Canvas derives from Canvas.
+
 #ifndef DIMENSIONXX_PNG_HPP
 #define DIMENSIONXX_PNG_HPP
-
-// C++ wrapper for libdimension PNG support.  PNG_Canvas derives from Canvas.
 
 #include <istream>
 #include <ostream>

@@ -18,12 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/*
+ * Error handling.  Errors are reported at a given severity by the dmnsn_error()
+ * macro at a given severity, which prints a warning if it is below the set
+ * resilience, or prints an error and exits if it's at or above the set
+ * resilience.
+ */
+
 #ifndef DIMENSION_ERROR_H
 #define DIMENSION_ERROR_H
-
-/*
- * Error handling.
- */
 
 typedef enum {
   DMNSN_SEVERITY_LOW,    /* Only die on low resilience */
@@ -31,10 +34,10 @@ typedef enum {
   DMNSN_SEVERITY_HIGH    /* Always die */
 } dmnsn_severity;
 
-/* Use this to report an error */
-#define dmnsn_error(severity, str)                                            \
-  dmnsn_report_error((dmnsn_severity)severity, __PRETTY_FUNCTION__, __LINE__, \
-                     str)
+/* Use this macro to report an error */
+#define dmnsn_error(severity, str)                                             \
+  dmnsn_report_error((dmnsn_severity)(severity), __PRETTY_FUNCTION__, __LINE__,\
+                     (str))
 
 /* Called by dmnsn_error() - don't call directly */
 void dmnsn_report_error(dmnsn_severity severity,

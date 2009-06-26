@@ -21,6 +21,7 @@
 #include "dimensionxx.hpp"
 
 #ifndef _GNU_SOURCE
+// For fopencookie()
 #  define _GNU_SOURCE
 #endif
 #include <stdio.h>
@@ -99,7 +100,7 @@ namespace Dimension
       }
 
       if (streams->is_output()) {
-        // If we have an output stream, seek it too
+        // If we have an output stream, seek it
         switch (whence) {
         case SEEK_SET:
           streams->ostr().seekp(*offset, std::ios::beg);
@@ -164,14 +165,55 @@ namespace Dimension
   // Close the file
   FILE_Cookie::~FILE_Cookie() { std::fclose(m_file); }
 
+  // Get the FILE*
   FILE*       FILE_Cookie::file()       { return m_file; }
   const FILE* FILE_Cookie::file() const { return m_file; }
 
   bool FILE_Cookie::is_input()  const { return m_istr; }
   bool FILE_Cookie::is_output() const { return m_ostr; }
 
-  std::istream&       FILE_Cookie::istr()       { return *m_istr; }
-  const std::istream& FILE_Cookie::istr() const { return *m_istr; }
-  std::ostream&       FILE_Cookie::ostr()       { return *m_ostr; }
-  const std::ostream& FILE_Cookie::ostr() const { return *m_ostr; }
+  // Get the C++ streams
+
+  std::istream&
+  FILE_Cookie::istr()
+  {
+    if (is_input()) {
+      return *m_istr;
+    } else {
+      throw Dimension_Error("Attempted to get input stream from non-input"
+                            " FILE_Cookie.");
+    }
+  }
+
+  const std::istream&
+  FILE_Cookie::istr() const
+  {
+    if (is_input()) {
+      return *m_istr;
+    } else {
+      throw Dimension_Error("Attempted to get input stream from non-input"
+                            " FILE_Cookie.");
+    }
+  }
+
+  std::ostream&
+  FILE_Cookie::ostr()
+  {
+    if (is_output()) {
+      return *m_ostr;
+    } else {
+      throw Dimension_Error("Attempted to get output stream from non-input"
+                            " FILE_Cookie.");
+    }
+  }
+
+  const std::ostream& FILE_Cookie::ostr() const
+  {
+    if (is_output()) {
+      return *m_ostr;
+    } else {
+      throw Dimension_Error("Attempted to get output stream from non-input"
+                            " FILE_Cookie.");
+    }
+  }
 }

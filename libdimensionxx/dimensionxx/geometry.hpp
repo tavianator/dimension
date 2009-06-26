@@ -18,15 +18,17 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+// Wrappers for geometric types (Vectors, Matricies, Lines (rays)).
+
 #ifndef DIMENSIONXX_GEOMETRY_HPP
 #define DIMENSIONXX_GEOMETRY_HPP
-
-// Wrappers for geometric types (Vectors, Matricies, Lines (rays)).
 
 #include <dimension.h>
 
 namespace Dimension
 {
+  class Vector;
+
   // Wrapper for dmnsn_matrix
   class Matrix
   {
@@ -55,6 +57,12 @@ namespace Dimension
 
     // Get the wrapped matrix
     dmnsn_matrix dmnsn() const { return m_matrix; }
+
+    // Special constructors
+    static inline Matrix identity();
+    static inline Matrix scale(const Vector& factor);
+    static inline Matrix translation(const Vector& d);
+    static inline Matrix rotation(const Vector& theta);
 
   private:
     dmnsn_matrix m_matrix;
@@ -125,6 +133,49 @@ namespace Dimension
   private:
     dmnsn_line m_line;
   };
+
+  // Matrix operators
+
+  inline Matrix
+  operator*(const Matrix& lhs, const Matrix& rhs)
+  {
+    // This order is important!
+    Matrix r = rhs;
+    r *= lhs;
+    return r;
+  }
+
+  inline Matrix
+  inverse(const Matrix& M)
+  {
+    return Matrix(dmnsn_matrix_inverse(M.dmnsn()));
+  }
+
+  // Special Matrix constructors
+
+  inline Matrix
+  Matrix::identity()
+  {
+    return Matrix(dmnsn_identity_matrix());
+  }
+
+  inline Matrix
+  Matrix::scale(const Vector& factor)
+  {
+    return Matrix(dmnsn_scale_matrix(factor.dmnsn()));
+  }
+
+  inline Matrix
+  Matrix::translation(const Vector& d)
+  {
+    return Matrix(dmnsn_translation_matrix(d.dmnsn()));
+  }
+
+  inline Matrix
+  Matrix::rotation(const Vector& theta)
+  {
+    return Matrix(dmnsn_rotation_matrix(theta.dmnsn()));
+  }
 
   // Vector operators
 

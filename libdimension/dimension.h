@@ -18,6 +18,10 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/*
+ * libdimension - a library for photo-realistic 3-D rendering
+ */
+
 #ifndef DIMENSION_H
 #define DIMENSION_H
 
