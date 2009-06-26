@@ -24,6 +24,7 @@
 
 int
 main() {
+  dmnsn_progress *progress;
   FILE *file;
   dmnsn_scene *scene;
   dmnsn_object *sphere, *cube;
@@ -71,10 +72,14 @@ main() {
   );
   dmnsn_array_push(scene->objects, &cube);
 
-  dmnsn_raytrace_scene(scene);
+  progress = dmnsn_raytrace_scene_async(scene);
+  progressbar("Raytracing scene: ", progress);
+  dmnsn_finish_progress(progress);
 
   file = fopen("raytrace.png", "wb");
-  dmnsn_png_write_canvas(scene->canvas, file);
+  progress = dmnsn_png_write_canvas_async(scene->canvas, file);
+  progressbar("Writing PNG file: ", progress);
+  dmnsn_finish_progress(progress);
 
   dmnsn_delete_cube(cube);
   dmnsn_delete_sphere(sphere);

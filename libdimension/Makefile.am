@@ -28,6 +28,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/png.h                                       \
                          dimension/progress.h                                  \
                          dimension/object.h                                    \
+                         dimension/raytrace.h                                  \
                          dimension/scene.h                                     \
                          dimension/sphere.h
 

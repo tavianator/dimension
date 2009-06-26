@@ -22,98 +22,117 @@
 #include <unistd.h> /* For sysconf */
 
 typedef struct {
+  dmnsn_progress *progress;
   dmnsn_scene *scene;
-  unsigned int i, n;
-} dmnsn_raytrace_thread_payload;
+} dmnsn_raytrace_payload;
 
-static void *dmnsn_raytrace_scene_thread(void *arg);
+static void *dmnsn_raytrace_scene_thread(void *ptr);
 
 void
 dmnsn_raytrace_scene(dmnsn_scene *scene)
 {
-  long n = sysconf(_SC_NPROCESSORS_ONLN);
-  unsigned int i;
-  pthread_t thread;
-  dmnsn_raytrace_thread_payload payload;
-  dmnsn_array *threads, *payloads;
-
-  threads  = dmnsn_new_array(sizeof(pthread_t));
-  payloads = dmnsn_new_array(sizeof(dmnsn_raytrace_thread_payload));
-
-  if (n <= 0) n = 1;
-
-  payload.scene = scene;
-  payload.n = n;
-  for (i = 0; i < n; ++i) {
-    payload.i = i;
-    dmnsn_array_push(payloads, &payload);
-
-    pthread_create(&thread, NULL, &dmnsn_raytrace_scene_thread,
-                   dmnsn_array_at(payloads, i));
-    dmnsn_array_push(threads, &thread);
-  }
-
-  for (i = 0; i < n; ++i) {
-    dmnsn_array_get(threads, i, &thread);
-    pthread_join(thread, NULL);
-  }
-
-  dmnsn_delete_array(payloads);
-  dmnsn_delete_array(threads);
+  dmnsn_progress *progress = dmnsn_raytrace_scene_async(scene);
+  dmnsn_finish_progress(progress);
 }
 
-/* Raytrace a scene */
+dmnsn_progress *
+dmnsn_raytrace_scene_async(dmnsn_scene *scene)
+{
+  dmnsn_progress *progress = dmnsn_new_progress();
+  dmnsn_raytrace_payload *payload;
+
+  if (progress) {
+    payload = malloc(sizeof(dmnsn_raytrace_payload));
+    if (!payload) {
+      dmnsn_delete_progress(progress);
+      return NULL;
+    }
+
+    payload->progress = progress;
+    payload->scene    = scene;
+
+    if (pthread_create(&progress->thread, NULL, &dmnsn_raytrace_scene_thread,
+                       payload)
+        != 0) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
+                  "Creating raytracing worker thread failed.");
+      dmnsn_delete_progress(progress);
+      return NULL;
+    }
+  }
+
+  return progress;
+}
+
+static void dmnsn_raytrace_scene_impl(dmnsn_progress *progress,
+                                      dmnsn_scene *scene);
+
 static void *
-dmnsn_raytrace_scene_thread(void *arg)
+dmnsn_raytrace_scene_thread(void *ptr)
+{
+  dmnsn_raytrace_payload *payload = ptr;
+  int *retval = malloc(sizeof(int));
+  if (retval) {
+    dmnsn_raytrace_scene_impl(payload->progress, payload->scene);
+    *retval = 0;
+  }
+  dmnsn_progress_done(payload->progress);
+  return retval;
+}
+
+/* Actually raytrace a scene */
+static void
+dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene)
 {
   unsigned int i, j, k, l;
+  unsigned int width, height;
   double t, t_temp;
   dmnsn_object *object;
   dmnsn_line ray, ray_trans;
-  dmnsn_raytrace_thread_payload *payload = (dmnsn_raytrace_thread_payload *)arg;
-  dmnsn_scene *scene = payload->scene;
   dmnsn_array *intersections;
   dmnsn_color color;
   dmnsn_sRGB sRGB;
 
+  width  = scene->canvas->x;
+  height = scene->canvas->y;
+
+  dmnsn_new_progress_element(progress, height);
+
   /* Iterate through each pixel */
-  for (i = 0; i < scene->canvas->x; ++i) {
-    for (j = 0; j < scene->canvas->y; ++j) {
-      /* Only do the pixels assigned to this thread */
-      if ((j*scene->canvas->x + i)%payload->n == payload->i) {
-        /* Set the pixel to the background color */
-        color = scene->background;
-        t = 0.0;
+  for (j = 0; j < height; ++j) {
+    for (i = 0; i < width; ++i) {
+      /* Set the pixel to the background color */
+      color = scene->background;
+      t = 0.0;
 
-        /* Get the ray corresponding to the (i,j)th pixel */
-        ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, i, j);
+      /* Get the ray corresponding to the (i,j)th pixel */
+      ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, i, j);
 
-        for (k = 0; k < dmnsn_array_size(scene->objects); ++k) {
-          dmnsn_array_get(scene->objects, k, &object);
+      for (k = 0; k < dmnsn_array_size(scene->objects); ++k) {
+        dmnsn_array_get(scene->objects, k, &object);
 
-          /* Transform the ray according to the object */
-          ray_trans = dmnsn_matrix_line_mul(object->trans, ray);
+        /* Transform the ray according to the object */
+        ray_trans = dmnsn_matrix_line_mul(object->trans, ray);
 
-          /* Test for intersections with objects */
-          intersections = (*object->intersections_fn)(object, ray_trans);
-          for (l = 0; l < dmnsn_array_size(intersections); ++l) {
-            dmnsn_array_get(intersections, l, &t_temp);
-            if (t_temp < t || t == 0.0) t = t_temp;
-          }
-          dmnsn_delete_array(intersections);
+        /* Test for intersections with objects */
+        intersections = (*object->intersections_fn)(object, ray_trans);
+        for (l = 0; l < dmnsn_array_size(intersections); ++l) {
+          dmnsn_array_get(intersections, l, &t_temp);
+          if (t_temp < t || t == 0.0) t = t_temp;
         }
-
-        if (t != 0.0) {
-          sRGB.R = 1.0 - (t - 2.25)/2.25;
-          sRGB.G = sRGB.R;
-          sRGB.B = sRGB.R;
-          color = dmnsn_color_from_sRGB(sRGB);
-        }
-
-        dmnsn_set_pixel(scene->canvas, i, j, color);
+        dmnsn_delete_array(intersections);
       }
-    }
-  }
 
-  return NULL;
+      if (t != 0.0) {
+        sRGB.R = 1.0 - (t - 2.25)/2.25;
+        sRGB.G = sRGB.R;
+        sRGB.B = sRGB.R;
+        color = dmnsn_color_from_sRGB(sRGB);
+      }
+
+      dmnsn_set_pixel(scene->canvas, i, j, color);
+    }
+
+    dmnsn_increment_progress(progress);
+  }
 }
