@@ -108,13 +108,13 @@ namespace Dimension
 
     // Start the asynchronous task
     dmnsn_progress *progress
-      = dmnsn_png_write_canvas_async(canvas, cookie->file());
+      = dmnsn_png_write_canvas_async(m_canvas, cookie->file());
     if (!progress) {
       throw Dimension_Error("Starting background PNG write failed.");
     }
 
     // Return the Progress object
-    return Progress(progresss, persister);
+    return Progress(progress, persister);
   }
 
   // Read a PNG file in the background
@@ -141,7 +141,7 @@ namespace Dimension
     }
 
     // Return the Progress object
-    return Progress(progresss, persister);
+    return Progress(progress, persister);
   }
 
   // Construct an input PNG_Canvas from a background task
