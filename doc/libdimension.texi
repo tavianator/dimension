@@ -426,8 +426,8 @@ The @code{dmnsn_color_from_*()} and @code{dmnsn_*_from_color()} functions are us
 @code{dmnsn_color_add()} adds two colors in a perceptually-correct way, and @code{dmnsn_color_difference()} returns the magnatude of the perceptual difference between two colors.
 
 
-@node Canvas
-@chapter Canvas
+@node Canvases
+@chapter Canvases
 
 @tindex dmnsn_canvas*
 
@@ -441,7 +441,7 @@ The @code{dmnsn_color_from_*()} and @code{dmnsn_*_from_color()} functions are us
 @cindex rendering target
 
 @example
-typedef struct {
+typedef struct @{
   /* width, height */
   unsigned int x, y;
 
@@ -450,7 +450,7 @@ typedef struct {
    * The pixel at (a,b) is accessible as pixels[b*x + a].
    */
   dmnsn_color *pixels;
-} dmnsn_canvas;
+@} dmnsn_canvas;
 
 /* Allocate and free a canvas */
 dmnsn_canvas *dmnsn_new_canvas(unsigned int x, unsigned int y);
@@ -469,6 +469,10 @@ dmnsn_color *dmnsn_pixel_at(dmnsn_canvas *canvas,
 The target of a rendering operation in The Dimension Library is a canvas object, represented by the type @code{dmnsn_canvas*}.  This type stores a @code{dmnsn_color} for each pixel in the @code{->pixels} field, as well as the dimensions of the canvas in the @code{->x} and @code{->y} fields.  The pixel at (x,y) can be examined or set by the accessors @code{dmnsn_get_pixel()} and @code{dmnsn_set_pixel()}, and referenced by @code{dmnsn_pixel_at()}.
 
 Canvases may be imported from or exported to images.  In the future, canvases will also be able to be treated as object textures, to support images as textures.
+
+@menu
+* PNG Import and Export:: Importing and exporting canvases to and from PNG files
+@end menu
 
 @node PNG Import and Export
 @section PNG Import and Export
