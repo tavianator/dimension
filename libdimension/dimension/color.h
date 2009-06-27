@@ -60,7 +60,7 @@ typedef struct {
   double R, G, B; /* sRGB R, G, and B values */
 } dmnsn_sRGB;
 
-/* Standard whitepoint, determined by the conversion of sRGB white to XYZ */
+/* Standard whitepoint, determined by the conversion of sRGB white to CIE XYZ */
 extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
 
 /* Color conversions */

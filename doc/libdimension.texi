@@ -4,7 +4,7 @@
 @settitle The Dimension 3-D Rendering Library
 @c %**end of header
 
-@c Wrap code examples at 77 chars, please
+@c Wrap code examples at 72 chars, please
 
 @copying
 Copyright @copyright{} 2009 Tavian Barnes
@@ -31,10 +31,10 @@ Copyright @copyright{} 2009 Tavian Barnes
 * Error Handling:: How libdimension handles warnings and errors
 * Arrays:: A generic interface for arrays of arbitrary objects
 * Asynchronicity:: An interface for controlling background tasks
-@ignore
 * Geometry:: Geometric types like vectors, transformation matricies, and lines
 * Color:: Correct color handling
 * Canvases:: Where the results of rendering are stored
+@ignore
 * Objects:: Physical objects in a scene
 * Cameras:: How a 3-D image is seen in 2-D
 * Scenes:: Scene objects which hold everything needed to render an image
@@ -67,7 +67,6 @@ The Dimension Library is a C library for rendering photo-realistic 3-D scenes.  
 @cindex errors
 @cindex warnings
 
-@cartouche
 @example
 typedef enum @{
   DMNSN_SEVERITY_LOW,    /* Only die on low resilience */
@@ -75,12 +74,11 @@ typedef enum @{
   DMNSN_SEVERITY_HIGH    /* Always die */
 @} dmnsn_severity;
 
-#define dmnsn_error(severity, str) ...
+#define dmnsn_error(severity, str) /* ... */
 
 dmnsn_severity dmnsn_get_resilience();
 void dmnsn_set_resilience(dmnsn_severity resilience);
 @end example
-@end cartouche
 
 When it makes sense, libdimension reports errors by returning error codes from its functions.  However, when errors are not severe, when said function should not fail, or when the error is very serious, libdimension reports errors using the macro @code{dmnsn_error()}.  @code{dmnsn_error()} takes two parameters: the severity of the error, and a string description of the error.  The macro will conveniently report the description, as well as the function name and code line where the error occured, to standard error.  The severity can be either @code{DMNSN_SEVERITY_LOW}, @code{DMNSN_SEVERITY_MEDIUM}, or @code{DMNSN_SEVERITY_HIGH}.
 
@@ -119,10 +117,9 @@ Dimension ERROR: <function>, line <line>: <description>
 
 @cindex array
 
-@cartouche
 @example
 typedef struct @{
-  ...
+  /* ... */
 @} dmnsn_array;
 
 /* Array allocation */
@@ -149,7 +146,6 @@ void dmnsn_array_rdlock(const dmnsn_array *array);
 void dmnsn_array_wrlock(dmnsn_array *array);
 void dmnsn_array_unlock(const dmnsn_array *array);
 @end example
-@end cartouche
 
 The Dimension Library often has cause to work with adjustable-size arrays.  It provides an interface for dynamically-allocated arrays of arbitrary objects.  Arrays allocated with the @code{dmnsn_new_array()} function, and freed with the @code{dmnsn_delete_array()} function, a pattern common in libdimension.  @code{dmnsn_new_array()} takes the size of the new array's elements as its parameter.  Unlike other allocation functions throughout libdimension, @code{dmnsn_new_array()} cannot fail if it returns (other allocators may return NULL).  In fact, all array operations are guaranteed to either succeed or report a fatal error, which may happen if memory allocation fails.
 
@@ -176,10 +172,9 @@ When sets of array operations must be atomic, one may use the manual locking arr
 @cindex background
 @cindex progress indicator
 
-@cartouche
 @example
 typedef struct @{
-  ...
+  /* ... */
 @} dmnsn_progress;
 
 /* Progress allocation */
@@ -199,7 +194,6 @@ void dmnsn_new_progress_element(dmnsn_progress *progress,
 void dmnsn_increment_progress(dmnsn_progress *progress);
 void dmnsn_done_progress(dmnsn_progress *progress);
 @end example
-@end cartouche
 
 As The Dimension Library is a raytracing engine, some routines are likely to take a long time.  These routines may be run in a background thread, and controlled with a common interface.  Routines supporting this interface end in @code{_async}, such as @code{dmnsn_raytrace_scene_async()}, and return a dmnsn_progress* object, so named because it allows an application to be query the progress of the background task.  By necessity, all @code{dmnsn_progress*} operations are atomic and thread-safe.
 
@@ -221,6 +215,278 @@ for (i = 0; i < i_max; ++i) @{
 @end example
 
 For robustness, tasks should call @code{dmnsn_done_progress()} when they finish, even if they fail.  This function immediately sets the progress to 100%, which wakes up all waiters.  Otherwise, a user's application may hang calling @code{dmnsn_wait_progress()}.
+
+
+@node Geometry
+@chapter Geometry
+
+@tindex dmnsn_vector
+@tindex dmnsn_matrix
+@tindex dmnsn_line
+
+@findex dmnsn_vector_construct
+@findex dmnsn_matrix_construct
+@findex dmnsn_identity_matrix
+@findex dmnsn_scale_matrix
+@findex dmnsn_translation_matrix
+@findex dmnsn_rotation_matrix
+@findex dmnsn_line_construct
+@findex dmnsn_vector_add
+@findex dmnsn_vector_sub
+@findex dmnsn_vector_mul
+@findex dmnsn_vector_div
+@findex dmnsn_vector_dot
+@findex dmnsn_vector_cross
+@findex dmnsn_vector_norm
+@findex dmnsn_vector_normalize
+@findex dmnsn_matrix_inverse
+@findex dmnsn_matrix_mul
+@findex dmnsn_matrix_vector_mul
+@findex dmnsn_matrix_line_mul
+@findex dmnsn_line_point
+@findex dmnsn_line_index
+
+@cindex scalar
+@cindex vector
+@cindex matrix
+@cindex line
+@cindex ray
+@cindex transformation
+@cindex norm
+@cindex normalization
+@cindex dot product
+@cindex cross product
+@cindex inversion
+
+@example
+/* Vector and matrix types. */
+
+typedef struct @{
+  double x, y, z;
+@} dmnsn_vector;
+
+typedef struct @{
+  double n[4][4];
+@} dmnsn_matrix;
+
+/* A line, or ray. */
+typedef struct @{
+  dmnsn_vector x0; /* A point on the line */
+  dmnsn_vector n;  /* A normal vector; the direction of the line */
+@} dmnsn_line;
+
+/* Vector/matrix construction */
+
+dmnsn_vector dmnsn_vector_construct(double x, double y, double z);
+
+dmnsn_matrix
+dmnsn_matrix_construct(double a0, double a1, double a2, double a3,
+                       double b0, double b1, double b2, double b3,
+                       double c0, double c1, double c2, double c3,
+                       double d0, double d1, double d2, double d3);
+
+dmnsn_matrix dmnsn_identity_matrix();
+dmnsn_matrix dmnsn_scale_matrix(dmnsn_vector s);
+dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d);
+dmnsn_matrix dmnsn_rotation_matrix(dmnsn_vector theta);
+
+dmnsn_line dmnsn_line_construct(dmnsn_vector x0, dmnsn_vector n);
+
+/* Vector and matrix arithmetic */
+
+dmnsn_vector dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_mul(double lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_div(dmnsn_vector lhs, double rhs);
+
+double       dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs);
+dmnsn_vector dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs);
+
+double       dmnsn_vector_norm(dmnsn_vector n);
+dmnsn_vector dmnsn_vector_normalize(dmnsn_vector n);
+
+dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
+dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
+dmnsn_vector dmnsn_matrix_vector_mul(dmnsn_matrix lhs,
+                                     dmnsn_vector rhs);
+dmnsn_line   dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs);
+
+dmnsn_vector dmnsn_line_point(dmnsn_line l, double t);
+double dmnsn_line_index(dmnsn_line l, dmnsn_vector x);
+@end example
+
+For performing 3-D computational geometry, The Dimension Library supports geometric types and many operations on these types.  libdimension defines the @code{dmnsn_vector}, @code{dmnsn_matrix}, and @code{dmnsn_line} geometric types.  They may be easily constructed by the self-explanatory @code{dmnsn_vector_construct()}, @code{dmnsn_matrix_construct()}, or @code{dmnsn_line_construct()}.
+
+Vectors support addition and subtraction, multiplication and division by a scalar, the dot and cross products, the norm and normalization operations, and transformation by a matrix (@code{dmnsn_matrix_vector_mul()}).
+
+Matricies support matrix multiplication, and inversion.  Inversion uses a very fast partitioning algorithm.  As well, there are four special matrix constructors.  @code{dmnsn_identity_matrix()} simply returns the identity matrix.  @code{dmnsn_scale_matrix(s)} returns a matrix which scales each dimension by a factor of the corresponding dimension of the @code{s}.  @code{dmnsn_translate_matrix(d)} returns a matrix which translates by @code{d}.  Finally, @code{dmnsn_rotation_matrix(theta)} returns a matrix which rotates by an angle of @code{norm(theta)}, about the axis @code{normalized(theta)}.
+
+Lines support transformation by a matrix (@code{dmnsn_matrix_line_mul(A, l) = dmnsn_line_construct(A*l.x0, A*(l.x0 + l.n) - A*l.x0)}).  Also, @code{dmnsn_line_point(l, t) = l.x0 + t*l.n} gives the point @code{t} on the line, and @code{dmnsn_line_index(l, x)} gives the @code{t} value such that @code{dmnsn_line_point(l, t) == x}.
+
+@node Color
+@chapter Color
+
+@tindex dmnsn_color
+@tindex dmnsn_CIE_XYZ
+@tindex dmnsn_CIE_xyY
+@tindex dmnsn_CIE_Lab
+@tindex dmnsn_CIE_Luv
+@tindex dmnsn_sRGB
+
+@findex dmnsn_color_from_XYZ
+@findex dmnsn_color_from_xyY
+@findex dmnsn_color_from_Lab
+@findex dmnsn_color_from_Luv
+@findex dmnsn_color_from_sRGB
+@findex dmnsn_XYZ_from_color
+@findex dmnsn_xyY_from_color
+@findex dmnsn_Lab_from_color
+@findex dmnsn_Luv_from_color
+@findex dmnsn_sRGB_from_color
+@findex dmnsn_color_add
+@findex dmnsn_color_difference
+
+@cindex color
+@cindex CIE XYZ
+@cindex CIE xyY
+@cindex CIE L*a*b*
+@cindex CIE L*u*v*
+@cindex sRGB
+
+@example
+typedef struct @{
+  /* ... */
+  double filter, trans; /* Filter transparancy only lets light of this
+                           color through; regular transparancy lets all
+                           colors through.  filter + trans should be
+                           <= 1.0. */
+@} dmnsn_color;
+
+typedef struct @{
+  double X, Y, Z; /* X, Y, and Z are tristimulus values, unbounded
+                     above zero.  Diffuse white is (0.9505, 1,
+                     1.089). */
+@} dmnsn_CIE_XYZ;
+
+typedef struct @{
+  double x, y, Y; /* x and y are chromaticity coordinates, and Y is
+                     luminance, in the CIE 1931 xyZ color space.  We
+                     use an unlimited light model, so x,y in [0, 1] and
+                     Y >= 0, with 1 = diffuse white */
+@} dmnsn_CIE_xyY;
+
+typedef struct @{
+  double L, a, b; /* L is luminence (100 = diffuse white); a and b are
+                     color-opponent dimensions.  This color space is
+                     used for color arithmetic. */
+@} dmnsn_CIE_Lab;
+
+typedef struct @{
+  double L, u, v; /* L is luminence (100 = diffuse white); u and v are
+                     chromaticity coordinates. */
+@} dmnsn_CIE_Luv;
+
+typedef struct @{
+  double R, G, B; /* sRGB R, G, and B values */
+@} dmnsn_sRGB;
+
+/* Standard whitepoint, determined by the conversion of sRGB white to
+   CIE XYZ */
+extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
+
+/* Color conversions */
+
+dmnsn_color dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ);
+dmnsn_color dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY);
+dmnsn_color dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab,
+                                 dmnsn_CIE_XYZ white);
+dmnsn_color dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv,
+                                 dmnsn_CIE_XYZ white);
+dmnsn_color dmnsn_color_from_sRGB(dmnsn_sRGB sRGB);
+
+dmnsn_CIE_XYZ dmnsn_XYZ_from_color(dmnsn_color color);
+dmnsn_CIE_xyY dmnsn_xyY_from_color(dmnsn_color color);
+dmnsn_CIE_Lab dmnsn_Lab_from_color(dmnsn_color color,
+                                   dmnsn_CIE_XYZ white);
+dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color,
+                                   dmnsn_CIE_XYZ white);
+dmnsn_sRGB    dmnsn_sRGB_from_color(dmnsn_color color);
+
+/* Perceptually correct color combination */
+dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
+
+/* Perceptual color difference */
+double dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2);
+@end example
+
+The Dimension Library supports many different representations of color.  The details of each representation are beyond the scope of this manual, but libdimension supports CIE XYZ, xyY, L*a*b*, L*u*v*, and sRGB color.  CIE L*a*b* and L*u*v* are designed to be perceptually uniform, meaning changes in their color coordinates correspond to perceptual changes of equal magnitude.  The @code{dmnsn_color} type libdimension uses to represent colors internally, with an unspecified representation.  The @code{.filter} field gives the color's filtered transparency, which lets same-colored light through, while the @code{.trans} field stores non-filtered transparency.
+
+The @code{dmnsn_color_from_*()} and @code{dmnsn_*_from_color()} functions are used to convert to and from the @code{dmnsn_color} type.  The conversions to @code{dmnsn_color} set the @code{.filter} and @code{.trans} fields to zero, and those fields are ignored by the inverse conversions.  Conversions to and from CIE L*a*b* and L*u*v* colors take an extra parameter, which specifies the absolute color value of the whitepoint the conversions are relative to.  @code{dmnsn_whitepoint} is a good value for this parameter.
+
+@code{dmnsn_color_add()} adds two colors in a perceptually-correct way, and @code{dmnsn_color_difference()} returns the magnatude of the perceptual difference between two colors.
+
+
+@node Canvas
+@chapter Canvas
+
+@tindex dmnsn_canvas*
+
+@findex dmnsn_new_canvas
+@findex dmnsn_delete_canvas
+@findex dmnsn_get_pixel
+@findex dmnsn_set_pixel
+@findex dmnsn_pixel_at
+
+@cindex canvas
+@cindex rendering target
+
+@example
+typedef struct {
+  /* width, height */
+  unsigned int x, y;
+
+  /*
+   * Stored in first-quadrant representation (origin is bottom-left).
+   * The pixel at (a,b) is accessible as pixels[b*x + a].
+   */
+  dmnsn_color *pixels;
+} dmnsn_canvas;
+
+/* Allocate and free a canvas */
+dmnsn_canvas *dmnsn_new_canvas(unsigned int x, unsigned int y);
+void dmnsn_delete_canvas(dmnsn_canvas *canvas);
+
+/* Pixel accessors */
+dmnsn_color dmnsn_get_pixel(const dmnsn_canvas *canvas,
+                            unsigned int x, unsigned int y);
+void dmnsn_set_pixel(dmnsn_canvas *canvas,
+                     unsigned int x, unsigned int y,
+                     dmnsn_color color);
+dmnsn_color *dmnsn_pixel_at(dmnsn_canvas *canvas,
+                            unsigned int x, unsigned int y);
+@end example
+
+The target of a rendering operation in The Dimension Library is a canvas object, represented by the type @code{dmnsn_canvas*}.  This type stores a @code{dmnsn_color} for each pixel in the @code{->pixels} field, as well as the dimensions of the canvas in the @code{->x} and @code{->y} fields.  The pixel at (x,y) can be examined or set by the accessors @code{dmnsn_get_pixel()} and @code{dmnsn_set_pixel()}, and referenced by @code{dmnsn_pixel_at()}.
+
+Canvases may be imported from or exported to images.  In the future, canvases will also be able to be treated as object textures, to support images as textures.
+
+@node PNG Import and Export
+@section PNG Import and Export
+
+@example
+/* Write canvas to file in PNG format.  Returns 0 on success, nonzero
+   on failure */
+int dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file);
+dmnsn_progress *
+dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file);
+
+/* Read a canvas from a PNG file.  Returns NULL on failure. */
+dmnsn_canvas *dmnsn_png_read_canvas(FILE *file);
+dmnsn_progress *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas,
+                                            FILE *file);
+@end example
+
+The Dimension Library supports import and export of canvas to and from PNG files; this is currently the only supported image type.  The interface is simple: @code{dmnsn_png_write_canvas()} writes the canvas in PNG format to the given file, at maximum quality; @code{dmnsn_png_read_canvas()} imports a PNG file to a canvas.  The @code{*_async()} versions work as described in @ref{Asynchronicity}.
 
 
 @node Type Index

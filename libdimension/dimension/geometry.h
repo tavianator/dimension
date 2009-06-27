@@ -52,6 +52,8 @@ dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d);
 /* Left-handed rotation; theta/|theta| = axis, |theta| = angle */
 dmnsn_matrix dmnsn_rotation_matrix(dmnsn_vector theta);
 
+dmnsn_line dmnsn_line_construct(dmnsn_vector x0, dmnsn_vector n);
+
 /* Vector and matrix arithmetic */
 
 dmnsn_vector dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs);

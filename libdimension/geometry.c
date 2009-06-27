@@ -104,6 +104,14 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
   );
 }
 
+/* Construct a line */
+dmnsn_line
+dmnsn_line_construct(dmnsn_vector x0, dmnsn_vector n)
+{
+  dmnsn_line l = { .x0 = x0, .n = n };
+  return l;
+}
+
 /* Add two vectors */
 dmnsn_vector
 dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)

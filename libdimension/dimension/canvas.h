@@ -26,6 +26,7 @@
 #define DIMENSION_CANVAS_H
 
 typedef struct {
+  /* width, height */
   unsigned int x, y;
 
   /*
