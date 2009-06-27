@@ -37,8 +37,8 @@ extern "C" {
 #include <dimension/color.h>
 #include <dimension/canvas.h>
 #include <dimension/object.h>
-#include <dimension/sphere.h>
-#include <dimension/cube.h>
+  #include <dimension/sphere.h>
+  #include <dimension/cube.h>
 #include <dimension/camera.h>
 #include <dimension/scene.h>
 #include <dimension/raytrace.h>

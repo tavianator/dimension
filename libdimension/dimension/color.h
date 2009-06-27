@@ -27,10 +27,10 @@
 
 /* Internally, we use CIE 1931 XYZ color. */
 typedef struct {
-  double X, Y, Z;
   double filter, trans; /* Filter transparancy only lets light of this color
                            through; regular transparancy lets all colors
                            through.  filter + trans should be <= 1.0. */
+  double X, Y, Z;
 } dmnsn_color;
 
 typedef struct {

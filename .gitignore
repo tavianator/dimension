@@ -23,14 +23,18 @@ Makefile.in
 /doc/*.html/
 /doc/*.info
 /doc/*.ky
+/doc/*.kys
 /doc/*.log
 /doc/*.pdf
 /doc/*.pg
+/doc/*.pgs
 /doc/*.ps
+/doc/*.tmp
 /doc/*.toc
 /doc/*.tp
 /doc/*.tps
 /doc/*.vr
+/doc/*.vrs
 /doc/texinfo.tex
 
 # Files created by `make check'

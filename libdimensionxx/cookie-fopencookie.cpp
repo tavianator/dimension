@@ -21,8 +21,8 @@
 #include "dimensionxx.hpp"
 
 #ifndef _GNU_SOURCE
-// For fopencookie()
-#  define _GNU_SOURCE
+  // For fopencookie()
+  #define _GNU_SOURCE
 #endif
 #include <stdio.h>
 
