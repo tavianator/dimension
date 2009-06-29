@@ -35,6 +35,4 @@ typedef struct {
 dmnsn_scene *dmnsn_new_scene();
 void dmnsn_delete_scene(dmnsn_scene *scene);
 
-void dmnsn_raytrace_scene(dmnsn_scene *scene);
-
 #endif /* DIMENSION_SCENE_H */

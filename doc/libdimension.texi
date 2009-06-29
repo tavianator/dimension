@@ -4,6 +4,8 @@
 @settitle The Dimension 3-D Rendering Library
 @c %**end of header
 
+@syncodeindex vr fn
+
 @c Wrap code examples at 72 chars, please
 
 @copying
@@ -27,7 +29,7 @@ Copyright @copyright{} 2009 Tavian Barnes
 @end ifnottex
 
 @menu
-* Introduction:: An introduction to the Dimension library
+* Introduction:: An introduction to the Dimension Library
 * Error Handling:: How libdimension handles warnings and errors
 * Arrays:: A generic interface for arrays of arbitrary objects
 * Asynchronicity:: An interface for controlling background tasks
@@ -35,13 +37,10 @@ Copyright @copyright{} 2009 Tavian Barnes
 * Color:: Correct color handling
 * Canvases:: Where the results of rendering are stored
 * Objects:: Physical objects in a scene
-@ignore
 * Cameras:: How a 3-D image is seen in 2-D
 * Scenes:: Scene objects which hold everything needed to render an image
-* Rendering:: Methods of rendering scenes
-@end ignore
 * Type Index::
-* Function Index::
+* Function and Constant Index::
 * Concept Index::
 @end menu
 
@@ -52,6 +51,8 @@ Copyright @copyright{} 2009 Tavian Barnes
 @cindex introduction
 @cindex overview
 The Dimension Library is a C library for rendering photo-realistic 3-D scenes.  It is designed to be the workhorse for the future ``dimension'' program.  The Dimension Library will in the future be a full-fledged high-performance raytracing library, but right now is in very early stages and heavy development.
+
+The C library is probably not the interface you want to use; the C++ interface is much nicer.  libdimension was written in C to facilitate easy bindings for other languages.  Currently the only language binding is C++, but more languages, such as scripting languages, will be added in the future.  As such, this documentation gives a bottom-up overview of the Dimension Library, to allow someone reading it to have a full and complete understanding of the library, rather than a simple top-down overview.
 
 
 @node Error Handling
@@ -68,12 +69,12 @@ typedef enum @{
   DMNSN_SEVERITY_HIGH    /* Always die */
 @} dmnsn_severity;
 
-@findex dmnsn_error
+@findex dmnsn_error()
 #define dmnsn_error(severity, str) /* ... */
 
-@findex dmnsn_get_resilience
+@findex dmnsn_get_resilience()
 dmnsn_severity dmnsn_get_resilience();
-@findex dmnsn_set_resilience
+@findex dmnsn_set_resilience()
 void dmnsn_set_resilience(dmnsn_severity resilience);
 @end example
 
@@ -99,54 +100,54 @@ Dimension ERROR: <function>, line <line>: <description>
 @chapter Arrays
 
 @example
-@tindex dmnsn_array*
+@tindex dmnsn_array *
 typedef struct @{
   /* ... */
 @} dmnsn_array;
 
 /* Array allocation */
-@findex dmnsn_new_array
+@findex dmnsn_new_array()
 dmnsn_array *dmnsn_new_array(size_t obj_size);
-@findex dmnsn_delete_array
+@findex dmnsn_delete_array()
 void dmnsn_delete_array(dmnsn_array *array);
 
 /* Thread-safe atomic array access */
 
-@findex dmnsn_array_push
+@findex dmnsn_array_push()
 void dmnsn_array_push(dmnsn_array *array, const void *obj);
-@findex dmnsn_array_pop
+@findex dmnsn_array_pop()
 void dmnsn_array_pop(dmnsn_array *array, void *obj);
-@findex dmnsn_array_get
+@findex dmnsn_array_get()
 void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
-@findex dmnsn_array_set
+@findex dmnsn_array_set()
 void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
 
-@findex dmnsn_array_size
+@findex dmnsn_array_size()
 size_t dmnsn_array_size(const dmnsn_array *array);
-@findex dmnsn_array_resize
+@findex dmnsn_array_resize()
 void   dmnsn_array_resize(dmnsn_array *array, size_t length);
 
 /* Non-atomic operations for manual locking */
-@findex dmnsn_array_at
+@findex dmnsn_array_at()
 void *dmnsn_array_at(dmnsn_array *array, size_t i);
-@findex dmnsn_array_size_unlocked
+@findex dmnsn_array_size_unlocked()
 size_t dmnsn_array_size_unlocked(const dmnsn_array *array);
-@findex dmnsn_array_resize_unlocked
+@findex dmnsn_array_resize_unlocked()
 void dmnsn_array_resize_unlocked(dmnsn_array *array, size_t length);
 
 /* Manual locking */
-@findex dmnsn_array_rdlock
+@findex dmnsn_array_rdlock()
 void dmnsn_array_rdlock(const dmnsn_array *array);
-@findex dmnsn_array_wrlock
+@findex dmnsn_array_wrlock()
 void dmnsn_array_wrlock(dmnsn_array *array);
-@findex dmnsn_array_unlock
+@findex dmnsn_array_unlock()
 void dmnsn_array_unlock(const dmnsn_array *array);
 @end example
 
 @cindex array
-The Dimension Library often has cause to work with adjustable-size arrays.  It provides an interface for dynamically-allocated arrays of arbitrary objects.  Arrays allocated with the @code{dmnsn_new_array()} function, and freed with the @code{dmnsn_delete_array()} function, a pattern common in libdimension.  @code{dmnsn_new_array()} takes the size of the new array's elements as its parameter.  Unlike other allocation functions throughout libdimension, @code{dmnsn_new_array()} cannot fail if it returns (other allocators may return NULL).  In fact, all array operations are guaranteed to either succeed or report a fatal error, which may happen if memory allocation fails.
+The Dimension Library often has cause to work with adjustable-size arrays.  It provides an interface for dynamically-allocated arrays of arbitrary objects.  Arrays are allocated with the @code{dmnsn_new_array()} function, and freed with the @code{dmnsn_delete_array()} function, a pattern common in libdimension.  @code{dmnsn_new_array()} takes the size of the new array's elements as its parameter.  Unlike other allocation functions throughout libdimension, @code{dmnsn_new_array()} cannot fail if it returns (other allocators may return NULL).  In fact, all array operations are guaranteed to either succeed or report a fatal error, which may happen if memory allocation fails.
 
-Arrays in libdimension are thread-safe; every individual operation is atomic.  libdimension provides push, pop, get, and set operations for arrays, taking a pointer to an object to read or write as their last parameter, the array index when applicable as the second-last parameter, and the @code{dmnsn_array*} as the first parameter.  The array's length may be queried with @code{dmnsn_array_size()}, or set with @code{dmnsn_array_resize()}.
+Arrays in libdimension are thread-safe; every individual operation is atomic.  libdimension provides push, pop, get, and set operations for arrays, taking a pointer to an object to read or write as their last parameter, the array index when applicable as the second-last parameter, and the @code{dmnsn_array *} as the first parameter.  The array's length may be queried with @code{dmnsn_array_size()}, or set with @code{dmnsn_array_resize()}.
 
 When sets of array operations must be atomic, one may use the manual locking array interface.  Implemented as a read-write lock, applications should call @code{dmnsn_array_rdlock()} to set a read-lock, @code{dmnsn_array_wrlock()} to set a write-lock, and @code{dmnsn_array_unlock()} to unlock the array.  While the array is locked, one may call @code{dmnsn_array_at()} to get a pointer to the @code{i}'th element of the array, or the @code{*_unlocked} suffixed versions of the @code{..._size()} and @code{..._resize()} functions to get or set the size, respectively.
 
@@ -155,43 +156,43 @@ When sets of array operations must be atomic, one may use the manual locking arr
 @chapter Asynchronicity
 
 @example
-@tindex dmnsn_progress*
+@tindex dmnsn_progress *
 typedef struct @{
   /* ... */
 @} dmnsn_progress;
 
 /* Progress allocation */
-@findex dmnsn_new_progress
+@findex dmnsn_new_progress()
 dmnsn_progress *dmnsn_new_progress();
-@findex dmnsn_delete_progress
+@findex dmnsn_delete_progress()
 void dmnsn_delete_progress(dmnsn_progress *progress);
 
 /* Ensures completion of the worker thread */
-@findex dmnsn_finish_progress
+@findex dmnsn_finish_progress()
 int dmnsn_finish_progress(dmnsn_progress *progress);
 
 /* Routines for user */
-@findex dmnsn_get_progress
+@findex dmnsn_get_progress()
 double dmnsn_get_progress(const dmnsn_progress *progress);
-@findex dmnsn_wait_progress
+@findex dmnsn_wait_progress()
 void dmnsn_wait_progress(const dmnsn_progress *progress, double prog);
 
 /* Routines for worker thread */
-@findex dmnsn_new_progress_element
+@findex dmnsn_new_progress_element()
 void dmnsn_new_progress_element(dmnsn_progress *progress,
                                 unsigned int total);
-@findex dmnsn_increment_progress
+@findex dmnsn_increment_progress()
 void dmnsn_increment_progress(dmnsn_progress *progress);
-@findex dmnsn_done_progress
+@findex dmnsn_done_progress()
 void dmnsn_done_progress(dmnsn_progress *progress);
 @end example
 
 @cindex asynchronous task
 @cindex background task
 @cindex progress indicator
-As The Dimension Library is a raytracing engine, some routines are likely to take a long time.  These routines may be run in a background thread, and controlled with a common interface.  Routines supporting this interface end in @code{_async}, such as @code{dmnsn_raytrace_scene_async()}, and return a dmnsn_progress* object, so named because it allows an application to be query the progress of the background task.  By necessity, all @code{dmnsn_progress*} operations are atomic and thread-safe.
+As the Dimension Library is a raytracing engine, some routines are likely to take a long time.  These routines may be run in a background thread, and controlled with a common interface.  Routines supporting this interface end in @code{_async}, such as @code{dmnsn_raytrace_scene_async()}, and return a @code{dmnsn_progress *} object, so named because it allows an application to be query the progress of the background task.  By necessity, all @code{dmnsn_progress *} operations are atomic and thread-safe.
 
-Progress objects are allocated and deallocated in the standard libdimension way, but also support a unique @code{dmnsn_finish_progress()} function.  This function waits for the background thread to complete, and then destroys the @code{dmnsn_progress*} object.  Never use the result of a background task before calling @code{dmnsn_finish_progress()}, even if the progress seems to be at 100%!  @code{dmnsn_delete_progress()} should only be called from within failed @code{*_async()} functions, to deallocate a progress object before it is associated with a running thread.
+Progress objects are allocated and deallocated in the standard libdimension way, but also support a unique @code{dmnsn_finish_progress()} function.  This function waits for the background thread to complete, and then destroys the @code{dmnsn_progress *} object.  Never use the result of a background task before calling @code{dmnsn_finish_progress()}, even if the progress seems to be at 100%!  @code{dmnsn_delete_progress()} should only be called from within failed @code{*_async()} functions, to deallocate a progress object before it is associated with a running thread.
 
 Users of these asynchronous tasks will mainly be interested in the functions @code{dmnsn_get_progress()} and @code{dmnsn_wait_progress()}.  @code{dmnsn_get_progress()} returns the progress of the background task, a value between 0.0 and 1.0.  @code{dmnsn_wait_progress()} simply waits for @code{dmnsn_get_progress()} to be >= @code{prog}, but in a much better way than spinlocking (internally, a condition variable is used).
 
@@ -236,62 +237,62 @@ typedef struct @{
 
 /* Vector/matrix construction */
 
-@findex dmnsn_vector_construct
+@findex dmnsn_vector_construct()
 dmnsn_vector dmnsn_vector_construct(double x, double y, double z);
 
-@findex dmnsn_matrix_construct
+@findex dmnsn_matrix_construct()
 dmnsn_matrix
 dmnsn_matrix_construct(double a0, double a1, double a2, double a3,
                        double b0, double b1, double b2, double b3,
                        double c0, double c1, double c2, double c3,
                        double d0, double d1, double d2, double d3);
 
-@findex dmnsn_identity_matrix
+@findex dmnsn_identity_matrix()
 dmnsn_matrix dmnsn_identity_matrix();
-@findex dmnsn_scale_matrix
+@findex dmnsn_scale_matrix()
 dmnsn_matrix dmnsn_scale_matrix(dmnsn_vector s);
-@findex dmnsn_translation_matrix
+@findex dmnsn_translation_matrix()
 dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d);
-@findex dmnsn_rotation_matrix
+@findex dmnsn_rotation_matrix()
 dmnsn_matrix dmnsn_rotation_matrix(dmnsn_vector theta);
 
-@findex dmnsn_line_construct
+@findex dmnsn_line_construct()
 dmnsn_line dmnsn_line_construct(dmnsn_vector x0, dmnsn_vector n);
 
 /* Vector and matrix arithmetic */
 
-@findex dmnsn_vector_add
+@findex dmnsn_vector_add()
 dmnsn_vector dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs);
-@findex dmnsn_vector_sub
+@findex dmnsn_vector_sub()
 dmnsn_vector dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs);
-@findex dmnsn_vector_mul
+@findex dmnsn_vector_mul()
 dmnsn_vector dmnsn_vector_mul(double lhs, dmnsn_vector rhs);
-@findex dmnsn_vector_div
+@findex dmnsn_vector_div()
 dmnsn_vector dmnsn_vector_div(dmnsn_vector lhs, double rhs);
 
-@findex dmnsn_vector_dot
+@findex dmnsn_vector_dot()
 double       dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs);
-@findex dmnsn_vector_cross
+@findex dmnsn_vector_cross()
 dmnsn_vector dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs);
 
-@findex dmnsn_vector_norm
+@findex dmnsn_vector_norm()
 double       dmnsn_vector_norm(dmnsn_vector n);
-@findex dmnsn_vector_normalize
+@findex dmnsn_vector_normalize()
 dmnsn_vector dmnsn_vector_normalize(dmnsn_vector n);
 
-@findex dmnsn_matrix_inverse
+@findex dmnsn_matrix_inverse()
 dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
-@findex dmnsn_matrix_mul
+@findex dmnsn_matrix_mul()
 dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
-@findex dmnsn_matrix_vector_mul
+@findex dmnsn_matrix_vector_mul()
 dmnsn_vector dmnsn_matrix_vector_mul(dmnsn_matrix lhs,
                                      dmnsn_vector rhs);
-@findex dmnsn_matrix_line_mul
+@findex dmnsn_matrix_line_mul()
 dmnsn_line   dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs);
 
-@findex dmnsn_line_point
+@findex dmnsn_line_point()
 dmnsn_vector dmnsn_line_point(dmnsn_line l, double t);
-@findex dmnsn_line_index
+@findex dmnsn_line_index()
 double dmnsn_line_index(dmnsn_line l, dmnsn_vector x);
 @end example
 
@@ -300,7 +301,7 @@ double dmnsn_line_index(dmnsn_line l, dmnsn_vector x);
 @cindex matrix
 @cindex line
 @cindex ray
-For performing 3-D computational geometry, The Dimension Library supports geometric types and many operations on these types.  libdimension defines the @code{dmnsn_vector}, @code{dmnsn_matrix}, and @code{dmnsn_line} geometric types.  They may be easily constructed by the self-explanatory @code{dmnsn_vector_construct()}, @code{dmnsn_matrix_construct()}, or @code{dmnsn_line_construct()}.
+For performing 3-D computational geometry, the Dimension Library supports geometric types and many operations on these types.  libdimension defines the @code{dmnsn_vector}, @code{dmnsn_matrix}, and @code{dmnsn_line} geometric types.  They may be easily constructed by the self-explanatory @code{dmnsn_vector_construct()}, @code{dmnsn_matrix_construct()}, or @code{dmnsn_line_construct()}.
 
 @cindex transformation
 @cindex norm
@@ -367,38 +368,38 @@ extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
 
 /* Color conversions */
 
-@findex dmnsn_color_from_XYZ
+@findex dmnsn_color_from_XYZ()
 dmnsn_color dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ);
-@findex dmnsn_color_from_xyY
+@findex dmnsn_color_from_xyY()
 dmnsn_color dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY);
-@findex dmnsn_color_from_Lab
+@findex dmnsn_color_from_Lab()
 dmnsn_color dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab,
                                  dmnsn_CIE_XYZ white);
-@findex dmnsn_color_from_Luv
+@findex dmnsn_color_from_Luv()
 dmnsn_color dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv,
                                  dmnsn_CIE_XYZ white);
-@findex dmnsn_color_from_sRGB
+@findex dmnsn_color_from_sRGB()
 dmnsn_color dmnsn_color_from_sRGB(dmnsn_sRGB sRGB);
 
-@findex dmnsn_XYZ_from_color
+@findex dmnsn_XYZ_from_color()
 dmnsn_CIE_XYZ dmnsn_XYZ_from_color(dmnsn_color color);
-@findex dmnsn_xyY_from_color
+@findex dmnsn_xyY_from_color()
 dmnsn_CIE_xyY dmnsn_xyY_from_color(dmnsn_color color);
-@findex dmnsn_Lab_from_color
+@findex dmnsn_Lab_from_color()
 dmnsn_CIE_Lab dmnsn_Lab_from_color(dmnsn_color color,
                                    dmnsn_CIE_XYZ white);
-@findex dmnsn_Luv_from_color
+@findex dmnsn_Luv_from_color()
 dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color,
                                    dmnsn_CIE_XYZ white);
-@findex dmnsn_sRGB_from_color
+@findex dmnsn_sRGB_from_color()
 dmnsn_sRGB    dmnsn_sRGB_from_color(dmnsn_color color);
 
 /* Perceptually correct color combination */
-@findex dmnsn_color_add
+@findex dmnsn_color_add()
 dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
 
 /* Perceptual color difference */
-@findex dmnsn_color_difference
+@findex dmnsn_color_difference()
 double dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2);
 @end example
 
@@ -409,7 +410,7 @@ double dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2);
 @cindex CIE L*u*v*
 @cindex sRGB
 @cindex RGB
-The Dimension Library supports many different representations of color.  The details of each representation are beyond the scope of this manual, but libdimension supports CIE XYZ, xyY, L*a*b*, L*u*v*, and sRGB color.  CIE L*a*b* and L*u*v* are designed to be perceptually uniform, meaning changes in their color coordinates correspond to perceptual changes of equal magnitude.  The @code{dmnsn_color} type libdimension uses to represent colors internally, with an unspecified representation.  The @code{.filter} field gives the color's filtered transparency, which lets same-colored light through, while the @code{.trans} field stores non-filtered transparency.
+The Dimension Library supports many different representations of color.  The details of each representation are beyond the scope of this manual, but libdimension supports CIE XYZ, xyY, L*a*b*, L*u*v*, and sRGB color.  CIE L*a*b* and L*u*v* are designed to be perceptually uniform, meaning changes in their color coordinates correspond to perceptual changes of equal magnitude.  The @code{dmnsn_color} type libdimension itself to represent colors, in an unspecified format.  The @code{.filter} field gives the color's filtered transparency, which lets same-colored light through, while the @code{.trans} field stores non-filtered transparency.
 
 The @code{dmnsn_color_from_*()} and @code{dmnsn_*_from_color()} functions are used to convert to and from the @code{dmnsn_color} type.  The conversions to @code{dmnsn_color} set the @code{.filter} and @code{.trans} fields to zero, and those fields are ignored by the inverse conversions.  Conversions to and from CIE L*a*b* and L*u*v* colors take an extra parameter, which specifies the absolute color value of the whitepoint the conversions are relative to.  @code{dmnsn_whitepoint} is a good value for this parameter.
 
@@ -420,40 +421,36 @@ The @code{dmnsn_color_from_*()} and @code{dmnsn_*_from_color()} functions are us
 @chapter Canvases
 
 @example
-@tindex dmnsn_canvas*
+@tindex dmnsn_canvas *
 typedef struct @{
   /* width, height */
   unsigned int x, y;
 
-  /*
-   * Stored in first-quadrant representation (origin is bottom-left).
-   * The pixel at (a,b) is accessible as pixels[b*x + a].
-   */
-  dmnsn_color *pixels;
+  /* ... */
 @} dmnsn_canvas;
 
 /* Allocate and free a canvas */
-@findex dmnsn_new_canvas
+@findex dmnsn_new_canvas()
 dmnsn_canvas *dmnsn_new_canvas(unsigned int x, unsigned int y);
-@findex dmnsn_delete_canvas
+@findex dmnsn_delete_canvas()
 void dmnsn_delete_canvas(dmnsn_canvas *canvas);
 
 /* Pixel accessors */
-@findex dmnsn_get_pixel
+@findex dmnsn_get_pixel()
 dmnsn_color dmnsn_get_pixel(const dmnsn_canvas *canvas,
                             unsigned int x, unsigned int y);
-@findex dmnsn_set_pixel
+@findex dmnsn_set_pixel()
 void dmnsn_set_pixel(dmnsn_canvas *canvas,
                      unsigned int x, unsigned int y,
                      dmnsn_color color);
-@findex dmnsn_pixel_at
+@findex dmnsn_pixel_at()
 dmnsn_color *dmnsn_pixel_at(dmnsn_canvas *canvas,
                             unsigned int x, unsigned int y);
 @end example
 
 @cindex canvas
 @cindex rendering target
-The target of a rendering operation in The Dimension Library is a canvas object, represented by the type @code{dmnsn_canvas*}.  This type stores a @code{dmnsn_color} for each pixel in the @code{->pixels} field, as well as the dimensions of the canvas in the @code{->x} and @code{->y} fields.  The pixel at (x,y) can be examined or set by the accessors @code{dmnsn_get_pixel()} and @code{dmnsn_set_pixel()}, and referenced by @code{dmnsn_pixel_at()}.
+The target of a rendering operation in the Dimension Library is a canvas object, represented by the type @code{dmnsn_canvas *}.  This type stores a @code{dmnsn_color} for each pixel in the @code{->pixels} field, as well as the dimensions of the canvas in the @code{->x} and @code{->y} fields.  The pixel at (x,y) can be examined or set by the accessors @code{dmnsn_get_pixel()} and @code{dmnsn_set_pixel()}, and referenced by @code{dmnsn_pixel_at()}.
 
 Canvases may be imported from or exported to images.  In the future, canvases will also be able to be treated as object textures, to support images as textures.
 
@@ -467,16 +464,16 @@ Canvases may be imported from or exported to images.  In the future, canvases wi
 @example
 /* Write canvas to file in PNG format.  Returns 0 on success, nonzero
    on failure */
-@findex dmnsn_png_write_canvas
+@findex dmnsn_png_write_canvas()
 int dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file);
-@findex dmnsn_png_write_canvas_async
+@findex dmnsn_png_write_canvas_async()
 dmnsn_progress *
 dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file);
 
 /* Read a canvas from a PNG file.  Returns NULL on failure. */
-@findex dmnsn_png_read_canvas
+@findex dmnsn_png_read_canvas()
 dmnsn_canvas *dmnsn_png_read_canvas(FILE *file);
-@findex dmnsn_png_read_canvas_async
+@findex dmnsn_png_read_canvas_async()
 dmnsn_progress *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas,
                                             FILE *file);
 @end example
@@ -489,7 +486,7 @@ The Dimension Library supports import and export of canvas to and from PNG files
 @chapter Objects
 
 @example
-@tindex dmnsn_object*
+@tindex dmnsn_object *
 typedef struct @{
   /* Generic pointer for object info */
   void *ptr;
@@ -512,14 +509,19 @@ typedef int dmnsn_object_inside_fn(const dmnsn_object *object,
                                    dmnsn_vector point);
 
 /* Allocate a dummy object */
-@findex dmnsn_new_object
+@findex dmnsn_new_object()
 dmnsn_object *dmnsn_new_object();
-@findex dmnsn_delete_object
+@findex dmnsn_delete_object()
 void dmnsn_delete_object(dmnsn_object *object);
 @end example
 
 @cindex object
-The Dimension Library renders 3-D objects, represented by the @code{dmnsn_object*} type.  This type has callback functions for determining if and where a ray intersects the object, and whether a point is inside the object.  In the future, many more callbacks will be added.  libdimension comes with a few simple object types like spheres and cubes, or you may create your own by customizing the object callbacks.  The field @code{->ptr} is a void pointer which may be used to store additional information about an object.  The @code{->trans} field is a transformation matrix, transforming the rays which intersect the object, rather than the object itself.  Thus, @code{->trans} should be set to the inverse of the transformations you wish to apply to the object.
+The Dimension Library renders 3-D objects, represented by the @code{dmnsn_object *} type.  This type has callback functions for determining if and where a ray intersects the object, and whether a point is inside the object.  In the future, many more callbacks will be added.  libdimension comes with a few simple object types like spheres and cubes, or you may create your own by customizing the object callbacks.  The field @code{->ptr} is a void pointer which may be used to store additional information about an object.  The @code{->trans} field is a transformation matrix, transforming the rays which intersect the object, rather than the object itself.  Thus, @code{->trans} should be set to the inverse of the transformations you wish to apply to the object.
+
+@cindex object callbacks
+The @code{->intersections_fn} callback should point to a function with the same signature as the @code{dmnsn_object_intersections_fn} type.  It should return a @code{dmnsn_array} of @code{double}'s, holding each @code{t}-value of the given @code{line} which intersects with the object.  In the case that there are no intersections, an empty array should be returned.
+
+The @code{->inside_fn} callback should point to a function matching the signature of the @code{dmnsn_object_inside_fn} type.  It should return 0 if the given @code{point} is outside the object, and nonzero when that point is inside the object.  The callback is free to return any value in the case that the point lies directly on the surface of the object.
 
 @menu
 * Spheres:: Spheres
@@ -530,25 +532,114 @@ The Dimension Library renders 3-D objects, represented by the @code{dmnsn_object
 @section Spheres
 
 @example
-@findex dmnsn_new_sphere
+@findex dmnsn_new_sphere()
 dmnsn_object *dmnsn_new_sphere();
-@findex dmnsn_delete_sphere
+@findex dmnsn_delete_sphere()
 void dmnsn_delete_sphere(dmnsn_object *sphere);
 @end example
 
+@cindex sphere
 The Dimension Library has a few built-in basic shape primitives.  One of them is the sphere; @code{dmnsn_new_sphere()} returns a sphere of radius 1, centered at the origin.  Use the object's transformation matrix to scale, translate, and/or rotate it.
 
 @node Cubes
 @section Cubes
 
 @example
-@findex dmnsn_new_cube
+@findex dmnsn_new_cube()
 dmnsn_object *dmnsn_new_cube();
-@findex dmnsn_delete_cube
+@findex dmnsn_delete_cube()
 void dmnsn_delete_cube(dmnsn_object *cube);
 @end example
 
+@cindex cube
 @code{dmnsn_new_cube()} returns a cube, axis-aligned, from (-1, -1, -1) to (1, 1, 1).  Use its transformation matrix to scale, translate, and/or rotate it.
+
+
+@node Cameras
+@chapter Cameras
+
+@example
+@tindex dmnsn_camera *
+typedef struct @{
+  /* Generic pointer for camera info */
+  void *ptr;
+
+  /* Callback function */
+  dmnsn_camera_ray_fn *ray_fn;
+@} dmnsn_camera;
+
+/* Camera callback types */
+@tindex dmnsn_camera_ray_fn
+typedef dmnsn_line dmnsn_camera_ray_fn(const dmnsn_camera *camera,
+                                       const dmnsn_canvas *canvas,
+                                       unsigned int x, unsigned int y);
+
+@findex dmnsn_new_camera()
+dmnsn_camera *dmnsn_new_camera();
+@findex dmnsn_delete_camera()
+void dmnsn_delete_camera(dmnsn_camera *camera);
+@end example
+
+@cindex camera
+In order to project a 3-D scene onto a 2-D plane, the Dimension Library uses a generic camera type.  A camera provides the Dimension Library the camera ray corresponding to each pixel in the canvas, by its @code{->ray_fn} callback.
+
+@code{->ray_fn} should point to a function matching the signature of the type @code{dmnsn_camera_ray_fn}, and should return the ray corresponding to the pixel at (@code{x}, @code{y}) in the given @code{canvas}.
+
+@menu
+* Perspective Cameras:: Simple perspective cameras
+@end menu
+
+@node Perspective Cameras
+@section Perspective Cameras
+
+@example
+@findex dmnsn_new_perspective_camera()
+dmnsn_camera *dmnsn_new_perspective_camera(dmnsn_matrix trans);
+@findex dmnsn_delete_perspective_camera()
+void dmnsn_delete_perspective_camera(dmnsn_camera *camera);
+@end example
+
+@cindex perspective
+The function @code{dmnsn_new_perspective_camera} creates a perspective camera, situated at the origin, looking toward (0, 0, 1), and aiming at a screen from (-0.5, -0.5) to (0.5, 0.5) on the z = 1 plane.  Camera rays are transformed by the parameter @code{trans}.
+
+
+@node Scenes
+@chapter Scenes
+
+@example
+@tindex dmnsn_scene *
+typedef struct @{
+  dmnsn_color background;
+  dmnsn_array *objects;
+  dmnsn_camera *camera;
+  dmnsn_canvas *canvas;
+@} dmnsn_scene;
+
+@findex dmnsn_new_scene()
+dmnsn_scene *dmnsn_new_scene();
+@findex dmnsn_delete_scene()
+void dmnsn_delete_scene(dmnsn_scene *scene);
+@end example
+
+@cindex scene
+The @code{dmnsn_scene *} type ties all the components of a 3-D world together.  A scene stores a background color in its @code{->background} field, an array of @code{const dmnsn_object *}'s in its @code{->objects} field, a @code{dmnsn_camera *} in its @code{->camera} field, and a @code{dmnsn_canvas *} in its @code{->canvas} field.  Scenes can be rendered, producing an image in their canvas field.
+
+@menu
+* Raytracing:: Rendering a scene by raytracing
+@end menu
+
+@node Raytracing
+@section Raytracing
+
+@example
+@findex dmnsn_raytrace_scene()
+void dmnsn_raytrace_scene(dmnsn_scene *scene);
+@findex dmnsn_raytrace_scene_async()
+dmnsn_progress *dmnsn_raytrace_scene_async(dmnsn_scene *scene);
+@end example
+
+@cindex raytracing
+The @code{dmnsn_raytrace_scene()} function renders a scene by raytracing - casting rays from the camera to objects in its view.  Currently, the raytracing engine is quite simple - it shades pixels where objects appear according to their distance from the camera, closer objects being brighter.  The @code{..._async()} version works as described in @ref{Asynchronicity}.
 
 
 @node Type Index
@@ -557,8 +648,8 @@ void dmnsn_delete_cube(dmnsn_object *cube);
 @printindex tp
 
 
-@node Function Index
-@unnumbered Function Index
+@node Function and Constant Index
+@unnumbered Function and Constant Index
 
 @printindex fn
 
