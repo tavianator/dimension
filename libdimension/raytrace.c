@@ -182,12 +182,14 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
   return retval;
 }
 
-/* Actually raytrace a scene */
+/*
+ * Actually raytrace a scene
+ */
 static int
 dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
                           unsigned int index, unsigned int threads)
 {
-  unsigned int i, j, k, l;
+  unsigned int x, y, i, j;
   unsigned int width, height;
   double t, t_temp;
   dmnsn_object *object;
@@ -199,23 +201,21 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   width  = scene->canvas->x;
   height = scene->canvas->y;
 
-  /* Iterate through each pixel */
-  for (j = 0; j < height; ++j) {
-    for (i = 0; i < width; ++i) {
-      /* Only do the work which we were assigned */
-      if ((j*width + i)%threads != index) {
-        continue;
-      }
+  /* Initialize `x' */
+  x = width + index;
 
+  /* Iterate through each pixel */
+  for (y = 0; y < height; ++y) {
+    for (x -= width; x < width; x += threads) {
       /* Set the pixel to the background color */
       color = scene->background;
       t = -1.0;
 
-      /* Get the ray corresponding to the (i,j)th pixel */
-      ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, i, j);
+      /* Get the ray corresponding to the (x,y)'th pixel */
+      ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, x, y);
 
-      for (k = 0; k < dmnsn_array_size(scene->objects); ++k) {
-        dmnsn_array_get(scene->objects, k, &object);
+      for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
+        dmnsn_array_get(scene->objects, i, &object);
 
         /* Transform the ray according to the object */
         ray_trans = dmnsn_matrix_line_mul(object->trans, ray);
@@ -223,8 +223,8 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
         /* Test for intersections with objects */
         intersections = (*object->intersections_fn)(object, ray_trans);
         /* Find the closest intersection */
-        for (l = 0; l < dmnsn_array_size(intersections); ++l) {
-          dmnsn_array_get(intersections, l, &t_temp);
+        for (j = 0; j < dmnsn_array_size(intersections); ++j) {
+          dmnsn_array_get(intersections, j, &t_temp);
           if ((t_temp < t && t_temp >= 0.0) || t < 0.0) t = t_temp;
         }
         dmnsn_delete_array(intersections);
@@ -238,7 +238,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
         color = dmnsn_color_from_sRGB(sRGB);
       }
 
-      dmnsn_set_pixel(scene->canvas, i, j, color);
+      dmnsn_set_pixel(scene->canvas, x, y, color);
     }
 
     dmnsn_increment_progress(progress);
