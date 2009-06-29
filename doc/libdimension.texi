@@ -121,35 +121,19 @@ void dmnsn_array_pop(dmnsn_array *array, void *obj);
 void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
 @findex dmnsn_array_set()
 void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
+@findex dmnsn_array_at()
+void *dmnsn_array_at(dmnsn_array *array, size_t i);
 
 @findex dmnsn_array_size()
 size_t dmnsn_array_size(const dmnsn_array *array);
 @findex dmnsn_array_resize()
 void   dmnsn_array_resize(dmnsn_array *array, size_t length);
-
-/* Non-atomic operations for manual locking */
-@findex dmnsn_array_at()
-void *dmnsn_array_at(dmnsn_array *array, size_t i);
-@findex dmnsn_array_size_unlocked()
-size_t dmnsn_array_size_unlocked(const dmnsn_array *array);
-@findex dmnsn_array_resize_unlocked()
-void dmnsn_array_resize_unlocked(dmnsn_array *array, size_t length);
-
-/* Manual locking */
-@findex dmnsn_array_rdlock()
-void dmnsn_array_rdlock(const dmnsn_array *array);
-@findex dmnsn_array_wrlock()
-void dmnsn_array_wrlock(dmnsn_array *array);
-@findex dmnsn_array_unlock()
-void dmnsn_array_unlock(const dmnsn_array *array);
 @end example
 
 @cindex array
 The Dimension Library often has cause to work with adjustable-size arrays.  It provides an interface for dynamically-allocated arrays of arbitrary objects.  Arrays are allocated with the @code{dmnsn_new_array()} function, and freed with the @code{dmnsn_delete_array()} function, a pattern common in libdimension.  @code{dmnsn_new_array()} takes the size of the new array's elements as its parameter.  Unlike other allocation functions throughout libdimension, @code{dmnsn_new_array()} cannot fail if it returns (other allocators may return NULL).  In fact, all array operations are guaranteed to either succeed or report a fatal error, which may happen if memory allocation fails.
 
-Arrays in libdimension are thread-safe; every individual operation is atomic.  libdimension provides push, pop, get, and set operations for arrays, taking a pointer to an object to read or write as their last parameter, the array index when applicable as the second-last parameter, and the @code{dmnsn_array *} as the first parameter.  The array's length may be queried with @code{dmnsn_array_size()}, or set with @code{dmnsn_array_resize()}.
-
-When sets of array operations must be atomic, one may use the manual locking array interface.  Implemented as a read-write lock, applications should call @code{dmnsn_array_rdlock()} to set a read-lock, @code{dmnsn_array_wrlock()} to set a write-lock, and @code{dmnsn_array_unlock()} to unlock the array.  While the array is locked, one may call @code{dmnsn_array_at()} to get a pointer to the @code{i}'th element of the array, or the @code{*_unlocked} suffixed versions of the @code{..._size()} and @code{..._resize()} functions to get or set the size, respectively.
+Arrays support the push, pop, get, and set operations for arrays, taking a pointer to an object to read or write as their last parameter, the array index when applicable as the second-last parameter, and the @code{dmnsn_array *} as the first parameter.  The get operation is bounds-checked; other operations dynamically resize the array as needed.  The array's length may be queried with @code{dmnsn_array_size()}, or set with @code{dmnsn_array_resize()}, and a pointer to the @code{i}'th object may be obtained with @code{dmnsn_array_at()}.
 
 
 @node Asynchronicity

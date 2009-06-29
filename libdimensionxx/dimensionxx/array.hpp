@@ -28,40 +28,6 @@
 
 namespace Dimension
 {
-  // RAII scoped read-lock
-  class Array_Read_Lock
-  {
-  public:
-    explicit Array_Read_Lock(const dmnsn_array* array)
-      : m_array(new const dmnsn_array*(array)) { dmnsn_array_rdlock(*m_array); }
-    // Array_Read_Lock(const Array_Read_Lock& lock);
-    ~Array_Read_Lock()
-    { if (m_array.unique()) { dmnsn_array_unlock(*m_array); } }
-
-  private:
-    // Copy assignment prohibited
-    Array_Read_Lock& operator=(const Array_Read_Lock&);
-
-    std::tr1::shared_ptr<const dmnsn_array*> m_array;
-  };
-
-  // RAII scoped write-lock
-  class Array_Write_Lock
-  {
-  public:
-    explicit Array_Write_Lock(dmnsn_array* array)
-      : m_array(new dmnsn_array*(array)) { dmnsn_array_wrlock(*m_array); }
-    // Array_Write_Lock(const Array_Write_Lock& lock);
-    ~Array_Write_Lock()
-    { if (m_array.unique()) { dmnsn_array_unlock(*m_array); } }
-
-  private:
-    // Copy assignment prohibited
-    Array_Write_Lock& operator=(const Array_Write_Lock&);
-
-    std::tr1::shared_ptr<dmnsn_array*> m_array;
-  };
-
   // Array template class, wraps a dmnsn_array*.  Copying is possible, but
   // copies refer to the same object, which is reference counted.  T must be
   // a POD type.
@@ -77,25 +43,13 @@ namespace Dimension
 
     // Array& operator=(const Array& a);
 
-    inline T at(std::size_t i) const;
-    void set(std::size_t i, T object) { dmnsn_array_set(dmnsn(), i, &object); }
-
-    std::size_t size() const { return dmnsn_array_size(dmnsn()); }
-    void resize(std::size_t size) { dmnsn_array_resize(dmnsn(), size); }
-
-    // For manual locking
-
-    Array_Read_Lock read_lock() const { return Array_Read_Lock(dmnsn()); }
-    Array_Write_Lock write_lock() { return Array_Write_Lock(dmnsn()); }
-
     T& operator[](std::size_t i)
     { return *reinterpret_cast<T*>(dmnsn_array_at(dmnsn(), i)); }
     const T& operator[](std::size_t i) const
     { return *reinterpret_cast<const T*>(dmnsn_array_at(dmnsn(), i)); }
-    std::size_t size_unlocked() const
-    { return dmnsn_array_size_unlocked(dmnsn()); }
-    void resize_unlocked(std::size_t size)
-    { dmnsn_array_resize_unlocked(dmnsn(), size); }
+
+    std::size_t size() const { return dmnsn_array_size(dmnsn()); }
+    void resize(std::size_t size) { dmnsn_array_resize(dmnsn(), size); }
 
     // Access the wrapped C object.
     dmnsn_array*       dmnsn();
@@ -137,15 +91,6 @@ namespace Dimension
   {
     void (*constraint)() = &POD_constraint<T>;
     static_cast<void>(constraint); // Silence unused variable warning
-  }
-
-  template <typename T>
-  inline T
-  Array<T>::at(std::size_t i) const
-  {
-    T ret;
-    dmnsn_array_get(dmnsn(), i, &ret);
-    return ret;
   }
 
   // Access the underlying dmnsn_array*

@@ -22,10 +22,6 @@
 #include <pthread.h>
 #include <string.h> /* For memcpy */
 
-/* The raw implementations, which don't do any thread synchronicity */
-static void dmnsn_array_get_impl(const dmnsn_array *array, size_t i, void *obj);
-static void dmnsn_array_set_impl(dmnsn_array *array, size_t i, const void *obj);
-
 /* Allocate a new array - guaranteed not to fail if it returns */
 dmnsn_array *
 dmnsn_new_array(size_t obj_size)
@@ -41,12 +37,6 @@ dmnsn_new_array(size_t obj_size)
     if (!array->ptr) {
       dmnsn_error(DMNSN_SEVERITY_HIGH, "Array allocation failed.");
     }
-
-    /* Allocate the read-write lock */
-    array->rwlock = malloc(sizeof(pthread_rwlock_t));
-    if (!array->rwlock || pthread_rwlock_init(array->rwlock, NULL) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Array rwlock allocation failed.");
-    }
   }
 
   return array;
@@ -55,98 +45,70 @@ dmnsn_new_array(size_t obj_size)
 /* Delete the array */
 void dmnsn_delete_array(dmnsn_array *array) {
   if (array) {
-    if (pthread_rwlock_destroy(array->rwlock) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking rwlock in array deallocation.");
-    }
-
-    free(array->rwlock);
     free(array->ptr);
     free(array);
   }
 }
 
-/* Push obj to the end of the array, atomically */
+/* Push obj to the end of the array */
 void
 dmnsn_array_push(dmnsn_array *array, const void *obj)
 {
-  dmnsn_array_wrlock(array);
-    dmnsn_array_set_impl(array, dmnsn_array_size_unlocked(array), obj);
-  dmnsn_array_unlock(array);
+  dmnsn_array_set(array, dmnsn_array_size(array), obj);
 }
 
-/* Pop obj from the end of the array, atomically */
+/* Pop obj from the end of the array */
 void
 dmnsn_array_pop(dmnsn_array *array, void *obj)
 {
-  size_t size;
-
-  dmnsn_array_wrlock(array);
-    size = dmnsn_array_size_unlocked(array);
-    dmnsn_array_get_impl(array, size - 1, obj);   /* Copy the object */
-    dmnsn_array_resize_unlocked(array, size - 1); /* Shrink the array */
-  dmnsn_array_unlock(array);
+  size_t size = dmnsn_array_size(array);
+  dmnsn_array_get(array, size - 1, obj); /* Copy the object */
+  dmnsn_array_resize(array, size - 1);   /* Shrink the array */
 }
 
 /* Get the i'th object, bailing out if i is out of range */
 void
 dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
 {
-  dmnsn_array_rdlock(array);
-    dmnsn_array_get_impl(array, i, obj);
-  dmnsn_array_unlock(array);
+  if (i >= dmnsn_array_size(array)) {
+    /* Range check failed */
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
+  }
+  memcpy(obj, (char *)array->ptr + array->obj_size*i, array->obj_size);
 }
 
 /* Set the i'th object, expanding the array if necessary */
 void
 dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj)
 {
-  dmnsn_array_wrlock(array);
-    dmnsn_array_set_impl(array, i, obj);
-  dmnsn_array_unlock(array);
+  if (i >= dmnsn_array_size(array)) {
+    /* Resize if i is out of range */
+    dmnsn_array_resize(array, i + 1);
+  }
+  memcpy((char *)array->ptr + array->obj_size*i, obj, array->obj_size);
 }
 
-/* Get the size of the array, atomically */
+/* Element access */
+void *
+dmnsn_array_at(dmnsn_array *array, size_t i)
+{
+  if (i >= dmnsn_array_size(array)) {
+    /* Resize if i is out of range */
+    dmnsn_array_resize(array, i + 1);
+  }
+  return (char *)array->ptr + array->obj_size*i;
+}
+
+/* Get the size of the array */
 size_t
 dmnsn_array_size(const dmnsn_array *array)
 {
-  size_t size;
-
-  dmnsn_array_rdlock(array);
-    size = dmnsn_array_size_unlocked(array);
-  dmnsn_array_unlock(array);
-
-  return size;
+  return array->length;
 }
 
 /* Set the size of the array, atomically */
 void
 dmnsn_array_resize(dmnsn_array *array, size_t length)
-{
-  dmnsn_array_wrlock(array);
-    dmnsn_array_resize_unlocked(array, length);
-  dmnsn_array_unlock(array);
-}
-
-/* Thread-unsafe range-checked element access */
-void *
-dmnsn_array_at(dmnsn_array *array, size_t i)
-{
-  if (i >= dmnsn_array_size_unlocked(array)) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
-  }
-  return (char *)array->ptr + array->obj_size*i;
-}
-
-/* Get the size non-atomically, for manual locking */
-size_t
-dmnsn_array_size_unlocked(const dmnsn_array *array)
-{
-  return array->length;
-}
-
-/* Set the size non-atomically, for manual locking */
-void
-dmnsn_array_resize_unlocked(dmnsn_array *array, size_t length)
 {
   if (length > array->capacity) {
     /* Resize if we don't have enough capacity */
@@ -158,61 +120,4 @@ dmnsn_array_resize_unlocked(dmnsn_array *array, size_t length)
   }
 
   array->length = length;
-}
-
-/* Set a manual read-lock */
-void
-dmnsn_array_rdlock(const dmnsn_array *array)
-{
-  if (pthread_rwlock_rdlock(array->rwlock) != 0) {
-    /* Medium severity, because undefined behaviour is pretty likely if our
-       reads and writes aren't synced */
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                "Couldn't acquire read-lock for array.");
-  }
-}
-
-/* Set a manual write-lock */
-void
-dmnsn_array_wrlock(dmnsn_array *array)
-{
-  if (pthread_rwlock_wrlock(array->rwlock) != 0) {
-    /* Medium severity, because undefined behaviour is pretty likely if our
-       reads and writes aren't synced */
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                "Couldn't acquire write-lock for array.");
-  }
-}
-
-/* Unset a manual lock */
-void
-dmnsn_array_unlock(const dmnsn_array *array)
-{
-  if (pthread_rwlock_unlock(array->rwlock) != 0) {
-    /* Medium severity, because if the array is locked, we're likely to hang
-       the next time we try to read or write it */
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock array.");
-  }
-}
-
-/* Actual "get" implementation */
-static void
-dmnsn_array_get_impl(const dmnsn_array *array, size_t i, void *obj)
-{
-  if (i >= dmnsn_array_size_unlocked(array)) {
-    /* Range check failed */
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
-  }
-  memcpy(obj, array->ptr + array->obj_size*i, array->obj_size);
-}
-
-/* Actual "set" implementation */
-static void
-dmnsn_array_set_impl(dmnsn_array *array, size_t i, const void *obj)
-{
-  if (i >= dmnsn_array_size_unlocked(array)) {
-    /* Resize if i is out of range */
-    dmnsn_array_resize_unlocked(array, i + 1);
-  }
-  memcpy(array->ptr + array->obj_size*i, obj, array->obj_size);
 }

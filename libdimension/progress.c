@@ -22,6 +22,11 @@
 #include <pthread.h>
 #include <stdlib.h> /* For malloc */
 
+/* For thread synchronization */
+static void dmnsn_progress_rdlock(const dmnsn_progress *progress);
+static void dmnsn_progress_wrlock(dmnsn_progress *progress);
+static void dmnsn_progress_unlock(const dmnsn_progress *progress);
+
 /* Allocate a new dmnsn_progress*, returning NULL on failure */
 dmnsn_progress *
 dmnsn_new_progress()
@@ -32,10 +37,18 @@ dmnsn_new_progress()
     progress->elements = dmnsn_new_array(sizeof(dmnsn_progress_element));
     dmnsn_array_push(progress->elements, &element);
 
-    /* Allocate space for the condition variable and mutex */
+    /* Allocate space for the rwlock, condition variable, and mutex */
+
+    progress->rwlock = malloc(sizeof(pthread_rwlock_t));
+    if (!progress->rwlock) {
+      dmnsn_delete_array(progress->elements);
+      free(progress);
+      return NULL;
+    }
 
     progress->cond = malloc(sizeof(pthread_cond_t));
     if (!progress->cond) {
+      free(progress->rwlock);
       dmnsn_delete_array(progress->elements);
       free(progress);
       return NULL;
@@ -43,6 +56,16 @@ dmnsn_new_progress()
 
     progress->mutex = malloc(sizeof(pthread_mutex_t));
     if (!progress->mutex) {
+      free(progress->rwlock);
+      free(progress->cond);
+      dmnsn_delete_array(progress->elements);
+      free(progress);
+      return NULL;
+    }
+
+    if (pthread_rwlock_init(progress->rwlock, NULL) != 0) {
+      free(progress->rwlock);
+      free(progress->mutex);
       free(progress->cond);
       dmnsn_delete_array(progress->elements);
       free(progress);
@@ -50,6 +73,11 @@ dmnsn_new_progress()
     }
 
     if (pthread_cond_init(progress->cond, NULL) != 0) {
+      if (pthread_rwlock_destroy(progress->rwlock) != 0) {
+        dmnsn_error(DMNSN_SEVERITY_LOW,
+                    "Leaking rwlock in failed allocation.");
+      }
+      free(progress->rwlock);
       free(progress->mutex);
       free(progress->cond);
       dmnsn_delete_array(progress->elements);
@@ -57,10 +85,15 @@ dmnsn_new_progress()
       return NULL;
     }
     if (pthread_mutex_init(progress->mutex, NULL) != 0) {
+      if (pthread_rwlock_destroy(progress->rwlock) != 0) {
+        dmnsn_error(DMNSN_SEVERITY_LOW,
+                    "Leaking rwlock in failed allocation.");
+      }
       if (pthread_cond_destroy(progress->cond) != 0) {
         dmnsn_error(DMNSN_SEVERITY_LOW,
                     "Leaking condition variable in failed allocation.");
       }
+      free(progress->rwlock);
       free(progress->mutex);
       free(progress->cond);
       dmnsn_delete_array(progress->elements);
@@ -77,6 +110,9 @@ void
 dmnsn_delete_progress(dmnsn_progress *progress)
 {
   if (progress) {
+    if (pthread_rwlock_destroy(progress->rwlock) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking rwlock.");
+    }
     if (pthread_mutex_destroy(progress->mutex) != 0) {
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking mutex.");
     }
@@ -124,14 +160,14 @@ dmnsn_get_progress(const dmnsn_progress *progress)
   double prog = 0.0;
   unsigned int i, size;
 
-  dmnsn_array_rdlock(progress->elements);
-    size = dmnsn_array_size_unlocked(progress->elements);
+  dmnsn_progress_rdlock(progress);
+    size = dmnsn_array_size(progress->elements);
     for (i = 0; i < size; ++i) {
       element = dmnsn_array_at(progress->elements, size - i - 1);
       prog += element->progress;
       prog /= element->total;
     }
-  dmnsn_array_unlock(progress->elements);
+  dmnsn_progress_unlock(progress);
 
   return prog;
 }
@@ -172,15 +208,15 @@ dmnsn_increment_progress(dmnsn_progress *progress)
   dmnsn_progress_element *element;
   size_t size;
 
-  dmnsn_array_wrlock(progress->elements);
-    size = dmnsn_array_size_unlocked(progress->elements);
+  dmnsn_progress_wrlock(progress);
+    size = dmnsn_array_size(progress->elements);
     element = dmnsn_array_at(progress->elements, size - 1);
     ++element->progress; /* Increment the last element */
 
     while (element->progress >= element->total && size > 1) {
       /* As long as the last element is complete, pop it */
       --size;
-      dmnsn_array_resize_unlocked(progress->elements, size);
+      dmnsn_array_resize(progress->elements, size);
       element = dmnsn_array_at(progress->elements, size - 1);
       ++element->progress; /* Increment the next element */
     }
@@ -188,7 +224,7 @@ dmnsn_increment_progress(dmnsn_progress *progress)
     if (pthread_cond_broadcast(progress->cond) != 0) {
       dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
     }
-  dmnsn_array_unlock(progress->elements);
+  dmnsn_progress_unlock(progress);
 }
 
 /* Immediately set to 100% completion */
@@ -197,13 +233,39 @@ dmnsn_done_progress(dmnsn_progress *progress)
 {
   dmnsn_progress_element *element;
 
-  dmnsn_array_wrlock(progress->elements);
-    dmnsn_array_resize_unlocked(progress->elements, 1);
+  dmnsn_progress_wrlock(progress);
+    dmnsn_array_resize(progress->elements, 1);
     element = dmnsn_array_at(progress->elements, 0);
     element->progress = element->total;
 
     if (pthread_cond_broadcast(progress->cond) != 0) {
       dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
     }
-  dmnsn_array_unlock(progress->elements);
+  dmnsn_progress_unlock(progress);
+}
+
+/* Thread synchronization */
+
+static void
+dmnsn_progress_rdlock(const dmnsn_progress *progress)
+{
+  if (pthread_rwlock_rdlock(progress->rwlock) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't acquire read-lock.");
+  }
+}
+
+static void
+dmnsn_progress_wrlock(dmnsn_progress *progress)
+{
+  if (pthread_rwlock_wrlock(progress->rwlock) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't acquire write-lock.");
+  }
+}
+
+static void
+dmnsn_progress_unlock(const dmnsn_progress *progress)
+{
+  if (pthread_rwlock_unlock(progress->rwlock) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock read-write lock.");
+  }
 }

@@ -32,9 +32,6 @@
 typedef struct {
   void *ptr;
   size_t obj_size, length, capacity;
-
-  /* Synchronicity control (pointer so it's not const) */
-  pthread_rwlock_t *rwlock;
 } dmnsn_array;
 
 /* Array allocation never returns NULL - if dmnsn_new_array returns, it
@@ -42,24 +39,13 @@ typedef struct {
 dmnsn_array *dmnsn_new_array(size_t obj_size);
 void dmnsn_delete_array(dmnsn_array *array);
 
-/* Thread-safe atomic array access */
-
 void dmnsn_array_push(dmnsn_array *array, const void *obj);
 void dmnsn_array_pop(dmnsn_array *array, void *obj);
 void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
 void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
+void *dmnsn_array_at(dmnsn_array *array, size_t i);
 
 size_t dmnsn_array_size(const dmnsn_array *array);
 void   dmnsn_array_resize(dmnsn_array *array, size_t length);
-
-/* Non-atomic operations for manual locking */
-void *dmnsn_array_at(dmnsn_array *array, size_t i);
-size_t dmnsn_array_size_unlocked(const dmnsn_array *array);
-void dmnsn_array_resize_unlocked(dmnsn_array *array, size_t length);
-
-/* Manual locking */
-void dmnsn_array_rdlock(const dmnsn_array *array);
-void dmnsn_array_wrlock(dmnsn_array *array);
-void dmnsn_array_unlock(const dmnsn_array *array);
 
 #endif /* DIMENSION_ARRAY_H */

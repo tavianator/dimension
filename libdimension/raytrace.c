@@ -101,7 +101,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
   dmnsn_raytrace_payload *payloads;
   pthread_t *threads;
 
-  /* TODO: do this portably */
+  /* Find the number of processors/cores running (TODO: do this portably) */
   nthreads = sysconf(_SC_NPROCESSORS_ONLN);
   if (nthreads < 1) {
     nthreads = 1;

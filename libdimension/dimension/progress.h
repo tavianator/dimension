@@ -44,6 +44,9 @@ typedef struct {
   /* The worker thread */
   pthread_t thread;
 
+  /* Read-write synchronization */
+  pthread_rwlock_t *rwlock;
+
   /* Condition variable for waiting for a particular amount of progress */
   pthread_cond_t  *cond;
   pthread_mutex_t *mutex;
