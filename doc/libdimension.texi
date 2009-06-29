@@ -633,7 +633,7 @@ The @code{dmnsn_scene *} type ties all the components of a 3-D world together.  
 
 @example
 @findex dmnsn_raytrace_scene()
-void dmnsn_raytrace_scene(dmnsn_scene *scene);
+int dmnsn_raytrace_scene(dmnsn_scene *scene);
 @findex dmnsn_raytrace_scene_async()
 dmnsn_progress *dmnsn_raytrace_scene_async(dmnsn_scene *scene);
 @end example
