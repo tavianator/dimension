@@ -99,14 +99,7 @@ dmnsn_array_at(dmnsn_array *array, size_t i)
   return (char *)array->ptr + array->obj_size*i;
 }
 
-/* Get the size of the array */
-size_t
-dmnsn_array_size(const dmnsn_array *array)
-{
-  return array->length;
-}
-
-/* Set the size of the array, atomically */
+/* Set the size of the array */
 void
 dmnsn_array_resize(dmnsn_array *array, size_t length)
 {

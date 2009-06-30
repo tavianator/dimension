@@ -21,28 +21,6 @@
 #include "dimension.h"
 #include <math.h>
 
-/* Construct a vector from x, y, and z.  Just for convienence. */
-dmnsn_vector
-dmnsn_vector_construct(double x, double y, double z)
-{
-  dmnsn_vector v = { .x = x, .y = y, .z = z };
-  return v;
-}
-
-/* Construct a matrix. */
-dmnsn_matrix
-dmnsn_matrix_construct(double a0, double a1, double a2, double a3,
-                       double b0, double b1, double b2, double b3,
-                       double c0, double c1, double c2, double c3,
-                       double d0, double d1, double d2, double d3)
-{
-  dmnsn_matrix m = { { { a0, a1, a2, a3 },
-                       { b0, b1, b2, b3 },
-                       { c0, c1, c2, c3 },
-                       { d0, d1, d2, d3 } } };
-  return m;
-}
-
 /* Identity matrix */
 dmnsn_matrix
 dmnsn_identity_matrix()
@@ -102,89 +80,6 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
     -y*s + t*x*z,        x*s + t*y*z,         1.0 + t*(z*z - 1.0), 0.0,
     0.0,                 0.0,                 0.0,                 1.0
   );
-}
-
-/* Construct a line */
-dmnsn_line
-dmnsn_line_construct(dmnsn_vector x0, dmnsn_vector n)
-{
-  dmnsn_line l = { .x0 = x0, .n = n };
-  return l;
-}
-
-/* Add two vectors */
-dmnsn_vector
-dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
-{
-  /* 3 additions */
-  dmnsn_vector v = { .x = lhs.x + rhs.x,
-                     .y = lhs.y + rhs.y,
-                     .z = lhs.z + rhs.z };
-  return v;
-}
-
-/* Subtract two vectors */
-dmnsn_vector
-dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
-{
-  /* 3 additions */
-  dmnsn_vector v = { .x = lhs.x - rhs.x,
-                     .y = lhs.y - rhs.y,
-                     .z = lhs.z - rhs.z };
-  return v;
-}
-
-/* Multiply a vector by a scalar */
-dmnsn_vector
-dmnsn_vector_mul(double lhs, dmnsn_vector rhs)
-{
-  /* 3 multiplications */
-  dmnsn_vector v = { .x = lhs*rhs.x, .y = lhs*rhs.y, .z = lhs*rhs.z };
-  return v;
-}
-
-/* Divide a vector by a scalar */
-dmnsn_vector
-dmnsn_vector_div(dmnsn_vector lhs, double rhs)
-{
-  /* 3 divisions */
-  dmnsn_vector v = { .x = lhs.x/rhs, .y = lhs.y/rhs, .z = lhs.z/rhs };
-  return v;
-}
-
-/* Dot product */
-double
-dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs)
-{
-  /* 3 multiplications, 2 additions */
-  return lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z;
-}
-
-/* Cross product */
-dmnsn_vector
-dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
-{
-  /* 6 multiplications, 3 additions */
-  dmnsn_vector v = { .x = lhs.y*rhs.z - lhs.z*rhs.y,
-                     .y = lhs.z*rhs.x - lhs.x*rhs.z,
-                     .z = lhs.x*rhs.y - lhs.y*rhs.x };
-  return v;
-}
-
-/* Length of vector */
-double
-dmnsn_vector_norm(dmnsn_vector n)
-{
-  /* 1 sqrt, 3 multiplications, 2 additions */
-  return sqrt(n.x*n.x + n.y*n.y + n.z*n.z);
-}
-
-/* Normalized vector */
-dmnsn_vector
-dmnsn_vector_normalize(dmnsn_vector n)
-{
-  /* 1 sqrt, 3 divisions, 3 multiplications, 2 additions */
-  return dmnsn_vector_div(n, dmnsn_vector_norm(n));
 }
 
 /* Matrix inversion helper functions */
@@ -453,14 +348,6 @@ dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs)
     l.x0
   );
   return l;
-}
-
-/* A point on a line, l.  Returns l.x0 + t*l.n */
-dmnsn_vector
-dmnsn_line_point(dmnsn_line l, double t)
-{
-  /* 3 multiplications, 3 additions */
-  return dmnsn_vector_add(l.x0, dmnsn_vector_mul(t, l.n));
 }
 
 /* Solve for the t value such that x0 + t*n = x */

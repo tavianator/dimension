@@ -18,40 +18,19 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Simple thread-safe generalized arrays, for returning variable-length arrays
- * from functions, and other fun stuff.
- */
+#ifdef __cplusplus
+  /* C++ inline semantics */
+  #define DMNSN_INLINE inline
+#elif (__STDC_VERSION__ >= 199901L)
+  /* C99 inline semantics */
+  #define DMNSN_INLINE
+#elif defined(__GNUC__)
+  /* GCC inline semantics */
+  #define DMNSN_INLINE inline
+#else
+  /* Unknown C - mark functions static and hope the compiler is smart enough
+     to inline them */
+  #define DMNSN_INLINE static
+#endif
 
-#ifndef DIMENSION_ARRAY_H
-#define DIMENSION_ARRAY_H
-
-#include <pthread.h> /* For pthread_rwlock_t */
-#include <stdlib.h>  /* For size_t */
-
-typedef struct {
-  void *ptr;
-  size_t obj_size, length, capacity;
-} dmnsn_array;
-
-/* Array allocation never returns NULL - if dmnsn_new_array returns, it
-   succeeded */
-dmnsn_array *dmnsn_new_array(size_t obj_size);
-void dmnsn_delete_array(dmnsn_array *array);
-
-void dmnsn_array_push(dmnsn_array *array, const void *obj);
-void dmnsn_array_pop(dmnsn_array *array, void *obj);
-void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
-void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
-void *dmnsn_array_at(dmnsn_array *array, size_t i);
-
-/* Inline so for-loops calling this are fast */
-DMNSN_INLINE size_t
-dmnsn_array_size(const dmnsn_array *array)
-{
-  return array->length;
-}
-
-void dmnsn_array_resize(dmnsn_array *array, size_t length);
-
-#endif /* DIMENSION_ARRAY_H */
+#include "dimension.h"

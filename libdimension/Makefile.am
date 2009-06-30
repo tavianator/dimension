@@ -42,6 +42,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           cube.c                                               \
                           error.c                                              \
                           geometry.c                                           \
+                          inlines.c                                            \
                           png.c                                                \
                           progress.c                                           \
                           object.c                                             \
