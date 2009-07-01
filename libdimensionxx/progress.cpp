@@ -38,12 +38,11 @@ namespace Dimension
   // Finish the progress if not yet finished and we are unique
   Progress::~Progress()
   {
-    if (m_progress && m_progress.unique()) {
+    if (m_progress) {
       try {
-        dmnsn_finish_progress(dmnsn());
+        finish();
       } catch (...) {
-        dmnsn_error(SEVERITY_MEDIUM,
-                    "Finishing worker thread failed in Progress destructor.");
+        dmnsn_error(SEVERITY_MEDIUM, "Finishing worker thread failed.");
       }
     }
   }
@@ -95,7 +94,10 @@ namespace Dimension
       throw Dimension_Error("Attempt to finish non-unique Progress.");
     }
 
-    dmnsn_finish_progress(dmnsn());
+    if (dmnsn_finish_progress(dmnsn()) != 0) {
+      throw Dimension_Error("Worker thread failed.");
+    }
+
     m_progress.reset(); // Don't try again
   }
 
