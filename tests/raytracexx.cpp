@@ -37,6 +37,7 @@ main() {
   std::ofstream file("raytracexx.png");
   PNG_Canvas canvas(768, 480, file);
 
+  // Camera
   Perspective_Camera camera(
     Matrix::rotation(Vector(0.0, 1.0, 0.0))
     * Matrix::translation(Vector(0.0, 0.0, -4.0))
@@ -45,6 +46,7 @@ main() {
       )
   );
 
+  // Scene
   Scene scene(background, camera, canvas);
 
   // Objects in scene

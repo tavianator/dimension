@@ -38,12 +38,7 @@ Makefile.in
 /doc/texinfo.tex
 
 # Files created by `make check'
-/tests/warning
-/tests/error
-/tests/png
-/tests/pngxx
-/tests/raytrace
-/tests/raytracexx
+/tests/*-test
 /tests/*.png
 
 # Files and folders created by libtool
