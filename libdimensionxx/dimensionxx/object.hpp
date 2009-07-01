@@ -32,6 +32,11 @@ namespace Dimension
     // No-op, made pure virtual
     virtual ~Object() = 0;
 
+    // Get/set the transformation matrix
+    Matrix trans();
+    void trans(const Matrix& trans);
+
+    // Object callbacks
     virtual Array<double> intersections(const Line& l);
     virtual bool inside(const Vector& point);
 

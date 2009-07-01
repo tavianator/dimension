@@ -26,6 +26,18 @@ namespace Dimension
   Object::~Object()
   { }
 
+  Matrix
+  Object::trans()
+  {
+    return Matrix(m_object->trans);
+  }
+
+  void
+  Object::trans(const Matrix& trans)
+  {
+    m_object->trans = trans.dmnsn();
+  }
+
   // Intersection list for the line l
   Array<double>
   Object::intersections(const Line& l)

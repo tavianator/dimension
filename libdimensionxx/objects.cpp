@@ -42,7 +42,7 @@ namespace Dimension
     : Object(dmnsn_new_cube())
   {
     if (!m_object) {
-      throw Dimension_Error("Failed to allocate sphere.");
+      throw Dimension_Error("Failed to allocate cube.");
     }
   }
 
