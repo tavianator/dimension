@@ -23,7 +23,8 @@ check_PROGRAMS    = warning                                                    \
                     error                                                      \
                     png                                                        \
                     pngxx                                                      \
-                    raytrace
+                    raytrace                                                   \
+                    raytracexx
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error
 
@@ -37,17 +38,20 @@ libdimensionxx_tests_la_SOURCES = testsxx.hpp                                  \
                                   testsxx.cpp
 libdimensionxx_tests_la_LIBADD  = ../libdimensionxx/libdimensionxx.la
 
-warning_SOURCES  = warning.c
-warning_LDADD    = ./libdimension-tests.la
+warning_SOURCES    = warning.c
+warning_LDADD      = ./libdimension-tests.la
 
-error_SOURCES    = error.c
-error_LDADD      = ./libdimension-tests.la
+error_SOURCES      = error.c
+error_LDADD        = ./libdimension-tests.la
 
-png_SOURCES      = png.c
-png_LDADD        = ./libdimension-tests.la
+png_SOURCES        = png.c
+png_LDADD          = ./libdimension-tests.la
 
-pngxx_SOURCES    = pngxx.cpp
-pngxx_LDADD      = ./libdimensionxx-tests.la
+pngxx_SOURCES      = pngxx.cpp
+pngxx_LDADD        = ./libdimensionxx-tests.la
 
-raytrace_SOURCES = raytrace.c
-raytrace_LDADD   = ./libdimension-tests.la
+raytrace_SOURCES   = raytrace.c
+raytrace_LDADD     = ./libdimension-tests.la
+
+raytracexx_SOURCES = raytracexx.cpp
+raytracexx_LDADD   = ./libdimensionxx-tests.la

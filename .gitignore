@@ -43,6 +43,7 @@ Makefile.in
 /tests/png
 /tests/pngxx
 /tests/raytrace
+/tests/raytracexx
 /tests/*.png
 
 # Files and folders created by libtool

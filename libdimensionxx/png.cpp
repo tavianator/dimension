@@ -20,7 +20,6 @@
 
 #include "dimensionxx.hpp"
 #include <cstdio>
-#include <stdexcept>
 
 namespace Dimension
 {

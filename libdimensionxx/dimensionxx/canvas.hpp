@@ -29,16 +29,14 @@ namespace Dimension
   class Canvas
   {
   public:
-    // Allocate a dmnsn_canvas specified width and height.
+    // Allocate a dmnsn_canvas of specified width and height
     Canvas(unsigned int width, unsigned int height);
-
-    // Wrap an existing canvas.
-    explicit Canvas(dmnsn_canvas* canvas) : m_canvas(canvas) { }
-
-    // Delete the canvas.  (dmnsn_delete_canvas(m_canvas).)
+    // Wrap an existing canvas
+    explicit Canvas(dmnsn_canvas* canvas);
+    // Delete the canvas
     virtual ~Canvas();
 
-    // Get the width and height.
+    // Get the width and height
     unsigned int width() const;
     unsigned int height() const;
 

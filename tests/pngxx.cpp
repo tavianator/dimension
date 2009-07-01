@@ -26,25 +26,27 @@
 int
 main()
 {
+  using namespace Dimension;
+
   // Set the resilience low for tests
-  Dimension::resilience(Dimension::SEVERITY_LOW);
+  resilience(SEVERITY_LOW);
 
   const unsigned int width = 333, height = 300;
 
   {
     std::ofstream ofstr("dimensionxx1.png", std::ios::binary);
-    Dimension::PNG_Canvas ocanvas(3*width, height, ofstr);
+    PNG_Canvas ocanvas(3*width, height, ofstr);
 
-    Dimension::CIE_xyY xyY;
-    Dimension::CIE_Lab Lab;
-    Dimension::CIE_Luv Luv;
-    Dimension::sRGB RGB;
-    Dimension::Color color;
+    CIE_xyY xyY;
+    CIE_Lab Lab;
+    CIE_Luv Luv;
+    sRGB RGB;
+    Color color;
 
     for (unsigned int x = 0; x < width; ++x) {
       for (unsigned int y = 0; y < height; ++y) {
         /* CIE xyY colorspace */
-        xyY = Dimension::CIE_xyY(static_cast<double>(x)/(width - 1),
+        xyY = CIE_xyY(static_cast<double>(x)/(width - 1),
                                  static_cast<double>(y)/(height - 1),
                                  0.5);
         color = xyY;
@@ -60,7 +62,7 @@ main()
 
         /* CIE Lab colorspace */
 
-        Lab = Dimension::CIE_Lab(75.0,
+        Lab = CIE_Lab(75.0,
                                  200.0*(static_cast<double>(x)/
                                         (width - 1) - 0.5),
                                  200.0*(static_cast<double>(y)/
@@ -78,7 +80,7 @@ main()
 
         /* CIE Luv colorspace */
 
-        Luv = Dimension::CIE_Luv(75.0,
+        Luv = CIE_Luv(75.0,
                                  200.0*(static_cast<double>(x)/
                                         (width - 1) - 0.5),
                                  200.0*(static_cast<double>(y)/
@@ -96,20 +98,20 @@ main()
       }
     }
 
-    Dimension::Progress progress = ocanvas.write_async();
+    Progress progress = ocanvas.write_async();
     std::cout << "Writing PNG file: " << progress << std::endl;
   }
 
   std::ifstream ifstr("dimensionxx1.png", std::ios::binary);
   std::ofstream ofstr("dimensionxx2.png", std::ios::binary);
 
-  Dimension::Progress iprogress
-    = Dimension::PNG_Canvas::read_async(ifstr);
+  Progress iprogress
+    = PNG_Canvas::read_async(ifstr);
   std::cout << "Reading PNG file: " << iprogress << std::endl;
 
-  Dimension::PNG_Canvas iocanvas(iprogress, ofstr);
+  PNG_Canvas iocanvas(iprogress, ofstr);
 
-  Dimension::Progress oprogress = iocanvas.write_async();
+  Progress oprogress = iocanvas.write_async();
   std::cout << "Writing PNG file: " << oprogress << std::endl;
 
   return 0;

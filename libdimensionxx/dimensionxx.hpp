@@ -36,5 +36,6 @@
 #include <dimensionxx/objects.hpp>
 #include <dimensionxx/camera.hpp>
 #include <dimensionxx/cameras.hpp>
+#include <dimensionxx/scene.hpp>
 
 #endif /* DIMENSIONXX_HPP */

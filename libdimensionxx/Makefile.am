@@ -43,7 +43,8 @@ libdimensionxx_la_SOURCES = $(nobase_include_HEADERS)                          \
                             object.cpp                                         \
                             objects.cpp                                        \
                             png.cpp                                            \
-                            progress.cpp
+                            progress.cpp                                       \
+                            scene.cpp
 
 if FOPENCOOKIE
   libdimensionxx_la_SOURCES += cookie-fopencookie.cpp

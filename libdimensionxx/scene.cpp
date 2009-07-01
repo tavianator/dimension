@@ -22,66 +22,93 @@
 
 namespace Dimension
 {
-  // Pure virtual no-op destructor
-  Camera::~Camera()
-  { }
-
-  // Return the wrapped camera
-  dmnsn_camera*
-  Camera::dmnsn()
+  // Allocate a dmnsn_scene
+  Scene::Scene(const Color& background, Camera& camera, Canvas& canvas)
+    : m_scene(dmnsn_new_scene()), m_camera(&camera), m_canvas(&canvas)
   {
-    return m_camera;
-  }
-
-  // Return a const version of the wrapped canvas
-  const dmnsn_camera*
-  Camera::dmnsn() const
-  {
-    return m_camera;
-  }
-
-  // Protected default no-op constructor
-  Camera::Camera()
-  { }
-
-  // Protected manual constructor
-  Camera::Camera(dmnsn_camera *camera)
-    : m_camera(camera)
-  { }
-
-  Line
-  Camera::ray(const Canvas& canvas, unsigned int x, unsigned int y)
-  {
-    return Line(m_camera->ray_fn(m_camera, canvas.dmnsn(), x, y));
-  }
-
-  // Custom camera callbacks
-  namespace {
-    dmnsn_line
-    ray_fn(const dmnsn_camera *camera, const dmnsn_canvas *canvas,
-           unsigned int x, unsigned int y)
-    {
-      Custom_Camera* ccamera = reinterpret_cast<Custom_Camera*>(camera->ptr);
-      // Yes the const_cast is ugly, but there's no other way because C++
-      // doesn't have `const' constructors.  Luckily const Camera's treat their
-      // dmnsn_camera* as a const dmnsn_camera*.
-      return ccamera->ray(
-        Canvas(const_cast<dmnsn_canvas*>(canvas)), x, y
-      ).dmnsn();
+    if (!m_scene) {
+      throw Dimension_Error("Couldn't allocate scene.");
     }
+
+    m_scene->background = background.dmnsn();
+    m_scene->camera = camera.dmnsn();
+    m_scene->canvas = canvas.dmnsn();
   }
 
-  // Initialize a new camera, using member functions as callbacks
-  Custom_Camera::Custom_Camera()
-    : Camera(dmnsn_new_camera())
+  // Wrap an existing scene
+  Scene::Scene(dmnsn_scene* scene)
+    : m_scene(scene) { }
+
+  // Delete the scene
+  Scene::~Scene()
   {
-    m_camera->ptr = this;
-    m_camera->ray_fn = &ray_fn;
+    dmnsn_delete_scene(m_scene);
   }
 
-  // Delete the camera
-  Custom_Camera::~Custom_Camera()
+  // Element access
+
+  Color
+  Scene::background() const
   {
-    dmnsn_delete_camera(m_camera);
+    return Color(m_scene->background);
+  }
+
+  Camera&
+  Scene::camera()
+  {
+    return *m_camera;
+  }
+
+  const Camera&
+  Scene::camera() const
+  {
+    return *m_camera;
+  }
+
+  Canvas&
+  Scene::canvas()
+  {
+    return *m_canvas;
+  }
+
+  const Canvas&
+  Scene::canvas() const
+  {
+    return *m_canvas;
+  }
+
+  // Add objects
+  void
+  Scene::push_object(Object& object)
+  {
+    dmnsn_object* cobject = object.dmnsn();
+    dmnsn_array_push(m_scene->objects, &cobject);
+  }
+
+  // Render it!
+
+  void Scene::raytrace()
+  {
+    dmnsn_raytrace_scene(m_scene);
+  }
+
+  Progress
+  Scene::raytrace_async()
+  {
+    return Progress(dmnsn_raytrace_scene_async(m_scene));
+  }
+
+  // Access the wrapped C object.
+
+  dmnsn_scene*
+  Scene::dmnsn()
+  {
+    return m_scene;
+  }
+
+  const dmnsn_scene*
+  Scene::dmnsn() const
+  {
+    return m_scene;
   }
 }

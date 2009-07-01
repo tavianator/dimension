@@ -18,67 +18,51 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimensionxx.hpp"
+// dmnsn_scene* wrapper.
+
+#ifndef DIMENSIONXX_SCENE_HPP
+#define DIMENSIONXX_SCENE_HPP
 
 namespace Dimension
 {
-  // Allocate the canvas with dmnsn_new_canvas()
-  Canvas::Canvas(unsigned int width, unsigned int height)
-    : m_canvas(dmnsn_new_canvas(width, height)) { }
-
-  // Wrap an existing dmnsn_canvas*
-  Canvas::Canvas(dmnsn_canvas* canvas)
-    : m_canvas(canvas) { }
-
-  // Virtual destructor: delete the canvas with dmnsn_delete_canvas().
-  Canvas::~Canvas()
+  // Base scene class.  Wraps a dmnsn_scene*.
+  class Scene
   {
-    dmnsn_delete_canvas(m_canvas);
-  }
+  public:
+    // Allocate a dmnsn_scene
+    Scene(const Color& background, Camera& camera, Canvas& canvas);
+    // Wrap an existing scene
+    explicit Scene(dmnsn_scene* scene);
+    // Delete the scene
+    ~Scene();
 
-  // Get the width
-  unsigned int
-  Canvas::width() const
-  {
-    return m_canvas->x;
-  }
+    // Element access
+    Color background() const;
+    Camera&       camera();
+    const Camera& camera() const;
+    Canvas&       canvas();
+    const Canvas& canvas() const;
 
-  // Get the height
-  unsigned int
-  Canvas::height() const
-  {
-    return m_canvas->y;
-  }
+    // Add objects
+    void push_object(Object& object);
 
-  // Get a particular pixel
-  Color
-  Canvas::pixel(unsigned int x, unsigned int y) const
-  {
-    return Color(dmnsn_get_pixel(m_canvas, x, y));
-  }
+    // Render it!
+    void raytrace();
+    Progress raytrace_async();
 
-  // Set a particular pixel
-  void
-  Canvas::pixel(unsigned int x, unsigned int y, const Color& c)
-  {
-    dmnsn_set_pixel(m_canvas, x, y, c.dmnsn());
-  }
+    // Access the wrapped C object.
+    dmnsn_scene*       dmnsn();
+    const dmnsn_scene* dmnsn() const;
 
-  // Return the wrapped canvas
-  dmnsn_canvas* 
-  Canvas::dmnsn()
-  {
-    return m_canvas;
-  }
+  private:
+    // Copying prohibited
+    Scene(const Scene&);
+    Scene& operator=(const Scene&);
 
-  // Return a const version of the wrapped canvas
-  const dmnsn_canvas*
-  Canvas::dmnsn() const
-  {
-    return m_canvas;
-  }
-
-  // Protected default constructor: set m_canvas to NULL.
-  Canvas::Canvas()
-    : m_canvas(0) { }
+    dmnsn_scene* m_scene;
+    Camera* m_camera;
+    Canvas* m_canvas;
+  };
 }
+
+#endif /* DIMENSIONXX_SCENE_HPP */
