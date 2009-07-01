@@ -18,14 +18,37 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * A sphere object, of radius 1, centered at the origin.
- */
+#include "dimensionxx.hpp"
 
-#ifndef DIMENSION_SPHERE_H
-#define DIMENSION_SPHERE_H
+namespace Dimension
+{
+  // Create a sphere
+  Sphere::Sphere()
+    : Object(dmnsn_new_sphere())
+  {
+    if (!m_object) {
+      throw Dimension_Error("Failed to allocate sphere.");
+    }
+  }
 
-dmnsn_object *dmnsn_new_sphere();
-void dmnsn_delete_sphere(dmnsn_object *sphere);
+  // Delete a sphere
+  Sphere::~Sphere()
+  {
+    dmnsn_delete_sphere(m_object);
+  }
 
-#endif /* DIMENSION_SPHERE_H */
+  // Create a cube
+  Cube::Cube()
+    : Object(dmnsn_new_cube())
+  {
+    if (!m_object) {
+      throw Dimension_Error("Failed to allocate sphere.");
+    }
+  }
+
+  // Delete a sphere
+  Cube::~Cube()
+  {
+    dmnsn_delete_cube(m_object);
+  }
+}

@@ -24,6 +24,7 @@ nobase_include_HEADERS = dimensionxx.hpp                                       \
                          dimensionxx/cookie.hpp                                \
                          dimensionxx/geometry.hpp                              \
                          dimensionxx/object.hpp                                \
+                         dimensionxx/objects.hpp                               \
                          dimensionxx/png.hpp                                   \
                          dimensionxx/progress.hpp
 
@@ -36,6 +37,7 @@ libdimensionxx_la_SOURCES = $(nobase_include_HEADERS)                          \
                             color.cpp                                          \
                             error.cpp                                          \
                             object.cpp                                         \
+                            objects.cpp                                        \
                             png.cpp                                            \
                             progress.cpp
 

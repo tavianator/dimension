@@ -22,15 +22,14 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/camera.h                                    \
                          dimension/canvas.h                                    \
                          dimension/color.h                                     \
-                         dimension/cube.h                                      \
                          dimension/error.h                                     \
                          dimension/geometry.h                                  \
                          dimension/png.h                                       \
                          dimension/progress.h                                  \
                          dimension/object.h                                    \
+                         dimension/objects.h                                   \
                          dimension/raytrace.h                                  \
-                         dimension/scene.h                                     \
-                         dimension/sphere.h
+                         dimension/scene.h
 
 lib_LTLIBRARIES = libdimension.la
 
@@ -39,15 +38,14 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           camera.c                                             \
                           canvas.c                                             \
                           color.c                                              \
-                          cube.c                                               \
                           error.c                                              \
                           geometry.c                                           \
                           inlines.c                                            \
                           png.c                                                \
                           progress.c                                           \
                           object.c                                             \
+                          objects.c                                            \
                           raytrace.c                                           \
-                          scene.c                                              \
-                          sphere.c
+                          scene.c
 libdimension_la_LDFLAGS = -version-info 0:0:0
 libdimension_la_LIBADD  = -lm -lpthread -lpng

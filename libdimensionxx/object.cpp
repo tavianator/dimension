@@ -58,6 +58,11 @@ namespace Dimension
   Object::Object()
   { }
 
+  // Protected manual constructor
+  Object::Object(dmnsn_object *object)
+    : m_object(object)
+  { }
+
   // Custom object callbacks
   namespace {
     dmnsn_array *

@@ -19,13 +19,18 @@
  *************************************************************************/
 
 /*
- * A cube, axis-aligned, from (-1, -1, -1) to (1, 1, 1)
+ * Custom objects.
  */
 
-#ifndef DIMENSION_CUBE_H
-#define DIMENSION_CUBE_H
+#ifndef DIMENSION_OBJECTS_H
+#define DIMENSION_OBJECTS_H
 
+/* A sphere object, of radius 1, centered at the origin. */
+dmnsn_object *dmnsn_new_sphere();
+void dmnsn_delete_sphere(dmnsn_object *sphere);
+
+/* A cube, axis-aligned, from (-1, -1, -1) to (1, 1, 1) */
 dmnsn_object *dmnsn_new_cube();
 void dmnsn_delete_cube(dmnsn_object *cube);
 
-#endif /* DIMENSION_CUBE_H */
+#endif /* DIMENSION_OBJECTS_H */

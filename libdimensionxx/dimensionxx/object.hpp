@@ -43,7 +43,7 @@ namespace Dimension
     // No-op
     Object();
     // Wrap an existing object.
-    explicit Object(dmnsn_object* object) : m_object(object) { }
+    explicit Object(dmnsn_object* object);
 
     dmnsn_object* m_object;
 
