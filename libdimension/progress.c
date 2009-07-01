@@ -120,6 +120,7 @@ dmnsn_delete_progress(dmnsn_progress *progress)
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking condition variable.");
     }
 
+    free(progress->rwlock);
     free(progress->mutex);
     free(progress->cond);
     dmnsn_delete_array(progress->elements);
