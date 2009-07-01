@@ -18,56 +18,64 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-// dmnsn_object* wrapper.
-
-#ifndef DIMENSIONXX_OBJECT_HPP
-#define DIMENSIONXX_OBJECT_HPP
+#include "dimensionxx.hpp"
 
 namespace Dimension
 {
-  // Abstract base object class.  Wraps a dmnsn_object*.
-  class Object
+  // Pure virtual no-op destructor
+  Camera::~Camera()
+  { }
+
+  // Return the wrapped camera
+  dmnsn_camera*
+  Camera::dmnsn()
   {
-  public:
-    // No-op, made pure virtual
-    virtual ~Object() = 0;
+    return m_camera;
+  }
 
-    // Get/set the transformation matrix
-    Matrix trans();
-    void trans(const Matrix& trans);
-
-    // Object callbacks
-    virtual Array<double> intersections(const Line& l);
-    virtual bool inside(const Vector& point);
-
-    // Access the wrapped C object.
-    dmnsn_object*       dmnsn();
-    const dmnsn_object* dmnsn() const;
-
-  protected:
-    // No-op
-    Object();
-    // Wrap an existing object.
-    explicit Object(dmnsn_object* object);
-
-    dmnsn_object* m_object;
-
-  private:
-    // Copying prohibited
-    Object(const Object&);
-    Object& operator=(const Object&);
-  };
-
-  // A custom object abstract base class, for creating your own object types
-  class Custom_Object : public Object
+  // Return a const version of the wrapped canvas
+  const dmnsn_camera*
+  Camera::dmnsn() const
   {
-  public:
-    Custom_Object();
-    virtual ~Custom_Object();
+    return m_camera;
+  }
 
-    virtual Array<double> intersections(const Line& l) = 0;
-    virtual bool inside(const Vector& point) = 0;
-  };
+  // Protected default no-op constructor
+  Camera::Camera()
+  { }
+
+  // Protected manual constructor
+  Camera::Camera(dmnsn_camera *camera)
+    : m_camera(camera)
+  { }
+
+  // Custom camera callbacks
+  namespace {
+    dmnsn_line
+    ray_fn(const dmnsn_camera *camera, const dmnsn_canvas *canvas,
+           unsigned int x, unsigned int y)
+    {
+      Custom_Camera* ccamera = reinterpret_cast<Custom_Camera*>(camera->ptr);
+      // Yes the const_cast is ugly, but there's no other way because C++
+      // doesn't have `const' constructors.  Luckily const Camera's treat their
+      // dmnsn_camera* as a const dmnsn_camera*.
+      return ccamera->ray(
+        Canvas(const_cast<dmnsn_canvas*>(canvas)), x, y
+      ).dmnsn();
+    }
+  }
+
+  // Initialize a new camera, using member functions as callbacks
+  Custom_Camera::Custom_Camera()
+    : Camera(dmnsn_new_camera())
+  {
+    m_camera->ptr = this;
+    m_camera->ray_fn = &ray_fn;
+  }
+
+  // Delete the camera
+  Custom_Camera::~Custom_Camera()
+  {
+    dmnsn_delete_camera(m_camera);
+  }
 }
-
-#endif /* DIMENSIONXX_OBJECT_HPP */

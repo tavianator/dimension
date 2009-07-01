@@ -18,56 +18,50 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-// dmnsn_object* wrapper.
+// dmnsn_camera* wrapper.
 
-#ifndef DIMENSIONXX_OBJECT_HPP
-#define DIMENSIONXX_OBJECT_HPP
+#ifndef DIMENSIONXX_CAMERA_HPP
+#define DIMENSIONXX_CAMERA_HPP
 
 namespace Dimension
 {
-  // Abstract base object class.  Wraps a dmnsn_object*.
-  class Object
+  // Abstract base camera class.  Wraps a dmnsn_camera*.
+  class Camera
   {
   public:
     // No-op, made pure virtual
-    virtual ~Object() = 0;
+    virtual ~Camera() = 0;
 
-    // Get/set the transformation matrix
-    Matrix trans();
-    void trans(const Matrix& trans);
+    // Camera callback
+    virtual Line ray(const Canvas& canvas, unsigned int x, unsigned int y);
 
-    // Object callbacks
-    virtual Array<double> intersections(const Line& l);
-    virtual bool inside(const Vector& point);
-
-    // Access the wrapped C object.
-    dmnsn_object*       dmnsn();
-    const dmnsn_object* dmnsn() const;
+    // Access the wrapped C camera.
+    dmnsn_camera*       dmnsn();
+    const dmnsn_camera* dmnsn() const;
 
   protected:
     // No-op
-    Object();
-    // Wrap an existing object.
-    explicit Object(dmnsn_object* object);
+    Camera();
+    // Wrap an existing camera
+    explicit Camera(dmnsn_camera* camera);
 
-    dmnsn_object* m_object;
+    dmnsn_camera* m_camera;
 
   private:
     // Copying prohibited
-    Object(const Object&);
-    Object& operator=(const Object&);
+    Camera(const Camera&);
+    Camera& operator=(const Camera&);
   };
 
-  // A custom object abstract base class, for creating your own object types
-  class Custom_Object : public Object
+  // A custom camera abstract base class, for creating your own camera types
+  class Custom_Camera : public Camera
   {
   public:
-    Custom_Object();
-    virtual ~Custom_Object();
+    Custom_Camera();
+    virtual ~Custom_Camera();
 
-    virtual Array<double> intersections(const Line& l) = 0;
-    virtual bool inside(const Vector& point) = 0;
+    virtual Line ray(const Canvas& canvas, unsigned int x, unsigned int y) = 0;
   };
 }
 
-#endif /* DIMENSIONXX_OBJECT_HPP */
+#endif /* DIMENSIONXX_CAMERA_HPP */

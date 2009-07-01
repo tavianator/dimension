@@ -18,56 +18,22 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-// dmnsn_object* wrapper.
-
-#ifndef DIMENSIONXX_OBJECT_HPP
-#define DIMENSIONXX_OBJECT_HPP
+#include "dimensionxx.hpp"
 
 namespace Dimension
 {
-  // Abstract base object class.  Wraps a dmnsn_object*.
-  class Object
+  // Create a sphere
+  Perspective_Camera::Perspective_Camera(const Matrix& trans)
+    : Camera(dmnsn_new_perspective_camera(trans.dmnsn()))
   {
-  public:
-    // No-op, made pure virtual
-    virtual ~Object() = 0;
+    if (!m_camera) {
+      throw Dimension_Error("Failed to allocate perspective camera.");
+    }
+  }
 
-    // Get/set the transformation matrix
-    Matrix trans();
-    void trans(const Matrix& trans);
-
-    // Object callbacks
-    virtual Array<double> intersections(const Line& l);
-    virtual bool inside(const Vector& point);
-
-    // Access the wrapped C object.
-    dmnsn_object*       dmnsn();
-    const dmnsn_object* dmnsn() const;
-
-  protected:
-    // No-op
-    Object();
-    // Wrap an existing object.
-    explicit Object(dmnsn_object* object);
-
-    dmnsn_object* m_object;
-
-  private:
-    // Copying prohibited
-    Object(const Object&);
-    Object& operator=(const Object&);
-  };
-
-  // A custom object abstract base class, for creating your own object types
-  class Custom_Object : public Object
+  // Delete a sphere
+  Perspective_Camera::~Perspective_Camera()
   {
-  public:
-    Custom_Object();
-    virtual ~Custom_Object();
-
-    virtual Array<double> intersections(const Line& l) = 0;
-    virtual bool inside(const Vector& point) = 0;
-  };
+    dmnsn_delete_perspective_camera(m_camera);
+  }
 }
-
-#endif /* DIMENSIONXX_OBJECT_HPP */

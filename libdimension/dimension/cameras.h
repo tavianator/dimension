@@ -18,56 +18,17 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-// dmnsn_object* wrapper.
+/*
+ * Types of cameras.
+ */
 
-#ifndef DIMENSIONXX_OBJECT_HPP
-#define DIMENSIONXX_OBJECT_HPP
+#ifndef DIMENSION_CAMERAS_H
+#define DIMENSION_CAMERAS_H
 
-namespace Dimension
-{
-  // Abstract base object class.  Wraps a dmnsn_object*.
-  class Object
-  {
-  public:
-    // No-op, made pure virtual
-    virtual ~Object() = 0;
+/* A perspective camera, at the origin, looking at (0, 0, 1).  The feild of view
+   is the section of the plane z = 1 from (-0.5, -0.5) to (0.5, 0.5).  Rays are
+   transformed by the transformation matrix `trans'. */
+dmnsn_camera *dmnsn_new_perspective_camera(dmnsn_matrix trans);
+void dmnsn_delete_perspective_camera(dmnsn_camera *camera);
 
-    // Get/set the transformation matrix
-    Matrix trans();
-    void trans(const Matrix& trans);
-
-    // Object callbacks
-    virtual Array<double> intersections(const Line& l);
-    virtual bool inside(const Vector& point);
-
-    // Access the wrapped C object.
-    dmnsn_object*       dmnsn();
-    const dmnsn_object* dmnsn() const;
-
-  protected:
-    // No-op
-    Object();
-    // Wrap an existing object.
-    explicit Object(dmnsn_object* object);
-
-    dmnsn_object* m_object;
-
-  private:
-    // Copying prohibited
-    Object(const Object&);
-    Object& operator=(const Object&);
-  };
-
-  // A custom object abstract base class, for creating your own object types
-  class Custom_Object : public Object
-  {
-  public:
-    Custom_Object();
-    virtual ~Custom_Object();
-
-    virtual Array<double> intersections(const Line& l) = 0;
-    virtual bool inside(const Vector& point) = 0;
-  };
-}
-
-#endif /* DIMENSIONXX_OBJECT_HPP */
+#endif /* DIMENSION_CAMERAS_H */

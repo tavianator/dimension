@@ -28,17 +28,17 @@ namespace Dimension
   // Sphere object
   class Sphere : public Object
   {
-    public:
-      Sphere();
-      virtual ~Sphere();
+  public:
+    Sphere();
+    virtual ~Sphere();
   };
 
   // A cube
   class Cube : public Object
   {
-    public:
-      Cube();
-      virtual ~Cube();
+  public:
+    Cube();
+    virtual ~Cube();
   };
 }
 

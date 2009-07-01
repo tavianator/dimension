@@ -20,6 +20,7 @@
 nobase_include_HEADERS = dimension.h                                           \
                          dimension/array.h                                     \
                          dimension/camera.h                                    \
+                         dimension/cameras.h                                   \
                          dimension/canvas.h                                    \
                          dimension/color.h                                     \
                          dimension/error.h                                     \
@@ -36,6 +37,7 @@ lib_LTLIBRARIES = libdimension.la
 libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           array.c                                              \
                           camera.c                                             \
+                          cameras.c                                            \
                           canvas.c                                             \
                           color.c                                              \
                           error.c                                              \

@@ -20,6 +20,8 @@
 nobase_include_HEADERS = dimensionxx.hpp                                       \
                          dimensionxx/array.hpp                                 \
                          dimensionxx/canvas.hpp                                \
+                         dimensionxx/camera.hpp                                \
+                         dimensionxx/cameras.hpp                               \
                          dimensionxx/color.hpp                                 \
                          dimensionxx/cookie.hpp                                \
                          dimensionxx/geometry.hpp                              \
@@ -34,6 +36,8 @@ lib_LTLIBRARIES = libdimensionxx.la
 
 libdimensionxx_la_SOURCES = $(nobase_include_HEADERS)                          \
                             canvas.cpp                                         \
+                            camera.cpp                                         \
+                            cameras.cpp                                        \
                             color.cpp                                          \
                             error.cpp                                          \
                             object.cpp                                         \
