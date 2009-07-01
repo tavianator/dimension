@@ -336,20 +336,6 @@ dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs)
   return dmnsn_vector_div(r, w);
 }
 
-/* Affine line transformation; n = lhs*(x0 + n) - lhs*x0, x0 *= lhs */
-dmnsn_line
-dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs)
-{
-  /* 24 multiplications, 6 divisions, 30 additions */
-  dmnsn_line l;
-  l.x0 = dmnsn_matrix_vector_mul(lhs, rhs.x0);
-  l.n  = dmnsn_vector_sub(
-    dmnsn_matrix_vector_mul(lhs, dmnsn_vector_add(rhs.x0, rhs.n)),
-    l.x0
-  );
-  return l;
-}
-
 /* Solve for the t value such that x0 + t*n = x */
 double
 dmnsn_line_index(dmnsn_line l, dmnsn_vector x)

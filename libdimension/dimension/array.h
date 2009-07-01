@@ -20,14 +20,16 @@
 
 /*
  * Simple thread-safe generalized arrays, for returning variable-length arrays
- * from functions, and other fun stuff.
+ * from functions, and other fun stuff.  All functions are inline for
+ * performance reasons.
  */
 
 #ifndef DIMENSION_ARRAY_H
 #define DIMENSION_ARRAY_H
 
 #include <pthread.h> /* For pthread_rwlock_t */
-#include <stdlib.h>  /* For size_t */
+#include <stdlib.h>  /* For size_t, malloc */
+#include <string.h>  /* For memcpy */
 
 typedef struct {
   void *ptr;
@@ -36,22 +38,105 @@ typedef struct {
 
 /* Array allocation never returns NULL - if dmnsn_new_array returns, it
    succeeded */
-dmnsn_array *dmnsn_new_array(size_t obj_size);
-void dmnsn_delete_array(dmnsn_array *array);
+DMNSN_INLINE dmnsn_array *
+dmnsn_new_array(size_t obj_size)
+{
+  dmnsn_array *array = (dmnsn_array *)malloc(sizeof(dmnsn_array));
+  if (array) {
+    array->obj_size = obj_size;
+    array->length   = 0;
+    array->capacity = 4; /* Start with capacity of 4 */
 
-void dmnsn_array_push(dmnsn_array *array, const void *obj);
-void dmnsn_array_pop(dmnsn_array *array, void *obj);
-void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
-void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
-void *dmnsn_array_at(dmnsn_array *array, size_t i);
+    /* Allocate the memory */
+    array->ptr = malloc(array->capacity*array->obj_size);
+    if (!array->ptr) {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Array allocation failed.");
+    }
+  }
 
-/* Inline so for-loops calling this are fast */
+  return array;
+}
+
+/* Delete the array */
+DMNSN_INLINE void
+dmnsn_delete_array(dmnsn_array *array) {
+  if (array) {
+    free(array->ptr);
+    free(array);
+  }
+}
+
+/* Get the size of the array */
 DMNSN_INLINE size_t
 dmnsn_array_size(const dmnsn_array *array)
 {
   return array->length;
 }
 
-void dmnsn_array_resize(dmnsn_array *array, size_t length);
+/* Set the size of the array */
+DMNSN_INLINE void
+dmnsn_array_resize(dmnsn_array *array, size_t length)
+{
+  if (length > array->capacity) {
+    /* Resize if we don't have enough capacity */
+    array->capacity = length*2; /* We are greedy */
+    array->ptr = realloc(array->ptr, array->obj_size*array->capacity);
+    if (!array->ptr) {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Resizing array failed.");
+    }
+  }
+
+  array->length = length;
+}
+
+/* Get the i'th object, bailing out if i is out of range */
+DMNSN_INLINE void
+dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
+{
+  if (i >= dmnsn_array_size(array)) {
+    /* Range check failed */
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
+  }
+  memcpy(obj, (char *)array->ptr + array->obj_size*i, array->obj_size);
+}
+
+
+/* Set the i'th object, expanding the array if necessary */
+DMNSN_INLINE void
+dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj)
+{
+  if (i >= dmnsn_array_size(array)) {
+    /* Resize if i is out of range */
+    dmnsn_array_resize(array, i + 1);
+  }
+  memcpy((char *)array->ptr + array->obj_size*i, obj, array->obj_size);
+}
+
+/* Element access */
+DMNSN_INLINE void *
+dmnsn_array_at(dmnsn_array *array, size_t i)
+{
+  if (i >= dmnsn_array_size(array)) {
+    /* Resize if i is out of range */
+    dmnsn_array_resize(array, i + 1);
+  }
+  return (char *)array->ptr + array->obj_size*i;
+}
+
+/* Push obj to the end of the array */
+DMNSN_INLINE void
+dmnsn_array_push(dmnsn_array *array, const void *obj)
+{
+  dmnsn_array_set(array, dmnsn_array_size(array), obj);
+}
+
+/* Pop obj from the end of the array */
+DMNSN_INLINE void
+dmnsn_array_pop(dmnsn_array *array, void *obj)
+{
+  size_t size = dmnsn_array_size(array);
+  dmnsn_array_get(array, size - 1, obj); /* Copy the object */
+  dmnsn_array_resize(array, size - 1);   /* Shrink the array */
+}
 
 #endif /* DIMENSION_ARRAY_H */

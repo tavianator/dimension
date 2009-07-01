@@ -41,11 +41,24 @@ dmnsn_canvas *dmnsn_new_canvas(unsigned int x, unsigned int y);
 void dmnsn_delete_canvas(dmnsn_canvas *canvas);
 
 /* Pixel accessors */
-dmnsn_color dmnsn_get_pixel(const dmnsn_canvas *canvas,
-                            unsigned int x, unsigned int y);
-void dmnsn_set_pixel(dmnsn_canvas *canvas,
-                     unsigned int x, unsigned int y, dmnsn_color color);
-dmnsn_color *dmnsn_pixel_at(dmnsn_canvas *canvas,
-                            unsigned int x, unsigned int y);
+
+DMNSN_INLINE dmnsn_color
+dmnsn_get_pixel(const dmnsn_canvas *canvas, unsigned int x, unsigned int y)
+{
+  return canvas->pixels[y*canvas->x + x];
+}
+
+DMNSN_INLINE void
+dmnsn_set_pixel(dmnsn_canvas *canvas,
+                unsigned int x, unsigned int y, dmnsn_color color)
+{
+  canvas->pixels[y*canvas->x + x] = color;
+}
+
+DMNSN_INLINE dmnsn_color *
+dmnsn_pixel_at(dmnsn_canvas *canvas, unsigned int x, unsigned int y)
+{
+  return canvas->pixels + y*canvas->x + x;
+}
 
 #endif /* DIMENSION_CANVAS_H */

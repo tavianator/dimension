@@ -79,6 +79,7 @@ dmnsn_line_construct(dmnsn_vector x0, dmnsn_vector n)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
 {
+  /* 3 additions */
   dmnsn_vector v = { lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z };
   return v;
 }
@@ -86,6 +87,7 @@ dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
 {
+  /* 3 additions */
   dmnsn_vector v = { lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z };
   return v;
 }
@@ -93,6 +95,7 @@ dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_mul(double lhs, dmnsn_vector rhs)
 {
+  /* 3 multiplications */
   dmnsn_vector v = { lhs*rhs.x, lhs*rhs.y, lhs*rhs.z };
   return v;
 }
@@ -100,6 +103,7 @@ dmnsn_vector_mul(double lhs, dmnsn_vector rhs)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_div(dmnsn_vector lhs, double rhs)
 {
+  /* 3 divisions */
   dmnsn_vector v = { lhs.x/rhs, lhs.y/rhs, lhs.z/rhs };
   return v;
 }
@@ -107,12 +111,14 @@ dmnsn_vector_div(dmnsn_vector lhs, double rhs)
 DMNSN_INLINE double
 dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs)
 {
+  /* 3 multiplications, 2 additions */
   return lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z;
 }
 
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
 {
+  /* 6 multiplications, 3 additions */
   dmnsn_vector v = { lhs.y*rhs.z - lhs.z*rhs.y,
                      lhs.z*rhs.x - lhs.x*rhs.z,
                      lhs.x*rhs.y - lhs.y*rhs.x };
@@ -122,19 +128,34 @@ dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
 DMNSN_INLINE double
 dmnsn_vector_norm(dmnsn_vector n)
 {
+  /* 1 sqrt, 3 multiplications, 2 additions */
   return sqrt(dmnsn_vector_dot(n, n));
 }
 
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_normalize(dmnsn_vector n)
 {
+  /* 1 sqrt, 3 divisions, 3 multiplications, 2 additions */
   return dmnsn_vector_div(n, dmnsn_vector_norm(n));
 }
 
 dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
 dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
 dmnsn_vector dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs);
-dmnsn_line   dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs);
+
+/* Affine line transformation; n = lhs*(x0 + n) - lhs*x0, x0 *= lhs */
+DMNSN_INLINE dmnsn_line
+dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs)
+{
+  /* 24 multiplications, 6 divisions, 30 additions */
+  dmnsn_line l;
+  l.x0 = dmnsn_matrix_vector_mul(lhs, rhs.x0);
+  l.n  = dmnsn_vector_sub(
+    dmnsn_matrix_vector_mul(lhs, dmnsn_vector_add(rhs.x0, rhs.n)),
+    l.x0
+  );
+  return l;
+}
 
 /* A point on a line, defined by x0 + t*n */
 DMNSN_INLINE dmnsn_vector
