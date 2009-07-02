@@ -19,7 +19,26 @@
  *************************************************************************/
 
 #include "../libdimension/dimension.h"
+#include <GL/glx.h>
+#include <GL/gl.h>
 #include <stdio.h>
+
+typedef struct {
+  Display *dpy;
+  Window win;
+  Colormap cmap;
+  GLXContext cx;
+  XEvent event;
+} dmnsn_display;
+
+/* Create a new X window */
+dmnsn_display *dmnsn_new_X_display(const dmnsn_canvas *canvas);
+dmnsn_display *dmnsn_new_glX_display(const dmnsn_canvas *canvas);
+/* Destroy the X window */
+void dmnsn_delete_display(dmnsn_display *display);
+
+/* Flush the GL buffers */
+void dmnsn_display_frame(dmnsn_display *display);
 
 /* Print a progress bar of the progress of `progress' */
 void progressbar(const char *str, const dmnsn_progress *progress);

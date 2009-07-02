@@ -21,21 +21,6 @@
 #include "tests.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <GL/glx.h>
-#include <GL/gl.h>
-
-typedef struct {
-  Display *dpy;
-  Window win;
-  Colormap cmap;
-  GLXContext cx;
-  XEvent event;
-} dmnsn_display;
-
-dmnsn_display *dmnsn_new_display(const dmnsn_canvas *canvas);
-void dmnsn_delete_display(dmnsn_display *display);
-
-void dmnsn_display_frame(dmnsn_display *display);
 
 int
 main() {
@@ -129,18 +114,18 @@ main() {
   );
   dmnsn_array_push(scene->objects, &cube);
 
-  display = dmnsn_new_display(scene->canvas);
+  display = dmnsn_new_glX_display(scene->canvas);
   if (!display) {
     dmnsn_delete_cube(cube);
     dmnsn_delete_sphere(sphere);
     dmnsn_delete_perspective_camera(scene->camera);
     dmnsn_delete_canvas(scene->canvas);
     dmnsn_delete_scene(scene);
-    fprintf(stderr, "--- Couldn't initialize X or GLX! ---\n");
+    fprintf(stderr, "--- Couldn't initialize X or glX! ---\n");
     return EXIT_FAILURE;
   }
 
-  for (i = 0; i < 48; ++i) {
+  for (i = 0; i < 10; ++i) {
     progress = dmnsn_raytrace_scene_async(scene);
     if (!progress) {
       dmnsn_delete_display(display);
@@ -201,110 +186,4 @@ main() {
   dmnsn_delete_canvas(scene->canvas);
   dmnsn_delete_scene(scene);
   return EXIT_SUCCESS;
-}
-
-static Bool
-WaitForNotify(Display *d, XEvent *e, char *arg)
-{
-  return (e->type == MapNotify) && (e->xmap.window == (Window)arg);
-}
-
-dmnsn_display *
-dmnsn_new_display(const dmnsn_canvas *canvas)
-{
-  int attributeList[] = {
-    GLX_RGBA,
-    GLX_DOUBLEBUFFER,
-    GLX_RED_SIZE, 1,
-    GLX_GREEN_SIZE, 1,
-    GLX_BLUE_SIZE, 1,
-    None
-  };
-  dmnsn_display *display;
-  XVisualInfo *vi;
-  XSetWindowAttributes swa;
-
-  display = malloc(sizeof(dmnsn_display));
-  if (!display) {
-    return NULL;
-  }
-
-  /* Get an X connection */
-  display->dpy = XOpenDisplay(0);
-  if (!display->dpy) {
-    free(display);
-    return NULL;
-  }
-
-  /* Get an appropriate visual */
-  vi = glXChooseVisual(display->dpy, DefaultScreen(display->dpy),
-                       attributeList);
-  if (!vi) {
-    XCloseDisplay(display->dpy);
-    free(display);
-    return NULL;
-  }
-
-  /* Create a GLX context */
-  display->cx = glXCreateContext(display->dpy, vi, 0, GL_TRUE);
-  if (!display->cx) {
-    XCloseDisplay(display->dpy);
-    free(display);
-    return NULL;
-  }
-
-  /* Create a color map */
-  display->cmap = XCreateColormap(display->dpy,
-                                  RootWindow(display->dpy, vi->screen),
-                                  vi->visual, AllocNone);
-  if (!display->cmap) {
-    glXDestroyContext(display->dpy, display->cx);
-    XCloseDisplay(display->dpy);
-    free(display);
-    return NULL;
-  }
-
-  /* Create a window */
-  swa.colormap = display->cmap;
-  swa.border_pixel = 0;
-  swa.event_mask = StructureNotifyMask;
-  display->win = XCreateWindow(display->dpy,
-                               RootWindow(display->dpy, vi->screen),
-                               0, 0, canvas->x, canvas->y,
-                               0, vi->depth, InputOutput, vi->visual,
-                               CWBorderPixel|CWColormap|CWEventMask, &swa);
-  if (!display->win) {
-    XFreeColormap(display->dpy, display->cmap);
-    glXDestroyContext(display->dpy, display->cx);
-    XCloseDisplay(display->dpy);
-    free(display);
-    return NULL;
-  }
-
-  XMapWindow(display->dpy, display->win);
-  XIfEvent(display->dpy, &display->event, WaitForNotify, (char*)display->win);
-
-  /* Connect the context to the window */
-  glXMakeCurrent(display->dpy, display->win, display->cx);
-
-  return display;
-}
-
-void
-dmnsn_delete_display(dmnsn_display *display)
-{
-  if (display) {
-    XDestroyWindow(display->dpy, display->win);
-    XFreeColormap(display->dpy, display->cmap);
-    glXDestroyContext(display->dpy, display->cx);
-    XCloseDisplay(display->dpy);
-    free(display);
-  }
-}
-
-void
-dmnsn_display_frame(dmnsn_display *display)
-{
-  glFlush();
-  glXSwapBuffers(display->dpy, display->win);
 }
