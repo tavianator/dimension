@@ -19,56 +19,19 @@
  *************************************************************************/
 
 /*
- * libdimension - a library for photo-realistic 3-D rendering
+ * Draw a canvas to an X window.
  */
 
-#ifndef DIMENSION_H
-#define DIMENSION_H
+#ifndef DIMENSION_X_H
+#define DIMENSION_X_H
 
-/* Handle inlines nicely without cheating and making them static.  The
-   DMNSN_INLINE macro is set appropriately for the version of C you're using,
-   and non-inline versions are emitted in exactly one translation unit when
-   necessary. */
-#ifndef DMNSN_INLINE
-  #ifdef __cplusplus
-    /* C++ inline semantics */
-    #define DMNSN_INLINE inline
-  #elif (__STDC_VERSION__ >= 199901L)
-    /* C99 inline semantics */
-    #define DMNSN_INLINE inline
-  #elif defined(__GNUC__)
-    /* GCC inline semantics */
-    #define DMNSN_INLINE extern inline
-  #else
-    /* Unknown C - mark functions static and hope the compiler is smart enough
-       to inline them */
-    #define DMNSN_INLINE static
-  #endif
-#endif
+#include <stdio.h>
 
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
+/* Write canvas to X window.  Returns 0 on success, nonzero on failure. */
+int dmnsn_X_write_canvas(const dmnsn_canvas *canvas);
 
-#include <dimension/error.h>
-#include <dimension/array.h>
-#include <dimension/progress.h>
-#include <dimension/geometry.h>
-#include <dimension/color.h>
-#include <dimension/canvas.h>
-#include <dimension/X.h>
-#include <dimension/gl.h>
-#include <dimension/png.h>
-#include <dimension/object.h>
-#include <dimension/objects.h>
-#include <dimension/camera.h>
-#include <dimension/cameras.h>
-#include <dimension/scene.h>
-#include <dimension/raytrace.h>
+/* Read a canvas from a GL framebuffer.  Returns NULL on failure. */
+dmnsn_canvas *dmnsn_X_read_canvas(unsigned int x0, unsigned int y0,
+                                  unsigned int width, unsigned int height);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* DIMENSION_H */
+#endif /* DIMENSION_X_H */
