@@ -25,6 +25,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/color.h                                     \
                          dimension/error.h                                     \
                          dimension/geometry.h                                  \
+                         dimension/gl.h                                        \
                          dimension/png.h                                       \
                          dimension/progress.h                                  \
                          dimension/object.h                                    \
@@ -41,6 +42,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           color.c                                              \
                           error.c                                              \
                           geometry.c                                           \
+                          gl.c                                                 \
                           inlines.c                                            \
                           png.c                                                \
                           progress.c                                           \
@@ -49,4 +51,4 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           raytrace.c                                           \
                           scene.c
 libdimension_la_LDFLAGS = -version-info 0:0:0
-libdimension_la_LIBADD  = -lm -lpthread -lpng
+libdimension_la_LIBADD  = -lm -lpthread -lpng -lGL
