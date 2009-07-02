@@ -27,10 +27,6 @@ main() {
   dmnsn_progress *progress;
   FILE *file;
   dmnsn_scene *scene;
-  dmnsn_object *sphere, *cube;
-  dmnsn_sRGB sRGB;
-  dmnsn_color color;
-  dmnsn_matrix trans;
 
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
