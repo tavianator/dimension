@@ -85,7 +85,43 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 
 /* Read a canvas from a GL framebuffer.  Returns NULL on failure. */
 dmnsn_canvas *
-dmnsn_gl_read_canvas()
+dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
+                     unsigned int width, unsigned int height)
 {
-  return NULL;
+  dmnsn_canvas *canvas;
+  GLuint *pixels; /* Array of 32-bit ints in RGBA order */
+  GLuint *pixel;
+  dmnsn_sRGB sRGB;
+  dmnsn_color *color;
+  unsigned int x, y;
+
+  canvas = dmnsn_new_canvas(width, height);
+  if (!canvas) {
+    return NULL;
+  }
+
+  pixels = malloc(4*width*height*sizeof(GLuint));
+  if (!pixels) {
+    dmnsn_delete_canvas(canvas);
+    return NULL;
+  }
+
+  glReadPixels(x0, y0, width, height, GL_RGBA, GL_UNSIGNED_INT, pixels);
+
+  for (y = 0; y < height; ++y) {
+    for (x = 0; x < width; ++x) {
+      color = dmnsn_pixel_at(canvas, x, y);
+      pixel = pixels + 4*(y*width + x);
+
+      sRGB.R = ((double)pixel[0])/UINT32_MAX;
+      sRGB.G = ((double)pixel[1])/UINT32_MAX;
+      sRGB.B = ((double)pixel[2])/UINT32_MAX;
+
+      *color = dmnsn_color_from_sRGB(sRGB);
+      color->filter = ((double)pixel[3])/UINT32_MAX;
+    }
+  }
+
+  free(pixels);
+  return canvas;
 }

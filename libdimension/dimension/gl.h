@@ -28,10 +28,11 @@
 
 #include <stdio.h>
 
-/* Write canvas to GL framebuffer.  Returns 0 on success, nonzero on failure */
+/* Write canvas to GL framebuffer.  Returns 0 on success, nonzero on failure. */
 int dmnsn_gl_write_canvas(const dmnsn_canvas *canvas);
 
 /* Read a canvas from a GL framebuffer.  Returns NULL on failure. */
-dmnsn_canvas *dmnsn_gl_read_canvas();
+dmnsn_canvas *dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
+                                   unsigned int width, unsigned int height);
 
 #endif /* DIMENSION_GL_H */
