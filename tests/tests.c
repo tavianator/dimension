@@ -20,6 +20,105 @@
 
 #include "tests.h"
 
+dmnsn_scene *
+dmnsn_new_default_scene()
+{
+  dmnsn_scene *scene;
+  dmnsn_object *sphere, *cube;
+  dmnsn_matrix trans;
+  dmnsn_sRGB sRGB;
+  dmnsn_color color;
+
+  /* Allocate our new scene */
+  scene = dmnsn_new_scene();
+  if (!scene) {
+    return NULL;
+  }
+
+  /* Background color */
+  sRGB.R = 0.0;
+  sRGB.G = 0.0;
+  sRGB.B = 0.1;
+  color = dmnsn_color_from_sRGB(sRGB);
+  color.filter = 0.1;
+  scene->background = color;
+
+  /* Allocate a canvas */
+  scene->canvas = dmnsn_new_canvas(768, 480);
+  if (!scene->canvas) {
+    dmnsn_delete_scene(scene);
+    return NULL;
+  }
+
+  /* Set up the transformation matrix for the perspective camera */
+  trans = dmnsn_scale_matrix(
+    dmnsn_vector_construct(
+      ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
+    )
+  );
+  trans = dmnsn_matrix_mul(
+    dmnsn_translation_matrix(dmnsn_vector_construct(0.0, 0.0, -4.0)),
+    trans
+  );
+  trans = dmnsn_matrix_mul(
+    dmnsn_rotation_matrix(dmnsn_vector_construct(0.0, 1.0, 0.0)),
+    trans
+  );
+
+  /* Create a perspective camera */
+  scene->camera = dmnsn_new_perspective_camera(trans);
+  if (!scene->camera) {
+    dmnsn_delete_canvas(scene->canvas);
+    dmnsn_delete_scene(scene);
+    return NULL;
+  }
+
+  /* Now make our objects */
+
+  sphere = dmnsn_new_sphere();
+  if (!sphere) {
+    dmnsn_delete_perspective_camera(scene->camera);
+    dmnsn_delete_canvas(scene->canvas);
+    dmnsn_delete_scene(scene);
+    return NULL;
+  }
+
+  sphere->trans = dmnsn_matrix_inverse(
+    dmnsn_scale_matrix(dmnsn_vector_construct(1.25, 1.25, 1.25))
+  );
+  dmnsn_array_push(scene->objects, &sphere);
+
+  cube = dmnsn_new_cube();
+  if (!cube) {
+    dmnsn_delete_sphere(sphere);
+    dmnsn_delete_perspective_camera(scene->camera);
+    dmnsn_delete_canvas(scene->canvas);
+    dmnsn_delete_scene(scene);
+    return NULL;
+  }
+
+  cube->trans = dmnsn_matrix_inverse(
+    dmnsn_rotation_matrix(dmnsn_vector_construct(0.75, 0.0, 0.0))
+  );
+  dmnsn_array_push(scene->objects, &cube);
+
+  return scene;
+}
+
+void
+dmnsn_delete_default_scene(dmnsn_scene *scene)
+{
+  dmnsn_object *sphere, *cube;
+  dmnsn_array_get(scene->objects, 0, &sphere);
+  dmnsn_array_get(scene->objects, 1, &cube);
+
+  dmnsn_delete_cube(cube);
+  dmnsn_delete_sphere(sphere);
+  dmnsn_delete_perspective_camera(scene->camera);
+  dmnsn_delete_canvas(scene->canvas);
+  dmnsn_delete_scene(scene);
+}
+
 /* XIfEvent callback */
 static Bool
 WaitForNotify(Display *d, XEvent *e, char *arg)

@@ -23,6 +23,17 @@
 #include <GL/gl.h>
 #include <stdio.h>
 
+/*
+ * Convenience
+ */
+
+dmnsn_scene *dmnsn_new_default_scene();
+void dmnsn_delete_default_scene(dmnsn_scene *scene);
+
+/*
+ * Windowing
+ */
+
 typedef struct {
   Display *dpy;
   Window win;
@@ -39,6 +50,10 @@ void dmnsn_delete_display(dmnsn_display *display);
 
 /* Flush the GL buffers */
 void dmnsn_display_frame(dmnsn_display *display);
+
+/*
+ * Asynchronicity
+ */
 
 /* Print a progress bar of the progress of `progress' */
 void progressbar(const char *str, const dmnsn_progress *progress);
