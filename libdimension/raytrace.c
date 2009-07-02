@@ -196,7 +196,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   dmnsn_line ray, ray_trans;
   dmnsn_array *intersections;
   dmnsn_color color;
-  dmnsn_sRGB sRGB;
+  dmnsn_CIE_Lab Lab;
 
   width  = scene->canvas->x;
   height = scene->canvas->y;
@@ -225,17 +225,23 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
         /* Find the closest intersection */
         for (j = 0; j < dmnsn_array_size(intersections); ++j) {
           dmnsn_array_get(intersections, j, &t_temp);
-          if ((t_temp < t && t_temp >= 0.0) || t < 0.0) t = t_temp;
+          if ((t_temp < t && t_temp >= 0.0) || t < 0.0) {
+            t = t_temp;
+
+            /* Color each object differently */
+            Lab.a = sin((double)(i + 2));
+            Lab.b = cos((double)(i + 2));
+          }
         }
         dmnsn_delete_array(intersections);
       }
 
       /* Shade according to distance from camera */
       if (t >= 0.0) {
-        sRGB.R = 1.0 - (t - 2.25)/2.25;
-        sRGB.G = sRGB.R;
-        sRGB.B = sRGB.R;
-        color = dmnsn_color_from_sRGB(sRGB);
+        Lab.L = 100.0*(1.0 - (t - 2.25)/2.25);
+        Lab.a *= Lab.L;
+        Lab.b *= Lab.L;
+        color = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
       }
 
       dmnsn_set_pixel(scene->canvas, x, y, color);
