@@ -31,4 +31,7 @@
 dmnsn_camera *dmnsn_new_perspective_camera(dmnsn_matrix trans);
 void dmnsn_delete_perspective_camera(dmnsn_camera *camera);
 
+dmnsn_matrix dmnsn_get_perspective_camera_trans(const dmnsn_camera *camera);
+void dmnsn_set_perspective_camera_trans(dmnsn_camera *camera, dmnsn_matrix T);
+
 #endif /* DIMENSION_CAMERAS_H */

@@ -60,12 +60,29 @@ dmnsn_delete_perspective_camera(dmnsn_camera *camera)
   }
 }
 
+/* Get the transformation matrix */
+dmnsn_matrix
+dmnsn_get_perspective_camera_trans(const dmnsn_camera *camera)
+{
+  dmnsn_matrix *trans = camera->ptr;
+  return *trans;
+}
+
+/* Set the transformation matrix */
+void
+dmnsn_set_perspective_camera_trans(dmnsn_camera *camera, dmnsn_matrix T)
+{
+  dmnsn_matrix *trans = camera->ptr;
+  *trans = T;
+}
+
+/* Perspective camera ray callback */
 static dmnsn_line
 dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
                                 const dmnsn_canvas *canvas,
                                 unsigned int x, unsigned int y)
 {
-  dmnsn_matrix *trans = (dmnsn_matrix *)camera->ptr;
+  dmnsn_matrix *trans = camera->ptr;
   dmnsn_line l;
 
   /* Rays originate at the origin, oddly enough */
