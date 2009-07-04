@@ -26,7 +26,7 @@
   #define DMNSN_INLINE
 #elif defined(__GNUC__)
   /* GCC inline semantics */
-  #define DMNSN_INLINE inline
+  #define DMNSN_INLINE __inline__
 #else
   /* Unknown C - mark functions static and hope the compiler is smart enough
      to inline them */

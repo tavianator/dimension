@@ -38,7 +38,7 @@
     #define DMNSN_INLINE inline
   #elif defined(__GNUC__)
     /* GCC inline semantics */
-    #define DMNSN_INLINE extern inline
+      #define DMNSN_INLINE __extension__ extern __inline__
   #else
     /* Unknown C - mark functions static and hope the compiler is smart enough
        to inline them */
