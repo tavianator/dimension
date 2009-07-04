@@ -26,7 +26,8 @@
 #ifndef DIMENSION_GL_H
 #define DIMENSION_GL_H
 
-#include <stdio.h>
+/* Optimize canvas for GL drawing */
+int dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas);
 
 /* Write canvas to GL framebuffer.  Returns 0 on success, nonzero on failure. */
 int dmnsn_gl_write_canvas(const dmnsn_canvas *canvas);

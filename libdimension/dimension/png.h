@@ -27,6 +27,9 @@
 
 #include <stdio.h>
 
+/* Optimize canvas for PNG exporting */
+int dmnsn_png_optimize_canvas(dmnsn_canvas *canvas);
+
 /* Write canvas to file in PNG format.  Returns 0 on success, nonzero on
    failure */
 int dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file);

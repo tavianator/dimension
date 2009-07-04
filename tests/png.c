@@ -47,6 +47,12 @@ main() {
     return EXIT_FAILURE;
   }
 
+  if (dmnsn_png_optimize_canvas(canvas) != 0) {
+    dmnsn_delete_canvas(canvas);
+    fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
+    return EXIT_FAILURE;
+  }
+
   for (i = 0; i < x; ++i) {
     for (j = 0; j < y; ++j) {
       /*

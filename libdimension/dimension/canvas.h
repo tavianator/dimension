@@ -34,11 +34,33 @@ typedef struct {
    * at (a,b) is accessible as pixels[b*x + a].
    */
   dmnsn_color *pixels;
+
+  /* An array of dmnsn_canvas_optimizer's */
+  dmnsn_array *optimizers;
 } dmnsn_canvas;
+
+typedef struct dmnsn_canvas_optimizer dmnsn_canvas_optimizer;
+
+/* Canvas optimizer callback types */
+typedef void dmnsn_canvas_optimizer_fn(dmnsn_canvas *canvas,
+                                       dmnsn_canvas_optimizer optimizer,
+                                       unsigned int x, unsigned int y);
+typedef void dmnsn_canvas_optimizer_free_fn(void *ptr);
+
+/* Canvas optimizer */
+struct dmnsn_canvas_optimizer {
+  dmnsn_canvas_optimizer_fn *optimizer_fn;
+  dmnsn_canvas_optimizer_free_fn *free_fn;
+  void *ptr;
+};
 
 /* Allocate and free a canvas */
 dmnsn_canvas *dmnsn_new_canvas(unsigned int x, unsigned int y);
 void dmnsn_delete_canvas(dmnsn_canvas *canvas);
+
+/* Set a canvas optimizer */
+void dmnsn_optimize_canvas(dmnsn_canvas *canvas,
+                           dmnsn_canvas_optimizer optimizer);
 
 /* Pixel accessors */
 
@@ -48,17 +70,7 @@ dmnsn_get_pixel(const dmnsn_canvas *canvas, unsigned int x, unsigned int y)
   return canvas->pixels[y*canvas->x + x];
 }
 
-DMNSN_INLINE void
-dmnsn_set_pixel(dmnsn_canvas *canvas,
-                unsigned int x, unsigned int y, dmnsn_color color)
-{
-  canvas->pixels[y*canvas->x + x] = color;
-}
-
-DMNSN_INLINE dmnsn_color *
-dmnsn_pixel_at(dmnsn_canvas *canvas, unsigned int x, unsigned int y)
-{
-  return canvas->pixels + y*canvas->x + x;
-}
+void dmnsn_set_pixel(dmnsn_canvas *canvas, unsigned int x, unsigned int y,
+                     dmnsn_color color);
 
 #endif /* DIMENSION_CANVAS_H */

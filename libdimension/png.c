@@ -24,6 +24,82 @@
 #include <setjmp.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
+#include <stdint.h>
+
+/* PNG optimizer callback */
+static void dmnsn_png_optimizer_fn(dmnsn_canvas *canvas,
+                                   dmnsn_canvas_optimizer optimizer,
+                                   unsigned int x, unsigned int y);
+
+/* Optimize canvas for PNG exporting */
+int
+dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
+{
+  dmnsn_canvas_optimizer optimizer;
+  unsigned int i;
+
+  /* Check if we've already optimized this canvas */
+  for (i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
+    dmnsn_array_get(canvas->optimizers, i, &optimizer);
+    if (optimizer.optimizer_fn == &dmnsn_png_optimizer_fn) {
+      return 0;
+    }
+  }
+
+  optimizer.optimizer_fn = &dmnsn_png_optimizer_fn;
+  optimizer.free_fn = &free;
+
+  optimizer.ptr = malloc(4*canvas->x*canvas->y*sizeof(uint16_t));
+  if (!optimizer.ptr) {
+    return 1;
+  }
+
+  dmnsn_optimize_canvas(canvas, optimizer);
+
+  return 0;
+}
+
+/* PNG optimizer callback */
+static void
+dmnsn_png_optimizer_fn(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer,
+                       unsigned int x, unsigned int y)
+{
+  dmnsn_color color;
+  dmnsn_sRGB sRGB;
+  uint16_t *pixel = (uint16_t *)optimizer.ptr + 4*(y*canvas->x + x);
+
+  color = dmnsn_get_pixel(canvas, x, y);
+  sRGB = dmnsn_sRGB_from_color(color);
+
+  /* Saturate R, G, and B to [0, UINT16_MAX] */
+
+  if (sRGB.R <= 0.0) {
+    pixel[0] = 0;
+  } else if (sRGB.R >= 1.0) {
+    pixel[0] = UINT16_MAX;
+  } else {
+    pixel[0] = sRGB.R*UINT16_MAX;
+  }
+
+  if (sRGB.G <= 0.0) {
+    pixel[1] = 0;
+  } else if (sRGB.G >= 1.0) {
+    pixel[1] = UINT16_MAX;
+  } else {
+    pixel[1] = sRGB.G*UINT16_MAX;
+  }
+
+  if (sRGB.B <= 0.0) {
+    pixel[2] = 0;
+  } else if (sRGB.B >= 1.0) {
+    pixel[2] = UINT16_MAX;
+  } else {
+    pixel[2] = sRGB.B*UINT16_MAX;
+  }
+
+  /* color.filter + color.trans is in [0.0, 1.0] by definition */
+  pixel[3] = (color.filter + color.trans)*UINT16_MAX;
+}
 
 /* Payload to store function arguments for thread callbacks */
 
@@ -154,7 +230,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
   if (retval) {
     *payload->canvas = dmnsn_png_read_canvas_impl(payload->progress,
                                                   payload->file);
-    *retval = payload->canvas ? 0 : 1; /* Fail if it returned NULL */
+    *retval = *payload->canvas ? 0 : 1; /* Fail if it returned NULL */
   }
   dmnsn_done_progress(payload->progress);
   free(payload);
@@ -166,10 +242,11 @@ static int
 dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
                             const dmnsn_canvas *canvas, FILE *file)
 {
+  dmnsn_canvas_optimizer optimizer;
   png_structp png_ptr;
   png_infop info_ptr;
   png_uint_32 width, height;
-  unsigned int x, y;
+  unsigned int i, x, y;
   uint16_t *row = NULL;
   dmnsn_color color;
   dmnsn_sRGB sRGB;
@@ -217,6 +294,23 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   if (htonl(1) != 1) {
     /* We are little-endian; swap the byte order of the pixels */
     png_set_swap(png_ptr);
+  }
+
+  /* Check if we can optimize this */
+  for (i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
+    dmnsn_array_get(canvas->optimizers, i, &optimizer);
+    if (optimizer.optimizer_fn == &dmnsn_png_optimizer_fn) {
+      for (y = 0; y < height; ++y) {
+        png_write_row(png_ptr,
+                      (png_bytep)((uint16_t *)optimizer.ptr + 4*y*width));
+        dmnsn_increment_progress(progress);
+      }
+
+      /* Finish the PNG file */
+      png_write_end(png_ptr, info_ptr);
+      png_destroy_write_struct(&png_ptr, &info_ptr);
+      return 0;
+    }
   }
 
   /* Allocate the temporary row of RGBA values */

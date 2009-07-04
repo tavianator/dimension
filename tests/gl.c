@@ -40,6 +40,12 @@ main() {
     return EXIT_FAILURE;
   }
 
+  if (dmnsn_gl_optimize_canvas(scene->canvas) != 0) {
+    dmnsn_delete_default_scene(scene);
+    fprintf(stderr, "--- Couldn't optimize canvas for GL! ---\n");
+    return EXIT_FAILURE;
+  }
+
   dmnsn_array_get(scene->objects, 0, &sphere);
   dmnsn_array_get(scene->objects, 1, &cube);
   trans = dmnsn_get_perspective_camera_trans(scene->camera);
