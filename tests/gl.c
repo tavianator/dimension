@@ -49,7 +49,7 @@ main() {
   dmnsn_array_get(scene->objects, 1, &cube);
   trans = dmnsn_get_perspective_camera_trans(scene->camera);
 
-  display = dmnsn_new_glX_display(scene->canvas);
+  display = dmnsn_new_display(scene->canvas);
   if (!display) {
     dmnsn_delete_default_scene(scene);
     fprintf(stderr, "--- Couldn't initialize X or glX! ---\n");

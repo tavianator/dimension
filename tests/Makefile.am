@@ -25,7 +25,6 @@ check_PROGRAMS    = warning-test                                               \
                     pngxx-test                                                 \
                     raytrace-test                                              \
                     raytracexx-test                                            \
-                    X-test                                                     \
                     gl-test
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
@@ -57,9 +56,6 @@ raytrace_test_LDADD   = ./libdimension-tests.la
 
 raytracexx_test_SOURCES = raytracexx.cpp
 raytracexx_test_LDADD   = ./libdimensionxx-tests.la
-
-X_test_SOURCES = X.c
-X_test_LDADD   = ./libdimension-tests.la
 
 gl_test_SOURCES = gl.c
 gl_test_LDADD   = ./libdimension-tests.la

@@ -125,73 +125,8 @@ WaitForNotify(Display *d, XEvent *e, char *arg)
   return (e->type == MapNotify) && (e->xmap.window == (Window)arg);
 }
 
-/* New non-glX X window */
 dmnsn_display *
-dmnsn_new_X_display(const dmnsn_canvas *canvas)
-{
-  dmnsn_display *display;
-  int screen, depth;
-  Visual *visual;
-  XSetWindowAttributes swa;
-
-  display = malloc(sizeof(dmnsn_display));
-  if (!display) {
-    return NULL;
-  }
-
-  /* Get an X connection */
-  display->dpy = XOpenDisplay(0);
-  if (!display->dpy) {
-    free(display);
-    return NULL;
-  }
-  screen = DefaultScreen(display->dpy);
-  depth  = DefaultDepth(display->dpy, screen);
-
-  /* Get an appropriate visual */
-  visual = DefaultVisual(display->dpy, screen);
-
-  /* Set display->cx to NULL */
-  display->cx = NULL;
-
-  /* Create a color map */
-  display->cmap = XCreateColormap(display->dpy,
-                                  RootWindow(display->dpy, screen),
-                                  visual, AllocNone);
-  if (!display->cmap) {
-    glXDestroyContext(display->dpy, display->cx);
-    XCloseDisplay(display->dpy);
-    free(display);
-    return NULL;
-  }
-
-  /* Create a window */
-  swa.colormap = display->cmap;
-  swa.border_pixel = 0;
-  swa.event_mask = StructureNotifyMask;
-  display->win = XCreateWindow(display->dpy,
-                               RootWindow(display->dpy, screen),
-                               0, 0, canvas->x, canvas->y,
-                               0, depth, InputOutput, visual,
-                               CWBorderPixel|CWColormap|CWEventMask, &swa);
-  if (!display->win) {
-    XFreeColormap(display->dpy, display->cmap);
-    glXDestroyContext(display->dpy, display->cx);
-    XCloseDisplay(display->dpy);
-    free(display);
-    return NULL;
-  }
-
-  XStoreName(display->dpy, display->win, "X");
-
-  XMapWindow(display->dpy, display->win);
-  XIfEvent(display->dpy, &display->event, WaitForNotify, (char*)display->win);
-
-  return display;
-}
-
-dmnsn_display *
-dmnsn_new_glX_display(const dmnsn_canvas *canvas)
+dmnsn_new_display(const dmnsn_canvas *canvas)
 {
   int attributeList[] = {
     GLX_RGBA,
@@ -279,9 +214,7 @@ dmnsn_delete_display(dmnsn_display *display)
   if (display) {
     XDestroyWindow(display->dpy, display->win);
     XFreeColormap(display->dpy, display->cmap);
-    if (display->cx) {
-      glXDestroyContext(display->dpy, display->cx);
-    }
+    glXDestroyContext(display->dpy, display->cx);
     XCloseDisplay(display->dpy);
     free(display);
   }
@@ -290,11 +223,8 @@ dmnsn_delete_display(dmnsn_display *display)
 void
 dmnsn_display_frame(dmnsn_display *display)
 {
-  if (display->cx) {
-    glFlush();
-    glXSwapBuffers(display->dpy, display->win);
-  }
-  XSync(display->dpy, True);
+  glFlush();
+  glXSwapBuffers(display->dpy, display->win);
 }
 
 /* Print a progress bar of the progress of `progress' */

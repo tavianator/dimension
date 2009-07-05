@@ -41,10 +41,7 @@ typedef struct {
   XEvent event;
 } dmnsn_display;
 
-/* Create a new X window */
-dmnsn_display *dmnsn_new_X_display(const dmnsn_canvas *canvas);
-dmnsn_display *dmnsn_new_glX_display(const dmnsn_canvas *canvas);
-/* Destroy the X window */
+dmnsn_display *dmnsn_new_display(const dmnsn_canvas *canvas);
 void dmnsn_delete_display(dmnsn_display *display);
 
 /* Flush the GL buffers */

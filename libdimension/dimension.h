@@ -57,7 +57,6 @@ extern "C" {
 #include <dimension/geometry.h>
 #include <dimension/color.h>
 #include <dimension/canvas.h>
-#include <dimension/X.h>
 #include <dimension/gl.h>
 #include <dimension/png.h>
 #include <dimension/object.h>
