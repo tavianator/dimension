@@ -410,6 +410,9 @@ typedef struct @{
   /* width, height */
   unsigned int x, y;
 
+  /* An array of dmnsn_canvas_optimizer's - see below */
+  dmnsn_array *optimizers;
+
   /* ... */
 @} dmnsn_canvas;
 
@@ -427,25 +430,28 @@ dmnsn_color dmnsn_get_pixel(const dmnsn_canvas *canvas,
 void dmnsn_set_pixel(dmnsn_canvas *canvas,
                      unsigned int x, unsigned int y,
                      dmnsn_color color);
-@findex dmnsn_pixel_at()
-dmnsn_color *dmnsn_pixel_at(dmnsn_canvas *canvas,
-                            unsigned int x, unsigned int y);
 @end example
 
 @cindex canvas
 @cindex rendering target
-The target of a rendering operation in the Dimension Library is a canvas object, represented by the type @code{dmnsn_canvas *}.  This type stores a @code{dmnsn_color} for each pixel in the @code{->pixels} field, as well as the dimensions of the canvas in the @code{->x} and @code{->y} fields.  The pixel at (x,y) can be examined or set by the accessors @code{dmnsn_get_pixel()} and @code{dmnsn_set_pixel()}, and referenced by @code{dmnsn_pixel_at()}.
+The target of a rendering operation in the Dimension Library is a canvas object, represented by the type @code{dmnsn_canvas *}.  This type stores the dimensions of the canvas in the @code{->x} and @code{->y} fields.  The pixel at (x,y) can be examined or set by the accessors @code{dmnsn_get_pixel()} and @code{dmnsn_set_pixel()}.
 
 Canvases may be imported from or exported to images.  In the future, canvases will also be able to be treated as object textures, to support images as textures.
 
 @menu
 * PNG Import and Export:: Importing and exporting canvases to and from PNG files
+* openGL:: Drawing and reading canvases to and from openGL buffers
+* Canvas Optimization:: Optimizing a canvas for a later export
 @end menu
 
 @node PNG Import and Export
 @section PNG Import and Export
 
 @example
+/* Optimize canvas for PNG exporting */
+@findex dmnsn_png_optimize_canvas()
+int dmnsn_png_optimize_canvas(dmnsn_canvas *canvas);
+
 /* Write canvas to file in PNG format.  Returns 0 on success, nonzero
    on failure */
 @findex dmnsn_png_write_canvas()
@@ -463,8 +469,65 @@ dmnsn_progress *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas,
 @end example
 
 @cindex PNG
-The Dimension Library supports import and export of canvas to and from PNG files; this is currently the only supported image type.  The interface is simple: @code{dmnsn_png_write_canvas()} writes the canvas in PNG format to the given file, at maximum quality; @code{dmnsn_png_read_canvas()} imports a PNG file to a canvas.  The @code{*_async()} versions work as described in @ref{Asynchronicity}.
+The Dimension Library supports import and export of canvas to and from PNG files; this is currently the only supported image type.  The interface is simple: @code{dmnsn_png_write_canvas()} writes the canvas in PNG format to the given file, at maximum quality; @code{dmnsn_png_read_canvas()} imports a PNG file to a canvas.  The @code{*_async()} versions work as described in @ref{Asynchronicity}.  If it is known in advance that a canvas will be exported to a PNG file, calling @code{dmnsn_png_optimize_canvas()} on it before it is written to will speed up the export process; see @ref{Canvas Optimization}.
 
+@node openGL
+@section openGL
+
+@example
+/* Optimize canvas for GL drawing */
+@findex dmnsn_gl_optimize_canvas()
+int dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas);
+
+/* Write canvas to GL framebuffer.  Returns 0 on success, nonzero on
+   failure. */
+@findex dmnsn_gl_write_canvas()
+int dmnsn_gl_write_canvas(const dmnsn_canvas *canvas);
+
+/* Read a canvas from a GL framebuffer.  Returns NULL on failure. */
+@findex dmnsn_gl_read_canvas()
+dmnsn_canvas *dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
+                                   unsigned int width,
+                                   unsigned int height);
+@end example
+
+@cindex GL
+@cindex openGL
+Canvases may be written to or read from an openGL buffer with the @code{dmnsn_gl_write_canvas()} and @code{dmnsn_gl_read_canvas()} functions, respectively.  Writing uses the @code{glDrawPixels()} GL function, and reading uses the @code{glReadPixels()} function.  @code{dmnsn_gl_read_canvas()} starts reading at (@code{x0}, @code{y0}), and reads a @code{width}*@code{height} sized image.  These operations should be fast (especially if optimized), so no @code{..._async()} versions are supplied.  If it is known in advance that a canvas will be drawn to an openGL buffer, calling @code{dmnsn_gl_optimize_canvas()} on it before it is written to will speed up the export process; see @ref{Canvas Optimization}.
+
+@node Canvas Optimization
+@section Canvas Optimization
+
+@example
+/* Canvas optimizer callback types */
+@tindex dmnsn_canvas_optimizer_fn
+typedef void dmnsn_canvas_optimizer_fn(dmnsn_canvas *canvas,
+                                       dmnsn_canvas_optimizer optimizer,
+                                       unsigned int x, unsigned int y);
+@tindex dmnsn_canvas_optimizer_free_fn
+typedef void dmnsn_canvas_optimizer_free_fn(void *ptr);
+
+/* Canvas optimizer */
+@tindex dmnsn_canvas_optimizer
+typedef struct @{
+  dmnsn_canvas_optimizer_fn *optimizer_fn;
+  dmnsn_canvas_optimizer_free_fn *free_fn;
+  void *ptr;
+@} dmnsn_canvas_optimizer;
+
+/* Set a canvas optimizer */
+@findex dmnsn_optimize_canvas()
+int dmnsn_optimize_canvas(dmnsn_canvas *canvas,
+                          dmnsn_canvas_optimizer optimizer);
+@end example
+
+@cindex optimization, canvas
+@cindex optimization, export
+If a canvas is to be exported to a different format, the export process can be sped up if the pixels are stored in the target format as they are written to a canvas.  This is what canvas optimizers do: they register callbacks that are triggered upon a @code{dmnsn_set_pixel()} call, generally storing the color in the appropriate format for the target (sRGB for PNG, for example) in some other buffer.  Then the exporting process is a breeze, because the canvas doesn't have to be converted to another format.
+
+The @code{dmnsn_canvas_optimizer} type stores a pointer to a callback function to be executed upon calls to @code{dmnsn_set_pixel()} in its @code{.optimizer_fn} field.  This function should match the signature of the @code{dmnsn_canvas_optimizer_fn} type.  Its @code{.ptr} field stores a generic pointer to any type of data the optimizer may wish to store.  This pointer will be provided to its @code{.free_fn} callback when @code{dmnsn_delete_canvas()} is called, and may simply point to the standard library @code{free} function.
+
+To register a new canvas optimizer, the program should first check that the same optimization hasn't already been applied by examining the @code{dmnsn_canvas *}'s @code{->optimizers} array, and testing each @code{dmnsn_canvas_optimizer}'s @code{.optimizer_fn} for equality with the address of the new callback.  If the optimization hasn't yet been applied, the program should call @code{dmnsn_optimize_canvas()}, which returns 0 if it succeeded, and nonzero otherwise.  Note that this function will fail if @code{dmnsn_set_pixel()} has ever been called on the target canvas, since pixels which have already been set would not be known to the optimizer.
 
 @node Objects
 @chapter Objects
