@@ -29,14 +29,15 @@ typedef struct {
   /* width, height */
   unsigned int x, y;
 
+  /* An array of dmnsn_canvas_optimizer's */
+  dmnsn_array *optimizers;
+  int too_late; /* Is it too late to add optimizers? */
+
   /*
    * Stored in first-quadrant representation (origin is bottom-left).  The pixel
    * at (a,b) is accessible as pixels[b*x + a].
    */
   dmnsn_color *pixels;
-
-  /* An array of dmnsn_canvas_optimizer's */
-  dmnsn_array *optimizers;
 } dmnsn_canvas;
 
 typedef struct dmnsn_canvas_optimizer dmnsn_canvas_optimizer;
@@ -59,8 +60,8 @@ dmnsn_canvas *dmnsn_new_canvas(unsigned int x, unsigned int y);
 void dmnsn_delete_canvas(dmnsn_canvas *canvas);
 
 /* Set a canvas optimizer */
-void dmnsn_optimize_canvas(dmnsn_canvas *canvas,
-                           dmnsn_canvas_optimizer optimizer);
+int dmnsn_optimize_canvas(dmnsn_canvas *canvas,
+                          dmnsn_canvas_optimizer optimizer);
 
 /* Pixel accessors */
 
