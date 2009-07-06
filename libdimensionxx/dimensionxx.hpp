@@ -37,5 +37,6 @@
 #include <dimensionxx/camera.hpp>
 #include <dimensionxx/cameras.hpp>
 #include <dimensionxx/scene.hpp>
+#include <dimensionxx/raytrace.hpp>
 
 #endif /* DIMENSIONXX_HPP */

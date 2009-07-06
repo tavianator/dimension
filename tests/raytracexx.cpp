@@ -59,7 +59,8 @@ main() {
 
   // Render the scene
   {
-    Progress rprogress = scene.raytrace_async();
+    Raytracer raytracer(scene);
+    Progress rprogress = raytracer.render_async();
     std::cout << "Raytracing scene: " << rprogress << std::endl;
   }
 

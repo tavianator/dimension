@@ -85,19 +85,6 @@ namespace Dimension
     dmnsn_array_push(m_scene->objects, &cobject);
   }
 
-  // Render it!
-
-  void Scene::raytrace()
-  {
-    dmnsn_raytrace_scene(m_scene);
-  }
-
-  Progress
-  Scene::raytrace_async()
-  {
-    return Progress(dmnsn_raytrace_scene_async(m_scene));
-  }
-
   // Access the wrapped C object.
 
   dmnsn_scene*

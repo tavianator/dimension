@@ -18,47 +18,51 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-// dmnsn_scene* wrapper.
-
-#ifndef DIMENSIONXX_SCENE_HPP
-#define DIMENSIONXX_SCENE_HPP
+#include "dimensionxx.hpp"
 
 namespace Dimension
 {
-  // Base scene class.  Wraps a dmnsn_scene*.
-  class Scene
+  Raytracer::Raytracer(Scene& scene)
+    : m_scene(&scene), m_rendered(false) { }
+
+  // Call render() if we've never rendered the scene
+  Raytracer::~Raytracer()
   {
-  public:
-    // Allocate a dmnsn_scene
-    Scene(const Color& background, Camera& camera, Canvas& canvas);
-    // Wrap an existing scene
-    explicit Scene(dmnsn_scene* scene);
-    // Delete the scene
-    ~Scene();
+    if (!m_rendered) {
+      try {
+        render();
+      } catch (...) {
+        dmnsn_error(SEVERITY_MEDIUM,
+                    "Rendering scene failed in Raytracer destructor.");
+      }
+    }
+  }
 
-    // Element access
-    Color background() const;
-    Camera&       camera();
-    const Camera& camera() const;
-    Canvas&       canvas();
-    const Canvas& canvas() const;
+  // Render the scene
+  void Raytracer::render()
+  {
+    // Raytrace the scene
+    if (dmnsn_raytrace_scene(m_scene->dmnsn()) != 0) {
+      // The rendering operation failed
+      throw Dimension_Error("Raytracing scene failed.");
+    }
 
-    // Add objects
-    void push_object(Object& object);
+    m_rendered = true; // Don't render the scene again in the destructor
+  }
 
-    // Access the wrapped C object.
-    dmnsn_scene*       dmnsn();
-    const dmnsn_scene* dmnsn() const;
+  // Render a scene in the background
+  Progress
+  Raytracer::render_async()
+  {
+    m_rendered = true; // Don't render the scene again in the destructor
 
-  private:
-    // Copying prohibited
-    Scene(const Scene&);
-    Scene& operator=(const Scene&);
+    // Start the asynchronous task
+    dmnsn_progress *progress = dmnsn_raytrace_scene_async(m_scene->dmnsn());
+    if (!progress) {
+      throw Dimension_Error("Starting background raytrace failed.");
+    }
 
-    dmnsn_scene* m_scene;
-    Camera* m_camera;
-    Canvas* m_canvas;
-  };
+    // Return the Progress object
+    return Progress(progress);
+  }
 }
-
-#endif /* DIMENSIONXX_SCENE_HPP */

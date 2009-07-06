@@ -18,47 +18,33 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-// dmnsn_scene* wrapper.
+// C++ wrapper for libdimension raytracing
 
-#ifndef DIMENSIONXX_SCENE_HPP
-#define DIMENSIONXX_SCENE_HPP
+#ifndef DIMENSIONXX_RAYTRACE_HPP
+#define DIMENSIONXX_RAYTRACE_HPP
+
+#include <istream>
+#include <ostream>
 
 namespace Dimension
 {
-  // Base scene class.  Wraps a dmnsn_scene*.
-  class Scene
+  class Raytracer
   {
   public:
-    // Allocate a dmnsn_scene
-    Scene(const Color& background, Camera& camera, Canvas& canvas);
-    // Wrap an existing scene
-    explicit Scene(dmnsn_scene* scene);
-    // Delete the scene
-    ~Scene();
+    Raytracer(Scene& scene);
+    ~Raytracer();
 
-    // Element access
-    Color background() const;
-    Camera&       camera();
-    const Camera& camera() const;
-    Canvas&       canvas();
-    const Canvas& canvas() const;
-
-    // Add objects
-    void push_object(Object& object);
-
-    // Access the wrapped C object.
-    dmnsn_scene*       dmnsn();
-    const dmnsn_scene* dmnsn() const;
+    void render();
+    Progress render_async();
 
   private:
     // Copying prohibited
-    Scene(const Scene&);
-    Scene& operator=(const Scene&);
+    Raytracer(const Raytracer&);
+    Raytracer& operator=(const Raytracer&);
 
-    dmnsn_scene* m_scene;
-    Camera* m_camera;
-    Canvas* m_canvas;
+    Scene* m_scene;
+    bool m_rendered;
   };
 }
 
-#endif /* DIMENSIONXX_SCENE_HPP */
+#endif /* DIMENSIONXX_RAYTRACE_HPP */
