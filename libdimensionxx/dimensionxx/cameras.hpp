@@ -31,6 +31,9 @@ namespace Dimension
   public:
     Perspective_Camera(const Matrix& trans);
     virtual ~Perspective_Camera();
+
+    Matrix trans();
+    void trans(const Matrix& trans);
   };
 }
 

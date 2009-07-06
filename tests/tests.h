@@ -22,6 +22,11 @@
 #include <GL/gl.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+/* We've been included from a C++ file; mark everything here as extern "C" */
+extern "C" {
+#endif
+
 /*
  * Convenience
  */
@@ -53,3 +58,7 @@ void dmnsn_display_frame(dmnsn_display *display);
 
 /* Print a progress bar of the progress of `progress' */
 void progressbar(const char *str, const dmnsn_progress *progress);
+
+#ifdef __cplusplus
+}
+#endif

@@ -58,7 +58,7 @@ namespace Dimension
     FILE_Cookie cookie(*m_ostr);
 
     // Write the PNG file
-    if (dmnsn_png_write_canvas(m_canvas->dmnsn(), cookie.file())) {
+    if (dmnsn_png_write_canvas(m_canvas->dmnsn(), cookie.file()) != 0) {
       // The actual write operation failed, for some reason
       throw Dimension_Error("Writing canvas to PNG failed.");
     }

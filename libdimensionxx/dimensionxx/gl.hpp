@@ -18,54 +18,47 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-// C++ wrapper for libdimension PNG support
+// C++ wrapper for libdimension GL support
 
-#ifndef DIMENSIONXX_PNG_HPP
-#define DIMENSIONXX_PNG_HPP
+#ifndef DIMENSIONXX_GL_HPP
+#define DIMENSIONXX_GL_HPP
 
 #include <istream>
 #include <ostream>
 
 namespace Dimension
 {
-  class PNG_Writer
+  class GL_Drawer
   {
   public:
-    PNG_Writer(Canvas& canvas, std::ostream& ostr);
-    ~PNG_Writer();
+    GL_Drawer(Canvas& canvas);
+    ~GL_Drawer();
 
-    void write();
-    Progress write_async();
+    void draw();
 
   private:
     // Copying prohibited
-    PNG_Writer(const PNG_Writer&);
-    PNG_Writer& operator=(const PNG_Writer&);
+    GL_Drawer(const GL_Drawer&);
+    GL_Drawer& operator=(const GL_Drawer&);
 
     Canvas* m_canvas;
-    std::ostream* m_ostr;
-    bool m_written;
+    bool m_drawn;
   };
 
-  class PNG_Reader
+  class GL_Reader
   {
   public:
-    PNG_Reader(std::istream& istr);
-    // ~PNG_Reader();
+    // GL_Reader();
+    // ~GL_Reader();
 
-    Canvas read();
-
-    Progress read_async();
-    static Canvas finish(Progress& progress);
+    Canvas read(unsigned int x0, unsigned int y0,
+                unsigned int width, unsigned int height);
 
   private:
     // Copying prohibited
-    PNG_Reader(const PNG_Reader&);
-    PNG_Reader& operator=(const PNG_Reader&);
-
-    std::istream* m_istr;
-    bool m_read;
+    GL_Reader(const GL_Reader&);
+    GL_Reader& operator=(const GL_Reader&);
   };
 }
 
-#endif /* DIMENSIONXX_PNG_HPP */
+#endif /* DIMENSIONXX_GL_HPP */

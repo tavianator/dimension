@@ -22,7 +22,7 @@
 
 namespace Dimension
 {
-  // Create a sphere
+  // Create a perspective camera
   Perspective_Camera::Perspective_Camera(const Matrix& trans)
     : Camera(dmnsn_new_perspective_camera(trans.dmnsn()))
   {
@@ -31,9 +31,21 @@ namespace Dimension
     }
   }
 
-  // Delete a sphere
+  // Delete a perspective camera
   Perspective_Camera::~Perspective_Camera()
   {
     dmnsn_delete_perspective_camera(m_camera);
+  }
+
+  Matrix
+  Perspective_Camera::trans()
+  {
+    return Matrix(dmnsn_get_perspective_camera_trans(m_camera));
+  }
+
+  void
+  Perspective_Camera::trans(const Matrix& trans)
+  {
+    dmnsn_set_perspective_camera_trans(m_camera, trans.dmnsn());
   }
 }

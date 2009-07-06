@@ -31,6 +31,7 @@
 #include <dimensionxx/geometry.hpp>
 #include <dimensionxx/color.hpp>
 #include <dimensionxx/canvas.hpp>
+#include <dimensionxx/gl.hpp>
 #include <dimensionxx/png.hpp>
 #include <dimensionxx/object.hpp>
 #include <dimensionxx/objects.hpp>

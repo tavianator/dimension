@@ -18,54 +18,55 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-// C++ wrapper for libdimension PNG support
-
-#ifndef DIMENSIONXX_PNG_HPP
-#define DIMENSIONXX_PNG_HPP
-
-#include <istream>
-#include <ostream>
+#include "dimensionxx.hpp"
+#include <cstdio>
 
 namespace Dimension
 {
-  class PNG_Writer
+  GL_Drawer::GL_Drawer(Canvas& canvas)
+    : m_canvas(&canvas), m_drawn(false)
   {
-  public:
-    PNG_Writer(Canvas& canvas, std::ostream& ostr);
-    ~PNG_Writer();
+    // Optimize the canvas for GL drawing
+    dmnsn_gl_optimize_canvas(m_canvas->dmnsn());
+  }
 
-    void write();
-    Progress write_async();
-
-  private:
-    // Copying prohibited
-    PNG_Writer(const PNG_Writer&);
-    PNG_Writer& operator=(const PNG_Writer&);
-
-    Canvas* m_canvas;
-    std::ostream* m_ostr;
-    bool m_written;
-  };
-
-  class PNG_Reader
+  // Draw the canvas if it hasn't been drawn yet
+  GL_Drawer::~GL_Drawer()
   {
-  public:
-    PNG_Reader(std::istream& istr);
-    // ~PNG_Reader();
+    if (!m_drawn) {
+      try {
+        draw();
+      } catch (...) {
+        dmnsn_error(SEVERITY_MEDIUM,
+                    "Drawing canvas to GL failed in GL_Drawer destructor.");
+      }
+    }
+  }
 
-    Canvas read();
+  // Draw the canvas to the current openGL buffer
+  void GL_Drawer::draw()
+  {
+    // Draw to the GL buffer
+    if (dmnsn_gl_write_canvas(m_canvas->dmnsn()) != 0) {
+      // The drawing operation failed
+      throw Dimension_Error("Drawing canvas to GL failed.");
+    }
 
-    Progress read_async();
-    static Canvas finish(Progress& progress);
+    m_drawn = true; // Don't draw again in destructor
+  }
 
-  private:
-    // Copying prohibited
-    PNG_Reader(const PNG_Reader&);
-    PNG_Reader& operator=(const PNG_Reader&);
+  // Read a canvas from a GL buffer
+  Canvas
+  GL_Reader::read(unsigned int x0, unsigned int y0,
+                  unsigned int width, unsigned int height)
+  {
+    // Read the canvas from the GL buffer
+    dmnsn_canvas* canvas = dmnsn_gl_read_canvas(x0, y0, width, height);
+    if (!canvas) {
+      // The read operation failed
+      throw Dimension_Error("Reading canvas from GL failed.");
+    }
 
-    std::istream* m_istr;
-    bool m_read;
-  };
+    return Canvas(canvas);
+  }
 }
-
-#endif /* DIMENSIONXX_PNG_HPP */

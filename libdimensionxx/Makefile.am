@@ -25,6 +25,7 @@ nobase_include_HEADERS = dimensionxx.hpp                                       \
                          dimensionxx/color.hpp                                 \
                          dimensionxx/cookie.hpp                                \
                          dimensionxx/geometry.hpp                              \
+                         dimensionxx/gl.hpp                                    \
                          dimensionxx/object.hpp                                \
                          dimensionxx/objects.hpp                               \
                          dimensionxx/png.hpp                                   \
@@ -41,6 +42,7 @@ libdimensionxx_la_SOURCES = $(nobase_include_HEADERS)                          \
                             camera.cpp                                         \
                             cameras.cpp                                        \
                             color.cpp                                          \
+                            gl.cpp                                             \
                             error.cpp                                          \
                             object.cpp                                         \
                             objects.cpp                                        \
