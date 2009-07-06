@@ -34,7 +34,8 @@ main()
 
   {
     std::ofstream ofstr("dimensionxx1.png", std::ios::binary);
-    PNG_Canvas ocanvas(3*width, height, ofstr);
+    Canvas canvas(3*width, height);
+    PNG_Writer writer(canvas, ofstr);
 
     CIE_xyY xyY;
     CIE_Lab Lab;
@@ -46,8 +47,8 @@ main()
       for (unsigned int y = 0; y < height; ++y) {
         /* CIE xyY colorspace */
         xyY = CIE_xyY(static_cast<double>(x)/(width - 1),
-                                 static_cast<double>(y)/(height - 1),
-                                 0.5);
+                      static_cast<double>(y)/(height - 1),
+                      0.5);
         color = xyY;
         RGB = color;
 
@@ -57,15 +58,13 @@ main()
           color.trans(0.5);
         }
 
-        ocanvas.pixel(x, y, color);
+        canvas.pixel(x, y, color);
 
         /* CIE Lab colorspace */
 
         Lab = CIE_Lab(75.0,
-                                 200.0*(static_cast<double>(x)/
-                                        (width - 1) - 0.5),
-                                 200.0*(static_cast<double>(y)/
-                                        (height - 1) - 0.5));
+                      200.0*(static_cast<double>(x)/(width - 1) - 0.5),
+                      200.0*(static_cast<double>(y)/(height - 1) - 0.5));
         color = Lab;
         RGB = color;
 
@@ -75,15 +74,13 @@ main()
           color.trans(0.5);
         }
 
-        ocanvas.pixel(x + width, y, color);
+        canvas.pixel(x + width, y, color);
 
         /* CIE Luv colorspace */
 
         Luv = CIE_Luv(75.0,
-                                 200.0*(static_cast<double>(x)/
-                                        (width - 1) - 0.5),
-                                 200.0*(static_cast<double>(y)/
-                                        (height - 1) - 0.5));
+                      200.0*(static_cast<double>(x)/(width - 1) - 0.5),
+                      200.0*(static_cast<double>(y)/(height - 1) - 0.5));
         color = Luv;
         RGB = color;
 
@@ -93,24 +90,25 @@ main()
           color.trans(0.5);
         }
 
-        ocanvas.pixel(x + 2*width, y, color);
+        canvas.pixel(x + 2*width, y, color);
       }
     }
 
-    Progress progress = ocanvas.write_async();
+    Progress progress = writer.write_async();
     std::cout << "Writing PNG file: " << progress << std::endl;
   }
 
   std::ifstream ifstr("dimensionxx1.png", std::ios::binary);
-  std::ofstream ofstr("dimensionxx2.png", std::ios::binary);
+  PNG_Reader reader(ifstr);
 
-  Progress iprogress
-    = PNG_Canvas::read_async(ifstr);
+  Progress iprogress = reader.read_async();
   std::cout << "Reading PNG file: " << iprogress << std::endl;
+  Canvas canvas = PNG_Reader::finish(iprogress);
 
-  PNG_Canvas iocanvas(iprogress, ofstr);
+  std::ofstream ofstr("dimensionxx2.png", std::ios::binary);
+  PNG_Writer writer(canvas, ofstr);
 
-  Progress oprogress = iocanvas.write_async();
+  Progress oprogress = writer.write_async();
   std::cout << "Writing PNG file: " << oprogress << std::endl;
 
   return 0;

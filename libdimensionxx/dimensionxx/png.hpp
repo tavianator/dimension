@@ -28,55 +28,43 @@
 
 namespace Dimension
 {
-  // PNG_Canvas handles reading a Canvas from a PNG file, writing one to a PNG
-  // file, or both, depending on what type of stream(s) are given to the
-  // constructor.
-  class PNG_Canvas : public Canvas
+  class PNG_Writer
   {
   public:
-    // Input PNG_Canvas; read the Canvas from istr now
-    explicit PNG_Canvas(std::istream& istr);
+    PNG_Writer(Canvas& canvas, std::ostream& ostr);
+    ~PNG_Writer();
 
-    // Output PNG_Canvas; write the Canvas to ostr at destruction, or when
-    // write() is called.
-    PNG_Canvas(unsigned int x, unsigned int y, std::ostream& ostr);
-
-    // I/O PNG_Canvas; read the Canvas from istr now, and write to ostr at
-    // destruction or then write() is called.
-    PNG_Canvas(std::istream& istr, std::ostream& ostr);
-
-    // Call write() if we're an output PNG_Canvas, but trap any exceptions and
-    // report a dmnsn_error() instead.
-    virtual ~PNG_Canvas();
-
-    // Write the Canvas to the output stream, throwing a Dimension_Error on
-    // error.
     void write();
-
-    // Write the Canvas to the output stream in the background
     Progress write_async();
-
-    // Construct an input or I/O PNG_Canvas in the background
-    static Progress read_async(std::istream& istr);
-    explicit PNG_Canvas(Progress& progress);
-    explicit PNG_Canvas(Progress& progress, std::ostream& ostr);
-
-  protected:
-    // In case a derived class needs to set m_canvas after we're constructed
-    explicit PNG_Canvas(std::ostream& ostr);
 
   private:
     // Copying prohibited
-    PNG_Canvas(const PNG_Canvas&);
-    PNG_Canvas& operator=(const PNG_Canvas&);
+    PNG_Writer(const PNG_Writer&);
+    PNG_Writer& operator=(const PNG_Writer&);
 
-    std::istream* m_istr;
+    Canvas* m_canvas;
     std::ostream* m_ostr;
     bool m_written;
+  };
 
-    // Read the Canvas from a PNG file, and throw a Dimension_Error upon
-    // failure.
-    void read();
+  class PNG_Reader
+  {
+  public:
+    PNG_Reader(std::istream& istr);
+    // ~PNG_Reader();
+
+    Canvas read();
+
+    Progress read_async();
+    static Canvas finish(Progress& progress);
+
+  private:
+    // Copying prohibited
+    PNG_Reader(const PNG_Reader&);
+    PNG_Reader& operator=(const PNG_Reader&);
+
+    std::istream* m_istr;
+    bool m_read;
   };
 }
 

@@ -23,57 +23,42 @@
 
 namespace Dimension
 {
-  PNG_Canvas::PNG_Canvas(std::istream& istr)
-    : Canvas(), m_istr(&istr), m_ostr(0), m_written(false)
+  PNG_Writer::PNG_Writer(Canvas& canvas, std::ostream& ostr)
+    : m_canvas(&canvas), m_ostr(&ostr), m_written(false)
   {
-    read();
+    // Optimize the canvas for PNG export
+    dmnsn_png_optimize_canvas(m_canvas->dmnsn());
   }
 
-  PNG_Canvas::PNG_Canvas(unsigned int x, unsigned int y, std::ostream& ostr)
-    : Canvas(x, y), m_istr(0), m_ostr(&ostr), m_written(false)
-  { }
-
-  PNG_Canvas::PNG_Canvas(std::istream& istr, std::ostream& ostr)
-    : Canvas(), m_istr(&istr), m_ostr(&ostr), m_written(false)
-  {
-    read();
-  }
-
-  // PNG_Canvas destructor.  Call write() to write the PNG file if not already
+  // PNG_Writer destructor.  Call write() to write the PNG file if not already
   // written, but catch any exceptions and instead report the error with
   // dmnsn_error() to avoid throwing from a destructor.
-  PNG_Canvas::~PNG_Canvas()
+  PNG_Writer::~PNG_Writer()
   {
-    if (m_ostr && !m_written) {
+    if (!m_written) {
       try {
         write();
       } catch (...) {
         dmnsn_error(SEVERITY_MEDIUM,
-                    "Writing canvas to PNG failed in PNG_Canvas destructor.");
+                    "Writing canvas to PNG failed in PNG_Writer destructor.");
       }
     }
   }
 
   // Write the PNG file.  Uses the FILE_Cookie() interface to make a FILE*
   // corresponding to an std::ostream (including std::ostringstream, etc).
-  void PNG_Canvas::write()
+  void PNG_Writer::write()
   {
     if (m_written) {
       // Does writing a PNG file twice make sense?
       throw Dimension_Error("Attempt to write canvas to PNG twice.");
     }
 
-    if (!m_ostr) {
-      // Don't call write() if we're not an output PNG_Canvas...
-      throw Dimension_Error("Attempt to write canvas to PNG without an output"
-                            " stream.");
-    }
-
     // Make the C++/C I/O interface
     FILE_Cookie cookie(*m_ostr);
 
     // Write the PNG file
-    if (dmnsn_png_write_canvas(m_canvas, cookie.file())) {
+    if (dmnsn_png_write_canvas(m_canvas->dmnsn(), cookie.file())) {
       // The actual write operation failed, for some reason
       throw Dimension_Error("Writing canvas to PNG failed.");
     }
@@ -83,17 +68,11 @@ namespace Dimension
 
   // Write a PNG file in the background
   Progress
-  PNG_Canvas::write_async()
+  PNG_Writer::write_async()
   {
     if (m_written) {
       // Does writing a PNG file twice make sense?
       throw Dimension_Error("Attempt to write canvas to PNG twice.");
-    }
-
-    if (!m_ostr) {
-      // Don't call write_async() if we're not an output PNG_Canvas...
-      throw Dimension_Error("Attempt to write canvas to PNG without an output"
-                            " stream.");
     }
 
     m_written = true; // We've written the file now, don't do it again
@@ -107,7 +86,7 @@ namespace Dimension
 
     // Start the asynchronous task
     dmnsn_progress *progress
-      = dmnsn_png_write_canvas_async(m_canvas, cookie->file());
+      = dmnsn_png_write_canvas_async(m_canvas->dmnsn(), cookie->file());
     if (!progress) {
       throw Dimension_Error("Starting background PNG write failed.");
     }
@@ -116,20 +95,58 @@ namespace Dimension
     return Progress(progress, persister);
   }
 
+  // Construct a PNG reader
+  PNG_Reader::PNG_Reader(std::istream& istr)
+    : m_istr(&istr), m_read(false) { }
+
+  // Read a canvas from a PNG file.  Uses the FILE_Cookie() interface to make a
+  // FILE* corresponding to an std::istream
+  Canvas
+  PNG_Reader::read()
+  {
+    if (m_read) {
+      // Does reading a PNG file twice make sense?
+      throw Dimension_Error("Attempt to read canvas from PNG twice.");
+    }
+
+    // Make the C++/C I/O interface
+    FILE_Cookie cookie(*m_istr);
+
+    // Read the canvas from a PNG file
+    dmnsn_canvas* canvas = dmnsn_png_read_canvas(cookie.file());
+    if (!canvas) {
+      // The read operation failed
+      throw Dimension_Error("Reading canvas from PNG failed.");
+    }
+
+    // Only set m_read if nothing threw an exception
+    Canvas ret(canvas);
+    m_read = true;
+    return ret;
+  }
+
   // Read a PNG file in the background
   Progress
-  PNG_Canvas::read_async(std::istream& istr)
+  PNG_Reader::read_async()
   {
+    if (m_read) {
+      // Does reading a PNG file twice make sense?
+      throw Dimension_Error("Attempt to read canvas from PNG twice.");
+    }
+
+    // Don't read again
+    m_read = true;
+
     // Object to persist local variables past function return
     Persister persister;
 
     // Store a pointer to a dmnsn_canvas* in the persister to later construct
-    // the PNG_Canvas
+    // the PNG_Writer
     dmnsn_canvas** canvas = new dmnsn_canvas*;
     persister.persist(canvas);
 
     // Make the C++/C I/O interface
-    FILE_Cookie* cookie = new FILE_Cookie(istr);
+    FILE_Cookie* cookie = new FILE_Cookie(*m_istr);
     persister.persist(cookie);
 
     // Start the asynchronous task
@@ -143,11 +160,11 @@ namespace Dimension
     return Progress(progress, persister);
   }
 
-  // Construct an input PNG_Canvas from a background task
-  PNG_Canvas::PNG_Canvas(Progress& progress)
-    : Canvas(), m_istr(0), m_ostr(0), m_written(false)
+  // Construct an input PNG_Writer from a background task
+  Canvas
+  PNG_Reader::finish(Progress& progress)
   {
-    // Will throw if progress is not from a PNG_Canvas::read_async call
+    // Will throw if progress is not from a PNG_Writer::read_async call
     dmnsn_canvas** canvas
       = progress.persister().first<dmnsn_canvas*>().persisted();
 
@@ -158,50 +175,6 @@ namespace Dimension
       throw;
     }
 
-    m_canvas = *canvas;
-  }
-
-  // Construct an I/O PNG_Canvas from a background task
-  PNG_Canvas::PNG_Canvas(Progress& progress, std::ostream& ostr)
-    : Canvas(), m_istr(0), m_ostr(&ostr), m_written(false)
-  {
-    // Will throw if progress is not from a PNG_Canvas::read_async call
-    dmnsn_canvas** canvas
-      = progress.persister().first<dmnsn_canvas*>().persisted();
-
-    try {
-      progress.finish();
-    } catch (...) {
-      dmnsn_delete_canvas(*canvas);
-      throw;
-    }
-
-    m_canvas = *canvas;
-  }
-
-  // Protected constructor which sets the canvas to NULL for now
-  PNG_Canvas::PNG_Canvas(std::ostream& ostr)
-    : Canvas(), m_istr(0), m_ostr(&ostr), m_written(false)
-  { }
-
-  // Read a canvas from a PNG file.  Uses the FILE_Cookie() interface to make a
-  // FILE* corresponding to an std::istream (including std::istringstream, etc).
-  void PNG_Canvas::read()
-  {
-    if (!m_istr) {
-      // read() is private, and only called from the appropriate constructors,
-      // so this REALLY shouldn't happen.
-      throw Dimension_Error("Attempt to read canvas from PNG without an input"
-                            " stream.");
-    }
-
-    // Make the C++/C I/O interface
-    FILE_Cookie cookie(*m_istr);
-
-    // Read the canvas from a PNG file
-    if (!(m_canvas = dmnsn_png_read_canvas(cookie.file()))) {
-      // The read operation failed
-      throw Dimension_Error("Reading canvas from PNG failed.");
-    }
+    return Canvas(*canvas);
   }
 }

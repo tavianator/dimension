@@ -23,6 +23,8 @@
 #ifndef DIMENSIONXX_CANVAS_HPP
 #define DIMENSIONXX_CANVAS_HPP
 
+#include <tr1/memory>
+
 namespace Dimension
 {
   // Base canvas class.  Wraps a dmnsn_canvas*.
@@ -31,10 +33,14 @@ namespace Dimension
   public:
     // Allocate a dmnsn_canvas of specified width and height
     Canvas(unsigned int width, unsigned int height);
+
     // Wrap an existing canvas
     explicit Canvas(dmnsn_canvas* canvas);
+
+    // Canvas(const Canvas& canvas);
+
     // Delete the canvas
-    virtual ~Canvas();
+    ~Canvas();
 
     // Get the width and height
     unsigned int width() const;
@@ -48,17 +54,11 @@ namespace Dimension
     dmnsn_canvas*       dmnsn();
     const dmnsn_canvas* dmnsn() const;
 
-  protected:
-    // Derived classes may want to set m_canvas later.  Set it to NULL now, so
-    // that the destructor can still dmnsn_delete_canvas it.
-    Canvas();
-
-    dmnsn_canvas* m_canvas;
-
   private:
-    // Copying prohibited
-    Canvas(const Canvas&);
+    // Copy-assignment prohibited
     Canvas& operator=(const Canvas&);
+
+    std::tr1::shared_ptr<dmnsn_canvas*> m_canvas;
   };
 }
 

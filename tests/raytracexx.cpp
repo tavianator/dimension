@@ -33,8 +33,7 @@ main() {
   background.filter(0.1);
 
   // Canvas
-  std::ofstream file("raytracexx.png");
-  PNG_Canvas canvas(768, 480, file);
+  Canvas canvas(768, 480);
 
   // Camera
   Perspective_Camera camera(
@@ -65,8 +64,10 @@ main() {
   }
 
   // Write the canvas
-  Progress wprogress = canvas.write_async();
-  std::cout << "Writing PNG file: " << wprogress << std::endl;
+  std::ofstream file("raytracexx.png");
+  PNG_Writer writer(canvas, file);
+  Progress progress = writer.write_async();
+  std::cout << "Writing PNG file: " << progress << std::endl;
 
   return EXIT_SUCCESS;
 }

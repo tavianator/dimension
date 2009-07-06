@@ -24,61 +24,59 @@ namespace Dimension
 {
   // Allocate the canvas with dmnsn_new_canvas()
   Canvas::Canvas(unsigned int width, unsigned int height)
-    : m_canvas(dmnsn_new_canvas(width, height)) { }
+    : m_canvas(new dmnsn_canvas*(dmnsn_new_canvas(width, height))) { }
 
   // Wrap an existing dmnsn_canvas*
   Canvas::Canvas(dmnsn_canvas* canvas)
-    : m_canvas(canvas) { }
+    : m_canvas(new dmnsn_canvas*(canvas)) { }
 
   // Virtual destructor: delete the canvas with dmnsn_delete_canvas().
   Canvas::~Canvas()
   {
-    dmnsn_delete_canvas(m_canvas);
+    if (m_canvas && m_canvas.unique()) {
+      dmnsn_delete_canvas(dmnsn());
+    }
   }
 
   // Get the width
   unsigned int
   Canvas::width() const
   {
-    return m_canvas->x;
+    return dmnsn()->x;
   }
 
   // Get the height
   unsigned int
   Canvas::height() const
   {
-    return m_canvas->y;
+    return dmnsn()->y;
   }
 
   // Get a particular pixel
   Color
   Canvas::pixel(unsigned int x, unsigned int y) const
   {
-    return Color(dmnsn_get_pixel(m_canvas, x, y));
+    return Color(dmnsn_get_pixel(dmnsn(), x, y));
   }
 
   // Set a particular pixel
   void
   Canvas::pixel(unsigned int x, unsigned int y, const Color& c)
   {
-    dmnsn_set_pixel(m_canvas, x, y, c.dmnsn());
+    dmnsn_set_pixel(dmnsn(), x, y, c.dmnsn());
   }
 
   // Return the wrapped canvas
   dmnsn_canvas* 
   Canvas::dmnsn()
   {
-    return m_canvas;
+    return *m_canvas;
   }
 
   // Return a const version of the wrapped canvas
   const dmnsn_canvas*
   Canvas::dmnsn() const
   {
-    return m_canvas;
+    return *m_canvas;
   }
-
-  // Protected default constructor: set m_canvas to NULL.
-  Canvas::Canvas()
-    : m_canvas(0) { }
 }
