@@ -26,7 +26,7 @@ int
 main() {
   using namespace Dimension;
 
-  Scene scene = default_scene();
+  Scene scene = Tests::default_scene();
 
   Perspective_Camera& camera
     = dynamic_cast<Perspective_Camera&>(scene.camera());
@@ -47,7 +47,7 @@ main() {
 
   Raytracer raytracer(scene);
   GL_Drawer drawer(scene.canvas());
-  Dimension::Display display(scene.canvas());
+  Tests::Display display(scene.canvas());
 
   // Render the scene
   for (unsigned int i = 0; i < 10; ++i) {

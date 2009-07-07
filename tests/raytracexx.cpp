@@ -28,7 +28,7 @@ main() {
   // Set the resilience low for tests
   resilience(SEVERITY_LOW);
 
-  Scene scene = default_scene();
+  Scene scene = Tests::default_scene();
 
   // Render the scene
   {

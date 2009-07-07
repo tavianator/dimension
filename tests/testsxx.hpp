@@ -26,21 +26,24 @@
 
 namespace Dimension
 {
-  // Helper to return a basic scene
-  Scene default_scene();
-
-  // Display abstraction
-  class Display
+  namespace Tests
   {
-  public:
-    Display(const Canvas& canvas);
-    ~Display();
+    // Helper to return a basic scene
+    Scene default_scene();
 
-    void flush();
+    // Display abstraction
+    class Display
+    {
+    public:
+      Display(const Canvas& canvas);
+      ~Display();
 
-  private:
-    dmnsn_display* m_display;
-  };
+      void flush();
+
+    private:
+      dmnsn_display* m_display;
+    };
+  }
 
   // Print a progress bar of the progress of `progress'
   std::ostream& operator<<(std::ostream& ostr,

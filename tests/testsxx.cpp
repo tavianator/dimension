@@ -21,58 +21,61 @@
 
 namespace Dimension
 {
-  Scene
-  default_scene()
+  namespace Tests
   {
-    // Background color
-    Color background = sRGB(0.0, 0.1, 0.25);
-    background.filter(0.1);
+    Scene
+    default_scene()
+    {
+      // Background color
+      Color background = sRGB(0.0, 0.1, 0.25);
+      background.filter(0.1);
 
-    // Canvas
-    Canvas canvas(768, 480);
+      // Canvas
+      Canvas canvas(768, 480);
 
-    // Camera
-    Perspective_Camera camera(
-      Matrix::rotation(Vector(0.0, 1.0, 0.0))
-      * Matrix::translation(Vector(0.0, 0.0, -4.0))
-      * Matrix::scale(
-          Vector(static_cast<double>(canvas.width())/canvas.height(), 1.0, 1.0)
-        )
-    );
+      // Camera
+      Perspective_Camera camera(
+        Matrix::rotation(Vector(0.0, 1.0, 0.0))
+        * Matrix::translation(Vector(0.0, 0.0, -4.0))
+        * Matrix::scale(
+            Vector(static_cast<double>(canvas.width())/canvas.height(), 1.0, 1.0)
+          )
+      );
 
-    // Scene
-    Scene scene(background, camera, canvas);
+      // Scene
+      Scene scene(background, camera, canvas);
 
-    // Objects in scene
+      // Objects in scene
 
-    Sphere sphere;
-    sphere.trans(inverse(Matrix::scale(Vector(1.25, 1.25, 1.25))));
-    scene.push_object(sphere);
+      Sphere sphere;
+      sphere.trans(inverse(Matrix::scale(Vector(1.25, 1.25, 1.25))));
+      scene.push_object(sphere);
 
-    Cube cube;
-    cube.trans(inverse(Matrix::rotation(Vector(0.75, 0.0, 0.0))));
-    scene.push_object(cube);
+      Cube cube;
+      cube.trans(inverse(Matrix::rotation(Vector(0.75, 0.0, 0.0))));
+      scene.push_object(cube);
 
-    return scene;
-  }
-
-  Display::Display(const Canvas& canvas)
-    : m_display(dmnsn_new_display(canvas.dmnsn()))
-  {
-    if (!m_display) {
-      throw Dimension_Error("Couldn't create display.");
+      return scene;
     }
-  }
 
-  Display::~Display()
-  {
-    dmnsn_delete_display(m_display);
-  }
+    Display::Display(const Canvas& canvas)
+      : m_display(dmnsn_new_display(canvas.dmnsn()))
+    {
+      if (!m_display) {
+        throw Dimension_Error("Couldn't create display.");
+      }
+    }
 
-  void
-  Display::flush()
-  {
-    dmnsn_display_frame(m_display);
+    Display::~Display()
+    {
+      dmnsn_delete_display(m_display);
+    }
+
+    void
+    Display::flush()
+    {
+      dmnsn_display_frame(m_display);
+    }
   }
 
   // Print a progress bar of the progress of `progress'
