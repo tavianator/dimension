@@ -29,11 +29,14 @@ namespace Dimension
   class Camera
   {
   public:
-    // No-op, made pure virtual
-    virtual ~Camera() = 0;
+    // No-op
+    virtual ~Camera();
 
     // Camera callback
     virtual Line ray(const Canvas& canvas, unsigned int x, unsigned int y);
+
+    // Shallow-copy a derived camera
+    virtual Camera* copy() const = 0;
 
     // Access the wrapped C camera.
     dmnsn_camera*       dmnsn();
@@ -42,15 +45,22 @@ namespace Dimension
   protected:
     // No-op
     Camera();
+    // Shallow-copy
+    Camera(const Camera& camera);
     // Wrap an existing camera
     explicit Camera(dmnsn_camera* camera);
 
-    dmnsn_camera* m_camera;
+    // Is m_camera unique?
+    bool unique() const;
+
+    // Set the wrapped C camera
+    void dmnsn(dmnsn_camera* camera);
 
   private:
-    // Copying prohibited
-    Camera(const Camera&);
+    // Copy-assignment prohibited
     Camera& operator=(const Camera&);
+
+    std::tr1::shared_ptr<dmnsn_camera*> m_camera;
   };
 
   // A custom camera abstract base class, for creating your own camera types

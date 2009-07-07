@@ -26,7 +26,7 @@ namespace Dimension
   Sphere::Sphere()
     : Object(dmnsn_new_sphere())
   {
-    if (!m_object) {
+    if (!dmnsn()) {
       throw Dimension_Error("Failed to allocate sphere.");
     }
   }
@@ -34,14 +34,28 @@ namespace Dimension
   // Delete a sphere
   Sphere::~Sphere()
   {
-    dmnsn_delete_sphere(m_object);
+    if (unique()) {
+      dmnsn_delete_sphere(dmnsn());
+    }
   }
+
+  // Shallow copy a sphere
+  Object*
+  Sphere::copy() const
+  {
+    return new Sphere(*this);
+  }
+
+  // Protected copy constructor
+  Sphere::Sphere(const Sphere& sphere)
+    : Object(sphere)
+  { }
 
   // Create a cube
   Cube::Cube()
     : Object(dmnsn_new_cube())
   {
-    if (!m_object) {
+    if (!dmnsn()) {
       throw Dimension_Error("Failed to allocate cube.");
     }
   }
@@ -49,6 +63,20 @@ namespace Dimension
   // Delete a sphere
   Cube::~Cube()
   {
-    dmnsn_delete_cube(m_object);
+    if (unique()) {
+      dmnsn_delete_cube(dmnsn());
+    }
   }
+
+  // Shallow copy a cube
+  Object*
+  Cube::copy() const
+  {
+    return new Cube(*this);
+  }
+
+  // Protected copy constructor
+  Cube::Cube(const Cube& sphere)
+    : Object(sphere)
+  { }
 }

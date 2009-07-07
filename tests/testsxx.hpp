@@ -26,6 +26,10 @@
 
 namespace Dimension
 {
+  // Helper to return a basic scene
+  Scene default_scene();
+
+  // Display abstraction
   class Display
   {
   public:

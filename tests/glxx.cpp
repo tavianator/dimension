@@ -26,37 +26,24 @@ int
 main() {
   using namespace Dimension;
 
+  Scene scene = default_scene();
+
+  Perspective_Camera& camera
+    = dynamic_cast<Perspective_Camera&>(scene.camera());
+
+  Cube* cube;
+  for (Scene::Iterator i = scene.begin(); i != scene.end(); ++i) {
+    cube = dynamic_cast<Cube*>(&*i);
+    if (cube) {
+      break;
+    }
+  }
+  if (!cube) {
+    throw Dimension_Error("Couldn't find a cube in the default scene.");
+  }
+
   // Set the resilience low for tests
   resilience(SEVERITY_LOW);
-
-  // Background color
-  Color background = sRGB(0.0, 0.1, 0.25);
-  background.filter(0.1);
-
-  // Canvas
-  Canvas canvas(768, 480);
-
-  // Camera
-  Perspective_Camera camera(
-    Matrix::rotation(Vector(0.0, 1.0, 0.0))
-    * Matrix::translation(Vector(0.0, 0.0, -4.0))
-    * Matrix::scale(
-        Vector(static_cast<double>(canvas.width())/canvas.height(), 1.0, 1.0)
-      )
-  );
-
-  // Scene
-  Scene scene(background, camera, canvas);
-
-  // Objects in scene
-
-  Sphere sphere;
-  sphere.trans(inverse(Matrix::scale(Vector(1.25, 1.25, 1.25))));
-  scene.push_object(sphere);
-
-  Cube cube;
-  cube.trans(inverse(Matrix::rotation(Vector(0.75, 0.0, 0.0))));
-  scene.push_object(cube);
 
   Raytracer raytracer(scene);
   GL_Drawer drawer(scene.canvas());
@@ -71,7 +58,7 @@ main() {
     drawer.draw();
     display.flush();
 
-    cube.trans(inverse(Matrix::rotation(Vector(0.025, 0.0, 0.0)))*cube.trans());
+    cube->trans(inverse(Matrix::rotation(Vector(0.025, 0.0, 0.0)))*cube->trans());
     camera.trans(Matrix::rotation(Vector(0.0, -0.05, 0.0))*camera.trans());
   }
 

@@ -25,14 +25,20 @@
 
 namespace Dimension
 {
+  // Iterator class for scene objects
+  class Scene_Iterator;
+
   // Base scene class.  Wraps a dmnsn_scene*.
   class Scene
   {
   public:
-    // Allocate a dmnsn_scene
+    typedef Scene_Iterator Iterator;
+
+    // Allocate a dmnsn_scene*
     Scene(const Color& background, Camera& camera, Canvas& canvas);
-    // Wrap an existing scene
-    explicit Scene(dmnsn_scene* scene);
+
+    // Scene(const Scene& scene);
+
     // Delete the scene
     ~Scene();
 
@@ -43,7 +49,11 @@ namespace Dimension
     Canvas&       canvas();
     const Canvas& canvas() const;
 
-    // Add objects
+    // Object access
+
+    Iterator begin();
+    Iterator end();
+
     void push_object(Object& object);
 
     // Access the wrapped C object.
@@ -51,13 +61,38 @@ namespace Dimension
     const dmnsn_scene* dmnsn() const;
 
   private:
-    // Copying prohibited
-    Scene(const Scene&);
+    // Copy-assignment prohibited
     Scene& operator=(const Scene&);
 
-    dmnsn_scene* m_scene;
-    Camera* m_camera;
-    Canvas* m_canvas;
+    std::tr1::shared_ptr<dmnsn_scene*> m_scene;
+    std::tr1::shared_ptr<Camera> m_camera;
+    std::tr1::shared_ptr<Canvas> m_canvas;
+    std::list<std::tr1::shared_ptr<Object> > m_objects;
+  };
+
+  class Scene_Iterator
+  {
+  public:
+    Scene_Iterator(std::list<std::tr1::shared_ptr<Object> >::iterator i)
+      : m_i(i) { }
+    // Scene_Iterator(const Scene_Iterator& i);
+    // ~Scene_Iterator();
+
+    // Scene_Iterator& operator=(const Scene_Iterator& i);
+
+    Object& operator*() const { return **m_i; }
+    Object* operator->() const { return &**m_i; }
+
+    bool operator==(Scene_Iterator i) const { return m_i == i.m_i; }
+    bool operator!=(Scene_Iterator i) const { return m_i != i.m_i; }
+
+    Scene_Iterator& operator++()    { ++m_i; return *this; }
+    Scene_Iterator  operator++(int) { return Scene_Iterator(m_i++); }
+    Scene_Iterator& operator--()    { --m_i; return *this; }
+    Scene_Iterator  operator--(int) { return Scene_Iterator(m_i--); }
+
+  private:
+    std::list<std::tr1::shared_ptr<Object> >::iterator m_i;
   };
 }
 

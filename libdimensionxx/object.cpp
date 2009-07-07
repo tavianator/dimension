@@ -22,58 +22,86 @@
 
 namespace Dimension
 {
-  // Pure virtual no-op destructor
+  // Virtual no-op destructor
   Object::~Object()
   { }
 
   Matrix
   Object::trans()
   {
-    return Matrix(m_object->trans);
+    return Matrix(dmnsn()->trans);
   }
 
   void
   Object::trans(const Matrix& trans)
   {
-    m_object->trans = trans.dmnsn();
+    dmnsn()->trans = trans.dmnsn();
   }
 
   // Intersection list for the line l
   Array<double>
   Object::intersections(const Line& l)
   {
-    return Array<double>(m_object->intersections_fn(m_object, l.dmnsn()));
+    return Array<double>(dmnsn()->intersections_fn(dmnsn(), l.dmnsn()));
   }
 
   // Whether the point `point' is inside the object
   bool
   Object::inside(const Vector& point)
   {
-    return m_object->inside_fn(m_object, point.dmnsn());
+    return dmnsn()->inside_fn(dmnsn(), point.dmnsn());
   }
 
   // Return the wrapped object
   dmnsn_object*
   Object::dmnsn()
   {
-    return m_object;
+    if (!m_object) {
+      throw Dimension_Error("Attempt to access NULL object.");
+    }
+
+    return *m_object;
   }
 
   // Return a const version of the wrapped canvas
   const dmnsn_object*
   Object::dmnsn() const
   {
-    return m_object;
+    if (!m_object) {
+      throw Dimension_Error("Attempt to access NULL object.");
+    }
+
+    return *m_object;
   }
 
   // Protected default no-op constructor
   Object::Object()
+    : m_object()
+  { }
+
+  // Protected copy constructor
+  Object::Object(const Object& object)
+    : m_object(object.m_object)
   { }
 
   // Protected manual constructor
-  Object::Object(dmnsn_object *object)
-    : m_object(object)
+  Object::Object(dmnsn_object* object)
+    : m_object(new dmnsn_object*(object))
   { }
+
+  // Is m_object unique?
+  bool
+  Object::unique() const
+  {
+    return m_object.unique();
+  }
+
+  // Set the wrapped dmnsn_object*
+  void
+  Object::dmnsn(dmnsn_object* object)
+  {
+    m_object.reset(new dmnsn_object*(object));
+  }
 
   // Custom object callbacks
   namespace {
@@ -96,14 +124,16 @@ namespace Dimension
   Custom_Object::Custom_Object()
     : Object(dmnsn_new_object())
   {
-    m_object->ptr = this;
-    m_object->intersections_fn = &intersections_fn;
-    m_object->inside_fn = &inside_fn;
+    dmnsn()->ptr = this;
+    dmnsn()->intersections_fn = &intersections_fn;
+    dmnsn()->inside_fn = &inside_fn;
   }
 
   // Delete the object
   Custom_Object::~Custom_Object()
   {
-    dmnsn_delete_object(m_object);
+    if (unique()) {
+      dmnsn_delete_object(dmnsn());
+    }
   }
 }

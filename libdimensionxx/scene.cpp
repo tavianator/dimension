@@ -24,25 +24,24 @@ namespace Dimension
 {
   // Allocate a dmnsn_scene
   Scene::Scene(const Color& background, Camera& camera, Canvas& canvas)
-    : m_scene(dmnsn_new_scene()), m_camera(&camera), m_canvas(&canvas)
+    : m_scene(new dmnsn_scene*(dmnsn_new_scene())), m_camera(camera.copy()),
+      m_canvas(new Canvas(canvas))
   {
     if (!m_scene) {
       throw Dimension_Error("Couldn't allocate scene.");
     }
 
-    m_scene->background = background.dmnsn();
-    m_scene->camera = camera.dmnsn();
-    m_scene->canvas = canvas.dmnsn();
+    dmnsn()->background = background.dmnsn();
+    dmnsn()->camera = this->camera().dmnsn();
+    dmnsn()->canvas = this->canvas().dmnsn();
   }
-
-  // Wrap an existing scene
-  Scene::Scene(dmnsn_scene* scene)
-    : m_scene(scene) { }
 
   // Delete the scene
   Scene::~Scene()
   {
-    dmnsn_delete_scene(m_scene);
+    if (m_scene.unique()) {
+      dmnsn_delete_scene(dmnsn());
+    }
   }
 
   // Element access
@@ -50,7 +49,7 @@ namespace Dimension
   Color
   Scene::background() const
   {
-    return Color(m_scene->background);
+    return Color(dmnsn()->background);
   }
 
   Camera&
@@ -77,12 +76,27 @@ namespace Dimension
     return *m_canvas;
   }
 
-  // Add objects
+  // An iterator to the beginning of the object list
+  Scene::Iterator
+  Scene::begin()
+  {
+    return Iterator(m_objects.begin());
+  }
+
+  // An iterator one past the end of the object list
+  Scene::Iterator
+  Scene::end()
+  {
+    return Iterator(m_objects.end());
+  }
+
+  // Add an object
   void
   Scene::push_object(Object& object)
   {
+    m_objects.push_back(std::tr1::shared_ptr<Object>(object.copy()));
     dmnsn_object* cobject = object.dmnsn();
-    dmnsn_array_push(m_scene->objects, &cobject);
+    dmnsn_array_push(dmnsn()->objects, &cobject);
   }
 
   // Access the wrapped C object.
@@ -90,12 +104,12 @@ namespace Dimension
   dmnsn_scene*
   Scene::dmnsn()
   {
-    return m_scene;
+    return *m_scene;
   }
 
   const dmnsn_scene*
   Scene::dmnsn() const
   {
-    return m_scene;
+    return *m_scene;
   }
 }

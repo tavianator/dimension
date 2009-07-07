@@ -29,8 +29,8 @@ namespace Dimension
   class Object
   {
   public:
-    // No-op, made pure virtual
-    virtual ~Object() = 0;
+    // No-op
+    virtual ~Object();
 
     // Get/set the transformation matrix
     Matrix trans();
@@ -40,6 +40,9 @@ namespace Dimension
     virtual Array<double> intersections(const Line& l);
     virtual bool inside(const Vector& point);
 
+    // Shallow-copy a derived
+    virtual Object* copy() const = 0;
+
     // Access the wrapped C object.
     dmnsn_object*       dmnsn();
     const dmnsn_object* dmnsn() const;
@@ -47,15 +50,22 @@ namespace Dimension
   protected:
     // No-op
     Object();
+    // Shallow copy
+    Object(const Object& object);
     // Wrap an existing object.
     explicit Object(dmnsn_object* object);
 
-    dmnsn_object* m_object;
+    // Is m_object unique?
+    bool unique() const;
+
+    // Set the wrapped object
+    void dmnsn(dmnsn_object* object);
 
   private:
-    // Copying prohibited
-    Object(const Object&);
+    // Copy-assignment prohibited
     Object& operator=(const Object&);
+
+    std::tr1::shared_ptr<dmnsn_object*> m_object;
   };
 
   // A custom object abstract base class, for creating your own object types

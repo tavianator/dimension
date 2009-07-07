@@ -28,34 +28,7 @@ main() {
   // Set the resilience low for tests
   resilience(SEVERITY_LOW);
 
-  // Background color
-  Color background = sRGB(0.0, 0.1, 0.25);
-  background.filter(0.1);
-
-  // Canvas
-  Canvas canvas(768, 480);
-
-  // Camera
-  Perspective_Camera camera(
-    Matrix::rotation(Vector(0.0, 1.0, 0.0))
-    * Matrix::translation(Vector(0.0, 0.0, -4.0))
-    * Matrix::scale(
-        Vector(static_cast<double>(canvas.width())/canvas.height(), 1.0, 1.0)
-      )
-  );
-
-  // Scene
-  Scene scene(background, camera, canvas);
-
-  // Objects in scene
-
-  Sphere sphere;
-  sphere.trans(inverse(Matrix::scale(Vector(1.25, 1.25, 1.25))));
-  scene.push_object(sphere);
-
-  Cube cube;
-  cube.trans(inverse(Matrix::rotation(Vector(0.75, 0.0, 0.0))));
-  scene.push_object(cube);
+  Scene scene = default_scene();
 
   // Render the scene
   {
@@ -66,7 +39,7 @@ main() {
 
   // Write the canvas
   std::ofstream file("raytracexx.png");
-  PNG_Writer writer(canvas, file);
+  PNG_Writer writer(scene.canvas(), file);
   Progress progress = writer.write_async();
   std::cout << "Writing PNG file: " << progress << std::endl;
 

@@ -22,37 +22,66 @@
 
 namespace Dimension
 {
-  // Pure virtual no-op destructor
+  // Virtual no-op destructor
   Camera::~Camera()
   { }
+
+  // Return the result of the dmnsn_camera*'s ray callback
+  Line
+  Camera::ray(const Canvas& canvas, unsigned int x, unsigned int y)
+  {
+    return Line(dmnsn()->ray_fn(dmnsn(), canvas.dmnsn(), x, y));
+  }
 
   // Return the wrapped camera
   dmnsn_camera*
   Camera::dmnsn()
   {
-    return m_camera;
+    if (!m_camera) {
+      throw Dimension_Error("Attempt to access NULL camera.");
+    }
+
+    return *m_camera;
   }
 
   // Return a const version of the wrapped canvas
   const dmnsn_camera*
   Camera::dmnsn() const
   {
-    return m_camera;
+    if (!m_camera) {
+      throw Dimension_Error("Attempt to access NULL camera.");
+    }
+
+    return *m_camera;
   }
 
   // Protected default no-op constructor
   Camera::Camera()
+    : m_camera()
+  { }
+
+  // Protected copy constructor
+  Camera::Camera(const Camera& camera)
+    : m_camera(camera.m_camera)
   { }
 
   // Protected manual constructor
   Camera::Camera(dmnsn_camera *camera)
-    : m_camera(camera)
+    : m_camera(new dmnsn_camera*(camera))
   { }
 
-  Line
-  Camera::ray(const Canvas& canvas, unsigned int x, unsigned int y)
+  // Is m_camera unique?
+  bool
+  Camera::unique() const
   {
-    return Line(m_camera->ray_fn(m_camera, canvas.dmnsn(), x, y));
+    return m_camera.unique();
+  }
+
+  // Set the wrapped dmnsn_camera*
+  void
+  Camera::dmnsn(dmnsn_camera* camera)
+  {
+    m_camera.reset(new dmnsn_camera*(camera));
   }
 
   // Custom camera callbacks
@@ -75,13 +104,15 @@ namespace Dimension
   Custom_Camera::Custom_Camera()
     : Camera(dmnsn_new_camera())
   {
-    m_camera->ptr = this;
-    m_camera->ray_fn = &ray_fn;
+    dmnsn()->ptr = this;
+    dmnsn()->ray_fn = &ray_fn;
   }
 
   // Delete the camera
   Custom_Camera::~Custom_Camera()
   {
-    dmnsn_delete_camera(m_camera);
+    if (unique()) {
+      dmnsn_delete_camera(dmnsn());
+    }
   }
 }

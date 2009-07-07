@@ -30,7 +30,14 @@ namespace Dimension
   {
   public:
     Sphere();
-    virtual ~Sphere();
+    ~Sphere();
+
+    Object* copy() const;
+
+  private:
+    // Copying prohibited, but used internally
+    Sphere(const Sphere& sphere);
+    Sphere& operator=(const Sphere&);
   };
 
   // A cube
@@ -38,7 +45,14 @@ namespace Dimension
   {
   public:
     Cube();
-    virtual ~Cube();
+    ~Cube();
+
+    Object* copy() const;
+
+  private:
+    // Copying prohibited, but used internally
+    Cube(const Cube& cube);
+    Cube& operator=(const Cube&);
   };
 }
 

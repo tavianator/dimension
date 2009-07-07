@@ -30,10 +30,17 @@ namespace Dimension
   {
   public:
     Perspective_Camera(const Matrix& trans);
-    virtual ~Perspective_Camera();
+    ~Perspective_Camera();
 
     Matrix trans();
     void trans(const Matrix& trans);
+
+    Camera* copy() const;
+
+  private:
+    // Copying prohibited, but used internally
+    Perspective_Camera(const Perspective_Camera& camera);
+    Perspective_Camera& operator=(const Perspective_Camera&);
   };
 }
 

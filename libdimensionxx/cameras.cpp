@@ -26,7 +26,7 @@ namespace Dimension
   Perspective_Camera::Perspective_Camera(const Matrix& trans)
     : Camera(dmnsn_new_perspective_camera(trans.dmnsn()))
   {
-    if (!m_camera) {
+    if (!dmnsn()) {
       throw Dimension_Error("Failed to allocate perspective camera.");
     }
   }
@@ -34,18 +34,30 @@ namespace Dimension
   // Delete a perspective camera
   Perspective_Camera::~Perspective_Camera()
   {
-    dmnsn_delete_perspective_camera(m_camera);
+    if (unique()) {
+      dmnsn_delete_perspective_camera(dmnsn());
+    }
   }
 
   Matrix
   Perspective_Camera::trans()
   {
-    return Matrix(dmnsn_get_perspective_camera_trans(m_camera));
+    return Matrix(dmnsn_get_perspective_camera_trans(dmnsn()));
   }
 
   void
   Perspective_Camera::trans(const Matrix& trans)
   {
-    dmnsn_set_perspective_camera_trans(m_camera, trans.dmnsn());
+    dmnsn_set_perspective_camera_trans(dmnsn(), trans.dmnsn());
   }
+
+  Camera*
+  Perspective_Camera::copy() const
+  {
+    return new Perspective_Camera(*this);
+  }
+
+  Perspective_Camera::Perspective_Camera(const Perspective_Camera& camera)
+    : Camera(camera)
+  { }
 }

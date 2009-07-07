@@ -21,6 +21,41 @@
 
 namespace Dimension
 {
+  Scene
+  default_scene()
+  {
+    // Background color
+    Color background = sRGB(0.0, 0.1, 0.25);
+    background.filter(0.1);
+
+    // Canvas
+    Canvas canvas(768, 480);
+
+    // Camera
+    Perspective_Camera camera(
+      Matrix::rotation(Vector(0.0, 1.0, 0.0))
+      * Matrix::translation(Vector(0.0, 0.0, -4.0))
+      * Matrix::scale(
+          Vector(static_cast<double>(canvas.width())/canvas.height(), 1.0, 1.0)
+        )
+    );
+
+    // Scene
+    Scene scene(background, camera, canvas);
+
+    // Objects in scene
+
+    Sphere sphere;
+    sphere.trans(inverse(Matrix::scale(Vector(1.25, 1.25, 1.25))));
+    scene.push_object(sphere);
+
+    Cube cube;
+    cube.trans(inverse(Matrix::rotation(Vector(0.75, 0.0, 0.0))));
+    scene.push_object(cube);
+
+    return scene;
+  }
+
   Display::Display(const Canvas& canvas)
     : m_display(dmnsn_new_display(canvas.dmnsn()))
   {
