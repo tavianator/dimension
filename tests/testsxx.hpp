@@ -17,9 +17,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+#ifndef TESTSXX_HPP
+#define TESTSXX_HPP
+
+#include "tests.h"
 #include "../libdimensionxx/dimensionxx.hpp"
 #include <iostream>
 
-// Print a progress bar of the progress of `progress'
-std::ostream& operator<<(std::ostream& ostr,
-                         const Dimension::Progress& progress);
+namespace Dimension
+{
+  class Display
+  {
+  public:
+    Display(const Canvas& canvas);
+    ~Display();
+
+    void flush();
+
+  private:
+    dmnsn_display* m_display;
+  };
+
+  // Print a progress bar of the progress of `progress'
+  std::ostream& operator<<(std::ostream& ostr,
+                           const Dimension::Progress& progress);
+}
+
+#endif // TESTSXX_HPP

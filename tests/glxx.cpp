@@ -60,7 +60,7 @@ main() {
 
   Raytracer raytracer(scene);
   GL_Drawer drawer(scene.canvas());
-  dmnsn_display* display = dmnsn_new_display(scene.canvas().dmnsn());
+  Dimension::Display display(scene.canvas());
 
   // Render the scene
   for (unsigned int i = 0; i < 10; ++i) {
@@ -69,7 +69,7 @@ main() {
     rprogress.finish();
 
     drawer.draw();
-    dmnsn_display_frame(display);
+    display.flush();
 
     cube.trans(inverse(Matrix::rotation(Vector(0.025, 0.0, 0.0)))*cube.trans());
     camera.trans(Matrix::rotation(Vector(0.0, -0.05, 0.0))*camera.trans());

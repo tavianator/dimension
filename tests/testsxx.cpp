@@ -19,16 +19,38 @@
 
 #include "testsxx.hpp"
 
-// Print a progress bar of the progress of `progress'
-std::ostream&
-operator<<(std::ostream& ostr, const Dimension::Progress& progress)
+namespace Dimension
 {
-  const unsigned int increments = 32;
-
-  ostr << "|" << std::flush;
-  for (unsigned int i = 0; i < increments; ++i) {
-    progress.wait(static_cast<double>(i + 1)/increments);
-    ostr << "=" << std::flush;
+  Display::Display(const Canvas& canvas)
+    : m_display(dmnsn_new_display(canvas.dmnsn()))
+  {
+    if (!m_display) {
+      throw Dimension_Error("Couldn't create display.");
+    }
   }
-  return ostr << "|" << std::flush;
+
+  Display::~Display()
+  {
+    dmnsn_delete_display(m_display);
+  }
+
+  void
+  Display::flush()
+  {
+    dmnsn_display_frame(m_display);
+  }
+
+  // Print a progress bar of the progress of `progress'
+  std::ostream&
+  operator<<(std::ostream& ostr, const Dimension::Progress& progress)
+  {
+    const unsigned int increments = 32;
+
+    ostr << "|" << std::flush;
+    for (unsigned int i = 0; i < increments; ++i) {
+      progress.wait(static_cast<double>(i + 1)/increments);
+      ostr << "=" << std::flush;
+    }
+    return ostr << "|" << std::flush;
+  }
 }

@@ -38,7 +38,8 @@ libdimension_tests_la_LIBADD  = ../libdimension/libdimension.la
 
 libdimensionxx_tests_la_SOURCES = testsxx.hpp                                  \
                                   testsxx.cpp
-libdimensionxx_tests_la_LIBADD  = ../libdimensionxx/libdimensionxx.la
+libdimensionxx_tests_la_LIBADD  = ./libdimension-tests.la                      \
+                                  ../libdimensionxx/libdimensionxx.la
 
 warning_test_SOURCES = warning.c
 warning_test_LDADD   = ./libdimension-tests.la
@@ -62,4 +63,4 @@ gl_test_SOURCES = gl.c
 gl_test_LDADD   = ./libdimension-tests.la
 
 glxx_test_SOURCES = glxx.cpp
-glxx_test_LDADD   = ./libdimension-tests.la ./libdimensionxx-tests.la
+glxx_test_LDADD   = ./libdimensionxx-tests.la

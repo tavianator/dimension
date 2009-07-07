@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+#ifndef TESTS_H
+#define TESTS_H
+
 #include "../libdimension/dimension.h"
 #include <GL/glx.h>
 #include <GL/gl.h>
@@ -62,3 +65,5 @@ void progressbar(const char *str, const dmnsn_progress *progress);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* TESTS_H */
