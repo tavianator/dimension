@@ -38,8 +38,8 @@ main() {
   }
 
   /* Optimize the canvas for PNG export */
-  if (dmnsn_png_optimize_canvas(canvas) != 0) {
-    dmnsn_delete_canvas(canvas);
+  if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
+    dmnsn_delete_default_scene(scene);
     fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
     return EXIT_FAILURE;
   }

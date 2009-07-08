@@ -28,7 +28,10 @@ main() {
   // Set the resilience low for tests
   resilience(SEVERITY_LOW);
 
+  // Get the default test scene
   Scene scene = Tests::default_scene();
+
+  std::ofstream file("raytracexx.png");
   PNG_Writer writer(scene.canvas(), file);
 
   // Render the scene
@@ -39,7 +42,6 @@ main() {
   }
 
   // Write the canvas
-  std::ofstream file("raytracexx.png");
   Progress progress = writer.write_async();
   std::cout << "Writing PNG file: " << progress << std::endl;
 
