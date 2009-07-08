@@ -17,104 +17,49 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-// Test C++ PNG file I/O
-
 #include "testsxx.hpp"
 #include <fstream>
+#include <iostream>
 
 int
-main()
-{
+main() {
   using namespace Dimension;
 
   // Set the resilience low for tests
   resilience(SEVERITY_LOW);
 
-  const unsigned int width = 333, height = 300;
-
+  // Perform the rendering
   {
-    std::ofstream ofstr("dimensionxx1.png", std::ios::binary);
-    Canvas canvas(3*width, height);
-    PNG_Writer writer(canvas, ofstr);
+    // Get the default test scene
+    Scene scene = Tests::default_scene();
 
-    CIE_xyY xyY;
-    CIE_Lab Lab;
-    CIE_Luv Luv;
-    sRGB RGB;
-    Color color;
+    std::ofstream ofile("pngxx1.png");
+    PNG_Writer writer(scene.canvas(), ofile);
 
-    for (unsigned int x = 0; x < width; ++x) {
-      for (unsigned int y = 0; y < height; ++y) {
-        /* CIE xyY colorspace */
-        xyY = CIE_xyY(static_cast<double>(x)/(width - 1),
-                      static_cast<double>(y)/(height - 1),
-                      0.5);
-        color = xyY;
-        RGB = color;
+    // Render the scene
+    Raytracer raytracer(scene);
+    Progress rprogress = raytracer.render_async();
+    std::cout << "Raytracing scene: " << rprogress << std::endl;
+    rprogress.finish();
 
-        if (RGB.R() > 1.0 || RGB.G() > 1.0 || RGB.B() > 1.0
-            || RGB.R() < 0.0 || RGB.G() < 0.0 || RGB.B() < 0.0) {
-          /* Out of sRGB gamut */
-          color.trans(0.5);
-        }
-
-        canvas.pixel(x, y, color);
-
-        /* CIE Lab colorspace */
-
-        Lab = CIE_Lab(75.0,
-                      200.0*(static_cast<double>(x)/(width - 1) - 0.5),
-                      200.0*(static_cast<double>(y)/(height - 1) - 0.5));
-        color = Lab;
-        RGB = color;
-
-        if (RGB.R() > 1.0 || RGB.G() > 1.0 || RGB.B() > 1.0
-            || RGB.R() < 0.0 || RGB.G() < 0.0 || RGB.B() < 0.0) {
-          /* Out of sRGB gamut */
-          color.trans(0.5);
-        }
-
-        canvas.pixel(x + width, y, color);
-
-        /* CIE Luv colorspace */
-
-        Luv = CIE_Luv(75.0,
-                      200.0*(static_cast<double>(x)/(width - 1) - 0.5),
-                      200.0*(static_cast<double>(y)/(height - 1) - 0.5));
-        color = Luv;
-        RGB = color;
-
-        if (RGB.R() > 1.0 || RGB.G() > 1.0 || RGB.B() > 1.0
-            || RGB.R() < 0.0 || RGB.G() < 0.0 || RGB.B() < 0.0) {
-          /* Out of sRGB gamut */
-          color.trans(0.5);
-        }
-
-        canvas.pixel(x + 2*width, y, color);
-      }
-    }
-
-    // Write the image to PNG
-    Progress progress = writer.write_async();
-    std::cout << "Writing PNG file: " << progress << std::endl;
+    // Write the canvas
+    Progress oprogress = writer.write_async();
+    std::cout << "Writing PNG file: " << oprogress << std::endl;
   }
 
-  // Read the image back from PNG
+  // Now test PNG import/export
+  {
+    std::ifstream ifile("pngxx1.png");
+    PNG_Reader reader(ifile);
+    Progress iprogress = reader.read_async();
+    std::cout << "Reading PNG file: " << iprogress << std::endl;
 
-  std::ifstream ifstr("dimensionxx1.png", std::ios::binary);
-  PNG_Reader reader(ifstr);
+    Canvas canvas = PNG_Reader::finish(iprogress);
+    std::ofstream ofile("pngxx2.png");
+    PNG_Writer writer(canvas, ofile);
+    Progress oprogress = writer.write_async();
+    std::cout << "Writing PNG file: " << oprogress << std::endl;
+  }
 
-  Progress iprogress = reader.read_async();
-  std::cout << "Reading PNG file: " << iprogress << std::endl;
-  Canvas canvas = PNG_Reader::finish(iprogress);
-
-  // And write it again
-
-  std::ofstream ofstr("dimensionxx2.png", std::ios::binary);
-  PNG_Writer writer(canvas, ofstr);
-
-  Progress oprogress = writer.write_async();
-  std::cout << "Writing PNG file: " << oprogress << std::endl;
-
-  return 0;
+  return EXIT_SUCCESS;
 }

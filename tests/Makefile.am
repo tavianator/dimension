@@ -23,8 +23,6 @@ check_PROGRAMS    = warning-test                                               \
                     error-test                                                 \
                     png-test                                                   \
                     pngxx-test                                                 \
-                    raytrace-test                                              \
-                    raytracexx-test                                            \
                     gl-test                                                    \
                     glxx-test
 TESTS             = $(check_PROGRAMS)
@@ -52,12 +50,6 @@ png_test_LDADD   = ./libdimension-tests.la
 
 pngxx_test_SOURCES = pngxx.cpp
 pngxx_test_LDADD   = ./libdimensionxx-tests.la
-
-raytrace_test_SOURCES = raytrace.c
-raytrace_test_LDADD   = ./libdimension-tests.la
-
-raytracexx_test_SOURCES = raytracexx.cpp
-raytracexx_test_LDADD   = ./libdimensionxx-tests.la
 
 gl_test_SOURCES = gl.c
 gl_test_LDADD   = ./libdimension-tests.la

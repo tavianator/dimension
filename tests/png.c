@@ -17,181 +17,139 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-/* Test PNG file I/O */
-
 #include "tests.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdint.h>
 
 int
 main() {
-  dmnsn_canvas *canvas;
   dmnsn_progress *progress;
-  dmnsn_color color;
-  dmnsn_CIE_xyY xyY;
-  dmnsn_CIE_Lab Lab;
-  dmnsn_CIE_Luv Luv;
-  dmnsn_sRGB sRGB;
-  FILE *ofile, *ifile;
-  unsigned int i, j;
-  const unsigned int x = 333, y = 300;
+  FILE *ifile, *ofile;
+  dmnsn_scene *scene;
+  dmnsn_canvas *canvas;
 
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
-  /* Allocate a canvas */
-  canvas = dmnsn_new_canvas(3*x, y);
-  if (!canvas) {
-    fprintf(stderr, "--- Allocation of canvas failed! ---\n");
-    return EXIT_FAILURE;
-  }
-
-  /* Optimize the canvas for PNG export */
-  if (dmnsn_png_optimize_canvas(canvas) != 0) {
-    dmnsn_delete_canvas(canvas);
-    fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
-    return EXIT_FAILURE;
-  }
-
-  for (i = 0; i < x; ++i) {
-    for (j = 0; j < y; ++j) {
-      /*
-       * CIE xyY colorspace
-       */
-      xyY.Y = 0.5;
-      xyY.x = ((double)i)/(x - 1);
-      xyY.y = ((double)j)/(y - 1);
-
-      color = dmnsn_color_from_xyY(xyY);
-      sRGB  = dmnsn_sRGB_from_color(color);
-
-      if (sRGB.R > 1.0 || sRGB.G > 1.0 || sRGB.B > 1.0
-          || sRGB.R < 0.0 || sRGB.G < 0.0 || sRGB.B < 0.0) {
-        /* Out of sRGB gamut */
-        color.trans = 0.5;
-      }
-
-      dmnsn_set_pixel(canvas, i, j, color);
-
-      /*
-       * CIE Lab colorspace
-       */
-      Lab.L = 75.0;
-      Lab.a = 200.0*(((double)i)/(x - 1) - 0.5);
-      Lab.b = 200.0*(((double)j)/(y - 1) - 0.5);
-
-      color = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
-      sRGB  = dmnsn_sRGB_from_color(color);
-
-      if (sRGB.R > 1.0 || sRGB.G > 1.0 || sRGB.B > 1.0
-          || sRGB.R < 0.0 || sRGB.G < 0.0 || sRGB.B < 0.0) {
-        /* Out of sRGB gamut */
-        color.trans = 0.5;
-      }
-
-      dmnsn_set_pixel(canvas, i + x, j, color);
-
-      /*
-       * CIE Luv colorspace
-       */
-      Luv.L = 75.0;
-      Luv.u = 200.0*(((double)i)/(x - 1) - 0.5);
-      Luv.v = 200.0*(((double)j)/(y - 1) - 0.5);
-
-      color = dmnsn_color_from_Luv(Luv, dmnsn_whitepoint);
-      sRGB  = dmnsn_sRGB_from_color(color);
-
-      if (sRGB.R > 1.0 || sRGB.G > 1.0 || sRGB.B > 1.0
-          || sRGB.R < 0.0 || sRGB.G < 0.0 || sRGB.B < 0.0) {
-        /* Out of sRGB gamut */
-        color.trans = 0.5;
-      }
-
-      dmnsn_set_pixel(canvas, i + 2*x, j, color);
+  /* Render the scene */
+  {
+    /* Allocate our default scene */
+    scene = dmnsn_new_default_scene();
+    if (!scene) {
+      fprintf(stderr, "--- Allocation of default scene failed! ---\n");
+      return EXIT_FAILURE;
     }
-  }
 
-  /* Write the image to PNG */
+    /* Optimize the canvas for PNG export */
+    if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
+      dmnsn_delete_default_scene(scene);
+      fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
+      return EXIT_FAILURE;
+    }
 
-  ofile = fopen("dimension1.png", "wb");
-  if (!ofile) {
-    fprintf(stderr, "--- Opening 'dimension1.png' for writing failed! ---\n");
-    dmnsn_delete_canvas(canvas);
-    return EXIT_FAILURE;
-  }
+    /* Render scene */
 
-  progress = dmnsn_png_write_canvas_async(canvas, ofile);
-  if (!progress) {
-    fprintf(stderr, "--- Creating PNG writing worker thread failed! ---\n");
+    progress = dmnsn_raytrace_scene_async(scene);
+    if (!progress) {
+      dmnsn_delete_default_scene(scene);
+      fprintf(stderr, "--- Couldn't start raytracing worker thread! ---\n");
+      return EXIT_FAILURE;
+    }
+
+    progressbar("Raytracing scene: ", progress);
+
+    if (dmnsn_finish_progress(progress) != 0) {
+      dmnsn_delete_default_scene(scene);
+      fprintf(stderr, "--- Raytracing failed! ---\n");
+      return EXIT_FAILURE;
+    }
+
+    /* Write the image to PNG */
+
+    ofile = fopen("png1.png", "wb");
+    if (!ofile) {
+      dmnsn_delete_default_scene(scene);
+      fprintf(stderr, "--- Couldn't open 'png1.png' for writing! ---\n");
+      return EXIT_FAILURE;
+    }
+
+    progress = dmnsn_png_write_canvas_async(scene->canvas, ofile);
+    if (!progress) {
+      fclose(ofile);
+      dmnsn_delete_default_scene(scene);
+      fprintf(stderr, "--- Couldn't start PNG writing worker thread! ---\n");
+      return EXIT_FAILURE;
+    }
+
+    progressbar("Writing PNG file: ", progress);
+
+    if (dmnsn_finish_progress(progress) != 0) {
+      fclose(ofile);
+      dmnsn_delete_default_scene(scene);
+      fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
+      return EXIT_FAILURE;
+    }
+
     fclose(ofile);
-    dmnsn_delete_canvas(canvas);
-    return EXIT_FAILURE;
+    dmnsn_delete_default_scene(scene);
   }
 
-  progressbar("Writing PNG file: ", progress);
+  /* Now test PNG import/export */
+  {
+    /* Read the image back from PNG */
 
-  if (dmnsn_finish_progress(progress) != 0) {
-    fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
-    fclose(ofile);
-    dmnsn_delete_canvas(canvas);
-    return EXIT_FAILURE;
-  }
+    ifile = fopen("png1.png", "rb");
+    if (!ifile) {
+      fprintf(stderr, "--- Couldn't open 'png1.png' for reading! ---\n");
+      return EXIT_FAILURE;
+    }
 
-  fclose(ofile);
-  dmnsn_delete_canvas(canvas);
+    progress = dmnsn_png_read_canvas_async(&canvas, ifile);
+    if (!progress) {
+      fclose(ifile);
+      fprintf(stderr, "--- Couldn't start PNG reading worker thread! ---\n");
+      return EXIT_FAILURE;
+    }
 
-  /* Read the image back from the PNG file */
+    progressbar("Reading PNG file: ", progress);
 
-  ifile = fopen("dimension1.png", "rb");
-  if (!ifile) {
-    fprintf(stderr, "--- Opening 'dimension1.png' for reading failed! ---\n");
-    return EXIT_FAILURE;
-  }
+    if (dmnsn_finish_progress(progress) != 0) {
+      fclose(ifile);
+      fprintf(stderr, "--- Reading canvas from PNG failed! ---\n");
+      return EXIT_FAILURE;
+    }
 
-  progress = dmnsn_png_read_canvas_async(&canvas, ifile);
-  if (!progress) {
-    fprintf(stderr, "--- Creating PNG reading worker thread failed! ---\n");
     fclose(ifile);
-    return EXIT_FAILURE;
-  }
 
-  progressbar("Reading PNG file: ", progress);
+    /* And write it back */
 
-  if (dmnsn_finish_progress(progress) != 0) {
-    fprintf(stderr, "--- Reading canvas from PNG failed! ---\n");
-    fclose(ifile);
-    return EXIT_FAILURE;
-  }
+    ofile = fopen("png2.png", "wb");
+    if (!ofile) {
+      fprintf(stderr, "--- Couldn't open 'png2.png' for writing! ---\n");
+      dmnsn_delete_canvas(canvas);
+      return EXIT_FAILURE;
+    }
 
-  fclose(ifile);
+    progress = dmnsn_png_write_canvas_async(canvas, ofile);
+    if (!progress) {
+      fclose(ofile);
+      dmnsn_delete_canvas(canvas);
+      fprintf(stderr, "--- Couldn't start PNG writing worker thread! ---\n");
+      return EXIT_FAILURE;
+    }
 
-  /* ... and write it back again */
+    progressbar("Writing PNG file: ", progress);
 
-  ofile = fopen("dimension2.png", "wb");
-  if (!ofile) {
-    fprintf(stderr, "--- Opening 'dimension2.png' for writing failed! ---\n");
-    return EXIT_FAILURE;
-  }
+    if (dmnsn_finish_progress(progress) != 0) {
+      fclose(ofile);
+      dmnsn_delete_canvas(canvas);
+      fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
+      return EXIT_FAILURE;
+    }
 
-  progress = dmnsn_png_write_canvas_async(canvas, ofile);
-  if (!progress) {
-    fprintf(stderr, "--- Creating PNG writing worker thread failed! ---\n");
     fclose(ofile);
     dmnsn_delete_canvas(canvas);
-    return EXIT_FAILURE;
   }
 
-  progressbar("Writing PNG file: ", progress);
-
-  if (dmnsn_finish_progress(progress) != 0) {
-    fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
-    fclose(ofile);
-    dmnsn_delete_canvas(canvas);
-    return EXIT_FAILURE;
-  }
-
-  fclose(ofile);
-  dmnsn_delete_canvas(canvas);
   return EXIT_SUCCESS;
 }
