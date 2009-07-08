@@ -268,7 +268,7 @@ dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
   Lab.b = Lab1.b + Lab2.b;
 
   ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
-  /* Waited average of transparencies by intensity */
+  /* Weighted average of transparencies by intensity */
   ret.filter = (Lab1.L*color1.filter + Lab2.L*color2.filter)/Lab.L;
   ret.trans  = (Lab1.L*color1.trans  + Lab2.L*color2.trans)/Lab.L;
 

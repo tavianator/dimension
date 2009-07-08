@@ -29,6 +29,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
+dnl Determine if we can use the fopencookie() implementation of FILE_Cookie
 AC_MSG_CHECKING([for fopencookie()])
 AC_LINK_IFELSE(AC_LANG_PROGRAM(
   [[ #define _GNU_SOURCE
@@ -38,7 +39,6 @@ AC_LINK_IFELSE(AC_LANG_PROGRAM(
                [fopencookie=yes
                 AC_MSG_RESULT([yes])],
                [AC_MSG_RESULT([no])])
-
 AM_CONDITIONAL([FOPENCOOKIE], [test "$fopencookie" = "yes"])
 
 dnl Generate Makefiles

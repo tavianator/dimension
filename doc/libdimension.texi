@@ -4,6 +4,7 @@
 @settitle The Dimension 3-D Rendering Library
 @c %**end of header
 
+@c Combine variable and function indicies
 @syncodeindex vr fn
 
 @c Wrap code examples at 72 chars, please

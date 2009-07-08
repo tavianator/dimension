@@ -30,12 +30,21 @@ main() {
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
-  /* Allocate our new scene */
+  /* Allocate our default scene */
   scene = dmnsn_new_default_scene();
   if (!scene) {
     fprintf(stderr, "--- Allocation of default scene failed! ---\n");
     return EXIT_FAILURE;
   }
+
+  /* Optimize the canvas for PNG export */
+  if (dmnsn_png_optimize_canvas(canvas) != 0) {
+    dmnsn_delete_canvas(canvas);
+    fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
+    return EXIT_FAILURE;
+  }
+
+  /* Render scene */
 
   progress = dmnsn_raytrace_scene_async(scene);
   if (!progress) {
@@ -51,6 +60,8 @@ main() {
     fprintf(stderr, "--- Raytracing failed! ---\n");
     return EXIT_FAILURE;
   }
+
+  /* Write the image to PNG */
 
   file = fopen("raytrace.png", "wb");
   if (!file) {

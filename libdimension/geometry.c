@@ -65,7 +65,7 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
   }
   axis = dmnsn_vector_normalize(theta);
 
-  /* Shorthand to make dmnsn_matrix_construct call legible */
+  /* Shorthand to make dmnsn_matrix_construct() call legible */
 
   s = sin(angle);
   t = 1.0 - cos(angle);
@@ -123,7 +123,13 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   double Pdet = A.n[0][0]*A.n[1][1] - A.n[0][1]*A.n[1][0];
 
   if (Pdet == 0.0) {
-    /* If we can't invert P, try a more generic algorithm */
+    /* If we can't invert P, try a more generic algorithm; this is very
+       unlikely, but not impossible, eg.
+         ( 1 1 0 0 )
+         ( 1 1 1 0 )
+         ( 0 1 1 0 )
+         ( 0 0 0 1 )
+     */
     return dmnsn_matrix_inverse_generic(A);
   }
 
@@ -146,6 +152,7 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   PiQ  = dmnsn_matrix2_mul(Pi, Q);
   RPiQ = dmnsn_matrix2_mul(R, PiQ);
 
+  /* Calculate the partitioned inverse */
   SS = dmnsn_matrix2_inverse(dmnsn_matrix2_sub(S, RPiQ));
   RR = dmnsn_matrix2_negate(dmnsn_matrix2_mul(SS, RPi));
   QQ = dmnsn_matrix2_negate(dmnsn_matrix2_mul(PiQ, SS));

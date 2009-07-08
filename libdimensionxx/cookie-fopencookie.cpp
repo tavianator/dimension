@@ -26,12 +26,11 @@
 #endif
 #include <stdio.h>
 
-// The conundrum: libdimension and libdimension-* use C I/O, with FILE*'s.
-// We want to use C++ I/O with std::i/ostreams. If present, we use the
-// nonportable GNU stdio extension fopencookie(), which creates a FILE* with
-// custom read/write/seek functions.  BSD also has a similar function, funopen()
-// which we should use too.  Failing in all that, fall back on a tmpfile()
-// buffer (see cookie-tmpfile.cpp).
+// The conundrum: libdimension uses C I/O, with FILE*'s. We want to use C++ I/O
+// with std::i/ostreams. If present, we use the nonportable GNU stdio extension
+// fopencookie(), which creates a FILE* with custom read/write/seek functions.
+// BSD also has a similar function, funopen() which we should use too.  Failing
+// in all that, fall back on a tmpfile() buffer (see cookie-tmpfile.cpp).
 
 namespace Dimension
 {

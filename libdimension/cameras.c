@@ -36,16 +36,19 @@ static dmnsn_line dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
 dmnsn_camera *
 dmnsn_new_perspective_camera(dmnsn_matrix trans)
 {
+  dmnsn_matrix *ptr;
   dmnsn_camera *camera = dmnsn_new_camera();
   if (camera) {
     camera->ray_fn = &dmnsn_perspective_camera_ray_fn;
 
-    camera->ptr = malloc(sizeof(dmnsn_matrix));
-    if (!camera->ptr) {
+    /* Allocate room for the transformation matrix */
+    ptr = malloc(sizeof(dmnsn_matrix));
+    if (!ptr) {
       dmnsn_delete_camera(camera);
       return NULL;
     }
-    *((dmnsn_matrix*)camera->ptr) = trans;
+    *ptr = trans;
+    camera->ptr = ptr;
   }
   return camera;
 }

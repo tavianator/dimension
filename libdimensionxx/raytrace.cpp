@@ -22,6 +22,7 @@
 
 namespace Dimension
 {
+  // Construct a raytracer
   Raytracer::Raytracer(Scene& scene)
     : m_scene(&scene), m_rendered(false) { }
 

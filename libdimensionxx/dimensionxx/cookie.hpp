@@ -38,12 +38,15 @@ namespace Dimension
     FILE_Cookie(std::iostream& iostr);
     ~FILE_Cookie();
 
+    // Get the magic FILE*
     FILE*       file();
     const FILE* file() const;
 
+    // Are we an input or output stream?
     bool is_input() const;
     bool is_output() const;
 
+    // Get the C++ streams
     std::istream&       istr();
     const std::istream& istr() const;
     std::ostream&       ostr();

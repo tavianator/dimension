@@ -34,6 +34,7 @@ namespace Dimension
     Raytracer(Scene& scene);
     ~Raytracer();
 
+    // Render the scene
     void render();
     Progress render_async();
 

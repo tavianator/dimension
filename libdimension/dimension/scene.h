@@ -32,6 +32,7 @@ typedef struct {
   dmnsn_canvas *canvas;
 } dmnsn_scene;
 
+/* Create a scene, initializing only the ->objects field */
 dmnsn_scene *dmnsn_new_scene();
 void dmnsn_delete_scene(dmnsn_scene *scene);
 

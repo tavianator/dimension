@@ -24,7 +24,12 @@ namespace Dimension
 {
   // Allocate the canvas with dmnsn_new_canvas()
   Canvas::Canvas(unsigned int width, unsigned int height)
-    : m_canvas(new dmnsn_canvas*(dmnsn_new_canvas(width, height))) { }
+    : m_canvas(new dmnsn_canvas*(dmnsn_new_canvas(width, height)))
+  {
+    if (!dmnsn()) {
+      throw Dimension_Error("Couldn't allocate canvas.");
+    }
+  }
 
   // Wrap an existing dmnsn_canvas*
   Canvas::Canvas(dmnsn_canvas* canvas)

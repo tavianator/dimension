@@ -26,8 +26,9 @@ dmnsn_scene *
 dmnsn_new_scene()
 {
   dmnsn_scene *scene = malloc(sizeof(dmnsn_scene));
-  if (scene)
+  if (scene) {
     scene->objects = dmnsn_new_array(sizeof(dmnsn_object*));
+  }
   return scene;
 }
 

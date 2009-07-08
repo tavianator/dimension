@@ -28,7 +28,7 @@ dmnsn_new_default_scene()
   dmnsn_sRGB sRGB;
   dmnsn_color color;
 
-  /* Allocate our new scene */
+  /* Allocate a new scene */
   scene = dmnsn_new_scene();
   if (!scene) {
     return NULL;

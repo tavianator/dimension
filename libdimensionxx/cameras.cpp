@@ -31,7 +31,7 @@ namespace Dimension
     }
   }
 
-  // Delete a perspective camera
+  // Delete a perspective camera, if we're the last reference
   Perspective_Camera::~Perspective_Camera()
   {
     if (unique()) {
@@ -39,24 +39,28 @@ namespace Dimension
     }
   }
 
+  // Get the transformation matrix
   Matrix
   Perspective_Camera::trans()
   {
     return Matrix(dmnsn_get_perspective_camera_trans(dmnsn()));
   }
 
+  // Set the transformation matrix
   void
   Perspective_Camera::trans(const Matrix& trans)
   {
     dmnsn_set_perspective_camera_trans(dmnsn(), trans.dmnsn());
   }
 
+  // Shallow-copy this camera
   Camera*
   Perspective_Camera::copy() const
   {
     return new Perspective_Camera(*this);
   }
 
+  // Private copy-constructor, for copy() implementation
   Perspective_Camera::Perspective_Camera(const Perspective_Camera& camera)
     : Camera(camera)
   { }

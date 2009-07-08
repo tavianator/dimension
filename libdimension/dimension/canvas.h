@@ -40,6 +40,7 @@ typedef struct {
   dmnsn_color *pixels;
 } dmnsn_canvas;
 
+/* Forward-declare dmnsn_canvas_optimizer */
 typedef struct dmnsn_canvas_optimizer dmnsn_canvas_optimizer;
 
 /* Canvas optimizer callback types */

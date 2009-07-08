@@ -46,12 +46,15 @@ dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
   optimizer.optimizer_fn = &dmnsn_gl_optimizer_fn;
   optimizer.free_fn = &free;
 
+  /* Allocate a buffer to hold RGB values */
   optimizer.ptr = malloc(4*canvas->x*canvas->y*sizeof(GLushort));
   if (!optimizer.ptr) {
     return 1;
   }
 
+  /* Set a new optimizer */
   if (dmnsn_optimize_canvas(canvas, optimizer) != 0) {
+    /* Set failed; dmnsn_set_pixel() has probably been called already */
     free(optimizer.ptr);
     return 1;
   }
@@ -78,11 +81,11 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
     dmnsn_array_get(canvas->optimizers, i, &optimizer);
     if (optimizer.optimizer_fn == &dmnsn_gl_optimizer_fn) {
       glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT, optimizer.ptr);
-      return 0;
+      return glGetError() == GL_NO_ERROR ? 0 : 1;
     }
   }
 
-  /* We couldn't, so to this non-optimally */
+  /* We couldn't, so transform the canvas to RGB now */
   pixels = malloc(4*width*height*sizeof(GLushort));
   if (!pixels) {
     return 1;
@@ -129,7 +132,7 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT, pixels);
 
   free(pixels);
-  return 0;
+  return glGetError() == GL_NO_ERROR ? 0 : 1;
 }
 
 /* Read a canvas from a GL framebuffer.  Returns NULL on failure. */
@@ -156,6 +159,12 @@ dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
   }
 
   glReadPixels(x0, y0, width, height, GL_RGBA, GL_UNSIGNED_SHORT, pixels);
+
+  if (glGetError() != GL_NO_ERROR) {
+    free(pixels);
+    dmnsn_delete_canvas(canvas);
+    return NULL;
+  }
 
   for (y = 0; y < height; ++y) {
     for (x = 0; x < width; ++x) {

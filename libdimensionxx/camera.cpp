@@ -30,7 +30,7 @@ namespace Dimension
   Line
   Camera::ray(const Canvas& canvas, unsigned int x, unsigned int y)
   {
-    return Line(dmnsn()->ray_fn(dmnsn(), canvas.dmnsn(), x, y));
+    return Line((*dmnsn()->ray_fn)(dmnsn(), canvas.dmnsn(), x, y));
   }
 
   // Return the wrapped camera
@@ -74,7 +74,7 @@ namespace Dimension
   bool
   Camera::unique() const
   {
-    return m_camera.unique();
+    return m_camera && m_camera.unique();
   }
 
   // Set the wrapped dmnsn_camera*

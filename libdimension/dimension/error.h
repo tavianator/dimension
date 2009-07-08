@@ -34,10 +34,17 @@ typedef enum {
   DMNSN_SEVERITY_HIGH    /* Always die */
 } dmnsn_severity;
 
+#ifdef __GNUC__
+  #define DMNSN_FUNC __PRETTY_FUNCTION__
+#elif (__STDC_VERSION__ >= 199901L)
+  #define DMNSN_FUNC __func__
+#else
+  #define DMNSN_FUNC __FILE__
+#endif
+
 /* Use this macro to report an error */
 #define dmnsn_error(severity, str)                                             \
-  dmnsn_report_error((dmnsn_severity)(severity), __PRETTY_FUNCTION__, __LINE__,\
-                     (str))
+  dmnsn_report_error((dmnsn_severity)(severity), DMNSN_FUNC, __LINE__, (str))
 
 /* Called by dmnsn_error() - don't call directly */
 void dmnsn_report_error(dmnsn_severity severity,

@@ -26,12 +26,14 @@ namespace Dimension
   Object::~Object()
   { }
 
+  // Get the transformation matrix
   Matrix
   Object::trans()
   {
     return Matrix(dmnsn()->trans);
   }
 
+  // Set the transformation matrix
   void
   Object::trans(const Matrix& trans)
   {
@@ -42,14 +44,14 @@ namespace Dimension
   Array<double>
   Object::intersections(const Line& l)
   {
-    return Array<double>(dmnsn()->intersections_fn(dmnsn(), l.dmnsn()));
+    return Array<double>((*dmnsn()->intersections_fn)(dmnsn(), l.dmnsn()));
   }
 
   // Whether the point `point' is inside the object
   bool
   Object::inside(const Vector& point)
   {
-    return dmnsn()->inside_fn(dmnsn(), point.dmnsn());
+    return (*dmnsn()->inside_fn)(dmnsn(), point.dmnsn());
   }
 
   // Return the wrapped object
@@ -93,7 +95,7 @@ namespace Dimension
   bool
   Object::unique() const
   {
-    return m_object.unique();
+    return m_object && m_object.unique();
   }
 
   // Set the wrapped dmnsn_object*

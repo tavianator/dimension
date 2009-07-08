@@ -18,6 +18,8 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/* Set DMNSN_INLINE to produce definitions of inline functions, emitted here,
+   if needed */
 #ifdef __cplusplus
   /* C++ inline semantics */
   #define DMNSN_INLINE inline

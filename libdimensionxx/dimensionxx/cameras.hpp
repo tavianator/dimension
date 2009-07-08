@@ -32,9 +32,11 @@ namespace Dimension
     Perspective_Camera(const Matrix& trans);
     ~Perspective_Camera();
 
+    // Get/set the transformation matrix
     Matrix trans();
     void trans(const Matrix& trans);
 
+    // Shallow-copy the camera
     Camera* copy() const;
 
   private:

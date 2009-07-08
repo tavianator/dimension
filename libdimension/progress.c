@@ -63,6 +63,8 @@ dmnsn_new_progress()
       return NULL;
     }
 
+    /* Initialize the rwlock, condition variable, and mutex */
+
     if (pthread_rwlock_init(progress->rwlock, NULL) != 0) {
       free(progress->rwlock);
       free(progress->mutex);
@@ -71,7 +73,6 @@ dmnsn_new_progress()
       free(progress);
       return NULL;
     }
-
     if (pthread_cond_init(progress->cond, NULL) != 0) {
       if (pthread_rwlock_destroy(progress->rwlock) != 0) {
         dmnsn_error(DMNSN_SEVERITY_LOW,
@@ -135,9 +136,8 @@ int dmnsn_finish_progress(dmnsn_progress *progress)
   int retval = 1;
 
   if (progress) {
-    if (pthread_cond_broadcast(progress->cond) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
-    }
+    /* Wake up all waiters */
+    dmnsn_done_progress(progress);
 
     if (pthread_join(progress->thread, &ptr) != 0) {
       /* Medium severity because an unjoined thread likely means that the thread

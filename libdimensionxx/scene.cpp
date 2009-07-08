@@ -27,7 +27,7 @@ namespace Dimension
     : m_scene(new dmnsn_scene*(dmnsn_new_scene())), m_camera(camera.copy()),
       m_canvas(new Canvas(canvas))
   {
-    if (!m_scene) {
+    if (!dmnsn()) {
       throw Dimension_Error("Couldn't allocate scene.");
     }
 

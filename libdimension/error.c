@@ -49,7 +49,7 @@ dmnsn_get_resilience()
   if (pthread_mutex_lock(&dmnsn_resilience_mutex) != 0) {
     /* Couldn't lock the mutex, so warn and continue. */
     fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
-            __PRETTY_FUNCTION__, __LINE__,
+            DMNSN_FUNC, __LINE__,
             "Couldn't lock resilience mutex.");
   }
   resilience = dmnsn_resilience; /* Copy the static variable to a local */
@@ -57,7 +57,7 @@ dmnsn_get_resilience()
     /* Couldn't unlock the mutex, so warn and continue.  If the mutex was locked
        earlier, the next dmnsn_get/set_resilience is likely to hang. */
     fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
-            __PRETTY_FUNCTION__, __LINE__,
+            DMNSN_FUNC, __LINE__,
             "Couldn't unlock resilience mutex.");
   }
   return resilience;
@@ -69,8 +69,7 @@ dmnsn_set_resilience(dmnsn_severity resilience)
 {
   if (resilience > DMNSN_SEVERITY_HIGH) {
     /* Tried to set an illegal resilience, bail out */
-    fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n",
-            __PRETTY_FUNCTION__, __LINE__,
+    fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n", DMNSN_FUNC, __LINE__,
             "Resilience has wrong value.");
     exit(EXIT_FAILURE);
   }
@@ -78,7 +77,7 @@ dmnsn_set_resilience(dmnsn_severity resilience)
   if (pthread_mutex_lock(&dmnsn_resilience_mutex) != 0) {
     /* Couldn't lock the mutex, so warn and continue. */
     fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
-            __PRETTY_FUNCTION__, __LINE__,
+            DMNSN_FUNC, __LINE__,
             "Couldn't lock resilience mutex.");
   }
   dmnsn_resilience = resilience;
@@ -86,7 +85,7 @@ dmnsn_set_resilience(dmnsn_severity resilience)
     /* Couldn't unlock the mutex, so warn and continue.  If the mutex was locked
        earlier, the next dmnsn_get/set_resilience is likely to hang. */
     fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
-            __PRETTY_FUNCTION__, __LINE__,
+            DMNSN_FUNC, __LINE__,
             "Couldn't unlock resilience mutex.");
   }
 }

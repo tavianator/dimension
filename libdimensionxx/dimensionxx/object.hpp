@@ -40,10 +40,10 @@ namespace Dimension
     virtual Array<double> intersections(const Line& l);
     virtual bool inside(const Vector& point);
 
-    // Shallow-copy a derived
+    // Shallow-copy a derived object
     virtual Object* copy() const = 0;
 
-    // Access the wrapped C object.
+    // Access the wrapped C object
     dmnsn_object*       dmnsn();
     const dmnsn_object* dmnsn() const;
 

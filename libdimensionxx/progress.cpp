@@ -22,6 +22,7 @@
 
 namespace Dimension
 {
+  // No-op virtual destructor
   Persist_Base::~Persist_Base()
   { }
 
@@ -38,7 +39,7 @@ namespace Dimension
   // Finish the progress if not yet finished and we are unique
   Progress::~Progress()
   {
-    if (m_progress) {
+    if (m_progress && m_progress.unique()) {
       try {
         finish();
       } catch (...) {

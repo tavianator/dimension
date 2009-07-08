@@ -40,12 +40,14 @@ main() {
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
+  /* Allocate a canvas */
   canvas = dmnsn_new_canvas(3*x, y);
   if (!canvas) {
     fprintf(stderr, "--- Allocation of canvas failed! ---\n");
     return EXIT_FAILURE;
   }
 
+  /* Optimize the canvas for PNG export */
   if (dmnsn_png_optimize_canvas(canvas) != 0) {
     dmnsn_delete_canvas(canvas);
     fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
@@ -110,6 +112,8 @@ main() {
     }
   }
 
+  /* Write the image to PNG */
+
   ofile = fopen("dimension1.png", "wb");
   if (!ofile) {
     fprintf(stderr, "--- Opening 'dimension1.png' for writing failed! ---\n");
@@ -137,6 +141,8 @@ main() {
   fclose(ofile);
   dmnsn_delete_canvas(canvas);
 
+  /* Read the image back from the PNG file */
+
   ifile = fopen("dimension1.png", "rb");
   if (!ifile) {
     fprintf(stderr, "--- Opening 'dimension1.png' for reading failed! ---\n");
@@ -159,6 +165,8 @@ main() {
   }
 
   fclose(ifile);
+
+  /* ... and write it back again */
 
   ofile = fopen("dimension2.png", "wb");
   if (!ofile) {

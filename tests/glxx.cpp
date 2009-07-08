@@ -26,12 +26,18 @@ int
 main() {
   using namespace Dimension;
 
+  // Set the resilience low for tests
+  resilience(SEVERITY_LOW);
+
+  // Create the default test scene
   Scene scene = Tests::default_scene();
 
+  // Get the camera
   Perspective_Camera& camera
     = dynamic_cast<Perspective_Camera&>(scene.camera());
 
-  Cube* cube;
+  // Find the cube
+  Cube* cube = 0;
   for (Scene::Iterator i = scene.begin(); i != scene.end(); ++i) {
     cube = dynamic_cast<Cube*>(&*i);
     if (cube) {
@@ -42,23 +48,26 @@ main() {
     throw Dimension_Error("Couldn't find a cube in the default scene.");
   }
 
-  // Set the resilience low for tests
-  resilience(SEVERITY_LOW);
-
   Raytracer raytracer(scene);
   GL_Drawer drawer(scene.canvas());
   Tests::Display display(scene.canvas());
 
-  // Render the scene
-  for (unsigned int i = 0; i < 10; ++i) {
+  // Render the animation
+  const unsigned int frames = 10;
+  for (unsigned int i = 0; i < frames; ++i) {
+    // Render the scene
     Progress rprogress = raytracer.render_async();
     std::cout << "Raytracing scene: " << rprogress << std::endl;
     rprogress.finish();
 
+    // Display the frame
     drawer.draw();
     display.flush();
 
-    cube->trans(inverse(Matrix::rotation(Vector(0.025, 0.0, 0.0)))*cube->trans());
+    // Rotate the cube and camera for the next frame
+    cube->trans(
+      inverse(Matrix::rotation(Vector(0.025, 0.0, 0.0)))*cube->trans()
+    );
     camera.trans(Matrix::rotation(Vector(0.0, -0.05, 0.0))*camera.trans());
   }
 

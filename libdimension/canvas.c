@@ -61,7 +61,7 @@ dmnsn_delete_canvas(dmnsn_canvas *canvas)
     for (i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
       dmnsn_array_get(canvas->optimizers, i, &optimizer);
       if (optimizer.free_fn) {
-        optimizer.free_fn(optimizer.ptr);
+        (*optimizer.free_fn)(optimizer.ptr);
       }
     }
 
@@ -76,6 +76,7 @@ int
 dmnsn_optimize_canvas(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer)
 {
   if (canvas->too_late) {
+    /* Don't set an optimizer if dmnsn_set_pixel() has been called */
     return 1;
   } else {
     dmnsn_array_push(canvas->optimizers, &optimizer);
@@ -100,6 +101,6 @@ dmnsn_set_pixel(dmnsn_canvas *canvas, unsigned int x, unsigned int y,
   /* Call the optimizers */
   for (i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
     dmnsn_array_get(canvas->optimizers, i, &optimizer);
-    optimizer.optimizer_fn(canvas, optimizer, x, y);
+    (*optimizer.optimizer_fn)(canvas, optimizer, x, y);
   }
 }

@@ -52,14 +52,16 @@ typedef struct {
   pthread_mutex_t *mutex;
 } dmnsn_progress;
 
+/* Allocate a new progress object */
 dmnsn_progress *dmnsn_new_progress();
 /* For failed returns from *_async() functions */
 void dmnsn_delete_progress(dmnsn_progress *progress);
 
-/* This joins the worker thread and returns it's integer return value in
-   addition to deleting `progress' */
+/* Join the worker thread and returns it's integer return value in addition to
+   deleting `progress' */
 int dmnsn_finish_progress(dmnsn_progress *progress);
 
+/* Get the progress of the background task, out of 1.0 */
 double dmnsn_get_progress(const dmnsn_progress *progress);
 /* Wait for the progress to be >= prog, in a better way than spinlocking */
 void dmnsn_wait_progress(const dmnsn_progress *progress, double prog);

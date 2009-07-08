@@ -32,6 +32,7 @@ namespace Dimension
     Sphere();
     ~Sphere();
 
+    // Shallow-copy the sphere
     Object* copy() const;
 
   private:
@@ -47,6 +48,7 @@ namespace Dimension
     Cube();
     ~Cube();
 
+    // Shallow-copy the cube
     Object* copy() const;
 
   private:

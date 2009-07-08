@@ -26,29 +26,35 @@ main() {
   dmnsn_display *display;
   dmnsn_progress *progress;
   dmnsn_scene *scene;
-  dmnsn_object *sphere, *cube;
+  dmnsn_object *cube;
   dmnsn_matrix trans;
+  const unsigned int frames = 10;
   unsigned int i;
 
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
+  /* Create the default test scene */
   scene = dmnsn_new_default_scene();
   if (!scene) {
     fprintf(stderr, "--- Couldn't create default scene! ---\n");
     return EXIT_FAILURE;
   }
 
+  /* Optimize the canvas for GL drawing */
   if (dmnsn_gl_optimize_canvas(scene->canvas) != 0) {
     dmnsn_delete_default_scene(scene);
     fprintf(stderr, "--- Couldn't optimize canvas for GL! ---\n");
     return EXIT_FAILURE;
   }
 
-  dmnsn_array_get(scene->objects, 0, &sphere);
+  /* Get the cube object */
   dmnsn_array_get(scene->objects, 1, &cube);
+
+  /* Get the camera transformation matrix */
   trans = dmnsn_get_perspective_camera_trans(scene->camera);
 
+  /* Create a new glX display */
   display = dmnsn_new_display(scene->canvas);
   if (!display) {
     dmnsn_delete_default_scene(scene);
@@ -56,7 +62,10 @@ main() {
     return EXIT_FAILURE;
   }
 
-  for (i = 0; i < 10; ++i) {
+  /* Render the animation */
+  for (i = 0; i < frames; ++i) {
+    /* Render the scene */
+
     progress = dmnsn_raytrace_scene_async(scene);
     if (!progress) {
       dmnsn_delete_display(display);
@@ -73,6 +82,8 @@ main() {
       fprintf(stderr, "--- Raytracing failed! ---\n");
       return EXIT_FAILURE;
     }
+
+    /* Display the scene */
 
     if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
       dmnsn_delete_display(display);

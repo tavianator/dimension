@@ -21,7 +21,7 @@
 #include "dimensionxx.hpp"
 #include <stdio.h>
 
-// Use a tmpfile as a buffer for a C++/C I/O interface.
+// Use a tmpfile() as a buffer for a C++/C I/O interface.
 
 namespace Dimension
 {

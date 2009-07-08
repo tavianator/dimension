@@ -94,9 +94,12 @@ main()
       }
     }
 
+    // Write the image to PNG
     Progress progress = writer.write_async();
     std::cout << "Writing PNG file: " << progress << std::endl;
   }
+
+  // Read the image back from PNG
 
   std::ifstream ifstr("dimensionxx1.png", std::ios::binary);
   PNG_Reader reader(ifstr);
@@ -104,6 +107,8 @@ main()
   Progress iprogress = reader.read_async();
   std::cout << "Reading PNG file: " << iprogress << std::endl;
   Canvas canvas = PNG_Reader::finish(iprogress);
+
+  // And write it again
 
   std::ofstream ofstr("dimensionxx2.png", std::ios::binary);
   PNG_Writer writer(canvas, ofstr);

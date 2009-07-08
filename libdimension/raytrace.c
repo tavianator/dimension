@@ -196,7 +196,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   dmnsn_line ray, ray_trans;
   dmnsn_array *intersections;
   dmnsn_color color;
-  dmnsn_CIE_Lab Lab = { 0.0, 0.0, 0.0 }; // Shut up uninitialized use warning
+  dmnsn_CIE_Lab Lab = { 0.0, 0.0, 0.0 }; /* Shut up uninitialized use warning */
 
   width  = scene->canvas->x;
   height = scene->canvas->y;
