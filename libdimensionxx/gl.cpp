@@ -55,6 +55,9 @@ namespace Dimension
     m_drawn = true; // Don't draw again in destructor
   }
 
+  // No-op
+  GL_Reader::GL_Reader() { }
+
   // Read a canvas from a GL buffer
   Canvas
   GL_Reader::read(unsigned int x0, unsigned int y0,

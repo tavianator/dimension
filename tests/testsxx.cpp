@@ -74,7 +74,7 @@ namespace Dimension
     void
     Display::flush()
     {
-      dmnsn_display_frame(m_display);
+      dmnsn_display_flush(m_display);
     }
   }
 

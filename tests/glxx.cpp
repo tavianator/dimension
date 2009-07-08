@@ -32,44 +32,43 @@ main() {
   // Create the default test scene
   Scene scene = Tests::default_scene();
 
-  // Get the camera
-  Perspective_Camera& camera
-    = dynamic_cast<Perspective_Camera&>(scene.camera());
-
-  // Find the cube
-  Cube* cube = 0;
-  for (Scene::Iterator i = scene.begin(); i != scene.end(); ++i) {
-    cube = dynamic_cast<Cube*>(&*i);
-    if (cube) {
-      break;
-    }
-  }
-  if (!cube) {
-    throw Dimension_Error("Couldn't find a cube in the default scene.");
-  }
-
-  Raytracer raytracer(scene);
-  GL_Drawer drawer(scene.canvas());
+  // Create a glX window
   Tests::Display display(scene.canvas());
 
-  // Render the animation
-  const unsigned int frames = 10;
-  for (unsigned int i = 0; i < frames; ++i) {
-    // Render the scene
-    Progress rprogress = raytracer.render_async();
-    std::cout << "Raytracing scene: " << rprogress << std::endl;
-    rprogress.finish();
+  {
+    Raytracer raytracer(scene);
+    GL_Drawer drawer(scene.canvas());
 
-    // Display the frame
+    // Render the scene
+    Progress progress = raytracer.render_async();
+
+    // Display the scene as it's rendered
+    while (progress.progress() < 1.0) {
+      drawer.draw();
+      display.flush();
+    }
+
+    // Make sure we show the completed rendering
+    progress.finish();
     drawer.draw();
     display.flush();
-
-    // Rotate the cube and camera for the next frame
-    cube->trans(
-      inverse(Matrix::rotation(Vector(0.025, 0.0, 0.0)))*cube->trans()
-    );
-    camera.trans(Matrix::rotation(Vector(0.0, -0.05, 0.0))*camera.trans());
   }
+
+  // Pause for a second
+  sleep(1);
+
+  // Read the canvas back from the GL buffer
+  GL_Reader reader;
+  Canvas canvas
+    = reader.read(0, 0, scene.canvas().width(), scene.canvas().height());
+
+  // And write it again
+  GL_Drawer drawer(canvas);
+  drawer.draw();
+  display.flush();
+
+  // Pause for a second
+  sleep(1);
 
   return EXIT_SUCCESS;
 }

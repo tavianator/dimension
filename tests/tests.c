@@ -221,7 +221,7 @@ dmnsn_delete_display(dmnsn_display *display)
 }
 
 void
-dmnsn_display_frame(dmnsn_display *display)
+dmnsn_display_flush(dmnsn_display *display)
 {
   glFlush();
   glXSwapBuffers(display->dpy, display->win);

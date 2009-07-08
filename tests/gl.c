@@ -26,9 +26,7 @@ main() {
   dmnsn_display *display;
   dmnsn_progress *progress;
   dmnsn_scene *scene;
-  dmnsn_object *cube;
-  dmnsn_matrix trans;
-  const unsigned int frames = 10;
+  dmnsn_canvas *canvas;
   unsigned int i;
 
   /* Set the resilience low for tests */
@@ -48,12 +46,6 @@ main() {
     return EXIT_FAILURE;
   }
 
-  /* Get the cube object */
-  dmnsn_array_get(scene->objects, 1, &cube);
-
-  /* Get the camera transformation matrix */
-  trans = dmnsn_get_perspective_camera_trans(scene->camera);
-
   /* Create a new glX display */
   display = dmnsn_new_display(scene->canvas);
   if (!display) {
@@ -62,53 +54,69 @@ main() {
     return EXIT_FAILURE;
   }
 
-  /* Render the animation */
-  for (i = 0; i < frames; ++i) {
-    /* Render the scene */
+  /* Render the scene */
 
-    progress = dmnsn_raytrace_scene_async(scene);
-    if (!progress) {
-      dmnsn_delete_display(display);
-      dmnsn_delete_default_scene(scene);
-      fprintf(stderr, "--- Couldn't start raytracing worker thread! ---\n");
-      return EXIT_FAILURE;
-    }
+  progress = dmnsn_raytrace_scene_async(scene);
+  if (!progress) {
+    dmnsn_delete_display(display);
+    dmnsn_delete_default_scene(scene);
+    fprintf(stderr, "--- Couldn't start raytracing worker thread! ---\n");
+    return EXIT_FAILURE;
+  }
 
-    progressbar("Raytracing scene: ", progress);
-
-    if (dmnsn_finish_progress(progress) != 0) {
-      dmnsn_delete_display(display);
-      dmnsn_delete_default_scene(scene);
-      fprintf(stderr, "--- Raytracing failed! ---\n");
-      return EXIT_FAILURE;
-    }
-
-    /* Display the scene */
-
+  /* Display the scene as it's rendered */
+  while (dmnsn_get_progress(progress) < 1.0) {
     if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
       dmnsn_delete_display(display);
       dmnsn_delete_default_scene(scene);
       fprintf(stderr, "--- Drawing to openGL failed! ---\n");
       return EXIT_FAILURE;
     }
-    dmnsn_display_frame(display);
-
-    /* Rotate the cube and camera for the next frame */
-
-    cube->trans = dmnsn_matrix_mul(
-      dmnsn_matrix_inverse(
-        dmnsn_rotation_matrix(dmnsn_vector_construct(0.025, 0.0, 0.0))
-      ),
-      cube->trans
-    );
-
-    trans = dmnsn_matrix_mul(
-      dmnsn_rotation_matrix(dmnsn_vector_construct(0.0, -0.05, 0.0)),
-      trans
-    );
-    dmnsn_set_perspective_camera_trans(scene->camera, trans);
+    dmnsn_display_flush(display);
   }
 
+  if (dmnsn_finish_progress(progress) != 0) {
+    dmnsn_delete_display(display);
+    dmnsn_delete_default_scene(scene);
+    fprintf(stderr, "--- Raytracing failed! ---\n");
+    return EXIT_FAILURE;
+  }
+
+  /* Make sure we show the completed rendering */
+  if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
+    dmnsn_delete_display(display);
+    dmnsn_delete_default_scene(scene);
+    fprintf(stderr, "--- Drawing to openGL failed! ---\n");
+    return EXIT_FAILURE;
+  }
+  dmnsn_display_flush(display);
+
+  /* Show the image on screen for a bit */
+  sleep(1);
+
+  /* Read a canvas from the GL buffer */
+  canvas = dmnsn_gl_read_canvas(0, 0, scene->canvas->x, scene->canvas->y);
+  if (!canvas) {
+    dmnsn_delete_display(display);
+    dmnsn_delete_default_scene(scene);
+    fprintf(stderr, "--- Reading canvas from GL buffer failed! ---\n");
+    return EXIT_FAILURE;
+  }
+
+  /* And write it back */
+  if (dmnsn_gl_write_canvas(canvas) != 0) {
+    dmnsn_delete_canvas(canvas);
+    dmnsn_delete_display(display);
+    dmnsn_delete_default_scene(scene);
+    fprintf(stderr, "--- Drawing to openGL failed! ---\n");
+    return EXIT_FAILURE;
+  }
+  dmnsn_display_flush(display);
+
+  /* Show the image on screen for a bit */
+  sleep(1);
+
+  dmnsn_delete_canvas(canvas);
   dmnsn_delete_display(display);
   dmnsn_delete_default_scene(scene);
   return EXIT_SUCCESS;

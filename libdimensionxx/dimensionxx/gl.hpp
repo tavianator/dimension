@@ -48,7 +48,7 @@ namespace Dimension
   class GL_Reader
   {
   public:
-    // GL_Reader();
+    GL_Reader();
     // ~GL_Reader();
 
     Canvas read(unsigned int x0, unsigned int y0,

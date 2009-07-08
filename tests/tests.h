@@ -23,6 +23,7 @@
 #include "../libdimension/dimension.h"
 #include <GL/glx.h>
 #include <GL/gl.h>
+#include <unistd.h>
 #include <stdio.h>
 
 #ifdef __cplusplus
@@ -53,7 +54,7 @@ dmnsn_display *dmnsn_new_display(const dmnsn_canvas *canvas);
 void dmnsn_delete_display(dmnsn_display *display);
 
 /* Flush the GL buffers */
-void dmnsn_display_frame(dmnsn_display *display);
+void dmnsn_display_flush(dmnsn_display *display);
 
 /*
  * Asynchronicity
