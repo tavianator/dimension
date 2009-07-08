@@ -28,21 +28,21 @@
 
 namespace Dimension
 {
-  class GL_Drawer
+  class GL_Writer
   {
   public:
-    GL_Drawer(Canvas& canvas);
-    ~GL_Drawer();
+    GL_Writer(Canvas& canvas);
+    ~GL_Writer();
 
-    void draw();
+    void write();
 
   private:
     // Copying prohibited
-    GL_Drawer(const GL_Drawer&);
-    GL_Drawer& operator=(const GL_Drawer&);
+    GL_Writer(const GL_Writer&);
+    GL_Writer& operator=(const GL_Writer&);
 
     Canvas* m_canvas;
-    bool m_drawn;
+    bool m_written;
   };
 
   class GL_Reader

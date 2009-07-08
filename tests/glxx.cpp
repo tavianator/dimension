@@ -37,20 +37,20 @@ main() {
 
   {
     Raytracer raytracer(scene);
-    GL_Drawer drawer(scene.canvas());
+    GL_Writer writer(scene.canvas());
 
     // Render the scene
     Progress progress = raytracer.render_async();
 
     // Display the scene as it's rendered
     while (progress.progress() < 1.0) {
-      drawer.draw();
+      writer.write();
       display.flush();
     }
 
     // Make sure we show the completed rendering
     progress.finish();
-    drawer.draw();
+    writer.write();
     display.flush();
   }
 
@@ -63,8 +63,8 @@ main() {
     = reader.read(0, 0, scene.canvas().width(), scene.canvas().height());
 
   // And write it again
-  GL_Drawer drawer(canvas);
-  drawer.draw();
+  GL_Writer writer(canvas);
+  writer.write();
   display.flush();
 
   // Pause for a second

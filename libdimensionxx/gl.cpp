@@ -23,36 +23,36 @@
 
 namespace Dimension
 {
-  GL_Drawer::GL_Drawer(Canvas& canvas)
-    : m_canvas(&canvas), m_drawn(false)
+  GL_Writer::GL_Writer(Canvas& canvas)
+    : m_canvas(&canvas), m_written(false)
   {
-    // Optimize the canvas for GL drawing
+    // Optimize the canvas for GL writeing
     dmnsn_gl_optimize_canvas(m_canvas->dmnsn());
   }
 
-  // Draw the canvas if it hasn't been drawn yet
-  GL_Drawer::~GL_Drawer()
+  // Draw the canvas if it hasn't been writen yet
+  GL_Writer::~GL_Writer()
   {
-    if (!m_drawn) {
+    if (!m_written) {
       try {
-        draw();
+        write();
       } catch (...) {
         dmnsn_error(SEVERITY_MEDIUM,
-                    "Drawing canvas to GL failed in GL_Drawer destructor.");
+                    "Drawing canvas to GL failed in GL_Writer destructor.");
       }
     }
   }
 
   // Draw the canvas to the current openGL buffer
-  void GL_Drawer::draw()
+  void GL_Writer::write()
   {
     // Draw to the GL buffer
     if (dmnsn_gl_write_canvas(m_canvas->dmnsn()) != 0) {
-      // The drawing operation failed
+      // The writeing operation failed
       throw Dimension_Error("Drawing canvas to GL failed.");
     }
 
-    m_drawn = true; // Don't draw again in destructor
+    m_written = true; // Don't write again in destructor
   }
 
   // No-op
