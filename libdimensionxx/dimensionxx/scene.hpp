@@ -25,7 +25,7 @@
 
 namespace Dimension
 {
-  // Iterator class for scene objects
+  // Iterator class for scene objects - never invalidated unless removed
   class Scene_Iterator;
 
   // Base scene class.  Wraps a dmnsn_scene*.
@@ -55,6 +55,7 @@ namespace Dimension
     Iterator end();
 
     void push_object(Object& object);
+    void remove_object(Iterator i);
 
     // Access the wrapped C object.
     dmnsn_scene*       dmnsn();
@@ -72,8 +73,10 @@ namespace Dimension
 
   class Scene_Iterator
   {
+    typedef std::list<std::tr1::shared_ptr<Object> >::iterator Iterator;
+
   public:
-    Scene_Iterator(std::list<std::tr1::shared_ptr<Object> >::iterator i)
+    Scene_Iterator(Iterator i)
       : m_i(i) { }
     // Scene_Iterator(const Scene_Iterator& i);
     // ~Scene_Iterator();
@@ -91,8 +94,10 @@ namespace Dimension
     Scene_Iterator& operator--()    { --m_i; return *this; }
     Scene_Iterator  operator--(int) { return Scene_Iterator(m_i--); }
 
+    Iterator iterator() const { return m_i; }
+
   private:
-    std::list<std::tr1::shared_ptr<Object> >::iterator m_i;
+    Iterator m_i;
   };
 }
 

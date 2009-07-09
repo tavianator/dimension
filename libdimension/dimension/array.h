@@ -139,4 +139,32 @@ dmnsn_array_pop(dmnsn_array *array, void *obj)
   dmnsn_array_resize(array, size - 1);   /* Shrink the array */
 }
 
+/* Insert an item into the middle of the array */
+DMNSN_INLINE void
+dmnsn_array_insert(dmnsn_array *array, size_t i, const void *obj)
+{
+  size_t size = dmnsn_array_size(array);
+  /* Increase the size by 1 */
+  dmnsn_array_resize(array, size + 1);
+  /* Move the elements at and after `i' 1 to the right */
+  memmove((char *)array->ptr + array->obj_size*(i + 1),
+          (char *)array->ptr + array->obj_size*i,
+          array->obj_size*(size - i));
+  /* Insert `obj' at `i' */
+  memcpy((char *)array->ptr + array->obj_size*i, obj, array->obj_size);
+}
+
+/* Remove an item from the middle of the array */
+DMNSN_INLINE void
+dmnsn_array_remove(dmnsn_array *array, size_t i)
+{
+  size_t size = dmnsn_array_size(array);
+  /* Move the array elements after `i' 1 to the left */
+  memmove((char *)array->ptr + array->obj_size*i,
+          (char *)array->ptr + array->obj_size*(i + 1),
+          array->obj_size*(size - i));
+  /* Decrease the size by 1 */
+  dmnsn_array_resize(array, size - 1);
+}
+
 #endif /* DIMENSION_ARRAY_H */

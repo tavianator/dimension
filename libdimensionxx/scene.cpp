@@ -99,6 +99,23 @@ namespace Dimension
     dmnsn_array_push(dmnsn()->objects, &cobject);
   }
 
+  // Remove an object
+  void
+  Scene::remove_object(Iterator i)
+  {
+    // Find it in the dmnsn_array* of objects and remove it
+    for (unsigned int j = 0; j < dmnsn_array_size(dmnsn()->objects); ++j) {
+      dmnsn_object* cobject;
+      dmnsn_array_get(dmnsn()->objects, j, &cobject);
+      if (cobject == i->dmnsn()) {
+        dmnsn_array_remove(dmnsn()->objects, j);
+        break;
+      }
+    }
+    // Remove it from the std::list
+    m_objects.erase(i.iterator());
+  }
+
   // Access the wrapped C object.
 
   dmnsn_scene*
