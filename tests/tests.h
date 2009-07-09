@@ -61,7 +61,11 @@ void dmnsn_display_flush(dmnsn_display *display);
  */
 
 /* Print a progress bar of the progress of `progress' */
-void progressbar(const char *str, const dmnsn_progress *progress);
+void dmnsn_progressbar(const char *str, const dmnsn_progress *progress);
+/* Print a progress bar asynchronously, convienently guaranteed to succeed if
+   it returns so our tests don't get cluttered up */
+dmnsn_progress *dmnsn_progressbar_async(const char *str,
+                                        const dmnsn_progress *progress);
 
 #ifdef __cplusplus
 }

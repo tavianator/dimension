@@ -24,10 +24,9 @@
 int
 main() {
   dmnsn_display *display;
-  dmnsn_progress *progress;
+  dmnsn_progress *progress, *barprogress;
   dmnsn_scene *scene;
   dmnsn_canvas *canvas;
-  unsigned int i;
 
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
@@ -64,6 +63,8 @@ main() {
     return EXIT_FAILURE;
   }
 
+  barprogress = dmnsn_progressbar_async("Raytracing scene: ", progress);
+
   /* Display the scene as it's rendered */
   while (dmnsn_get_progress(progress) < 1.0) {
     if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
@@ -74,6 +75,8 @@ main() {
     }
     dmnsn_display_flush(display);
   }
+
+  dmnsn_finish_progress(barprogress);
 
   if (dmnsn_finish_progress(progress) != 0) {
     dmnsn_delete_display(display);

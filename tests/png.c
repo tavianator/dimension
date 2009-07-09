@@ -56,7 +56,7 @@ main() {
       return EXIT_FAILURE;
     }
 
-    progressbar("Raytracing scene: ", progress);
+    dmnsn_progressbar("Raytracing scene: ", progress);
 
     if (dmnsn_finish_progress(progress) != 0) {
       dmnsn_delete_default_scene(scene);
@@ -81,7 +81,7 @@ main() {
       return EXIT_FAILURE;
     }
 
-    progressbar("Writing PNG file: ", progress);
+    dmnsn_progressbar("Writing PNG file: ", progress);
 
     if (dmnsn_finish_progress(progress) != 0) {
       fclose(ofile);
@@ -111,7 +111,7 @@ main() {
       return EXIT_FAILURE;
     }
 
-    progressbar("Reading PNG file: ", progress);
+    dmnsn_progressbar("Reading PNG file: ", progress);
 
     if (dmnsn_finish_progress(progress) != 0) {
       fclose(ifile);
@@ -138,7 +138,7 @@ main() {
       return EXIT_FAILURE;
     }
 
-    progressbar("Writing PNG file: ", progress);
+    dmnsn_progressbar("Writing PNG file: ", progress);
 
     if (dmnsn_finish_progress(progress) != 0) {
       fclose(ofile);
