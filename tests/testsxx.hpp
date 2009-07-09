@@ -43,6 +43,9 @@ namespace Dimension
     private:
       dmnsn_display* m_display;
     };
+
+    Progress progressbar_async(std::ostream& ostr,
+                               const Dimension::Progress& progress);
   }
 
   // Print a progress bar of the progress of `progress'

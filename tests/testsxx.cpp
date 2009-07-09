@@ -76,6 +76,53 @@ namespace Dimension
     {
       dmnsn_display_flush(m_display);
     }
+
+    namespace
+    {
+      struct Progressbar_Payload
+      {
+      public:
+        std::ostream* ostr;
+        const Progress* progress;
+      };
+
+      void *
+      progressbar_thread(void *ptr)
+      {
+        Progressbar_Payload* payload
+          = reinterpret_cast<Progressbar_Payload*>(ptr);
+
+        *payload->ostr << *payload->progress;
+
+        int* ret = static_cast<int*>(std::malloc(sizeof(int)));
+        if (ret) {
+          *ret = 0;
+        }
+        return ret;
+      }
+    }
+
+    Progress progressbar_async(std::ostream& ostr,
+                               const Dimension::Progress& progress)
+    {
+      dmnsn_progress* barprogress = dmnsn_new_progress();
+      if (!barprogress) {
+        throw Dimension_Error("Couldn't allocate progress object.");
+      }
+
+      Progressbar_Payload* payload = new Progressbar_Payload;
+      payload->ostr = &ostr;
+      payload->progress = &progress;
+
+      /* Create the worker thread */
+      if (pthread_create(&barprogress->thread, NULL, &progressbar_thread,
+                         reinterpret_cast<void*>(payload))
+          != 0) {
+        throw Dimension_Error("Couldn't create background thread.");
+      }
+
+      return Progress(barprogress);
+    }
   }
 
   // Print a progress bar of the progress of `progress'

@@ -42,11 +42,17 @@ main() {
     // Render the scene
     Progress progress = raytracer.render_async();
 
+    std::cout << "Raytracing scene: ";
+    Progress barprogress = Tests::progressbar_async(std::cout, progress);
+
     // Display the scene as it's rendered
     while (progress.progress() < 1.0) {
       writer.write();
       display.flush();
     }
+
+    barprogress.finish();
+    std::cout << std::endl;
 
     // Make sure we show the completed rendering
     progress.finish();
