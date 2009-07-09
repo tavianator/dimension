@@ -25,6 +25,11 @@
 #ifndef DIMENSION_H
 #define DIMENSION_H
 
+/* Set some feature test macros so we work even in ANSI C mode */
+#ifndef _XOPEN_SOURCE
+  #define _XOPEN_SOURCE 600
+#endif
+
 /* Handle inlines nicely without cheating and making them static.  The
    DMNSN_INLINE macro is set appropriately for the version of C you're using,
    and non-inline versions are emitted in exactly one translation unit when
