@@ -36,7 +36,7 @@ typedef enum {
 
 #ifdef __GNUC__
   #define DMNSN_FUNC __PRETTY_FUNCTION__
-#elif (__STDC_VERSION__ >= 199901L)
+#elif __STDC_VERSION__ >= 199901L
   #define DMNSN_FUNC __func__
 #else
   #define DMNSN_FUNC __FILE__

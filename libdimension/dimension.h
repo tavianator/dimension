@@ -38,12 +38,12 @@
   #ifdef __cplusplus
     /* C++ inline semantics */
     #define DMNSN_INLINE inline
-  #elif (__STDC_VERSION__ >= 199901L)
+  #elif __STDC_VERSION__ >= 199901L
     /* C99 inline semantics */
     #define DMNSN_INLINE inline
   #elif defined(__GNUC__)
     /* GCC inline semantics */
-      #define DMNSN_INLINE __extension__ extern __inline__
+    #define DMNSN_INLINE __extension__ extern __inline__
   #else
     /* Unknown C - mark functions static and hope the compiler is smart enough
        to inline them */
@@ -56,6 +56,7 @@
 extern "C" {
 #endif
 
+/* Include all the libdimension headers */
 #include <dimension/error.h>
 #include <dimension/array.h>
 #include <dimension/progress.h>

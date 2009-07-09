@@ -116,8 +116,8 @@ namespace Dimension
 
       /* Create the worker thread */
       if (pthread_create(&barprogress->thread, NULL, &progressbar_thread,
-                         reinterpret_cast<void*>(payload))
-          != 0) {
+                         reinterpret_cast<void*>(payload)) != 0)
+      {
         throw Dimension_Error("Couldn't create background thread.");
       }
 

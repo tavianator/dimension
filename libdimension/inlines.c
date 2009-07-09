@@ -23,7 +23,7 @@
 #ifdef __cplusplus
   /* C++ inline semantics */
   #define DMNSN_INLINE inline
-#elif (__STDC_VERSION__ >= 199901L)
+#elif __STDC_VERSION__ >= 199901L
   /* C99 inline semantics */
   #define DMNSN_INLINE
 #elif defined(__GNUC__)

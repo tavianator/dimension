@@ -60,8 +60,8 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
     payload->scene    = scene;
 
     if (pthread_create(&progress->thread, NULL, &dmnsn_raytrace_scene_thread,
-                       payload)
-        != 0) {
+                       payload) != 0)
+    {
       free(payload);
       dmnsn_delete_progress(progress);
       return NULL;
@@ -130,8 +130,9 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
     payloads[i].threads = nthreads;
 
     if (pthread_create(&threads[i], NULL,
-                       &dmnsn_raytrace_scene_multithread_thread, &payloads[i])
-        != 0) {
+                       &dmnsn_raytrace_scene_multithread_thread,
+                       &payloads[i]) != 0)
+    {
       for (j = 0; j < i; ++j) {
         if (pthread_join(threads[i], &ptr)) {
           dmnsn_error(DMNSN_SEVERITY_MEDIUM,

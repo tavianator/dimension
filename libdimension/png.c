@@ -151,8 +151,8 @@ dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
 
     /* Create the worker thread */
     if (pthread_create(&progress->thread, NULL, &dmnsn_png_write_canvas_thread,
-                       payload)
-        != 0) {
+                       payload) != 0)
+    {
       free(payload);
       dmnsn_delete_progress(progress);
       return NULL;
@@ -192,8 +192,8 @@ dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
 
     /* Create the worker thread */
     if (pthread_create(&progress->thread, NULL, &dmnsn_png_read_canvas_thread,
-                       payload)
-        != 0) {
+                       payload) != 0)
+    {
       free(payload);
       dmnsn_delete_progress(progress);
       return NULL;
@@ -254,7 +254,10 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   dmnsn_color color;
   dmnsn_sRGB sRGB;
 
-  if (!file) return 1; /* file was NULL */
+  if (!file) {
+    /* file was NULL */
+    return 1;
+  }
 
   width = canvas->x;
   height = canvas->y;
@@ -262,7 +265,10 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   dmnsn_new_progress_element(progress, height);
 
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (!png_ptr) return 1; /* Couldn't create libpng write struct */
+  if (!png_ptr) {
+    /* Couldn't create libpng write struct */
+    return 1;
+  }
 
   info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr) {
@@ -274,7 +280,7 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   /* libpng will longjmp here if it encounters an error from here on */
   if (setjmp(png_jmpbuf(png_ptr))) {
     /* libpng error */
-    if (row) free(row);
+    free(row);
     png_destroy_write_struct(&png_ptr, &info_ptr);
     return 1;
   }
@@ -426,15 +432,22 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
                 "Couldn't unlock thread-specific pointer mutex.");
   }
 
-  if (!file) return NULL; /* file was NULL */
+  if (!file) {
+    /* file was NULL */
+    return NULL;
+  }
 
   fread(header, 1, 8, file);
-  if (png_sig_cmp(header, 0, 8)) return NULL; /* file is not a PNG file, or the
-                                                 read failed */
+  if (png_sig_cmp(header, 0, 8)) {
+    /* file is not a PNG file, or the read failed */
+    return NULL;
+  }
 
   /* Create the libpng read struct */
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (!png_ptr) return NULL;
+  if (!png_ptr) {
+    return NULL;
+  }
 
   /* Create the libpng info struct */
   info_ptr = png_create_info_struct(png_ptr);
@@ -446,8 +459,8 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
   /* libpng will longjmp here if it encounters an error from here on */
   if (setjmp(png_jmpbuf(png_ptr))) {
     /* libpng error */
-    if (row_pointers) free(row_pointers);
-    if (image) free(image);
+    free(row_pointers);
+    free(image);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     return NULL;
   }
@@ -481,8 +494,9 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
     png_set_tRNS_to_alpha(png_ptr);
   }
   if (color_type == PNG_COLOR_TYPE_GRAY
-      || color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-          png_set_gray_to_rgb(png_ptr);
+      || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+  {
+    png_set_gray_to_rgb(png_ptr);
   }
   png_set_invert_alpha(png_ptr);
 

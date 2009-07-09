@@ -267,8 +267,8 @@ dmnsn_progressbar_async(const char *str, const dmnsn_progress *progress)
 
     /* Create the worker thread */
     if (pthread_create(&barprogress->thread, NULL, &dmnsn_progressbar_thread,
-                       payload)
-        != 0) {
+                       payload) != 0)
+    {
       dmnsn_error(DMNSN_SEVERITY_HIGH,
                   "Couldn't start progress bar background thread.");
     }
