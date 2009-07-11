@@ -38,7 +38,9 @@ namespace Dimension
         Matrix::rotation(Vector(0.0, 1.0, 0.0))
         * Matrix::translation(Vector(0.0, 0.0, -4.0))
         * Matrix::scale(
-            Vector(static_cast<double>(canvas.width())/canvas.height(), 1.0, 1.0)
+            Vector(static_cast<double>(canvas.width())/canvas.height(),
+                   1.0,
+                   1.0)
           )
       );
 
@@ -49,11 +51,11 @@ namespace Dimension
 
       Sphere sphere;
       sphere.trans(inverse(Matrix::scale(Vector(1.25, 1.25, 1.25))));
-      scene.push_object(sphere);
+      scene.objects().push(sphere);
 
       Cube cube;
       cube.trans(inverse(Matrix::rotation(Vector(0.75, 0.0, 0.0))));
-      scene.push_object(cube);
+      scene.objects().push(cube);
 
       return scene;
     }

@@ -25,15 +25,10 @@
 
 namespace Dimension
 {
-  // Iterator class for scene objects - never invalidated unless removed
-  class Scene_Iterator;
-
   // Base scene class.  Wraps a dmnsn_scene*.
   class Scene
   {
   public:
-    typedef Scene_Iterator Iterator;
-
     // Allocate a dmnsn_scene*
     Scene(const Color& background, Camera& camera, Canvas& canvas);
 
@@ -43,19 +38,13 @@ namespace Dimension
     ~Scene();
 
     // Element access
-    Color background() const;
-    Camera&       camera();
-    const Camera& camera() const;
-    Canvas&       canvas();
-    const Canvas& canvas() const;
-
-    // Object access
-
-    Iterator begin();
-    Iterator end();
-
-    void push_object(Object& object);
-    void remove_object(Iterator i);
+    Color                background() const;
+    Camera&              camera();
+    const Camera&        camera() const;
+    Canvas&              canvas();
+    const Canvas&        canvas() const;
+    Array<Object>&       objects();
+    const Array<Object>& objects() const;
 
     // Access the wrapped C object.
     dmnsn_scene*       dmnsn();
@@ -68,36 +57,7 @@ namespace Dimension
     std::tr1::shared_ptr<dmnsn_scene*> m_scene;
     std::tr1::shared_ptr<Camera> m_camera;
     std::tr1::shared_ptr<Canvas> m_canvas;
-    std::list<std::tr1::shared_ptr<Object> > m_objects;
-  };
-
-  class Scene_Iterator
-  {
-    typedef std::list<std::tr1::shared_ptr<Object> >::iterator Iterator;
-
-  public:
-    Scene_Iterator(Iterator i)
-      : m_i(i) { }
-    // Scene_Iterator(const Scene_Iterator& i);
-    // ~Scene_Iterator();
-
-    // Scene_Iterator& operator=(const Scene_Iterator& i);
-
-    Object& operator*() const { return **m_i; }
-    Object* operator->() const { return &**m_i; }
-
-    bool operator==(Scene_Iterator i) const { return m_i == i.m_i; }
-    bool operator!=(Scene_Iterator i) const { return m_i != i.m_i; }
-
-    Scene_Iterator& operator++()    { ++m_i; return *this; }
-    Scene_Iterator  operator++(int) { return Scene_Iterator(m_i++); }
-    Scene_Iterator& operator--()    { --m_i; return *this; }
-    Scene_Iterator  operator--(int) { return Scene_Iterator(m_i--); }
-
-    Iterator iterator() const { return m_i; }
-
-  private:
-    Iterator m_i;
+    Array<Object> m_objects;
   };
 }
 

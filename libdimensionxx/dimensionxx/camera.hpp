@@ -72,6 +72,25 @@ namespace Dimension
 
     virtual Line ray(const Canvas& canvas, unsigned int x, unsigned int y) = 0;
   };
+
+  // Array_Element specialization
+  template <>
+  class Array_Element<Camera>
+    : public Polymorphic_Array_Element<Camera, dmnsn_camera*>
+  {
+  public:
+    typedef dmnsn_camera* C_Type;
+
+    Array_Element() { }
+    Array_Element(Camera& camera)
+      : Polymorphic_Array_Element<Camera, dmnsn_camera*>(camera) { }
+    Array_Element(C_Type c)
+      : Polymorphic_Array_Element<Camera, dmnsn_camera*>(c) { }
+    // Array_Element(const Array_Element& ae);
+    // ~Array_Element();
+
+    // Array_Element& operator=(const Array_Element& ae);
+  };
 }
 
 #endif /* DIMENSIONXX_CAMERA_HPP */

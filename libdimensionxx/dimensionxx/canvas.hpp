@@ -60,6 +60,25 @@ namespace Dimension
 
     std::tr1::shared_ptr<dmnsn_canvas*> m_canvas;
   };
+
+  // Array_Element specialization
+  template <>
+  class Array_Element<Canvas>
+    : public DMNSN_Array_Element<Canvas, dmnsn_canvas*>
+  {
+  public:
+    typedef dmnsn_canvas* C_Type;
+
+    Array_Element() { }
+    Array_Element(Canvas& canvas)
+      : DMNSN_Array_Element<Canvas, dmnsn_canvas*>(canvas) { }
+    Array_Element(C_Type c)
+      : DMNSN_Array_Element<Canvas, dmnsn_canvas*>(c) { }
+    // Array_Element(const Array_Element& ae);
+    // ~Array_Element();
+
+    // Array_Element& operator=(const Array_Element& ae);
+  };
 }
 
 #endif /* DIMENSIONXX_CANVAS_HPP */

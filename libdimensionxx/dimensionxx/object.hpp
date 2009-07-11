@@ -78,6 +78,25 @@ namespace Dimension
     virtual Array<double> intersections(const Line& l) = 0;
     virtual bool inside(const Vector& point) = 0;
   };
+
+  // Array_Element specialization
+  template <>
+  class Array_Element<Object>
+    : public Polymorphic_Array_Element<Object, dmnsn_object*>
+  {
+  public:
+    typedef dmnsn_object* C_Type;
+
+    Array_Element() { }
+    Array_Element(Object& object)
+      : Polymorphic_Array_Element<Object, dmnsn_object*>(object) { }
+    Array_Element(C_Type c)
+      : Polymorphic_Array_Element<Object, dmnsn_object*>(c) { }
+    // Array_Element(const Array_Element& ae);
+    // ~Array_Element();
+
+    // Array_Element& operator=(const Array_Element& ae);
+  };
 }
 
 #endif /* DIMENSIONXX_OBJECT_HPP */

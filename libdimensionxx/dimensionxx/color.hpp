@@ -200,6 +200,26 @@ namespace Dimension
     dmnsn_sRGB m_RGB;
   };
 
+  // Array_Element specialization
+  template <>
+  class Array_Element<Color>
+    : public DMNSN_Array_Element<Color, dmnsn_color>
+  {
+  public:
+    typedef dmnsn_color C_Type;
+
+    Array_Element()
+      : DMNSN_Array_Element<Color, dmnsn_color>(Color()) { }
+    Array_Element(Color& color)
+      : DMNSN_Array_Element<Color, dmnsn_color>(color) { }
+    Array_Element(C_Type c)
+      : DMNSN_Array_Element<Color, dmnsn_color>(c) { }
+    // Array_Element(const Array_Element& ae);
+    // ~Array_Element();
+
+    // Array_Element& operator=(const Array_Element& ae);
+  };
+
   // Color inline constructors
 
   inline Color::Color(const CIE_XYZ& XYZ)

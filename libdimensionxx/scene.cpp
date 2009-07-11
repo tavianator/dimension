@@ -25,7 +25,7 @@ namespace Dimension
   // Allocate a dmnsn_scene
   Scene::Scene(const Color& background, Camera& camera, Canvas& canvas)
     : m_scene(new dmnsn_scene*(dmnsn_new_scene())), m_camera(camera.copy()),
-      m_canvas(new Canvas(canvas))
+      m_canvas(new Canvas(canvas)), m_objects(dmnsn()->objects)
   {
     if (!dmnsn()) {
       throw Dimension_Error("Couldn't allocate scene.");
@@ -40,6 +40,7 @@ namespace Dimension
   Scene::~Scene()
   {
     if (m_scene.unique()) {
+      m_objects.release();
       dmnsn_delete_scene(dmnsn());
     }
   }
@@ -76,44 +77,16 @@ namespace Dimension
     return *m_canvas;
   }
 
-  // An iterator to the beginning of the object list
-  Scene::Iterator
-  Scene::begin()
+  Array<Object>&
+  Scene::objects()
   {
-    return Iterator(m_objects.begin());
+    return m_objects;
   }
 
-  // An iterator one past the end of the object list
-  Scene::Iterator
-  Scene::end()
+  const Array<Object>&
+  Scene::objects() const
   {
-    return Iterator(m_objects.end());
-  }
-
-  // Add an object
-  void
-  Scene::push_object(Object& object)
-  {
-    m_objects.push_back(std::tr1::shared_ptr<Object>(object.copy()));
-    dmnsn_object* cobject = object.dmnsn();
-    dmnsn_array_push(dmnsn()->objects, &cobject);
-  }
-
-  // Remove an object
-  void
-  Scene::remove_object(Iterator i)
-  {
-    // Find it in the dmnsn_array* of objects and remove it
-    for (unsigned int j = 0; j < dmnsn_array_size(dmnsn()->objects); ++j) {
-      dmnsn_object* cobject;
-      dmnsn_array_get(dmnsn()->objects, j, &cobject);
-      if (cobject == i->dmnsn()) {
-        dmnsn_array_remove(dmnsn()->objects, j);
-        break;
-      }
-    }
-    // Remove it from the std::list
-    m_objects.erase(i.iterator());
+    return m_objects;
   }
 
   // Access the wrapped C object.
