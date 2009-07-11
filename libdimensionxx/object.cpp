@@ -82,7 +82,7 @@ namespace Dimension
   { }
 
   // Protected copy constructor
-  Object::Object(const Object& object)
+  Object::Object(Object& object)
     : m_object(object.m_object)
   { }
 

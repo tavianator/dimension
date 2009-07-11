@@ -36,7 +36,7 @@ namespace Dimension
     virtual Line ray(const Canvas& canvas, unsigned int x, unsigned int y);
 
     // Shallow-copy a derived camera
-    virtual Camera* copy() const = 0;
+    virtual Camera* copy() = 0;
 
     // Access the wrapped C camera.
     dmnsn_camera*       dmnsn();
@@ -46,7 +46,7 @@ namespace Dimension
     // No-op
     Camera();
     // Shallow-copy
-    Camera(const Camera& camera);
+    Camera(Camera& camera);
     // Wrap an existing camera
     explicit Camera(dmnsn_camera* camera);
 

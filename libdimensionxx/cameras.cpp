@@ -55,13 +55,13 @@ namespace Dimension
 
   // Shallow-copy this camera
   Camera*
-  Perspective_Camera::copy() const
+  Perspective_Camera::copy()
   {
     return new Perspective_Camera(*this);
   }
 
   // Private copy-constructor, for copy() implementation
-  Perspective_Camera::Perspective_Camera(const Perspective_Camera& camera)
+  Perspective_Camera::Perspective_Camera(Perspective_Camera& camera)
     : Camera(camera)
   { }
 }

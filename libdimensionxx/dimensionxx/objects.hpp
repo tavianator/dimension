@@ -33,11 +33,11 @@ namespace Dimension
     ~Sphere();
 
     // Shallow-copy the sphere
-    Object* copy() const;
+    Object* copy();
 
   private:
     // Copying prohibited, but used internally
-    Sphere(const Sphere& sphere);
+    Sphere(Sphere& sphere);
     Sphere& operator=(const Sphere&);
   };
 
@@ -49,11 +49,11 @@ namespace Dimension
     ~Cube();
 
     // Shallow-copy the cube
-    Object* copy() const;
+    Object* copy();
 
   private:
     // Copying prohibited, but used internally
-    Cube(const Cube& cube);
+    Cube(Cube& cube);
     Cube& operator=(const Cube&);
   };
 }

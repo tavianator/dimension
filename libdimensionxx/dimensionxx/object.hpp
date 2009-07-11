@@ -41,7 +41,7 @@ namespace Dimension
     virtual bool inside(const Vector& point);
 
     // Shallow-copy a derived object
-    virtual Object* copy() const = 0;
+    virtual Object* copy() = 0;
 
     // Access the wrapped C object
     dmnsn_object*       dmnsn();
@@ -51,7 +51,7 @@ namespace Dimension
     // No-op
     Object();
     // Shallow copy
-    Object(const Object& object);
+    Object(Object& object);
     // Wrap an existing object.
     explicit Object(dmnsn_object* object);
 

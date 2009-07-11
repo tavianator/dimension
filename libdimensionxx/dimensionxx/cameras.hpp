@@ -37,11 +37,11 @@ namespace Dimension
     void trans(const Matrix& trans);
 
     // Shallow-copy the camera
-    Camera* copy() const;
+    Camera* copy();
 
   private:
     // Copying prohibited, but used internally
-    Perspective_Camera(const Perspective_Camera& camera);
+    Perspective_Camera(Perspective_Camera& camera);
     Perspective_Camera& operator=(const Perspective_Camera&);
   };
 }
