@@ -203,17 +203,16 @@ namespace Dimension
   // Array_Element specialization
   template <>
   class Array_Element<Color>
-    : public DMNSN_Array_Element<Color, dmnsn_color>
+    : public By_Value_Array_Element<Color, dmnsn_color>
   {
   public:
     typedef dmnsn_color C_Type;
 
-    Array_Element()
-      : DMNSN_Array_Element<Color, dmnsn_color>(Color()) { }
+    Array_Element() { }
     Array_Element(Color& color)
-      : DMNSN_Array_Element<Color, dmnsn_color>(color) { }
+      : By_Value_Array_Element<Color, dmnsn_color>(color) { }
     Array_Element(C_Type c)
-      : DMNSN_Array_Element<Color, dmnsn_color>(c) { }
+      : By_Value_Array_Element<Color, dmnsn_color>(c) { }
     // Array_Element(const Array_Element& ae);
     // ~Array_Element();
 

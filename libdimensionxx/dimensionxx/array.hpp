@@ -51,7 +51,10 @@ namespace Dimension
     // Array_Element& operator=(const Array_Element& ae);
 
     C_Type dmnsn() const { return m_t; }
-    T& object(C_Type* c) const { return *c; }
+    T& object(C_Type& c) const { return c; }
+
+    // Must the dmnsn_array* be rebuilt on every access?
+    static const bool must_rebuild = false;
 
   private:
     T m_t;
@@ -95,6 +98,32 @@ namespace Dimension
 
     std::tr1::shared_ptr<dmnsn_array*> m_array;
     std::vector<Array_Element<T> > m_elements;
+
+    inline void rebuild() const;
+  };
+
+  // Base class for non-polymorphic wrappers
+  template <typename T, typename C>
+  class By_Value_Array_Element
+  {
+  public:
+    typedef C C_Type;
+
+    By_Value_Array_Element() : m_object(new T()) { }
+    By_Value_Array_Element(const T& object) : m_object(new T(object)) { }
+    By_Value_Array_Element(C_Type c) : m_object(new T(c)) { }
+    // By_Value_Array_Element(const By_Value_Array_Element& ae);
+    // ~By_Value_Array_Element();
+
+    // By_Value_Array_Element& operator=(const By_Value_Array_Element& ae);
+
+    C_Type dmnsn() const { return m_object->dmnsn(); }
+    T& object(C_Type& c) const { *m_object = T(c); return *m_object; }
+
+    static const bool must_rebuild = true;
+
+  private:
+    std::tr1::shared_ptr<T> m_object;
   };
 
   // Base class for non-polymorphic wrappers
@@ -116,7 +145,9 @@ namespace Dimension
     // DMNSN_Array_Element& operator=(const DMNSN_Array_Element& ae);
 
     C_Type dmnsn() const { return m_object->dmnsn(); }
-    T& object(C_Type* c) const { return *m_object; }
+    T& object(C_Type& c) const { return *m_object; }
+
+    static const bool must_rebuild = false;
 
   private:
     std::tr1::shared_ptr<T> m_object;
@@ -149,7 +180,9 @@ namespace Dimension
     // Polymorphic_Array_Element& operator=(const Polymorphic_Array_Element& e);
 
     C_Type dmnsn() const { return m_object->dmnsn(); }
-    T& object(C_Type* c) const { return *m_object; }
+    T& object(C_Type& c) const { return *m_object; }
+
+    static const bool must_rebuild = false;
 
   private:
     std::tr1::shared_ptr<T> m_object;
@@ -279,6 +312,10 @@ namespace Dimension
       throw Dimension_Error("Attempting to access released array.");
     }
 
+    if (Array_Element<T>::must_rebuild) {
+      rebuild();
+    }
+
     return *m_array;
   }
 
@@ -288,6 +325,10 @@ namespace Dimension
   {
     if (!m_array) {
       throw Dimension_Error("Attempting to access released array.");
+    }
+
+    if (Array_Element<T>::must_rebuild) {
+      rebuild();
     }
 
     return *m_array;
@@ -305,6 +346,18 @@ namespace Dimension
     } else {
       m_array.reset();
       return array;
+    }
+  }
+
+  // Rebuild the dmnsn_array* from the C++ elements, needed if the C++ objects
+  // wrap their C objects by value, not reference
+  template <typename T>
+  inline void
+  Array<T>::rebuild() const
+  {
+    for (std::size_t i = 0; i < size(); ++i) {
+      C_Type c = m_elements[i].dmnsn();
+      dmnsn_array_set(*m_array, i, &c);
     }
   }
 }

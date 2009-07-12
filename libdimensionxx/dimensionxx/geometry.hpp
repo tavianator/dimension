@@ -138,17 +138,16 @@ namespace Dimension
 
   template <>
   class Array_Element<Matrix>
-    : public DMNSN_Array_Element<Matrix, dmnsn_matrix>
+    : public By_Value_Array_Element<Matrix, dmnsn_matrix>
   {
   public:
     typedef dmnsn_matrix C_Type;
 
-    Array_Element()
-      : DMNSN_Array_Element<Matrix, dmnsn_matrix>(Matrix()) { }
+    Array_Element() { }
     Array_Element(Matrix& matrix)
-      : DMNSN_Array_Element<Matrix, dmnsn_matrix>(matrix) { }
+      : By_Value_Array_Element<Matrix, dmnsn_matrix>(matrix) { }
     Array_Element(C_Type c)
-      : DMNSN_Array_Element<Matrix, dmnsn_matrix>(c) { }
+      : By_Value_Array_Element<Matrix, dmnsn_matrix>(c) { }
     // Array_Element(const Array_Element& ae);
     // ~Array_Element();
 
@@ -157,17 +156,16 @@ namespace Dimension
 
   template <>
   class Array_Element<Vector>
-    : public DMNSN_Array_Element<Vector, dmnsn_vector>
+    : public By_Value_Array_Element<Vector, dmnsn_vector>
   {
   public:
     typedef dmnsn_vector C_Type;
 
-    Array_Element()
-      : DMNSN_Array_Element<Vector, dmnsn_vector>(Vector()) { }
+    Array_Element() { }
     Array_Element(Vector& vector)
-      : DMNSN_Array_Element<Vector, dmnsn_vector>(vector) { }
+      : By_Value_Array_Element<Vector, dmnsn_vector>(vector) { }
     Array_Element(C_Type c)
-      : DMNSN_Array_Element<Vector, dmnsn_vector>(c) { }
+      : By_Value_Array_Element<Vector, dmnsn_vector>(c) { }
     // Array_Element(const Array_Element& ae);
     // ~Array_Element();
 
@@ -176,17 +174,16 @@ namespace Dimension
 
   template <>
   class Array_Element<Line>
-    : public DMNSN_Array_Element<Line, dmnsn_line>
+    : public By_Value_Array_Element<Line, dmnsn_line>
   {
   public:
     typedef dmnsn_line C_Type;
 
-    Array_Element()
-      : DMNSN_Array_Element<Line, dmnsn_line>(Line()) { }
+    Array_Element() { }
     Array_Element(Line& line)
-      : DMNSN_Array_Element<Line, dmnsn_line>(line) { }
+      : By_Value_Array_Element<Line, dmnsn_line>(line) { }
     Array_Element(C_Type c)
-      : DMNSN_Array_Element<Line, dmnsn_line>(c) { }
+      : By_Value_Array_Element<Line, dmnsn_line>(c) { }
     // Array_Element(const Array_Element& ae);
     // ~Array_Element();
 
