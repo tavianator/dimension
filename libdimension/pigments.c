@@ -21,21 +21,44 @@
 #include "dimension.h"
 #include <stdlib.h> /* For malloc */
 
-/* Allocate a dummy object */
-dmnsn_object *
-dmnsn_new_object()
+/* Solid color pigment callback */
+static dmnsn_color dmnsn_solid_pigment_fn(const dmnsn_pigment *pigment,
+                                          dmnsn_vector v);
+
+/* Create a solid color */
+dmnsn_pigment *
+dmnsn_new_solid_pigment(dmnsn_color color)
 {
-  dmnsn_object *object = malloc(sizeof(dmnsn_object));
-  if (object) {
-    object->texture = NULL;
-    object->trans = dmnsn_identity_matrix();
+  dmnsn_color *solid;
+  dmnsn_pigment *pigment = dmnsn_new_pigment();
+  if (pigment) {
+    solid = malloc(sizeof(dmnsn_color));
+    if (!solid) {
+      dmnsn_delete_pigment(pigment);
+      return NULL;
+    }
+    *solid = color;
+
+    pigment->pigment_fn = &dmnsn_solid_pigment_fn;
+    pigment->ptr        = solid;
   }
-  return object;
+
+  return pigment;
 }
 
-/* Free a dummy object */
-void
-dmnsn_delete_object(dmnsn_object *object)
+/* Destroy a solid color */
+void dmnsn_delete_solid_pigment(dmnsn_pigment *pigment)
 {
-  free(object);
+  if (pigment) {
+    free(pigment->ptr);
+    dmnsn_delete_pigment(pigment);
+  }
+}
+
+/* Solid color callback */
+static dmnsn_color
+dmnsn_solid_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
+{
+  dmnsn_color *color = pigment->ptr;
+  return *color;
 }

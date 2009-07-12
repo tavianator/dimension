@@ -21,21 +21,30 @@
 #include "dimension.h"
 #include <stdlib.h> /* For malloc */
 
-/* Allocate a dummy object */
-dmnsn_object *
-dmnsn_new_object()
+/* Allocate an dummy pigment */
+dmnsn_pigment *
+dmnsn_new_pigment()
 {
-  dmnsn_object *object = malloc(sizeof(dmnsn_object));
-  if (object) {
-    object->texture = NULL;
-    object->trans = dmnsn_identity_matrix();
-  }
-  return object;
+  return malloc(sizeof(dmnsn_pigment));
 }
 
-/* Free a dummy object */
+/* Free a dummy pigment */
 void
-dmnsn_delete_object(dmnsn_object *object)
+dmnsn_delete_pigment(dmnsn_pigment *pigment)
 {
-  free(object);
+  free(pigment);
+}
+
+/* Allocate a dummy texture */
+dmnsn_texture *
+dmnsn_new_texture()
+{
+  return malloc(sizeof(dmnsn_texture));
+}
+
+/* Free a dummy texture */
+void
+dmnsn_delete_texture(dmnsn_texture *texture)
+{
+  free(texture);
 }

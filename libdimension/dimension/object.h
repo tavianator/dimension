@@ -35,8 +35,7 @@ typedef int dmnsn_object_inside_fn(const dmnsn_object *object,
                                    dmnsn_vector point);
 
 struct dmnsn_object {
-  /* Generic pointer for object info */
-  void *ptr;
+  dmnsn_texture *texture;
 
   /* Transformation matrix */
   dmnsn_matrix trans;
@@ -44,6 +43,9 @@ struct dmnsn_object {
   /* Callback functions */
   dmnsn_object_intersections_fn *intersections_fn;
   dmnsn_object_inside_fn        *inside_fn;
+
+  /* Generic pointer for object info */
+  void *ptr;
 };
 
 /* Allocate a dummy object */

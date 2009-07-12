@@ -26,12 +26,14 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/error.h                                     \
                          dimension/geometry.h                                  \
                          dimension/gl.h                                        \
-                         dimension/png.h                                       \
-                         dimension/progress.h                                  \
                          dimension/object.h                                    \
                          dimension/objects.h                                   \
+                         dimension/pigments.h                                  \
+                         dimension/png.h                                       \
+                         dimension/progress.h                                  \
                          dimension/raytrace.h                                  \
-                         dimension/scene.h
+                         dimension/scene.h                                     \
+                         dimension/texture.h
 
 lib_LTLIBRARIES = libdimension.la
 
@@ -44,11 +46,13 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           geometry.c                                           \
                           gl.c                                                 \
                           inlines.c                                            \
-                          png.c                                                \
-                          progress.c                                           \
                           object.c                                             \
                           objects.c                                            \
+                          pigments.c                                           \
+                          png.c                                                \
+                          progress.c                                           \
                           raytrace.c                                           \
-                          scene.c
+                          scene.c                                              \
+                          texture.c
 libdimension_la_LDFLAGS = -version-info 0:0:0
 libdimension_la_LIBADD  = -lm -lpthread -lpng -lGL

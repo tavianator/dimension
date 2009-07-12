@@ -18,24 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
-#include <stdlib.h> /* For malloc */
+/*
+ * Custom pigments.
+ */
 
-/* Allocate a dummy object */
-dmnsn_object *
-dmnsn_new_object()
-{
-  dmnsn_object *object = malloc(sizeof(dmnsn_object));
-  if (object) {
-    object->texture = NULL;
-    object->trans = dmnsn_identity_matrix();
-  }
-  return object;
-}
+#ifndef DIMENSION_PIGMENTS_H
+#define DIMENSION_PIGMENTS_H
 
-/* Free a dummy object */
-void
-dmnsn_delete_object(dmnsn_object *object)
-{
-  free(object);
-}
+/* A solid color */
+dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color);
+void dmnsn_delete_solid_pigment(dmnsn_pigment *pigment);
+
+#endif /* DIMENSION_PIGMENTS_H */

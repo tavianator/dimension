@@ -18,24 +18,42 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
-#include <stdlib.h> /* For malloc */
+/*
+ * Object textures.
+ */
 
-/* Allocate a dummy object */
-dmnsn_object *
-dmnsn_new_object()
-{
-  dmnsn_object *object = malloc(sizeof(dmnsn_object));
-  if (object) {
-    object->texture = NULL;
-    object->trans = dmnsn_identity_matrix();
-  }
-  return object;
-}
+#ifndef DIMENSION_TEXTURE_H
+#define DIMENSION_TEXTURE_H
 
-/* Free a dummy object */
-void
-dmnsn_delete_object(dmnsn_object *object)
-{
-  free(object);
-}
+/*
+ * Pigments
+ */
+
+/* Forward-declare dmnsn_pigment */
+typedef struct dmnsn_pigment dmnsn_pigment;
+
+/* Pigment callback */
+typedef dmnsn_color dmnsn_pigment_fn(const dmnsn_pigment *pigment,
+                                     dmnsn_vector v);
+
+/* dmnsn_pigment definition */
+struct dmnsn_pigment {
+  dmnsn_pigment_fn *pigment_fn;
+  void *ptr;
+};
+
+dmnsn_pigment *dmnsn_new_pigment();
+void dmnsn_delete_pigment(dmnsn_pigment *pigment);
+
+/*
+ * A complete texture
+ */
+
+typedef struct {
+  dmnsn_pigment *pigment;
+} dmnsn_texture;
+
+dmnsn_texture *dmnsn_new_texture();
+void dmnsn_delete_texture(dmnsn_texture *texture);
+
+#endif /* DIMENSION_TEXTURE_H */

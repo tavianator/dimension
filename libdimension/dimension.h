@@ -65,6 +65,8 @@ extern "C" {
 #include <dimension/canvas.h>
 #include <dimension/gl.h>
 #include <dimension/png.h>
+#include <dimension/texture.h>
+#include <dimension/pigments.h>
 #include <dimension/object.h>
 #include <dimension/objects.h>
 #include <dimension/camera.h>
