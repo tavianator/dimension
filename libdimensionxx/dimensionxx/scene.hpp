@@ -25,12 +25,19 @@
 
 namespace Dimension
 {
+  // Wrapper for dmnsn_quality
+  enum Quality {
+    RENDER_NONE    = DMNSN_RENDER_NONE,
+    RENDER_OBJECTS = DMNSN_RENDER_OBJECTS,
+    RENDER_FULL    = DMNSN_RENDER_FULL
+  };
+
   // Base scene class.  Wraps a dmnsn_scene*.
   class Scene
   {
   public:
     // Allocate a dmnsn_scene*
-    Scene(const Color& background, Camera& camera, Canvas& canvas);
+    Scene(Camera& camera, Canvas& canvas);
 
     // Scene(const Scene& scene);
 
@@ -38,13 +45,20 @@ namespace Dimension
     ~Scene();
 
     // Element access
-    Color                background() const;
-    Camera&              camera();
-    const Camera&        camera() const;
-    Canvas&              canvas();
-    const Canvas&        canvas() const;
+    Color background() const;
+    void  background(const Color& color);
+
+    Camera&       camera();
+    const Camera& camera() const;
+
+    Canvas&       canvas();
+    const Canvas& canvas() const;
+
     Array<Object>&       objects();
     const Array<Object>& objects() const;
+
+    Quality quality() const;
+    void    quality(Quality quality);
 
     // Access the wrapped C object.
     dmnsn_scene*       dmnsn();

@@ -23,7 +23,7 @@
 namespace Dimension
 {
   // Allocate a dmnsn_scene
-  Scene::Scene(const Color& background, Camera& camera, Canvas& canvas)
+  Scene::Scene(Camera& camera, Canvas& canvas)
     : m_scene(new dmnsn_scene*(dmnsn_new_scene())), m_camera(camera.copy()),
       m_canvas(new Canvas(canvas)), m_objects(dmnsn()->objects)
   {
@@ -31,9 +31,10 @@ namespace Dimension
       throw Dimension_Error("Couldn't allocate scene.");
     }
 
-    dmnsn()->background = background.dmnsn();
+    dmnsn()->background = Color(sRGB(0.0, 0.0, 0.0)).dmnsn();
     dmnsn()->camera = this->camera().dmnsn();
     dmnsn()->canvas = this->canvas().dmnsn();
+    dmnsn()->quality = static_cast<dmnsn_quality>(RENDER_FULL);
   }
 
   // Delete the scene
@@ -51,6 +52,12 @@ namespace Dimension
   Scene::background() const
   {
     return Color(dmnsn()->background);
+  }
+
+  void
+  Scene::background(const Color& color)
+  {
+    dmnsn()->background = color.dmnsn();
   }
 
   Camera&
@@ -87,6 +94,18 @@ namespace Dimension
   Scene::objects() const
   {
     return m_objects;
+  }
+
+  Quality
+  Scene::quality() const
+  {
+    return static_cast<Quality>(dmnsn()->quality);
+  }
+
+  void
+  Scene::quality(Quality quality)
+  {
+    dmnsn()->quality = static_cast<dmnsn_quality>(quality);
   }
 
   // Access the wrapped C object.

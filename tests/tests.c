@@ -101,6 +101,8 @@ dmnsn_new_default_scene()
   );
   dmnsn_array_push(scene->objects, &cube);
 
+  scene->quality = DMNSN_RENDER_FULL;
+
   return scene;
 }
 

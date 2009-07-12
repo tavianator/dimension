@@ -25,11 +25,18 @@
 #ifndef DIMENSION_SCENE_H
 #define DIMENSION_SCENE_H
 
+typedef enum {
+  DMNSN_RENDER_NONE,
+  DMNSN_RENDER_OBJECTS,
+  DMNSN_RENDER_FULL
+} dmnsn_quality;
+
 typedef struct {
   dmnsn_color background;
   dmnsn_array *objects;
   dmnsn_camera *camera;
   dmnsn_canvas *canvas;
+  dmnsn_quality quality;
 } dmnsn_scene;
 
 /* Create a scene, initializing only the ->objects field */

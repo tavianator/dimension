@@ -26,10 +26,6 @@ namespace Dimension
     Scene
     default_scene()
     {
-      // Background color
-      Color background = sRGB(0.0, 0.1, 0.25);
-      background.filter(0.1);
-
       // Canvas
       Canvas canvas(768, 480);
 
@@ -45,7 +41,7 @@ namespace Dimension
       );
 
       // Scene
-      Scene scene(background, camera, canvas);
+      Scene scene(camera, canvas);
 
       // Objects in scene
 
@@ -56,6 +52,14 @@ namespace Dimension
       Cube cube;
       cube.trans(inverse(Matrix::rotation(Vector(0.75, 0.0, 0.0))));
       scene.objects().push(cube);
+
+      // Background color
+      Color background = sRGB(0.0, 0.1, 0.25);
+      background.filter(0.1);
+      scene.background(background);
+
+      // Quality
+      scene.quality(RENDER_FULL);
 
       return scene;
     }

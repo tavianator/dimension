@@ -183,6 +183,10 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
   return retval;
 }
 
+/* Helper for dmnsn_raytrace_scene_impl - shoot a ray */
+static dmnsn_color dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color,
+                                        unsigned int x, unsigned int y);
+
 /*
  * Actually raytrace a scene
  */
@@ -190,14 +194,9 @@ static int
 dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
                           unsigned int index, unsigned int threads)
 {
-  unsigned int x, y, i, j;
+  unsigned int x, y;
   unsigned int width, height;
-  double t, t_temp;
-  dmnsn_object *object;
-  dmnsn_line ray, ray_trans;
-  dmnsn_array *intersections;
   dmnsn_color color;
-  dmnsn_CIE_Lab Lab = { 0.0, 0.0, 0.0 }; /* Shut up uninitialized use warning */
 
   width  = scene->canvas->x;
   height = scene->canvas->y;
@@ -210,39 +209,9 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
     for (x -= width; x < width; x += threads) {
       /* Set the pixel to the background color */
       color = scene->background;
-      t = -1.0;
 
-      /* Get the ray corresponding to the (x,y)'th pixel */
-      ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, x, y);
-
-      for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
-        dmnsn_array_get(scene->objects, i, &object);
-
-        /* Transform the ray according to the object */
-        ray_trans = dmnsn_matrix_line_mul(object->trans, ray);
-
-        /* Test for intersections with objects */
-        intersections = (*object->intersections_fn)(object, ray_trans);
-        /* Find the closest intersection */
-        for (j = 0; j < dmnsn_array_size(intersections); ++j) {
-          dmnsn_array_get(intersections, j, &t_temp);
-          if ((t_temp < t && t_temp >= 0.0) || t < 0.0) {
-            t = t_temp;
-
-            /* Color each object differently */
-            Lab.a = sin((double)(i + 8));
-            Lab.b = cos((double)(i + 8));
-          }
-        }
-        dmnsn_delete_array(intersections);
-      }
-
-      /* Shade according to distance from camera */
-      if (t >= 0.0) {
-        Lab.L = 100.0*(1.0 - (t - 2.25)/2.25);
-        Lab.a *= Lab.L/1.1;
-        Lab.b *= Lab.L/1.1;
-        color = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
+      if (scene->quality >= DMNSN_RENDER_OBJECTS) {
+        color = dmnsn_raytrace_shoot(scene, color, x, y);
       }
 
       dmnsn_set_pixel(scene->canvas, x, y, color);
@@ -252,4 +221,37 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   }
 
   return 0;
+}
+
+/* Shoot a ray, and calculate the color, using `color' as the background */
+static dmnsn_color
+dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color,
+                     unsigned int x, unsigned int y)
+{
+  dmnsn_line ray, ray_trans;
+  dmnsn_object *object;
+  dmnsn_array *intersections;
+  unsigned int i;
+
+  /* Get the ray corresponding to the (x,y)'th pixel */
+  ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, x, y);
+
+  for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
+    dmnsn_array_get(scene->objects, i, &object);
+
+    /* Transform the ray according to the object */
+    ray_trans = dmnsn_matrix_line_mul(object->trans, ray);
+
+    /* Test for intersections with objects */
+    intersections = (*object->intersections_fn)(object, ray_trans);
+
+    if (dmnsn_array_size(intersections) > 0) {
+      color = dmnsn_color_from_XYZ(dmnsn_whitepoint);
+    }
+
+    /* Delete the intersections array */
+    dmnsn_delete_array(intersections);
+  }
+
+  return color;
 }
