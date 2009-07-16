@@ -34,7 +34,9 @@ typedef dmnsn_array *dmnsn_object_intersections_fn(const dmnsn_object *object,
 typedef int dmnsn_object_inside_fn(const dmnsn_object *object,
                                    dmnsn_vector point);
 
+/* dmnsn_object definition */
 struct dmnsn_object {
+  /* Surface properties */
   dmnsn_texture *texture;
 
   /* Transformation matrix */
@@ -43,6 +45,7 @@ struct dmnsn_object {
   /* Callback functions */
   dmnsn_object_intersections_fn *intersections_fn;
   dmnsn_object_inside_fn        *inside_fn;
+  dmnsn_free_fn                 *free_fn;
 
   /* Generic pointer for object info */
   void *ptr;
@@ -50,6 +53,8 @@ struct dmnsn_object {
 
 /* Allocate a dummy object */
 dmnsn_object *dmnsn_new_object();
+
+/* Free an object */
 void dmnsn_delete_object(dmnsn_object *object);
 
 #endif /* DIMENSION_OBJECT_H */

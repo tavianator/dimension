@@ -39,8 +39,6 @@ dmnsn_new_perspective_camera(dmnsn_matrix trans)
   dmnsn_matrix *ptr;
   dmnsn_camera *camera = dmnsn_new_camera();
   if (camera) {
-    camera->ray_fn = &dmnsn_perspective_camera_ray_fn;
-
     /* Allocate room for the transformation matrix */
     ptr = malloc(sizeof(dmnsn_matrix));
     if (!ptr) {
@@ -49,18 +47,11 @@ dmnsn_new_perspective_camera(dmnsn_matrix trans)
     }
     *ptr = trans;
     camera->ptr = ptr;
+
+    camera->ray_fn  = &dmnsn_perspective_camera_ray_fn;
+    camera->free_fn = &free;
   }
   return camera;
-}
-
-/* Delete a perspective camera */
-void
-dmnsn_delete_perspective_camera(dmnsn_camera *camera)
-{
-  if (camera) {
-    free(camera->ptr);
-    dmnsn_delete_camera(camera);
-  }
 }
 
 /* Get the transformation matrix */

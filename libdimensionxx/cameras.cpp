@@ -31,14 +31,6 @@ namespace Dimension
     }
   }
 
-  // Delete a perspective camera, if we're the last reference
-  Perspective_Camera::~Perspective_Camera()
-  {
-    if (unique()) {
-      dmnsn_delete_perspective_camera(dmnsn());
-    }
-  }
-
   // Get the transformation matrix
   Matrix
   Perspective_Camera::trans()

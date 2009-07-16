@@ -30,7 +30,7 @@ namespace Dimension
   {
   public:
     Perspective_Camera(const Matrix& trans);
-    ~Perspective_Camera();
+    // ~Perspective_Camera();
 
     // Get/set the transformation matrix
     Matrix trans();

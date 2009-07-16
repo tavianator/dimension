@@ -34,20 +34,15 @@ typedef dmnsn_line dmnsn_camera_ray_fn(const dmnsn_camera *camera,
                                        unsigned int x, unsigned int y);
 
 struct dmnsn_camera {
+  /* Callback functions */
+  dmnsn_camera_ray_fn *ray_fn;
+  dmnsn_free_fn       *free_fn;
+
   /* Generic pointer for camera info */
   void *ptr;
-
-  /* Callback function */
-  dmnsn_camera_ray_fn *ray_fn;
 };
 
 dmnsn_camera *dmnsn_new_camera();
 void dmnsn_delete_camera(dmnsn_camera *camera);
-
-/* A perspective camera, at the origin, looking at (0, 0, 1).  The feild of view
-   is the section of the plane z = 1 from (-0.5, -0.5) to (0.5, 0.5).  Rays are
-   transformed by the transformation matrix `trans'. */
-dmnsn_camera *dmnsn_new_perspective_camera(dmnsn_matrix trans);
-void dmnsn_delete_perspective_camera(dmnsn_camera *camera);
 
 #endif /* DIMENSION_CAMERA_H */

@@ -29,7 +29,6 @@
    is the section of the plane z = 1 from (-0.5, -0.5) to (0.5, 0.5).  Rays are
    transformed by the transformation matrix `trans'. */
 dmnsn_camera *dmnsn_new_perspective_camera(dmnsn_matrix trans);
-void dmnsn_delete_perspective_camera(dmnsn_camera *camera);
 
 /* Get or set the transformation matrix */
 dmnsn_matrix dmnsn_get_perspective_camera_trans(const dmnsn_camera *camera);

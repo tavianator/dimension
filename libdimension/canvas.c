@@ -64,6 +64,7 @@ dmnsn_delete_canvas(dmnsn_canvas *canvas)
         (*optimizer.free_fn)(optimizer.ptr);
       }
     }
+    dmnsn_delete_array(canvas->optimizers);
 
     /* Free the pixels and canvas */
     free(canvas->pixels);

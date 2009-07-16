@@ -47,12 +47,14 @@ typedef struct dmnsn_canvas_optimizer dmnsn_canvas_optimizer;
 typedef void dmnsn_canvas_optimizer_fn(dmnsn_canvas *canvas,
                                        dmnsn_canvas_optimizer optimizer,
                                        unsigned int x, unsigned int y);
-typedef void dmnsn_canvas_optimizer_free_fn(void *ptr);
 
 /* Canvas optimizer */
 struct dmnsn_canvas_optimizer {
+  /* Callback types */
   dmnsn_canvas_optimizer_fn *optimizer_fn;
-  dmnsn_canvas_optimizer_free_fn *free_fn;
+  dmnsn_free_fn             *free_fn;
+
+  /* Generic pointer */
   void *ptr;
 };
 

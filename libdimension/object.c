@@ -28,7 +28,8 @@ dmnsn_new_object()
   dmnsn_object *object = malloc(sizeof(dmnsn_object));
   if (object) {
     object->texture = NULL;
-    object->trans = dmnsn_identity_matrix();
+    object->trans   = dmnsn_identity_matrix();
+    object->free_fn = NULL;
   }
   return object;
 }
@@ -37,5 +38,10 @@ dmnsn_new_object()
 void
 dmnsn_delete_object(dmnsn_object *object)
 {
-  free(object);
+  if (object) {
+    if (object->free_fn) {
+      (*object->free_fn)(object->ptr);
+    }
+    free(object);
+  }
 }

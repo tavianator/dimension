@@ -31,14 +31,6 @@ namespace Dimension
     }
   }
 
-  // Delete a sphere
-  Sphere::~Sphere()
-  {
-    if (unique()) {
-      dmnsn_delete_sphere(dmnsn());
-    }
-  }
-
   // Shallow copy a sphere
   Object*
   Sphere::copy()
@@ -57,14 +49,6 @@ namespace Dimension
   {
     if (!dmnsn()) {
       throw Dimension_Error("Failed to allocate cube.");
-    }
-  }
-
-  // Delete a sphere
-  Cube::~Cube()
-  {
-    if (unique()) {
-      dmnsn_delete_cube(dmnsn());
     }
   }
 

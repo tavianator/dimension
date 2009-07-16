@@ -27,6 +27,5 @@
 
 /* A solid color */
 dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color);
-void dmnsn_delete_solid_pigment(dmnsn_pigment *pigment);
 
 #endif /* DIMENSION_PIGMENTS_H */

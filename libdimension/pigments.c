@@ -46,15 +46,6 @@ dmnsn_new_solid_pigment(dmnsn_color color)
   return pigment;
 }
 
-/* Destroy a solid color */
-void dmnsn_delete_solid_pigment(dmnsn_pigment *pigment)
-{
-  if (pigment) {
-    free(pigment->ptr);
-    dmnsn_delete_pigment(pigment);
-  }
-}
-
 /* Solid color callback */
 static dmnsn_color
 dmnsn_solid_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)

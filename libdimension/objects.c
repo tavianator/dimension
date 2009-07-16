@@ -44,13 +44,6 @@ dmnsn_new_sphere()
   return sphere;
 }
 
-/* Free a sphere */
-void
-dmnsn_delete_sphere(dmnsn_object *sphere)
-{
-  dmnsn_delete_object(sphere);
-}
-
 /* Return a list of insersections of `line' with a sphere */
 static dmnsn_array *
 dmnsn_sphere_intersections_fn(const dmnsn_object *sphere, dmnsn_line line)
@@ -101,13 +94,6 @@ dmnsn_new_cube()
     cube->inside_fn        = &dmnsn_cube_inside_fn;
   }
   return cube;
-}
-
-/* Delete a cube */
-void
-dmnsn_delete_cube(dmnsn_object *cube)
-{
-  dmnsn_delete_object(cube);
 }
 
 /* Intersections callback for a cube */

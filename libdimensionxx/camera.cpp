@@ -22,9 +22,13 @@
 
 namespace Dimension
 {
-  // Virtual no-op destructor
+  // Virtual destructor
   Camera::~Camera()
-  { }
+  {
+    if (unique()) {
+      dmnsn_delete_camera(dmnsn());
+    }
+  }
 
   // Return the result of the dmnsn_camera*'s ray callback
   Line

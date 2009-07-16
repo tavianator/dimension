@@ -30,7 +30,7 @@ namespace Dimension
   {
   public:
     Sphere();
-    ~Sphere();
+    // ~Sphere();
 
     // Shallow-copy the sphere
     Object* copy();
@@ -46,7 +46,7 @@ namespace Dimension
   {
   public:
     Cube();
-    ~Cube();
+    // ~Cube();
 
     // Shallow-copy the cube
     Object* copy();

@@ -38,7 +38,11 @@ typedef dmnsn_color dmnsn_pigment_fn(const dmnsn_pigment *pigment,
 
 /* dmnsn_pigment definition */
 struct dmnsn_pigment {
+  /* Callbacks */
   dmnsn_pigment_fn *pigment_fn;
+  dmnsn_free_fn *free_fn;
+
+  /* Generic pointer */
   void *ptr;
 };
 

@@ -25,12 +25,21 @@
 dmnsn_camera *
 dmnsn_new_camera()
 {
-  return malloc(sizeof(dmnsn_camera));
+  dmnsn_camera *camera = malloc(sizeof(dmnsn_camera));
+  if (camera) {
+    camera->free_fn = NULL;
+  }
+  return camera;
 }
 
 /* Free a dummy camera */
 void
 dmnsn_delete_camera(dmnsn_camera *camera)
 {
-  free(camera);
+  if (camera) {
+    if (camera->free_fn) {
+      (*camera->free_fn)(camera->ptr);
+    }
+    free(camera);
+  }
 }

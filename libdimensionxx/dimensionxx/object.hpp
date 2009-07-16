@@ -29,7 +29,7 @@ namespace Dimension
   class Object
   {
   public:
-    // No-op
+    // Delete the object
     virtual ~Object();
 
     // Get/set the transformation matrix

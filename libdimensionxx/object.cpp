@@ -22,9 +22,13 @@
 
 namespace Dimension
 {
-  // Virtual no-op destructor
+  // Virtual destructor
   Object::~Object()
-  { }
+  {
+    if (unique()) {
+      dmnsn_delete_object(dmnsn());
+    }
+  }
 
   // Get the transformation matrix
   Matrix

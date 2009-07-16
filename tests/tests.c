@@ -76,7 +76,7 @@ dmnsn_new_default_scene()
 
   sphere = dmnsn_new_sphere();
   if (!sphere) {
-    dmnsn_delete_perspective_camera(scene->camera);
+    dmnsn_delete_camera(scene->camera);
     dmnsn_delete_canvas(scene->canvas);
     dmnsn_delete_scene(scene);
     return NULL;
@@ -89,8 +89,8 @@ dmnsn_new_default_scene()
 
   cube = dmnsn_new_cube();
   if (!cube) {
-    dmnsn_delete_sphere(sphere);
-    dmnsn_delete_perspective_camera(scene->camera);
+    dmnsn_delete_object(sphere);
+    dmnsn_delete_camera(scene->camera);
     dmnsn_delete_canvas(scene->canvas);
     dmnsn_delete_scene(scene);
     return NULL;
@@ -113,9 +113,9 @@ dmnsn_delete_default_scene(dmnsn_scene *scene)
   dmnsn_array_get(scene->objects, 0, &sphere);
   dmnsn_array_get(scene->objects, 1, &cube);
 
-  dmnsn_delete_cube(cube);
-  dmnsn_delete_sphere(sphere);
-  dmnsn_delete_perspective_camera(scene->camera);
+  dmnsn_delete_object(cube);
+  dmnsn_delete_object(sphere);
+  dmnsn_delete_camera(scene->camera);
   dmnsn_delete_canvas(scene->canvas);
   dmnsn_delete_scene(scene);
 }

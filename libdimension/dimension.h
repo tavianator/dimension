@@ -56,6 +56,9 @@
 extern "C" {
 #endif
 
+/* Common types */
+typedef void dmnsn_free_fn(void *ptr);
+
 /* Include all the libdimension headers */
 #include <dimension/error.h>
 #include <dimension/array.h>

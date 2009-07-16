@@ -29,7 +29,7 @@ namespace Dimension
   class Camera
   {
   public:
-    // No-op
+    // Delete the camera
     virtual ~Camera();
 
     // Camera callback

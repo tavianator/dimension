@@ -25,7 +25,11 @@
 dmnsn_pigment *
 dmnsn_new_pigment()
 {
-  return malloc(sizeof(dmnsn_pigment));
+  dmnsn_pigment *pigment = malloc(sizeof(dmnsn_pigment));
+  if (pigment) {
+    pigment->free_fn = NULL;
+  }
+  return pigment;
 }
 
 /* Free a dummy pigment */
@@ -39,7 +43,11 @@ dmnsn_delete_pigment(dmnsn_pigment *pigment)
 dmnsn_texture *
 dmnsn_new_texture()
 {
-  return malloc(sizeof(dmnsn_texture));
+  dmnsn_texture *texture = malloc(sizeof(dmnsn_texture));
+  if (texture) {
+    texture->pigment = NULL;
+  }
+  return texture;
 }
 
 /* Free a dummy texture */
