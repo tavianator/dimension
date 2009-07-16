@@ -30,7 +30,8 @@ namespace Dimension
       Canvas canvas(768, 480);
 
       // Camera
-      Perspective_Camera camera(
+      Perspective_Camera camera;
+      camera.trans(
         Matrix::rotation(Vector(0.0, 1.0, 0.0))
         * Matrix::translation(Vector(0.0, 0.0, -4.0))
         * Matrix::scale(

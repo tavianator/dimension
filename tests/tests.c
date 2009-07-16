@@ -65,12 +65,13 @@ dmnsn_new_default_scene()
   );
 
   /* Create a perspective camera */
-  scene->camera = dmnsn_new_perspective_camera(trans);
+  scene->camera = dmnsn_new_perspective_camera();
   if (!scene->camera) {
     dmnsn_delete_canvas(scene->canvas);
     dmnsn_delete_scene(scene);
     return NULL;
   }
+  dmnsn_set_perspective_camera_trans(scene->camera, trans);
 
   /* Now make our objects */
 

@@ -23,8 +23,8 @@
 namespace Dimension
 {
   // Create a perspective camera
-  Perspective_Camera::Perspective_Camera(const Matrix& trans)
-    : Camera(dmnsn_new_perspective_camera(trans.dmnsn()))
+  Perspective_Camera::Perspective_Camera()
+    : Camera(dmnsn_new_perspective_camera())
   {
     if (!dmnsn()) {
       throw Dimension_Error("Failed to allocate perspective camera.");
