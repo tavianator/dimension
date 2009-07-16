@@ -33,10 +33,20 @@ typedef enum {
 } dmnsn_quality;
 
 typedef struct {
+  /* World attributes */
   dmnsn_color background;
+  dmnsn_texture *default_texture;
+
+  /* Objects */
   dmnsn_array *objects;
+
+  /* Camera */
   dmnsn_camera *camera;
+
+  /* Canvas */
   dmnsn_canvas *canvas;
+
+  /* Rendering quality */
   dmnsn_quality quality;
 } dmnsn_scene;
 

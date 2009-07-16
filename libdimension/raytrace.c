@@ -234,6 +234,8 @@ dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color, dmnsn_line ray)
   dmnsn_line ray_trans;
   dmnsn_object *object;
   dmnsn_intersection *intersection = NULL, *intersection_temp;
+  const dmnsn_texture *texture;
+  const dmnsn_pigment *pigment;
   unsigned int i;
 
   for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
@@ -245,6 +247,7 @@ dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color, dmnsn_line ray)
     /* Test for intersections with objects */
     intersection_temp = (*object->intersection_fn)(object, ray_trans);
 
+    /* Find the closest intersection to the camera */
     if (intersection_temp &&
         (!intersection || intersection_temp->t < intersection->t)) {
       dmnsn_delete_intersection(intersection);
@@ -253,23 +256,29 @@ dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color, dmnsn_line ray)
   }
 
   if (intersection) {
+    /* Default to black if we have no texture/pigment */
+    color = dmnsn_black;
+
     if (scene->quality >= DMNSN_RENDER_PIGMENT) {
-      if (intersection->texture) {
-        if (intersection->texture->pigment) {
-          color = (*intersection->texture->pigment->pigment_fn)(
-            intersection->texture->pigment,
+      /* Use the default texture if given a NULL texture */
+      texture = intersection->texture ? intersection->texture
+                                      : scene->default_texture;
+
+      if (texture) {
+        /* Use the default pigment if given a NULL pigment */
+        pigment = texture->pigment ? texture->pigment
+                                   : scene->default_texture->pigment;
+
+        if (pigment) {
+          color = (*pigment->pigment_fn)(
+            pigment,
             dmnsn_line_point(intersection->ray, intersection->t)
           );
-        } else {
-          color = dmnsn_black;
         }
-      } else {
-        color = dmnsn_black;
       }
-    } else {
-      color = dmnsn_white;
     }
 
+    /* Delete the intersection */
     dmnsn_delete_intersection(intersection);
   }
 

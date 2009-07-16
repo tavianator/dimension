@@ -120,7 +120,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
     t_temp = (-1.0 - line.x0.x)/line.n.x;
     p = dmnsn_line_point(line, t_temp);
     if (p.y >= -1.0 && p.y <= 1.0 && p.z >= -1.0 && p.z <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t)) {
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
       t = t_temp;
     }
 
@@ -128,7 +129,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
     t_temp = (1.0 - line.x0.x)/line.n.x;
     p = dmnsn_line_point(line, t_temp);
     if (p.y >= -1.0 && p.y <= 1.0 && p.z >= -1.0 && p.z <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t)) {
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
       t = t_temp;
     }
   }
@@ -138,7 +140,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
     t_temp = (-1.0 - line.x0.y)/line.n.y;
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= -1.0 && p.x <= 1.0 && p.z >= -1.0 && p.z <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t)) {
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
       t = t_temp;
     }
 
@@ -146,7 +149,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
     t_temp = (1.0 - line.x0.y)/line.n.y;
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= -1.0 && p.x <= 1.0 && p.z >= -1.0 && p.z <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t)) {
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
       t = t_temp;
     }
   }
@@ -156,7 +160,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
     t_temp = (-1.0 - line.x0.z)/line.n.z;
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= -1.0 && p.x <= 1.0 && p.y >= -1.0 && p.y <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t)) {
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
       t = t_temp;
     }
 
@@ -164,7 +169,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
     t_temp = (1.0 - line.x0.z)/line.n.z;
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= -1.0 && p.x <= 1.0 && p.y >= -1.0 && p.y <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t)) {
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
       t = t_temp;
     }
   }

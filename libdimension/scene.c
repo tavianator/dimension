@@ -27,6 +27,7 @@ dmnsn_new_scene()
 {
   dmnsn_scene *scene = malloc(sizeof(dmnsn_scene));
   if (scene) {
+    scene->default_texture = NULL;
     scene->objects = dmnsn_new_array(sizeof(dmnsn_object*));
     scene->quality = DMNSN_RENDER_FULL;
   }
