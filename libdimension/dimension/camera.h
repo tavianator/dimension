@@ -30,8 +30,7 @@ typedef struct dmnsn_camera dmnsn_camera;
 
 /* Camera callback types */
 typedef dmnsn_line dmnsn_camera_ray_fn(const dmnsn_camera *camera,
-                                       const dmnsn_canvas *canvas,
-                                       unsigned int x, unsigned int y);
+                                       double x, double y);
 
 struct dmnsn_camera {
   /* Callback functions */

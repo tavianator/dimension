@@ -26,9 +26,7 @@
 
 /* Perspective camera ray callback */
 static dmnsn_line dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
-                                                  const dmnsn_canvas *canvas,
-                                                  unsigned int x,
-                                                  unsigned int y);
+                                                  double x, double y);
 
 /* Create a new perspective camera.  Rays are aimed from the origin to a screen
    located on the z = 1 frame, from (-0.5, -0.5) to (0.5, 0.5).  Rays are then
@@ -73,8 +71,7 @@ dmnsn_set_perspective_camera_trans(dmnsn_camera *camera, dmnsn_matrix T)
 /* Perspective camera ray callback */
 static dmnsn_line
 dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
-                                const dmnsn_canvas *canvas,
-                                unsigned int x, unsigned int y)
+                                double x, double y)
 {
   dmnsn_matrix *trans = camera->ptr;
   dmnsn_line l;
@@ -83,9 +80,7 @@ dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
   l.x0 = dmnsn_vector_construct(0.0, 0.0, 0.0);
 
   /* Aim at the z = 1 plane */
-  l.n.x = ((double)x)/(canvas->x - 1) - 0.5;
-  l.n.y = ((double)y)/(canvas->y - 1) - 0.5;
-  l.n.z = 1.0;
+  l.n = dmnsn_vector_construct(x - 0.5, y - 0.5, 1.0);
 
   return dmnsn_matrix_line_mul(*trans, l);
 }

@@ -32,9 +32,9 @@ namespace Dimension
 
   // Return the result of the dmnsn_camera*'s ray callback
   Line
-  Camera::ray(const Canvas& canvas, unsigned int x, unsigned int y)
+  Camera::ray(double x, double y)
   {
-    return Line((*dmnsn()->ray_fn)(dmnsn(), canvas.dmnsn(), x, y));
+    return Line((*dmnsn()->ray_fn)(dmnsn(), x, y));
   }
 
   // Return the wrapped camera
@@ -91,16 +91,10 @@ namespace Dimension
   // Custom camera callbacks
   namespace {
     dmnsn_line
-    ray_fn(const dmnsn_camera *camera, const dmnsn_canvas *canvas,
-           unsigned int x, unsigned int y)
+    ray_fn(const dmnsn_camera *camera, double x, double y)
     {
       Custom_Camera* ccamera = reinterpret_cast<Custom_Camera*>(camera->ptr);
-      // Yes the const_cast is ugly, but there's no other way because C++
-      // doesn't have `const' constructors.  Luckily const Camera's treat their
-      // dmnsn_camera* as a const dmnsn_camera*.
-      return ccamera->ray(
-        Canvas(const_cast<dmnsn_canvas*>(canvas)), x, y
-      ).dmnsn();
+      return ccamera->ray(x, y).dmnsn();
     }
   }
 

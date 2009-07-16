@@ -33,7 +33,7 @@ namespace Dimension
     virtual ~Camera();
 
     // Camera callback
-    virtual Line ray(const Canvas& canvas, unsigned int x, unsigned int y);
+    virtual Line ray(double x, double y);
 
     // Shallow-copy a derived camera
     virtual Camera* copy() const = 0;
@@ -70,7 +70,7 @@ namespace Dimension
     Custom_Camera();
     virtual ~Custom_Camera();
 
-    virtual Line ray(const Canvas& canvas, unsigned int x, unsigned int y) = 0;
+    virtual Line ray(double x, double y) = 0;
   };
 
   // Array_Element specialization

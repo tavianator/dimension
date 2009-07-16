@@ -213,7 +213,9 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 
       if (scene->quality >= DMNSN_RENDER_OBJECTS) {
         /* Get the ray corresponding to the (x,y)'th pixel */
-        ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, x, y);
+        ray = (*scene->camera->ray_fn)(scene->camera,
+                                       ((double)x)/(scene->canvas->x - 1),
+                                       ((double)y)/(scene->canvas->y - 1));
         /* Shoot a ray */
         color = dmnsn_raytrace_shoot(scene, color, ray);
       }
