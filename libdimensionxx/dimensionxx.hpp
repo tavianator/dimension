@@ -33,6 +33,7 @@
 #include <dimensionxx/canvas.hpp>
 #include <dimensionxx/gl.hpp>
 #include <dimensionxx/png.hpp>
+#include <dimensionxx/texture.hpp>
 #include <dimensionxx/object.hpp>
 #include <dimensionxx/objects.hpp>
 #include <dimensionxx/camera.hpp>

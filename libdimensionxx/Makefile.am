@@ -31,7 +31,8 @@ nobase_include_HEADERS = dimensionxx.hpp                                       \
                          dimensionxx/png.hpp                                   \
                          dimensionxx/progress.hpp                              \
                          dimensionxx/raytrace.hpp                              \
-                         dimensionxx/scene.hpp
+                         dimensionxx/scene.hpp                                 \
+                         dimensionxx/texture.hpp
 
 INCLUDES = -I../libdimension
 
@@ -49,7 +50,8 @@ libdimensionxx_la_SOURCES = $(nobase_include_HEADERS)                          \
                             png.cpp                                            \
                             progress.cpp                                       \
                             raytrace.cpp                                       \
-                            scene.cpp
+                            scene.cpp                                          \
+                            texture.cpp
 
 if FOPENCOOKIE
   libdimensionxx_la_SOURCES += cookie-fopencookie.cpp

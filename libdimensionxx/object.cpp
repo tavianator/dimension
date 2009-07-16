@@ -22,7 +22,69 @@
 
 namespace Dimension
 {
-  // Virtual destructor
+  // Construct an intersection object
+  Intersection::Intersection(const Line& ray, double t, const Texture& texture)
+    : m_intersection(new dmnsn_intersection*(dmnsn_new_intersection())),
+      m_ray(ray), m_texture(texture)
+  {
+    dmnsn()->t = t;
+  }
+
+  // Wrap an existing intersection - don't release() one of these
+  Intersection::Intersection(dmnsn_intersection *intersection)
+    : m_intersection(new dmnsn_intersection*(intersection)),
+      m_ray(intersection->ray),
+      m_texture(const_cast<dmnsn_texture*>(intersection->texture))
+  { }
+
+  // Delete an intersection
+  Intersection::~Intersection() {
+    if (m_intersection && m_intersection.unique()) {
+      dmnsn_delete_intersection(dmnsn());
+    }
+  }
+
+  dmnsn_intersection*
+  Intersection::dmnsn()
+  {
+    if (!m_intersection) {
+      throw Dimension_Error("Attempt to access released intersection.");
+    }
+    return *m_intersection;
+  }
+
+  const dmnsn_intersection*
+  Intersection::dmnsn() const
+  {
+    if (!m_intersection) {
+      throw Dimension_Error("Attempt to access released intersection.");
+    }
+    return *m_intersection;
+  }
+
+  dmnsn_intersection*
+  Intersection::release()
+  {
+    if (!m_intersection) {
+      throw Dimension_Error("Attempt to release previously released"
+                            " intersection.");
+    }
+
+    if (!m_intersection.unique()) {
+      throw Dimension_Error("Attempt to release non-unique intersection.");
+    }
+
+    dmnsn_intersection* intersection = dmnsn();
+    m_intersection.reset();
+    return intersection;
+  }
+
+  // Manual constructor
+  Object::Object(dmnsn_object* object)
+    : m_object(new dmnsn_object*(object))
+  { }
+
+  // Virtual Object destructor
   Object::~Object()
   {
     if (unique()) {
@@ -45,10 +107,10 @@ namespace Dimension
   }
 
   // Intersection list for the line l
-  Array<double>
-  Object::intersections(const Line& l)
+  Intersection
+  Object::intersection(const Line& l)
   {
-    return Array<double>((*dmnsn()->intersections_fn)(dmnsn(), l.dmnsn()));
+    return Intersection((*dmnsn()->intersection_fn)(dmnsn(), l.dmnsn()));
   }
 
   // Whether the point `point' is inside the object
@@ -67,6 +129,12 @@ namespace Dimension
     }
 
     return *m_object;
+  }
+
+  Object*
+  Object::copy() const
+  {
+    return new Object(*this);
   }
 
   // Return a const version of the wrapped canvas
@@ -90,11 +158,6 @@ namespace Dimension
     : m_object(object.m_object)
   { }
 
-  // Protected manual constructor
-  Object::Object(dmnsn_object* object)
-    : m_object(new dmnsn_object*(object))
-  { }
-
   // Is m_object unique?
   bool
   Object::unique() const
@@ -110,12 +173,13 @@ namespace Dimension
   }
 
   // Custom object callbacks
-  namespace {
-    dmnsn_array *
-    intersections_fn(const dmnsn_object *object, dmnsn_line line)
+  namespace
+  {
+    dmnsn_intersection *
+    intersection_fn(const dmnsn_object *object, dmnsn_line line)
     {
       Custom_Object* cobject = reinterpret_cast<Custom_Object*>(object->ptr);
-      return cobject->intersections(Line(line)).release();
+      return cobject->intersection(Line(line)).release();
     }
 
     int
@@ -131,8 +195,8 @@ namespace Dimension
     : Object(dmnsn_new_object())
   {
     dmnsn()->ptr = this;
-    dmnsn()->intersections_fn = &intersections_fn;
-    dmnsn()->inside_fn = &inside_fn;
+    dmnsn()->intersection_fn = &intersection_fn;
+    dmnsn()->inside_fn       = &inside_fn;
   }
 
   // Delete the object

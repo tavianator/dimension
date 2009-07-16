@@ -21,6 +21,24 @@
 #include "dimension.h"
 #include <stdlib.h> /* For malloc */
 
+/* Allocate an intersection - cannot fail */
+dmnsn_intersection *
+dmnsn_new_intersection()
+{
+  dmnsn_intersection *intersection = malloc(sizeof(dmnsn_intersection));
+  if (!intersection) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate an intersection object.");
+  }
+  return intersection;
+}
+
+/* Free an intersection */
+void
+dmnsn_delete_intersection(dmnsn_intersection *intersection)
+{
+  free(intersection);
+}
+
 /* Allocate a dummy object */
 dmnsn_object *
 dmnsn_new_object()

@@ -248,6 +248,9 @@ dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color,
     if (intersection) {
       color = dmnsn_color_from_XYZ(dmnsn_whitepoint);
     }
+
+    /* Delete the intersection */
+    dmnsn_delete_intersection(intersection);
   }
 
   return color;

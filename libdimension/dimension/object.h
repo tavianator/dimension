@@ -35,6 +35,7 @@ typedef struct {
   const dmnsn_texture *texture;
 } dmnsn_intersection;
 
+/* Intersection allocation cannot fail */
 dmnsn_intersection *dmnsn_new_intersection();
 void dmnsn_delete_intersection(dmnsn_intersection *intersection);
 

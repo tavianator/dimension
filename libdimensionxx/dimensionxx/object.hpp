@@ -25,10 +25,43 @@
 
 namespace Dimension
 {
-  // Abstract base object class.  Wraps a dmnsn_object*.
+  // Type to represent a ray-object intersection
+  class Intersection
+  {
+  public:
+    Intersection(const Line& ray, double t, const Texture& texture);
+    explicit Intersection(dmnsn_intersection *intersection);
+    // Intersection(const Intersection& intersection);
+    ~Intersection();
+
+    Line&       ray()       { return m_ray; }
+    const Line& ray() const { return m_ray; }
+
+    double t()         const { return dmnsn()->t; }
+    void   t(double t)       { dmnsn()->t = t; }
+
+    const Texture& texture() const { return m_texture; }
+
+    dmnsn_intersection*       dmnsn();
+    const dmnsn_intersection* dmnsn() const;
+
+    dmnsn_intersection* release();
+
+  private:
+    // Copy-assignment prohibited
+    Intersection& operator=(const Intersection& intersection);
+
+    std::tr1::shared_ptr<dmnsn_intersection*> m_intersection;
+    Line m_ray;
+    const Texture m_texture;
+  };
+
+  // Base object class.  Wraps a dmnsn_object*.
   class Object
   {
   public:
+    // Wrap an existing object.
+    explicit Object(dmnsn_object* object);
     // Delete the object
     virtual ~Object();
 
@@ -37,11 +70,11 @@ namespace Dimension
     void trans(const Matrix& trans);
 
     // Object callbacks
-    virtual Array<double> intersections(const Line& l);
+    virtual Intersection intersection(const Line& l);
     virtual bool inside(const Vector& point);
 
     // Shallow-copy a derived object
-    virtual Object* copy() const = 0;
+    virtual Object* copy() const;
 
     // Access the wrapped C object
     dmnsn_object*       dmnsn();
@@ -52,8 +85,6 @@ namespace Dimension
     Object();
     // Shallow copy
     Object(const Object& object);
-    // Wrap an existing object.
-    explicit Object(dmnsn_object* object);
 
     // Is m_object unique?
     bool unique() const;
@@ -75,7 +106,7 @@ namespace Dimension
     Custom_Object();
     virtual ~Custom_Object();
 
-    virtual Array<double> intersections(const Line& l) = 0;
+    virtual Intersection intersection(const Line& l) = 0;
     virtual bool inside(const Vector& point) = 0;
   };
 
