@@ -65,7 +65,7 @@ namespace Dimension
   { }
 
   // Protected copy constructor
-  Camera::Camera(Camera& camera)
+  Camera::Camera(const Camera& camera)
     : m_camera(camera.m_camera)
   { }
 

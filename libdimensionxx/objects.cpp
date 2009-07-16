@@ -33,13 +33,13 @@ namespace Dimension
 
   // Shallow copy a sphere
   Object*
-  Sphere::copy()
+  Sphere::copy() const
   {
     return new Sphere(*this);
   }
 
   // Protected copy constructor
-  Sphere::Sphere(Sphere& sphere)
+  Sphere::Sphere(const Sphere& sphere)
     : Object(sphere)
   { }
 
@@ -54,13 +54,13 @@ namespace Dimension
 
   // Shallow copy a cube
   Object*
-  Cube::copy()
+  Cube::copy() const
   {
     return new Cube(*this);
   }
 
   // Protected copy constructor
-  Cube::Cube(Cube& sphere)
-    : Object(sphere)
+  Cube::Cube(const Cube& cube)
+    : Object(cube)
   { }
 }
