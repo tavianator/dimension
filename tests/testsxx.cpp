@@ -58,9 +58,6 @@ namespace Dimension
       background.filter(0.1);
       scene.background(background);
 
-      // Quality
-      scene.quality(RENDER_FULL);
-
       return scene;
     }
 

@@ -28,7 +28,7 @@ dmnsn_new_scene()
   dmnsn_scene *scene = malloc(sizeof(dmnsn_scene));
   if (scene) {
     scene->objects = dmnsn_new_array(sizeof(dmnsn_object*));
-    scene->quality = DMNSN_RENDER_NONE;
+    scene->quality = DMNSN_RENDER_FULL;
   }
   return scene;
 }

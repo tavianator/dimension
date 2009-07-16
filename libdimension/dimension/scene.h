@@ -28,6 +28,7 @@
 typedef enum {
   DMNSN_RENDER_NONE,
   DMNSN_RENDER_OBJECTS,
+  DMNSN_RENDER_PIGMENT,
   DMNSN_RENDER_FULL
 } dmnsn_quality;
 

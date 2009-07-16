@@ -26,6 +26,12 @@ const dmnsn_CIE_XYZ dmnsn_whitepoint = { .X = 0.9504060171449392,
                                          .Y = 0.9999085943425312,
                                          .Z = 1.089062231497274 };
 
+/* Standard colors */
+const dmnsn_color dmnsn_black = { .X = 0.0, .Y = 0.0, .Z = 0.0 };
+const dmnsn_color dmnsn_white = { .X = 0.9504060171449392,
+                                  .Y = 0.9999085943425312,
+                                  .Z = 1.089062231497274 };
+
 /* Convert a CIE XYZ color to a dmnsn_color (actually a no-op) */
 dmnsn_color
 dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ)

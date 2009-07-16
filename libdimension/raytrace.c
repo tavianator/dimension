@@ -185,7 +185,7 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
 
 /* Helper for dmnsn_raytrace_scene_impl - shoot a ray */
 static dmnsn_color dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color,
-                                        unsigned int x, unsigned int y);
+                                        dmnsn_line ray);
 
 /*
  * Actually raytrace a scene
@@ -196,6 +196,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 {
   unsigned int x, y;
   unsigned int width, height;
+  dmnsn_line ray;
   dmnsn_color color;
 
   width  = scene->canvas->x;
@@ -211,7 +212,10 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
       color = scene->background;
 
       if (scene->quality >= DMNSN_RENDER_OBJECTS) {
-        color = dmnsn_raytrace_shoot(scene, color, x, y);
+        /* Get the ray corresponding to the (x,y)'th pixel */
+        ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, x, y);
+        /* Shoot a ray */
+        color = dmnsn_raytrace_shoot(scene, color, ray);
       }
 
       dmnsn_set_pixel(scene->canvas, x, y, color);
@@ -225,16 +229,12 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 
 /* Shoot a ray, and calculate the color, using `color' as the background */
 static dmnsn_color
-dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color,
-                     unsigned int x, unsigned int y)
+dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color, dmnsn_line ray)
 {
-  dmnsn_line ray, ray_trans;
+  dmnsn_line ray_trans;
   dmnsn_object *object;
-  dmnsn_intersection *intersection;
+  dmnsn_intersection *intersection = NULL, *intersection_temp;
   unsigned int i;
-
-  /* Get the ray corresponding to the (x,y)'th pixel */
-  ray = (*scene->camera->ray_fn)(scene->camera, scene->canvas, x, y);
 
   for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
     dmnsn_array_get(scene->objects, i, &object);
@@ -243,13 +243,33 @@ dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color,
     ray_trans = dmnsn_matrix_line_mul(object->trans, ray);
 
     /* Test for intersections with objects */
-    intersection = (*object->intersection_fn)(object, ray_trans);
+    intersection_temp = (*object->intersection_fn)(object, ray_trans);
 
-    if (intersection) {
-      color = dmnsn_color_from_XYZ(dmnsn_whitepoint);
+    if (intersection_temp &&
+        (!intersection || intersection_temp->t < intersection->t)) {
+      dmnsn_delete_intersection(intersection);
+      intersection = intersection_temp;
+    }
+  }
+
+  if (intersection) {
+    if (scene->quality >= DMNSN_RENDER_PIGMENT) {
+      if (intersection->texture) {
+        if (intersection->texture->pigment) {
+          color = (*intersection->texture->pigment->pigment_fn)(
+            intersection->texture->pigment,
+            dmnsn_line_point(intersection->ray, intersection->t)
+          );
+        } else {
+          color = dmnsn_black;
+        }
+      } else {
+        color = dmnsn_black;
+      }
+    } else {
+      color = dmnsn_white;
     }
 
-    /* Delete the intersection */
     dmnsn_delete_intersection(intersection);
   }
 
