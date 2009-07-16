@@ -25,12 +25,27 @@
 #ifndef DIMENSION_OBJECT_H
 #define DIMENSION_OBJECT_H
 
+/* A type to represent a ray-object intersection */
+typedef struct {
+  /* The ray and point which intersected */
+  dmnsn_line ray;
+  double t;
+
+  /* The texture at the intersection point */
+  const dmnsn_texture *texture;
+} dmnsn_intersection;
+
+dmnsn_intersection *dmnsn_new_intersection();
+void dmnsn_delete_intersection(dmnsn_intersection *intersection);
+
 /* Forward-declare dmnsn_object */
 typedef struct dmnsn_object dmnsn_object;
 
 /* Object callback types */
-typedef dmnsn_array *dmnsn_object_intersections_fn(const dmnsn_object *object,
-                                                   dmnsn_line line);
+
+typedef dmnsn_intersection *
+dmnsn_object_intersection_fn(const dmnsn_object *object, dmnsn_line line);
+
 typedef int dmnsn_object_inside_fn(const dmnsn_object *object,
                                    dmnsn_vector point);
 
@@ -43,9 +58,9 @@ struct dmnsn_object {
   dmnsn_matrix trans;
 
   /* Callback functions */
-  dmnsn_object_intersections_fn *intersections_fn;
-  dmnsn_object_inside_fn        *inside_fn;
-  dmnsn_free_fn                 *free_fn;
+  dmnsn_object_intersection_fn *intersection_fn;
+  dmnsn_object_inside_fn       *inside_fn;
+  dmnsn_free_fn                *free_fn;
 
   /* Generic pointer for object info */
   void *ptr;
@@ -53,7 +68,6 @@ struct dmnsn_object {
 
 /* Allocate a dummy object */
 dmnsn_object *dmnsn_new_object();
-
 /* Free an object */
 void dmnsn_delete_object(dmnsn_object *object);
 

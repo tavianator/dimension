@@ -230,7 +230,7 @@ dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color,
 {
   dmnsn_line ray, ray_trans;
   dmnsn_object *object;
-  dmnsn_array *intersections;
+  dmnsn_intersection *intersection;
   unsigned int i;
 
   /* Get the ray corresponding to the (x,y)'th pixel */
@@ -243,14 +243,11 @@ dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color,
     ray_trans = dmnsn_matrix_line_mul(object->trans, ray);
 
     /* Test for intersections with objects */
-    intersections = (*object->intersections_fn)(object, ray_trans);
+    intersection = (*object->intersection_fn)(object, ray_trans);
 
-    if (dmnsn_array_size(intersections) > 0) {
+    if (intersection) {
       color = dmnsn_color_from_XYZ(dmnsn_whitepoint);
     }
-
-    /* Delete the intersections array */
-    dmnsn_delete_array(intersections);
   }
 
   return color;
