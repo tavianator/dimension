@@ -34,8 +34,14 @@
 
 namespace Dimension
 {
-  // FILE_Cookie pure virtual destructor: close the file
-  FILE_Cookie::~FILE_Cookie() { std::fclose(m_file); }
+  // FILE_Cookie pure virtual destructor
+  FILE_Cookie::~FILE_Cookie() {
+    if (m_file) {
+      // Bug if neither ~iFILE_Cookie nor ~oFILE_Cookie closed the FILE*
+      dmnsn_error(DMNSN_SEVERITY_HIGH,
+                  "FILE* not closed by FILE_Cookie destructor");
+    }
+  }
 
   namespace
   {
@@ -51,7 +57,7 @@ namespace Dimension
 
       if (ifcookie.istr().eof() || ifcookie.istr().good()) {
         return ifcookie.istr().gcount(); // This returns 0 on an immediate EOF
-                                          // for us.
+                                         // for us.
       } else {
         // Some non-EOF error
         return -1;
@@ -140,7 +146,18 @@ namespace Dimension
     io_funcs.close = 0;
 
     // Set the FILE*
-    file(fopencookie(reinterpret_cast<void*>(this), "r", io_funcs));
+    file(fopencookie(reinterpret_cast<void*>(static_cast<FILE_Cookie*>(this)),
+                     "r", io_funcs));
+  }
+
+  // iFILE_Cookie destructor
+  iFILE_Cookie::~iFILE_Cookie()
+  {
+    if (file()) {
+      // If the FILE* is open, close it and set it to NULL
+      fclose(file());
+      file(0);
+    }
   }
 
   // Make an output FILE_Cookie
@@ -154,11 +171,19 @@ namespace Dimension
     io_funcs.close = 0;
 
     // Set the FILE*
-    file(fopencookie(reinterpret_cast<void*>(this), "w", io_funcs));
+    file(fopencookie(reinterpret_cast<void*>(static_cast<FILE_Cookie*>(this)),
+                     "w", io_funcs));
   }
 
-  // No-op oFILE_Cookie destructor
-  oFILE_Cookie::~oFILE_Cookie() { }
+  // oFILE_Cookie destructor
+  oFILE_Cookie::~oFILE_Cookie()
+  {
+    if (file()) {
+      // If the FILE* is open, close it and set it to NULL
+      fclose(file());
+      file(0);
+    }
+  }
 
   // Make an I/O FILE_Cookie
   ioFILE_Cookie::ioFILE_Cookie(std::iostream& iostr)
@@ -170,6 +195,10 @@ namespace Dimension
     io_funcs.seek  = &cookie_seek;
     io_funcs.close = 0;
 
-    file(fopencookie(reinterpret_cast<void*>(this), "r+", io_funcs));
+    file(fopencookie(reinterpret_cast<void*>(static_cast<FILE_Cookie*>(this)),
+                     "r+", io_funcs));
   }
+
+  // No-op ioFILE_Cookie destructor
+  ioFILE_Cookie::~ioFILE_Cookie() { }
 }

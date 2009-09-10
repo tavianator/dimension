@@ -25,8 +25,10 @@
 
 namespace Dimension
 {
-  // Close the tmpfile
-  FILE_Cookie::~FILE_Cookie() { std::fclose(m_file); }
+  // FILE_Cookie pure virtual destructor
+  FILE_Cookie::~FILE_Cookie() {
+    fclose(file());
+  }
 
   namespace
   {
@@ -110,6 +112,9 @@ namespace Dimension
     file(tmp);
   }
 
+  // No-op iFILE_Cookie destructor
+  iFILE_Cookie::~iFILE_Cookie() { }
+
   // Make an output FILE_Cookie
   oFILE_Cookie::oFILE_Cookie(std::ostream& ostr)
     : m_ostr(&ostr)
@@ -146,4 +151,7 @@ namespace Dimension
     // Set the FILE*
     file(tmp);
   }
+
+  // No-op ioFILE_Cookie destructor
+  ioFILE_Cookie::~ioFILE_Cookie() { }
 }

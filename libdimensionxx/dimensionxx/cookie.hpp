@@ -59,7 +59,7 @@ namespace Dimension
   {
   public:
     iFILE_Cookie(std::istream& istr);
-    // virtual ~iFILE_Cookie();
+    virtual ~iFILE_Cookie();
 
     // Get the C++ streams
     std::istream&       istr()       { return *m_istr; }
@@ -95,7 +95,7 @@ namespace Dimension
   {
   public:
     ioFILE_Cookie(std::iostream& iostr);
-    // virtual ~ioFILE_Cookie();
+    virtual ~ioFILE_Cookie();
   };
 }
 
