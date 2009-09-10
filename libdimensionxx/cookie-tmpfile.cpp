@@ -25,6 +25,9 @@
 
 namespace Dimension
 {
+  // Close the tmpfile
+  FILE_Cookie::~FILE_Cookie() { std::fclose(m_file); }
+
   namespace
   {
     // Write an input stream completely to a FILE*; this works poorly for
@@ -91,99 +94,56 @@ namespace Dimension
   }
 
   // Make an input FILE_Cookie
-  FILE_Cookie::FILE_Cookie(std::istream& istr)
-    : m_file(std::tmpfile()), m_istr(&istr), m_ostr(0)
+  iFILE_Cookie::iFILE_Cookie(std::istream& istr)
+    : m_istr(&istr)
   {
-    if (!m_file) {
+    FILE* tmp = std::tmpfile();
+    if (!tmp) {
       throw Dimension_Error("Error opening temporary file for C++/C I/O"
                             " interface.");
     }
 
     // Write the input stream to the temporary file
-    write_cookie(m_file, *m_istr);
+    write_cookie(tmp, *m_istr);
+
+    // Set the FILE*
+    file(tmp);
   }
 
   // Make an output FILE_Cookie
-  FILE_Cookie::FILE_Cookie(std::ostream& ostr)
-    : m_file(std::tmpfile()), m_istr(0), m_ostr(&ostr)
+  oFILE_Cookie::oFILE_Cookie(std::ostream& ostr)
+    : m_ostr(&ostr)
   {
-    if (!m_file) {
+    FILE* tmp = std::tmpfile();
+    if (!tmp) {
       throw Dimension_Error("Error opening temporary file for C++/C I/O"
                             " interface.");
     }
+
+    // Set the FILE*
+    file(tmp);
+  }
+
+  // Write the temporary file to the output stream
+  oFILE_Cookie::~oFILE_Cookie()
+  {
+    read_cookie(ostr(), file());
   }
 
   // Make an I/O FILE_Cookie
-  FILE_Cookie::FILE_Cookie(std::iostream& iostr)
-    : m_file(std::tmpfile()), m_istr(&iostr), m_ostr(&iostr)
+  ioFILE_Cookie::ioFILE_Cookie(std::iostream& iostr)
+    : iFILE_Cookie(iostr, 0), oFILE_Cookie(iostr, 0)
   {
-    if (!m_file) {
+    FILE* tmp = std::tmpfile();
+    if (!tmp) {
       throw Dimension_Error("Error opening temporary file for C++/C I/O"
                             " interface.");
     }
 
     // Write the input stream to the temporary file
-    write_cookie(m_file, *m_istr);
-  }
+    write_cookie(tmp, istr());
 
-  // Close the tmpfile, maybe syncing a C++ stream to it first
-  FILE_Cookie::~FILE_Cookie() {
-    if (is_output()) {
-      read_cookie(*m_ostr, m_file);
-    }
-
-    std::fclose(m_file);
-  }
-
-  // Get the FILE*
-  FILE*       FILE_Cookie::file()       { return m_file; }
-  const FILE* FILE_Cookie::file() const { return m_file; }
-
-  bool FILE_Cookie::is_input()  const { return m_istr; }
-  bool FILE_Cookie::is_output() const { return m_ostr; }
-
-  // Get the C++ streams
-
-  std::istream&
-  FILE_Cookie::istr()
-  {
-    if (is_input()) {
-      return *m_istr;
-    } else {
-      throw Dimension_Error("Attempted to get input stream from non-input"
-                            " FILE_Cookie.");
-    }
-  }
-
-  const std::istream&
-  FILE_Cookie::istr() const
-  {
-    if (is_input()) {
-      return *m_istr;
-    } else {
-      throw Dimension_Error("Attempted to get input stream from non-input"
-                            " FILE_Cookie.");
-    }
-  }
-
-  std::ostream&
-  FILE_Cookie::ostr()
-  {
-    if (is_output()) {
-      return *m_ostr;
-    } else {
-      throw Dimension_Error("Attempted to get output stream from non-input"
-                            " FILE_Cookie.");
-    }
-  }
-
-  const std::ostream& FILE_Cookie::ostr() const
-  {
-    if (is_output()) {
-      return *m_ostr;
-    } else {
-      throw Dimension_Error("Attempted to get output stream from non-input"
-                            " FILE_Cookie.");
-    }
+    // Set the FILE*
+    file(tmp);
   }
 }

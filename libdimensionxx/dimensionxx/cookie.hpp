@@ -29,37 +29,73 @@
 
 namespace Dimension
 {
-  // Simple RAII class for FILE*'s which interface with a C++ stream.
+  // Simple RAII classes for FILE*'s which interface with a C++ stream.
+
   class FILE_Cookie
   {
   public:
-    FILE_Cookie(std::istream& istr);
-    FILE_Cookie(std::ostream& ostr);
-    FILE_Cookie(std::iostream& iostr);
-    ~FILE_Cookie();
+    // Destructor made pure virtual
+    virtual ~FILE_Cookie() = 0;
 
     // Get the magic FILE*
-    FILE*       file();
-    const FILE* file() const;
+    FILE*       file()       { return m_file; }
+    const FILE* file() const { return m_file; }
 
-    // Are we an input or output stream?
-    bool is_input() const;
-    bool is_output() const;
+  protected:
+    FILE_Cookie() { }
 
-    // Get the C++ streams
-    std::istream&       istr();
-    const std::istream& istr() const;
-    std::ostream&       ostr();
-    const std::ostream& ostr() const;
+    // Set the underlying FILE*
+    void file(FILE* file) { m_file = file; }
 
   private:
     std::FILE* m_file;
-    std::istream* m_istr;
-    std::ostream* m_ostr;
 
     // Copying prohibited
     FILE_Cookie(const FILE_Cookie& cookie);
     FILE_Cookie& operator=(const FILE_Cookie& cookie);
+  };
+
+  class iFILE_Cookie : public virtual FILE_Cookie
+  {
+  public:
+    iFILE_Cookie(std::istream& istr);
+    // virtual ~iFILE_Cookie();
+
+    // Get the C++ streams
+    std::istream&       istr()       { return *m_istr; }
+    const std::istream& istr() const { return *m_istr; }
+
+  protected:
+    // Just set the istream without initializing the FILE*
+    iFILE_Cookie(std::istream& istr, int) : m_istr(&istr) { }
+
+  private:
+    std::istream* m_istr;
+  };
+
+  class oFILE_Cookie : public virtual FILE_Cookie
+  {
+  public:
+    oFILE_Cookie(std::ostream& ostr);
+    virtual ~oFILE_Cookie();
+
+    // Get the C++ streams
+    std::ostream&       ostr()       { return *m_ostr; }
+    const std::ostream& ostr() const { return *m_ostr; }
+
+  protected:
+    // Just set the istream without initializing the FILE*
+    oFILE_Cookie(std::ostream& ostr, int) : m_ostr(&ostr) { }
+
+  private:
+    std::ostream* m_ostr;
+  };
+
+  class ioFILE_Cookie : public iFILE_Cookie, public oFILE_Cookie
+  {
+  public:
+    ioFILE_Cookie(std::iostream& iostr);
+    // virtual ~ioFILE_Cookie();
   };
 }
 

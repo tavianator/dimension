@@ -55,7 +55,7 @@ namespace Dimension
     }
 
     // Make the C++/C I/O interface
-    FILE_Cookie cookie(*m_ostr);
+    oFILE_Cookie cookie(*m_ostr);
 
     // Write the PNG file
     if (dmnsn_png_write_canvas(m_canvas->dmnsn(), cookie.file()) != 0) {
@@ -81,7 +81,7 @@ namespace Dimension
     Persister persister;
 
     // Make the C++/C I/O interface
-    FILE_Cookie* cookie = new FILE_Cookie(*m_ostr);
+    FILE_Cookie* cookie = new oFILE_Cookie(*m_ostr);
     persister.persist(cookie);
 
     // Start the asynchronous task
@@ -110,7 +110,7 @@ namespace Dimension
     }
 
     // Make the C++/C I/O interface
-    FILE_Cookie cookie(*m_istr);
+    iFILE_Cookie cookie(*m_istr);
 
     // Read the canvas from a PNG file
     dmnsn_canvas* canvas = dmnsn_png_read_canvas(cookie.file());
@@ -146,7 +146,7 @@ namespace Dimension
     persister.persist(canvas);
 
     // Make the C++/C I/O interface
-    FILE_Cookie* cookie = new FILE_Cookie(*m_istr);
+    iFILE_Cookie* cookie = new iFILE_Cookie(*m_istr);
     persister.persist(cookie);
 
     // Start the asynchronous task

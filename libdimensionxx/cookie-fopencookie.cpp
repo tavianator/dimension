@@ -34,20 +34,24 @@
 
 namespace Dimension
 {
+  // FILE_Cookie pure virtual destructor: close the file
+  FILE_Cookie::~FILE_Cookie() { std::fclose(m_file); }
+
   namespace
   {
     // Cookie read function
     ssize_t
     cookie_read(void* cookie, char* buf, size_t size)
     {
-      FILE_Cookie* streams = reinterpret_cast<FILE_Cookie*>(cookie);
+      FILE_Cookie*  fcookie  = reinterpret_cast<FILE_Cookie*>(cookie);
+      iFILE_Cookie& ifcookie = dynamic_cast<iFILE_Cookie&>(*fcookie);
 
       // Do the unformatted read
-      streams->istr().read(buf, size);
+      ifcookie.istr().read(buf, size);
 
-      if (streams->istr().eof() || streams->istr().good()) {
-        return streams->istr().gcount(); // This returns 0 on an immediate EOF
-                                         // for us.
+      if (ifcookie.istr().eof() || ifcookie.istr().good()) {
+        return ifcookie.istr().gcount(); // This returns 0 on an immediate EOF
+                                          // for us.
       } else {
         // Some non-EOF error
         return -1;
@@ -58,12 +62,13 @@ namespace Dimension
     ssize_t
     cookie_write(void* cookie, const char* buf, size_t size)
     {
-      FILE_Cookie* streams = reinterpret_cast<FILE_Cookie*>(cookie);
+      FILE_Cookie*  fcookie  = reinterpret_cast<FILE_Cookie*>(cookie);
+      oFILE_Cookie& ofcookie = dynamic_cast<oFILE_Cookie&>(*fcookie);
 
       // Do the unformatted write
-      streams->ostr().write(buf, size);
+      ofcookie.ostr().write(buf, size);
 
-      if (streams->ostr().good()) {
+      if (ofcookie.ostr().good()) {
         // Write operation succeeded, so we must've written size bytes
         return size;
       } else {
@@ -76,42 +81,44 @@ namespace Dimension
     int
     cookie_seek(void* cookie, off64_t* offset, int whence)
     {
-      FILE_Cookie* streams = reinterpret_cast<FILE_Cookie*>(cookie);
+      FILE_Cookie*  fcookie  = reinterpret_cast<FILE_Cookie*>(cookie);
+      iFILE_Cookie* ifcookie = dynamic_cast<iFILE_Cookie*>(fcookie);
+      oFILE_Cookie* ofcookie = dynamic_cast<oFILE_Cookie*>(fcookie);
 
-      if (streams->is_input()) {
+      if (ifcookie) {
         // If we have an input stream, seek it
         switch (whence) {
         case SEEK_SET:
-          streams->istr().seekg(*offset, std::ios::beg);
+          ifcookie->istr().seekg(*offset, std::ios::beg);
           break;
         case SEEK_CUR:
-          streams->istr().seekg(*offset, std::ios::cur);
+          ifcookie->istr().seekg(*offset, std::ios::cur);
           break;
         case SEEK_END:
-          streams->istr().seekg(*offset, std::ios::end);
+          ifcookie->istr().seekg(*offset, std::ios::end);
           break;
         }
 
-        if (!streams->istr().good()) {
+        if (!ifcookie->istr().good()) {
           // Seek failed
           return 1;
         }
       }
 
-      if (streams->is_output()) {
+      if (ofcookie) {
         // If we have an output stream, seek it
         switch (whence) {
         case SEEK_SET:
-          streams->ostr().seekp(*offset, std::ios::beg);
+          ofcookie->ostr().seekp(*offset, std::ios::beg);
           break;
         case SEEK_CUR:
-          streams->ostr().seekp(*offset, std::ios::cur);
+          ofcookie->ostr().seekp(*offset, std::ios::cur);
           break;
         case SEEK_END:
-          streams->ostr().seekp(*offset, std::ios::end);
+          ofcookie->ostr().seekp(*offset, std::ios::end);
         }
 
-        if (!streams->ostr().good()) {
+        if (!ofcookie->ostr().good()) {
           // Seek failed
           return 1;
         }
@@ -123,8 +130,8 @@ namespace Dimension
   }
 
   // Make an input FILE_Cookie
-  FILE_Cookie::FILE_Cookie(std::istream& istr)
-    : m_istr(&istr), m_ostr(0)
+  iFILE_Cookie::iFILE_Cookie(std::istream& istr)
+    : m_istr(&istr)
   {
     cookie_io_functions_t io_funcs;
     io_funcs.read  = &cookie_read;
@@ -132,12 +139,13 @@ namespace Dimension
     io_funcs.seek  = &cookie_seek;
     io_funcs.close = 0;
 
-    m_file = fopencookie(reinterpret_cast<void*>(this), "r", io_funcs);
+    // Set the FILE*
+    file(fopencookie(reinterpret_cast<void*>(this), "r", io_funcs));
   }
 
   // Make an output FILE_Cookie
-  FILE_Cookie::FILE_Cookie(std::ostream& ostr)
-    : m_istr(0), m_ostr(&ostr)
+  oFILE_Cookie::oFILE_Cookie(std::ostream& ostr)
+    : m_ostr(&ostr)
   {
     cookie_io_functions_t io_funcs;
     io_funcs.read  = 0;
@@ -145,12 +153,16 @@ namespace Dimension
     io_funcs.seek  = &cookie_seek;
     io_funcs.close = 0;
 
-    m_file = fopencookie(reinterpret_cast<void*>(this), "w", io_funcs);
+    // Set the FILE*
+    file(fopencookie(reinterpret_cast<void*>(this), "w", io_funcs));
   }
 
+  // No-op oFILE_Cookie destructor
+  oFILE_Cookie::~oFILE_Cookie() { }
+
   // Make an I/O FILE_Cookie
-  FILE_Cookie::FILE_Cookie(std::iostream& iostr)
-    : m_istr(&iostr), m_ostr(&iostr)
+  ioFILE_Cookie::ioFILE_Cookie(std::iostream& iostr)
+    : iFILE_Cookie(iostr, 0), oFILE_Cookie(iostr, 0)
   {
     cookie_io_functions_t io_funcs;
     io_funcs.read  = &cookie_read;
@@ -158,61 +170,6 @@ namespace Dimension
     io_funcs.seek  = &cookie_seek;
     io_funcs.close = 0;
 
-    m_file = fopencookie(reinterpret_cast<void*>(this), "r+", io_funcs);
-  }
-
-  // Close the file
-  FILE_Cookie::~FILE_Cookie() { std::fclose(m_file); }
-
-  // Get the FILE*
-  FILE*       FILE_Cookie::file()       { return m_file; }
-  const FILE* FILE_Cookie::file() const { return m_file; }
-
-  bool FILE_Cookie::is_input()  const { return m_istr; }
-  bool FILE_Cookie::is_output() const { return m_ostr; }
-
-  // Get the C++ streams
-
-  std::istream&
-  FILE_Cookie::istr()
-  {
-    if (is_input()) {
-      return *m_istr;
-    } else {
-      throw Dimension_Error("Attempted to get input stream from non-input"
-                            " FILE_Cookie.");
-    }
-  }
-
-  const std::istream&
-  FILE_Cookie::istr() const
-  {
-    if (is_input()) {
-      return *m_istr;
-    } else {
-      throw Dimension_Error("Attempted to get input stream from non-input"
-                            " FILE_Cookie.");
-    }
-  }
-
-  std::ostream&
-  FILE_Cookie::ostr()
-  {
-    if (is_output()) {
-      return *m_ostr;
-    } else {
-      throw Dimension_Error("Attempted to get output stream from non-input"
-                            " FILE_Cookie.");
-    }
-  }
-
-  const std::ostream& FILE_Cookie::ostr() const
-  {
-    if (is_output()) {
-      return *m_ostr;
-    } else {
-      throw Dimension_Error("Attempted to get output stream from non-input"
-                            " FILE_Cookie.");
-    }
+    file(fopencookie(reinterpret_cast<void*>(this), "r+", io_funcs));
   }
 }
