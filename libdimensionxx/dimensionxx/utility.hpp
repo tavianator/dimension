@@ -18,28 +18,30 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSIONXX_HPP
-#define DIMENSIONXX_HPP
+// Template utilities
 
-// Internal helpers
-#include <dimensionxx/utility.hpp>
-#include <dimensionxx/cookie.hpp>
+#ifndef DIMENSIONXX_UTILITY_HPP
+#define DIMENSIONXX_UTILITY_HPP
 
-// libdimension wrappers
-#include <dimensionxx/error.hpp>
-#include <dimensionxx/array.hpp>
-#include <dimensionxx/progress.hpp>
-#include <dimensionxx/geometry.hpp>
-#include <dimensionxx/color.hpp>
-#include <dimensionxx/canvas.hpp>
-#include <dimensionxx/gl.hpp>
-#include <dimensionxx/png.hpp>
-#include <dimensionxx/texture.hpp>
-#include <dimensionxx/object.hpp>
-#include <dimensionxx/objects.hpp>
-#include <dimensionxx/camera.hpp>
-#include <dimensionxx/cameras.hpp>
-#include <dimensionxx/scene.hpp>
-#include <dimensionxx/raytrace.hpp>
+namespace Dimension
+{
+  // A constraint enforcing that T is a POD type by making it part of a union.
+  // Taking the address of this function will cause a compile-time failure if
+  // T is not a POD type.
+  template <typename T>
+  void POD_constraint();
 
-#endif /* DIMENSIONXX_HPP */
+  // POD constraint implementation
+  template <typename T>
+  void
+  POD_constraint()
+  {
+    union
+    {
+      T t;
+    } constraint;
+    static_cast<void>(constraint); // Silence unused variable warning
+  }
+}
+
+#endif // DIMENSIONXX_UTILITY_HPP

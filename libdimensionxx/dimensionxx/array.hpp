@@ -188,20 +188,6 @@ namespace Dimension
     std::tr1::shared_ptr<T> m_object;
   };
 
-  // A constraint enforcing that T is a POD type by making it part of a union.
-  // Taking the address of this function will cause a compile-time failure if
-  // T is not a POD type.
-  template <typename T>
-  void
-  POD_constraint()
-  {
-    union
-    {
-      T t;
-    } constraint;
-    static_cast<void>(constraint); // Silence unused variable warning
-  }
-
   // Array_Element
 
   template <typename T>
