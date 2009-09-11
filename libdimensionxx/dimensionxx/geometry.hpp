@@ -283,6 +283,18 @@ namespace Dimension
     return r;
   }
 
+  inline double
+  norm(const Vector& v)
+  {
+    return dmnsn_vector_norm(v.dmnsn());
+  }
+
+  inline Vector
+  normalize(const Vector& v)
+  {
+    return Vector(dmnsn_vector_normalize(v.dmnsn()));
+  }
+
   // Dot product
   inline double
   dot(const Vector& lhs, const Vector& rhs)
