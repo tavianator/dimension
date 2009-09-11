@@ -17,58 +17,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#ifndef TESTS_H
-#define TESTS_H
+#ifndef TESTSXX_HPP
+#define TESTSXX_HPP
 
-#include "../libdimension/dimension.h"
+#include "../libdimensionxx/dimensionxx.hpp"
+#include <iostream>
 #include <GL/glx.h>
 #include <GL/gl.h>
-#include <unistd.h>
-#include <stdio.h>
 
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
+namespace Dimension
+{
+  namespace Tests
+  {
+    // Helper to return a basic scene
+    Scene default_scene();
 
-/*
- * Convenience
- */
+    // Display abstraction
+    class Display
+    {
+    public:
+      Display(const Canvas& canvas);
+      ~Display();
 
-dmnsn_scene *dmnsn_new_default_scene();
-void dmnsn_delete_default_scene(dmnsn_scene *scene);
+      void flush();
 
-/*
- * Windowing
- */
+    private:
+      ::Display *m_dpy;
+      Window m_win;
+      Colormap m_cmap;
+      GLXContext m_cx;
+      XEvent m_event;
+    };
 
-typedef struct {
-  Display *dpy;
-  Window win;
-  Colormap cmap;
-  GLXContext cx;
-  XEvent event;
-} dmnsn_display;
+    Progress progressbar_async(std::ostream& ostr,
+                               const Dimension::Progress& progress);
+  }
 
-dmnsn_display *dmnsn_new_display(const dmnsn_canvas *canvas);
-void dmnsn_delete_display(dmnsn_display *display);
-
-/* Flush the GL buffers */
-void dmnsn_display_flush(dmnsn_display *display);
-
-/*
- * Asynchronicity
- */
-
-/* Print a progress bar of the progress of `progress' */
-void dmnsn_progressbar(const char *str, const dmnsn_progress *progress);
-/* Print a progress bar asynchronously, convienently guaranteed to succeed if
-   it returns so our tests don't get cluttered up */
-dmnsn_progress *dmnsn_progressbar_async(const char *str,
-                                        const dmnsn_progress *progress);
-
-#ifdef __cplusplus
+  // Print a progress bar of the progress of `progress'
+  std::ostream& operator<<(std::ostream& ostr,
+                           const Dimension::Progress& progress);
 }
-#endif
 
-#endif /* TESTS_H */
+#endif // TESTSXX_HPP

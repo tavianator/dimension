@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include "testsxx.hpp"
+#include "tests.hpp"
 
 namespace Dimension
 {
@@ -62,23 +62,98 @@ namespace Dimension
       return scene;
     }
 
-    Display::Display(const Canvas& canvas)
-      : m_display(dmnsn_new_display(canvas.dmnsn()))
+    namespace
     {
-      if (!m_display) {
+      /* XIfEvent callback */
+      Bool
+      WaitForNotify(::Display *d, XEvent *e, char *arg)
+      {
+        return (e->type == MapNotify) && (e->xmap.window == (Window)arg);
+      }
+    }
+
+    Display::Display(const Canvas& canvas)
+    {
+      int attributeList[] = {
+        GLX_RGBA,
+        GLX_DOUBLEBUFFER,
+        GLX_RED_SIZE, 1,
+        GLX_GREEN_SIZE, 1,
+        GLX_BLUE_SIZE, 1,
+        None
+      };
+      XVisualInfo *vi;
+      XSetWindowAttributes swa;
+
+      /* Get an X connection */
+      m_dpy = XOpenDisplay(0);
+      if (!m_dpy) {
         throw Dimension_Error("Couldn't create display.");
       }
+
+      /* Get an appropriate visual */
+      vi = glXChooseVisual(m_dpy, DefaultScreen(m_dpy),
+                           attributeList);
+      if (!vi) {
+        XCloseDisplay(m_dpy);
+        throw Dimension_Error("Couldn't create display.");
+      }
+
+      /* Create a GLX context */
+      m_cx = glXCreateContext(m_dpy, vi, 0, GL_TRUE);
+      if (!m_cx) {
+        XCloseDisplay(m_dpy);
+        throw Dimension_Error("Couldn't create display.");
+      }
+
+      /* Create a color map */
+      m_cmap = XCreateColormap(m_dpy,
+                               RootWindow(m_dpy, vi->screen),
+                               vi->visual, AllocNone);
+      if (!m_cmap) {
+        glXDestroyContext(m_dpy, m_cx);
+        XCloseDisplay(m_dpy);
+        throw Dimension_Error("Couldn't create display.");
+      }
+
+      /* Create a window */
+      swa.colormap = m_cmap;
+      swa.border_pixel = 0;
+      swa.event_mask = StructureNotifyMask;
+      m_win = XCreateWindow(m_dpy,
+                            RootWindow(m_dpy, vi->screen),
+                            0, 0, canvas.width(), canvas.height(),
+                            0, vi->depth, InputOutput, vi->visual,
+                            CWBorderPixel|CWColormap|CWEventMask, &swa);
+      if (!m_win) {
+        XFreeColormap(m_dpy, m_cmap);
+        glXDestroyContext(m_dpy, m_cx);
+        XCloseDisplay(m_dpy);
+        throw Dimension_Error("Couldn't create display.");
+      }
+
+      XStoreName(m_dpy, m_win, "glX");
+
+      XMapWindow(m_dpy, m_win);
+      XIfEvent(m_dpy, &m_event, &WaitForNotify, (char*)m_win);
+
+      /* Connect the context to the window */
+      glXMakeCurrent(m_dpy, m_win, m_cx);
     }
 
     Display::~Display()
     {
-      dmnsn_delete_display(m_display);
+      XDestroyWindow(m_dpy, m_win);
+      XFreeColormap(m_dpy, m_cmap);
+      glXDestroyContext(m_dpy, m_cx);
+      XCloseDisplay(m_dpy);
     }
 
     void
     Display::flush()
     {
-      dmnsn_display_flush(m_display);
+      glFlush();
+      glXSwapBuffers(m_dpy, m_win);
     }
 
     namespace

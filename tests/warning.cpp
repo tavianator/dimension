@@ -19,35 +19,36 @@
 
 /* Make sure warnings don't kill us - this test should pass */
 
-#include "tests.h"
-#include <stdlib.h>
+#include "tests.hpp"
 
 int
 main()
 {
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_MEDIUM) {
+  using namespace Dimension;
+
+  if (resilience() != SEVERITY_MEDIUM) {
     return EXIT_FAILURE;
   }
 
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_LOW) {
+  resilience(SEVERITY_LOW);
+  if (resilience() != SEVERITY_LOW) {
     return EXIT_FAILURE;
   }
 
-  dmnsn_set_resilience(DMNSN_SEVERITY_MEDIUM);
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_MEDIUM) {
+  resilience(SEVERITY_MEDIUM);
+  if (resilience() != SEVERITY_MEDIUM) {
     return EXIT_FAILURE;
   }
 
-  dmnsn_error(DMNSN_SEVERITY_LOW, "This warning is expected.");
+  dmnsn_error(SEVERITY_LOW, "This warning is expected.");
 
-  dmnsn_set_resilience(DMNSN_SEVERITY_HIGH);
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_HIGH) {
+  resilience(SEVERITY_HIGH);
+  if (resilience() != SEVERITY_HIGH) {
     return EXIT_FAILURE;
   }
 
-  dmnsn_error(DMNSN_SEVERITY_LOW, "This warning is expected.");
-  dmnsn_error(DMNSN_SEVERITY_MEDIUM, "This warning is expected.");
+  dmnsn_error(SEVERITY_LOW, "This warning is expected.");
+  dmnsn_error(SEVERITY_MEDIUM, "This warning is expected.");
 
   return EXIT_SUCCESS;
 }

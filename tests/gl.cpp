@@ -17,40 +17,63 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#ifndef TESTSXX_HPP
-#define TESTSXX_HPP
-
-#include "tests.h"
-#include "../libdimensionxx/dimensionxx.hpp"
+#include "tests.hpp"
+#include <fstream>
 #include <iostream>
 
-namespace Dimension
-{
-  namespace Tests
+int
+main() {
+  using namespace Dimension;
+
+  // Set the resilience low for tests
+  resilience(SEVERITY_LOW);
+
+  // Create the default test scene
+  Scene scene = Tests::default_scene();
+
+  // Create a glX window
+  Tests::Display display(scene.canvas());
+
   {
-    // Helper to return a basic scene
-    Scene default_scene();
+    Raytracer raytracer(scene);
+    GL_Writer writer(scene.canvas());
 
-    // Display abstraction
-    class Display
-    {
-    public:
-      Display(const Canvas& canvas);
-      ~Display();
+    // Render the scene
+    Progress progress = raytracer.render_async();
 
-      void flush();
+    std::cout << "Raytracing scene: ";
+    Progress barprogress = Tests::progressbar_async(std::cout, progress);
 
-    private:
-      dmnsn_display* m_display;
-    };
+    // Display the scene as it's rendered
+    while (progress.progress() < 1.0) {
+      writer.write();
+      display.flush();
+    }
 
-    Progress progressbar_async(std::ostream& ostr,
-                               const Dimension::Progress& progress);
+    barprogress.finish();
+    std::cout << std::endl;
+
+    // Make sure we show the completed rendering
+    progress.finish();
+    writer.write();
+    display.flush();
   }
 
-  // Print a progress bar of the progress of `progress'
-  std::ostream& operator<<(std::ostream& ostr,
-                           const Dimension::Progress& progress);
-}
+  // Pause for a second
+  sleep(1);
 
-#endif // TESTSXX_HPP
+  // Read the canvas back from the GL buffer
+  GL_Reader reader;
+  Canvas canvas
+    = reader.read(0, 0, scene.canvas().width(), scene.canvas().height());
+
+  // And write it again
+  GL_Writer writer(canvas);
+  writer.write();
+  display.flush();
+
+  // Pause for a second
+  sleep(1);
+
+  return EXIT_SUCCESS;
+}

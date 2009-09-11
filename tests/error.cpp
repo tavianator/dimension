@@ -19,14 +19,15 @@
 
 /* Make sure that errors terminate us - this test should fail */
 
-#include "tests.h"
-#include <stdlib.h>
+#include "tests.hpp"
 
 int
 main()
 {
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
-  dmnsn_error(DMNSN_SEVERITY_LOW, "This error is expected.");
+  using namespace Dimension;
+
+  resilience(SEVERITY_LOW);
+  dmnsn_error(SEVERITY_LOW, "This error is expected.");
 
   return EXIT_SUCCESS;
 }
