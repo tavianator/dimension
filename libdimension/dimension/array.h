@@ -59,7 +59,8 @@ dmnsn_new_array(size_t obj_size)
 
 /* Delete the array */
 DMNSN_INLINE void
-dmnsn_delete_array(dmnsn_array *array) {
+dmnsn_delete_array(dmnsn_array *array)
+{
   if (array) {
     free(array->ptr);
     free(array);

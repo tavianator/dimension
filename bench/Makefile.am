@@ -17,17 +17,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-INCLUDES = -I$(top_srcdir)/libdimension
+SUBDIRS = libdimension
 
-check_PROGRAMS    = error-test                                                 \
-                    warning-test
-TESTS             = $(check_PROGRAMS)
-XFAIL_TESTS       = error-test
+bench: all-recursive
+	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) bench
 
-INCLUDES = -I$(top_srcdir)/libdimension
-
-error_test_SOURCES = error.c
-error_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
-
-warning_test_SOURCES = warning.c
-warning_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
+.PHONY: bench

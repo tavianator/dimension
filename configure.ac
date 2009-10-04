@@ -28,11 +28,18 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
+dnl Timing library for benchmarks
+AC_CHECK_LIB([sandglass], [sandglass_create],
+             [],
+             [AC_MSG_WARN([libsandglass not found - benchmarking suite will not work correctly])])
+
 dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile
-                 doc/Makefile
                  libdimension/Makefile
                  tests/Makefile
-                 tests/libdimension/Makefile])
+                 tests/libdimension/Makefile
+                 bench/Makefile
+                 bench/libdimension/Makefile
+                 doc/Makefile])
 AC_OUTPUT

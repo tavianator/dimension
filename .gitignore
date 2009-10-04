@@ -41,6 +41,9 @@ Makefile.in
 /tests/*/*-test
 /tests/*.png
 
+# Files created by `make bench'
+/bench/*/bench-*
+
 # Files and folders created by libtool
 .libs/
 *.l[oa]

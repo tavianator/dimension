@@ -19,15 +19,12 @@
 
 INCLUDES = -I$(top_srcdir)/libdimension
 
-check_PROGRAMS    = error-test                                                 \
-                    warning-test
-TESTS             = $(check_PROGRAMS)
-XFAIL_TESTS       = error-test
+EXTRA_PROGRAMS = bench-array
 
-INCLUDES = -I$(top_srcdir)/libdimension
+bench_array_SOURCES = array.c
+bench_array_LDADD   = -lsandglass $(top_srcdir)/libdimension/libdimension.la
 
-error_test_SOURCES = error.c
-error_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
+bench: bench-array$(EXEEXT)
+	./bench-array$(EXEEXT)
 
-warning_test_SOURCES = warning.c
-warning_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
+.PHONY: bench

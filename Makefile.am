@@ -18,8 +18,14 @@
 ###########################################################################
 
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = doc                                                                  \
-          libdimension                                                         \
-          tests
+SUBDIRS = libdimension                                                         \
+          tests                                                                \
+          bench                                                                \
+          doc
 
 EXTRA_DIST = autogen.sh
+
+bench: all-recursive
+	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench
+
+.PHONY: bench
