@@ -21,7 +21,6 @@ AM_INIT_AUTOMAKE(dimension, 0.0.0)
 
 dnl Programs
 AC_PROG_CC
-AC_PROG_CXX
 AM_PROG_CC_C_O
 AM_PROG_AS
 AC_PROG_INSTALL
@@ -29,23 +28,9 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
-dnl Determine if we can use the fopencookie() implementation of FILE_Cookie
-AC_MSG_CHECKING([for fopencookie()])
-AC_LINK_IFELSE(AC_LANG_PROGRAM(
-  [[ #define _GNU_SOURCE
-     #include <stdio.h> ]],
-  [[ cookie_io_functions_t io_funcs; 
-     FILE* file = fopencookie(NULL, "r", io_funcs); ]]),
-               [fopencookie=yes
-                AC_MSG_RESULT([yes])],
-               [AC_MSG_RESULT([no])])
-AM_CONDITIONAL([FOPENCOOKIE], [test "$fopencookie" = "yes"])
-
 dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile
                  doc/Makefile
-                 libdimension/Makefile
-                 libdimensionxx/Makefile
-                 tests/Makefile])
+                 libdimension/Makefile])
 AC_OUTPUT

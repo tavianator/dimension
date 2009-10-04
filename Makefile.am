@@ -19,8 +19,6 @@
 
 ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = doc                                                                  \
-          libdimension                                                         \
-          libdimensionxx                                                       \
-          tests
+          libdimension
 
 EXTRA_DIST = autogen.sh
