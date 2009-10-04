@@ -32,5 +32,7 @@ dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile
                  doc/Makefile
-                 libdimension/Makefile])
+                 libdimension/Makefile
+                 tests/Makefile
+                 tests/libdimension/Makefile])
 AC_OUTPUT

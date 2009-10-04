@@ -17,9 +17,4 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = doc                                                                  \
-          libdimension                                                         \
-          tests
-
-EXTRA_DIST = autogen.sh
+SUBDIRS = libdimension

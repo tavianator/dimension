@@ -17,9 +17,15 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = doc                                                                  \
-          libdimension                                                         \
-          tests
+check_PROGRAMS    = error-test                                                 \
+                    warning-test
+TESTS             = $(check_PROGRAMS)
+XFAIL_TESTS       = error-test
 
-EXTRA_DIST = autogen.sh
+INCLUDES = -I$(top_srcdir)/libdimension
+
+error_test_SOURCES = error.c
+error_test_LDADD   = ../../libdimension/libdimension.la
+
+warning_test_SOURCES = warning.c
+warning_test_LDADD   = ../../libdimension/libdimension.la
