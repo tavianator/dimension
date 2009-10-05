@@ -51,8 +51,10 @@ dmnsn_kD_splay_node *dmnsn_kD_splay_copy(dmnsn_kD_splay_node *root)
   if (root) {
     node = dmnsn_new_kD_splay_node();
     *node = *root;
-    node->left = dmnsn_kD_splay_copy(node->left);
+    node->left  = dmnsn_kD_splay_copy(node->left);
     node->right = dmnsn_kD_splay_copy(node->right);
+    node->left->parent  = node;
+    node->right->parent = node;
   }
   return node;
 }
@@ -64,5 +66,60 @@ dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_node *root)
     dmnsn_delete_kD_splay_tree(root->left);
     dmnsn_delete_kD_splay_tree(root->right);
     dmnsn_delete_kD_splay_node(root);
+  }
+}
+
+/* Tree rotations */
+static void dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node);
+
+void
+dmnsn_kD_splay(dmnsn_kD_splay_node *node)
+{
+  while (node->parent) {
+    if (!node->parent->parent) {
+      /* Zig step - we are a child of the root node */
+      dmnsn_kD_splay_rotate(node);
+      return;
+    } else if ((node == node->parent->left
+                && node->parent == node->parent->parent->left)
+               || (node == node->parent->right
+                   && node->parent == node->parent->parent->right)) {
+      /* Zig-zig step - we are a child on the same side as our parent */
+      dmnsn_kD_splay_rotate(node->parent);
+      dmnsn_kD_splay_rotate(node);
+    } else {
+      /* Zig-zag step - we are a child on a different side than our parent is */
+      dmnsn_kD_splay_rotate(node);
+      dmnsn_kD_splay_rotate(node);
+    }
+  }
+}
+
+static void
+dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node)
+{
+  dmnsn_kD_splay_node *pivot;
+  if (node == node->parent->left) {
+    /* We are a left child */
+    pivot = node->right;
+
+    node->right = node->parent;
+    node->right->parent = node;
+
+    node->right->left = pivot;
+    pivot->parent = node->right;
+
+    node->parent = node->parent->parent;
+  } else {
+    /* We are a right child */
+    pivot = node->left;
+
+    node->left = node->parent;
+    node->left->parent = node;
+
+    node->left->right = pivot;
+    pivot->parent = node->left;
+
+    node->parent = node->parent->parent;
   }
 }

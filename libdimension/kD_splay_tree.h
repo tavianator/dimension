@@ -43,5 +43,6 @@ void dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_node *root);
 
 dmnsn_kD_splay_node *dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root,
                                            dmnsn_object *object);
+void dmnsn_kD_splay(dmnsn_kD_splay_node *node);
 
 #endif /* DIMENSION_IMPL_KD_SPLAY_TREE_H */
