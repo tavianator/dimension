@@ -58,6 +58,9 @@ struct dmnsn_object {
   /* Transformation matrix */
   dmnsn_matrix trans;
 
+  /* Bounding box */
+  dmnsn_vector min, max;
+
   /* Callback functions */
   dmnsn_object_intersection_fn *intersection_fn;
   dmnsn_object_inside_fn       *inside_fn;
