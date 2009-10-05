@@ -24,8 +24,6 @@ check_PROGRAMS    = error-test                                                 \
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
 
-INCLUDES = -I$(top_srcdir)/libdimension
-
 error_test_SOURCES = error.c
 error_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
 
