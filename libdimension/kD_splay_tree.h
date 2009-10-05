@@ -18,6 +18,17 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/*
+ * k-dimensional (in this case, k == 3) trees for storing object bounding boxes.
+ * Each node's bounding box entirely contains the bounding boxes of the nodes
+ * to its left, and is entirely contained by the bounding boxes of the nodes to
+ * its right.  Splay trees are used for the implementation, to bring commonly-
+ * used objects (the most recent object which a ray has hit) near the root of
+ * the tree for fast access.  Object's bounding boxes are expanded as needed
+ * when inserted into the tree: if they intersect an existing bounding box, they
+ * are expanded to contain it.
+ */
+
 #ifndef DIMENSION_IMPL_KD_SPLAY_TREE_H
 #define DIMENSION_IMPL_KD_SPLAY_TREE_H
 

@@ -38,6 +38,7 @@ nobase_include_HEADERS = dimension.h                                           \
 lib_LTLIBRARIES = libdimension.la
 
 libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
+                          dimension_impl.h                                     \
                           camera.c                                             \
                           cameras.c                                            \
                           canvas.c                                             \
@@ -46,6 +47,8 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           geometry.c                                           \
                           gl.c                                                 \
                           inlines.c                                            \
+                          kD_splay_tree.c                                      \
+                          kD_splay_tree.h                                      \
                           object.c                                             \
                           objects.c                                            \
                           pigments.c                                           \

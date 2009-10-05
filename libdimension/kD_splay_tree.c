@@ -59,6 +59,7 @@ dmnsn_kD_splay_node *dmnsn_kD_splay_copy(dmnsn_kD_splay_node *root)
   return node;
 }
 
+/* Recursively free a kD splay tree */
 void
 dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_node *root)
 {
@@ -69,9 +70,122 @@ dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_node *root)
   }
 }
 
+/* Return whether node1 contains node2 */
+static int dmnsn_kD_splay_contains(const dmnsn_kD_splay_node *node1,
+                                   const dmnsn_kD_splay_node *node2);
+/* Expand node to contain the bounding box from min to max */
+static void dmnsn_kD_splay_swallow(dmnsn_kD_splay_node *node,
+                                   dmnsn_vector min, dmnsn_vector max);
+
+/* Insert an object into the tree.  Returns the new tree root. */
+dmnsn_kD_splay_node *
+dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root, dmnsn_object *object)
+{
+  dmnsn_vector corner;
+  dmnsn_kD_splay_node *node = dmnsn_new_kD_splay_node();
+
+  node->left = NULL;
+  node->right = NULL;
+  node->parent = NULL;
+  node->object = object;
+
+  /* Calculate the new bounding box by finding the minimum coordinate of the
+     transformed corners of the object's original bounding box */
+
+  node->min = dmnsn_matrix_vector_mul(object->trans, object->min);
+  node->max = node->min;
+
+  corner = dmnsn_vector_construct(object->min.x, object->min.y, object->max.z);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
+  dmnsn_kD_splay_swallow(node, corner, corner);
+
+  corner = dmnsn_vector_construct(object->min.x, object->max.y, object->min.z);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
+  dmnsn_kD_splay_swallow(node, corner, corner);
+
+  corner = dmnsn_vector_construct(object->min.x, object->max.y, object->max.z);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
+  dmnsn_kD_splay_swallow(node, corner, corner);
+
+  corner = dmnsn_vector_construct(object->max.x, object->min.y, object->min.z);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
+  dmnsn_kD_splay_swallow(node, corner, corner);
+
+  corner = dmnsn_vector_construct(object->max.x, object->min.y, object->max.z);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
+  dmnsn_kD_splay_swallow(node, corner, corner);
+
+  corner = dmnsn_vector_construct(object->max.x, object->max.y, object->min.z);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
+  dmnsn_kD_splay_swallow(node, corner, corner);
+
+  corner = dmnsn_vector_construct(object->max.x, object->max.y, object->max.z);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
+  dmnsn_kD_splay_swallow(node, corner, corner);
+
+  /* Now insert the node */
+
+  while (root) {
+    if (dmnsn_kD_splay_contains(root, node)) {
+      /* node < root */
+      if (root->left)
+        root = root->left;
+      else {
+        /* We found our parent; insert and splay */
+        root->left = node;
+        node->parent = root;
+        dmnsn_kD_splay(node);
+        break;
+      }
+    } else {
+      /* Expand the bounding box to fully contain root if it doesn't
+          already */
+      dmnsn_kD_splay_swallow(node, root->min, root->max);
+      /* node >= root */
+      if (root->right)
+        root = root->right;
+      else {
+        /* We found our parent; insert and splay */
+        root->right = node;
+        node->parent = root;
+        dmnsn_kD_splay(node);
+        break;
+      }
+    }
+  }
+
+  return node;
+}
+
+/* Return whether node1 contains node2 */
+static int
+dmnsn_kD_splay_contains(const dmnsn_kD_splay_node *node1,
+                        const dmnsn_kD_splay_node *node2)
+{
+  return (node1->min.x <= node2->min.x && node1->min.y <= node2->min.y
+          && node1->min.z <= node2->min.z)
+         && (node1->max.x >= node2->max.x && node1->max.y >= node2->max.y
+             && node1->max.z >= node2->max.z);
+}
+
+/* Expand node to contain the bounding box from min to max */
+static void
+dmnsn_kD_splay_swallow(dmnsn_kD_splay_node *node,
+                       dmnsn_vector min, dmnsn_vector max)
+{
+  if (node->min.x > min.x) node->min.x = min.x;
+  if (node->min.y > min.y) node->min.y = min.z;
+  if (node->min.z > min.z) node->min.z = min.y;
+
+  if (node->max.x < max.x) node->max.x = max.x;
+  if (node->max.y < max.y) node->max.y = max.z;
+  if (node->max.z < max.z) node->max.z = max.y;
+}
+
 /* Tree rotations */
 static void dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node);
 
+/* Splay a node: move it to the root via tree rotations */
 void
 dmnsn_kD_splay(dmnsn_kD_splay_node *node)
 {
@@ -95,6 +209,7 @@ dmnsn_kD_splay(dmnsn_kD_splay_node *node)
   }
 }
 
+/* Rotate a tree on the edge connecting node and node->parent */
 static void
 dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node)
 {
