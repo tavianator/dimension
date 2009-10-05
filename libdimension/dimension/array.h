@@ -19,9 +19,9 @@
  *************************************************************************/
 
 /*
- * Simple thread-safe generalized arrays, for returning variable-length arrays
- * from functions, and other fun stuff.  All functions are inline for
- * performance reasons.
+ * Simple generalized arrays, for returning variable-length arrays from
+ * functions, and other fun stuff.  All functions are inline for performance
+ * reasons.
  */
 
 #ifndef DIMENSION_ARRAY_H
@@ -52,6 +52,8 @@ dmnsn_new_array(size_t obj_size)
     if (!array->ptr) {
       dmnsn_error(DMNSN_SEVERITY_HIGH, "Array allocation failed.");
     }
+  } else {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array allocation failed.");
   }
 
   return array;
