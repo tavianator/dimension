@@ -20,7 +20,8 @@
 INCLUDES = -I$(top_srcdir)/libdimension
 
 check_PROGRAMS    = error-test                                                 \
-                    warning-test
+                    warning-test                                               \
+                    kD_splay_tree-test
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
 
@@ -29,3 +30,6 @@ error_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
 
 warning_test_SOURCES = warning.c
 warning_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
+
+kD_splay_tree_test_SOURCES = kD_splay_tree.c
+kD_splay_tree_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
