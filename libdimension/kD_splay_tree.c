@@ -127,7 +127,7 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root, dmnsn_object *object)
 
   while (root) {
     if (dmnsn_kD_splay_contains(root, node)) {
-      /* node < root */
+      /* node <= root */
       if (root->left)
         root = root->left;
       else {
@@ -141,7 +141,7 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root, dmnsn_object *object)
       /* Expand the bounding box to fully contain root if it doesn't
           already */
       dmnsn_kD_splay_swallow(node, root->min, root->max);
-      /* node >= root */
+      /* node > root */
       if (root->right)
         root = root->right;
       else {
@@ -213,28 +213,64 @@ dmnsn_kD_splay(dmnsn_kD_splay_node *node)
 static void
 dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node)
 {
-  dmnsn_kD_splay_node *pivot;
+  dmnsn_kD_splay_node *P, *Q, *B;
   if (node == node->parent->left) {
-    /* We are a left child */
-    pivot = node->right;
+    /* We are a left child; perform a right rotation:
+     *
+     *     Q            P
+     *    / \          / \
+     *   P   C  --->  A   Q
+     *  / \              / \
+     * A   B            B   C
+     */
+    Q = node->parent;
+    P = node;
+    /* A = node->left; */
+    B = node->right;
+    /* C = node->parent->right; */
 
-    node->right = node->parent;
-    node->right->parent = node;
+    /* First fix up the parents */
+    if (Q->parent) {
+      if (Q->parent->left == Q)
+        Q->parent->left = P;
+      else
+        Q->parent->right = P;
+    }
+    P->parent = Q->parent;
+    Q->parent = P;
+    if (B) B->parent = Q;
 
-    node->right->left = pivot;
-    pivot->parent = node->right;
-
-    node->parent = node->parent->parent;
+    /* Then the children */
+    P->right = Q;
+    Q->left  = B;
   } else {
-    /* We are a right child */
-    pivot = node->left;
+    /* We are a right child; perform a left rotation:
+     *
+     *    P                Q
+     *   / \              / \
+     *  A   Q    --->    P   C
+     *     / \          / \
+     *    B   C        A   B
+     */
+    P = node->parent;
+    Q = node;
+    /* A = node->parent->left; */
+    B = node->left;
+    /* C = node->right; */
 
-    node->left = node->parent;
-    node->left->parent = node;
+    /* First fix up the parents */
+    if (P->parent) {
+      if (P->parent->left == P)
+        P->parent->left = Q;
+      else
+        P->parent->right = Q;
+    }
+    Q->parent = P->parent;
+    P->parent = Q;
+    if (B) B->parent = P;
 
-    node->left->right = pivot;
-    pivot->parent = node->left;
-
-    node->parent = node->parent->parent;
+    /* Then the children */
+    Q->left  = P;
+    P->right = B;
   }
 }
