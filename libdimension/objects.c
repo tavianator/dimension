@@ -42,6 +42,8 @@ dmnsn_new_sphere()
   if (sphere) {
     sphere->intersection_fn = &dmnsn_sphere_intersection_fn;
     sphere->inside_fn       = &dmnsn_sphere_inside_fn;
+    sphere->min             = dmnsn_vector_construct(-1.0, -1.0, -1.0);
+    sphere->max             = dmnsn_vector_construct(1.0, 1.0, 1.0);
   }
   return sphere;
 }
@@ -101,6 +103,8 @@ dmnsn_new_cube()
   if (cube) {
     cube->intersection_fn = &dmnsn_cube_intersection_fn;
     cube->inside_fn       = &dmnsn_cube_inside_fn;
+    cube->min             = dmnsn_vector_construct(-1.0, -1.0, -1.0);
+    cube->max             = dmnsn_vector_construct(1.0, 1.0, 1.0);
   }
   return cube;
 }
