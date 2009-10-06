@@ -39,7 +39,7 @@ Makefile.in
 
 # Files created by `make check'
 /tests/*/*-test
-/tests/*.png
+/tests/*/*.png
 
 # Files created by `make bench'
 /bench/*/bench-*
