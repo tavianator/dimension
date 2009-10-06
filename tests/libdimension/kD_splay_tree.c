@@ -24,27 +24,6 @@
 #include "../../libdimension/dimension_impl.h"
 #include <stdlib.h>
 
-void
-dmnsn_print_kD_splay_tree(dmnsn_kD_splay_node *root)
-{
-  printf("((%g, %g, %g) - (%g, %g, %g)",
-         root->min.x, root->min.y, root->min.z,
-         root->max.x, root->max.y, root->max.z);
-  if (root->left || root->right) {
-    printf(": ");
-    if (root->left)
-      dmnsn_print_kD_splay_tree(root->left);
-    else
-      printf("?");
-    printf(" - ");
-    if (root->right) 
-      dmnsn_print_kD_splay_tree(root->right);
-    else
-      printf("?");
-  }
-  printf(")");
-}
-
 int
 main()
 {
