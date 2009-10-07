@@ -296,6 +296,9 @@ dmnsn_kD_splay_search(dmnsn_kD_splay_node *root, dmnsn_line ray)
   return result.intersection;
 }
 
+static double dmnsn_ray_box_intersection(dmnsn_line ray,
+                                         dmnsn_vector min, dmnsn_vector max);
+
 static dmnsn_kD_splay_search_result
 dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
                                 double t)
@@ -326,7 +329,7 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
      * closer than `t'.
      */
     t_temp = dmnsn_ray_box_intersection(ray, node->min, node->max);
-    search_left = t_temp >= 0.0 && (t < 0.0 || t_temp < t)
+    search_left = t_temp >= 0.0 && (t < 0.0 || t_temp < t);
   }
 
   if (search_left) {
@@ -344,7 +347,7 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
       test_object = 1;
     } else {
       t_temp = dmnsn_ray_box_intersection(ray, node->min, node->max);
-      test_object = t_temp >= 0.0 && (t < 0.0 || t_temp < t)
+      test_object = t_temp >= 0.0 && (t < 0.0 || t_temp < t);
     }
 
     if (test_object) {
@@ -370,7 +373,7 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
         if (result.intersection)
           dmnsn_delete_intersection(result.intersection);
         result = result_temp;
-        t = result->intersection->t;
+        t = result.intersection->t;
       } else {
         dmnsn_delete_intersection(result_temp.intersection);
       }
@@ -384,7 +387,7 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
       if (result.intersection)
         dmnsn_delete_intersection(result.intersection);
       result = result_temp;
-      t = result->intersection->t;
+      t = result.intersection->t;
     } else {
       dmnsn_delete_intersection(result_temp.intersection);
     }
@@ -393,11 +396,8 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
   return result;
 }
 
-static double dmnsn_ray_box_intersection(dmnsn_line ray,
-                                         dmnsn_vector min, dmnsn_vector max);
-
 static double
-dmnsn_ray_box_intersection(dmnsn_line ray, dmnsn_vector min, dmnsn_vector max)
+dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max)
 {
   double t = -1.0, t_temp;
   dmnsn_vector p;
