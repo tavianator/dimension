@@ -52,14 +52,14 @@ main()
   }
 
   tree = dmnsn_kD_splay_insert(tree, obj2);
-  if (tree->object != obj2 || tree->left->object != obj1) {
+  if (tree->object != obj2 || tree->contains->object != obj1) {
     fprintf(stderr, "Wrong kD splay tree built.\n");
     return EXIT_FAILURE;
   }
 
   tree = dmnsn_kD_splay_insert(tree, obj3);
-  if (tree->object != obj3 || tree->left->object != obj1
-      || tree->right->object != obj2) {
+  if (tree->object != obj3 || tree->contains->object != obj1
+      || tree->container->object != obj2) {
     fprintf(stderr, "Wrong kD splay tree built.\n");
     return EXIT_FAILURE;
   }

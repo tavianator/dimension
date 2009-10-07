@@ -36,7 +36,7 @@ typedef struct dmnsn_kD_splay_node dmnsn_kD_splay_node;
 
 struct dmnsn_kD_splay_node {
   /* Tree children */
-  dmnsn_kD_splay_node *left, *right;
+  dmnsn_kD_splay_node *contains, *container;
 
   /* Parent node for easy backtracking */
   dmnsn_kD_splay_node *parent;

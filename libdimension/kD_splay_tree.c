@@ -51,10 +51,10 @@ dmnsn_kD_splay_node *dmnsn_kD_splay_copy(dmnsn_kD_splay_node *root)
   if (root) {
     node = dmnsn_new_kD_splay_node();
     *node = *root;
-    node->left  = dmnsn_kD_splay_copy(node->left);
-    node->right = dmnsn_kD_splay_copy(node->right);
-    node->left->parent  = node;
-    node->right->parent = node;
+    node->contains  = dmnsn_kD_splay_copy(node->contains);
+    node->container = dmnsn_kD_splay_copy(node->container);
+    node->contains->parent  = node;
+    node->container->parent = node;
   }
   return node;
 }
@@ -64,8 +64,8 @@ void
 dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_node *root)
 {
   if (root) {
-    dmnsn_delete_kD_splay_tree(root->left);
-    dmnsn_delete_kD_splay_tree(root->right);
+    dmnsn_delete_kD_splay_tree(root->contains);
+    dmnsn_delete_kD_splay_tree(root->container);
     dmnsn_delete_kD_splay_node(root);
   }
 }
@@ -84,8 +84,8 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root, dmnsn_object *object)
   dmnsn_vector corner;
   dmnsn_kD_splay_node *node = dmnsn_new_kD_splay_node();
 
-  node->left = NULL;
-  node->right = NULL;
+  node->contains = NULL;
+  node->container = NULL;
   node->parent = NULL;
   node->object = object;
 
@@ -128,11 +128,11 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root, dmnsn_object *object)
   while (root) {
     if (dmnsn_kD_splay_contains(root, node)) {
       /* node <= root */
-      if (root->left)
-        root = root->left;
+      if (root->contains)
+        root = root->contains;
       else {
         /* We found our parent; insert and splay */
-        root->left = node;
+        root->contains = node;
         node->parent = root;
         dmnsn_kD_splay(node);
         break;
@@ -142,11 +142,11 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root, dmnsn_object *object)
           already */
       dmnsn_kD_splay_swallow(node, root->min, root->max);
       /* node > root */
-      if (root->right)
-        root = root->right;
+      if (root->container)
+        root = root->container;
       else {
         /* We found our parent; insert and splay */
-        root->right = node;
+        root->container = node;
         node->parent = root;
         dmnsn_kD_splay(node);
         break;
@@ -194,10 +194,10 @@ dmnsn_kD_splay(dmnsn_kD_splay_node *node)
       /* Zig step - we are a child of the root node */
       dmnsn_kD_splay_rotate(node);
       return;
-    } else if ((node == node->parent->left
-                && node->parent == node->parent->parent->left)
-               || (node == node->parent->right
-                   && node->parent == node->parent->parent->right)) {
+    } else if ((node == node->parent->contains
+                && node->parent == node->parent->parent->contains)
+               || (node == node->parent->container
+                   && node->parent == node->parent->parent->container)) {
       /* Zig-zig step - we are a child on the same side as our parent */
       dmnsn_kD_splay_rotate(node->parent);
       dmnsn_kD_splay_rotate(node);
@@ -214,7 +214,7 @@ static void
 dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node)
 {
   dmnsn_kD_splay_node *P, *Q, *B;
-  if (node == node->parent->left) {
+  if (node == node->parent->contains) {
     /* We are a left child; perform a right rotation:
      *
      *     Q            P
@@ -225,24 +225,24 @@ dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node)
      */
     Q = node->parent;
     P = node;
-    /* A = node->left; */
-    B = node->right;
-    /* C = node->parent->right; */
+    /* A = node->contains; */
+    B = node->container;
+    /* C = node->parent->container; */
 
     /* First fix up the parents */
     if (Q->parent) {
-      if (Q->parent->left == Q)
-        Q->parent->left = P;
+      if (Q->parent->contains == Q)
+        Q->parent->contains = P;
       else
-        Q->parent->right = P;
+        Q->parent->container = P;
     }
     P->parent = Q->parent;
     Q->parent = P;
     if (B) B->parent = Q;
 
     /* Then the children */
-    P->right = Q;
-    Q->left  = B;
+    P->container = Q;
+    Q->contains  = B;
   } else {
     /* We are a right child; perform a left rotation:
      *
@@ -254,23 +254,23 @@ dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node)
      */
     P = node->parent;
     Q = node;
-    /* A = node->parent->left; */
-    B = node->left;
-    /* C = node->right; */
+    /* A = node->parent->contains; */
+    B = node->contains;
+    /* C = node->container; */
 
     /* First fix up the parents */
     if (P->parent) {
-      if (P->parent->left == P)
-        P->parent->left = Q;
+      if (P->parent->contains == P)
+        P->parent->contains = Q;
       else
-        P->parent->right = Q;
+        P->parent->container = Q;
     }
     Q->parent = P->parent;
     P->parent = Q;
     if (B) B->parent = P;
 
     /* Then the children */
-    Q->left  = P;
-    P->right = B;
+    Q->contains  = P;
+    P->container = B;
   }
 }
