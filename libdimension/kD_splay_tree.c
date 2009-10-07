@@ -303,7 +303,8 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
   double t_temp;
   dmnsn_line ray_trans;
   dmnsn_kD_splay_search_result result = { NULL, NULL }, result_temp;
-  int search_left = 0; /* Whether to search the left branch */
+  int search_left; /* Whether to search the left branch */
+  int test_object; /* Whether to test for an intersection with the object */
 
   if (!node)
     return result;
@@ -325,24 +326,40 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
      * closer than `t'.
      */
     t_temp = dmnsn_ray_box_intersection(ray, node->min, node->max);
-
     search_left = t_temp >= 0.0 && (t < 0.0 || t_temp < t)
   }
 
   if (search_left) {
     /* Transform the ray according to the object */
     ray_trans = dmnsn_matrix_line_mul(node->object->trans, ray);
-    /* Test for an intersection with the current object */
-    result.intersection =
-      (*node->object->intersection_fn)(node->object, ray_trans);
 
-    if (result.intersection) {
-      if (t < 0.0 || result.intersection->t < t) {
-        result.node = node;
-        t = result.intersection->t;
-      } else {
-        dmnsn_delete_intersection(result.intersection);
-        result.intersection = NULL;
+    if ((ray_trans.x0.x >= node->object->min.x
+          && ray_trans.x0.y >= node->object->min.y
+          && ray_trans.x0.z >= node->object->min.z)
+        && (ray_trans.x0.x <= node->object->max.x
+            && ray_trans.x0.y <= node->object->max.y
+            && ray_trans.x0.z <= node->object->max.z))
+    {
+      /* Our line's origin is inside the object's true bounding box */
+      test_object = 1;
+    } else {
+      t_temp = dmnsn_ray_box_intersection(ray, node->min, node->max);
+      test_object = t_temp >= 0.0 && (t < 0.0 || t_temp < t)
+    }
+
+    if (test_object) {
+      /* Test for an intersection with the current object */
+      result.intersection =
+        (*node->object->intersection_fn)(node->object, ray_trans);
+
+      if (result.intersection) {
+        if (t < 0.0 || result.intersection->t < t) {
+          result.node = node;
+          t = result.intersection->t;
+        } else {
+          dmnsn_delete_intersection(result.intersection);
+          result.intersection = NULL;
+        }
       }
     }
 
