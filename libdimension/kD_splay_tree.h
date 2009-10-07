@@ -56,4 +56,7 @@ dmnsn_kD_splay_node *dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root,
                                            dmnsn_object *object);
 void dmnsn_kD_splay(dmnsn_kD_splay_node *node);
 
+dmnsn_intersection *dmnsn_kD_splay_search(dmnsn_kD_splay_node *root,
+                                          dmnsn_line ray);
+
 #endif /* DIMENSION_IMPL_KD_SPLAY_TREE_H */

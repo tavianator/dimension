@@ -274,3 +274,176 @@ dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node)
     P->container = B;
   }
 }
+
+typedef struct {
+  dmnsn_kD_splay_node *node;
+  dmnsn_intersection  *intersection;
+} dmnsn_kD_splay_search_result;
+
+static dmnsn_kD_splay_search_result
+dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
+                                double t);
+
+dmnsn_intersection *
+dmnsn_kD_splay_search(dmnsn_kD_splay_node *root, dmnsn_line ray)
+{
+  dmnsn_kD_splay_search_result result =
+    dmnsn_kD_splay_search_recursive(root, ray, -1.0);
+
+  if (result.node)
+    dmnsn_kD_splay(result.node);
+
+  return result.intersection;
+}
+
+static dmnsn_kD_splay_search_result
+dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
+                                double t)
+{
+  double t_temp;
+  dmnsn_line ray_trans;
+  dmnsn_kD_splay_search_result result = { NULL, NULL }, result_temp;
+  int search_left = 0; /* Whether to search the left branch */
+
+  if (!node)
+    return result;
+
+  if ((ray.x0.x >= node->min.x && ray.x0.y >= node->min.y
+       && ray.x0.z >= node->min.z)
+      && (ray.x0.x <= node->max.x && ray.x0.y <= node->max.y
+          && ray.x0.z <= node->max.z))
+  {
+    /*
+     * Our line's origin is inside the bounding box - we have no choice but to
+     * recurse down both sides of the tree.
+     */
+    search_left = 1;
+  } else {
+    /*
+     * We are outside the bounding box, so only follow the left branch if we
+     * intersect this one, and only test the object if the bounding box is
+     * closer than `t'.
+     */
+    t_temp = dmnsn_ray_box_intersection(ray, node->min, node->max);
+
+    search_left = t_temp >= 0.0 && (t < 0.0 || t_temp < t)
+  }
+
+  if (search_left) {
+    /* Transform the ray according to the object */
+    ray_trans = dmnsn_matrix_line_mul(node->object->trans, ray);
+    /* Test for an intersection with the current object */
+    result.intersection =
+      (*node->object->intersection_fn)(node->object, ray_trans);
+
+    if (result.intersection) {
+      if (t < 0.0 || result.intersection->t < t) {
+        result.node = node;
+        t = result.intersection->t;
+      } else {
+        dmnsn_delete_intersection(result.intersection);
+        result.intersection = NULL;
+      }
+    }
+
+    /* Go down the left branch */
+    result_temp = dmnsn_kD_splay_search_recursive(node->contains, ray, t);
+    if (result_temp.intersection) {
+      if (t < 0.0 || result_temp.intersection->t < t) {
+        if (result.intersection)
+          dmnsn_delete_intersection(result.intersection);
+        result = result_temp;
+        t = result->intersection->t;
+      } else {
+        dmnsn_delete_intersection(result_temp.intersection);
+      }
+    }
+  }
+
+  /* Go down the right branch */
+  result_temp = dmnsn_kD_splay_search_recursive(node->container, ray, t);
+  if (result_temp.intersection) {
+    if (t < 0.0 || result_temp.intersection->t < t) {
+      if (result.intersection)
+        dmnsn_delete_intersection(result.intersection);
+      result = result_temp;
+      t = result->intersection->t;
+    } else {
+      dmnsn_delete_intersection(result_temp.intersection);
+    }
+  }
+
+  return result;
+}
+
+static double dmnsn_ray_box_intersection(dmnsn_line ray,
+                                         dmnsn_vector min, dmnsn_vector max);
+
+static double
+dmnsn_ray_box_intersection(dmnsn_line ray, dmnsn_vector min, dmnsn_vector max)
+{
+  double t = -1.0, t_temp;
+  dmnsn_vector p;
+
+  if (line.n.x != 0.0) {
+    /* x == min.x */
+    t_temp = (min.x - line.x0.x)/line.n.x;
+    p = dmnsn_line_point(line, t_temp);
+    if (p.y >= min.y && p.y <= max.y && p.z >= min.z && p.z <= max.z
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
+      t = t_temp;
+    }
+
+    /* x == max.x */
+    t_temp = (max.x - line.x0.x)/line.n.x;
+    p = dmnsn_line_point(line, t_temp);
+    if (p.y >= min.y && p.y <= max.y && p.z >= min.z && p.z <= max.z
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
+      t = t_temp;
+    }
+  }
+
+  if (line.n.y != 0.0) {
+    /* y == -1.0 */
+    t_temp = (-1.0 - line.x0.y)/line.n.y;
+    p = dmnsn_line_point(line, t_temp);
+    if (p.x >= min.x && p.x <= max.x && p.z >= min.z && p.z <= max.z
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
+      t = t_temp;
+    }
+
+    /* y == 1.0 */
+    t_temp = (1.0 - line.x0.y)/line.n.y;
+    p = dmnsn_line_point(line, t_temp);
+    if (p.x >= min.x && p.x <= max.x && p.z >= min.z && p.z <= max.z
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
+      t = t_temp;
+    }
+  }
+
+  if (line.n.z != 0.0) {
+    /* z == -1.0 */
+    t_temp = (-1.0 - line.x0.z)/line.n.z;
+    p = dmnsn_line_point(line, t_temp);
+    if (p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
+      t = t_temp;
+    }
+
+    /* z == 1.0 */
+    t_temp = (1.0 - line.x0.z)/line.n.z;
+    p = dmnsn_line_point(line, t_temp);
+    if (p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y
+        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
+    {
+      t = t_temp;
+    }
+  }
+
+  return t;
+}
