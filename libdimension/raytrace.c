@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
+#include "dimension_impl.h"
 #include <unistd.h> /* For sysconf */
 
 /* Payload type for passing arguments to worker thread */
@@ -26,6 +26,7 @@
 typedef struct {
   dmnsn_progress *progress;
   dmnsn_scene *scene;
+  dmnsn_kD_splay_tree *kD_splay_tree;
 
   /* For multithreading */
   unsigned int index, threads;
@@ -46,8 +47,10 @@ dmnsn_raytrace_scene(dmnsn_scene *scene)
 dmnsn_progress *
 dmnsn_raytrace_scene_async(dmnsn_scene *scene)
 {
-  dmnsn_progress *progress = dmnsn_new_progress();
+  unsigned int i;
+  dmnsn_object *object;
   dmnsn_raytrace_payload *payload;
+  dmnsn_progress *progress = dmnsn_new_progress();
 
   if (progress) {
     payload = malloc(sizeof(dmnsn_raytrace_payload));
@@ -56,12 +59,19 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
       return NULL;
     }
 
-    payload->progress = progress;
-    payload->scene    = scene;
+    payload->progress      = progress;
+    payload->scene         = scene;
+    payload->kD_splay_tree = dmnsn_new_kD_splay_tree();
+
+    for (i = 0; i < dmnsn_array_size(payload->scene->objects); ++i) {
+      dmnsn_array_get(payload->scene->objects, i, &object);
+      dmnsn_kD_splay_insert(payload->kD_splay_tree, object);
+    }
 
     if (pthread_create(&progress->thread, NULL, &dmnsn_raytrace_scene_thread,
                        payload) != 0)
     {
+      dmnsn_delete_kD_splay_tree(payload->kD_splay_tree);
       free(payload);
       dmnsn_delete_progress(progress);
       return NULL;
@@ -128,6 +138,10 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
     payloads[i] = *payload;
     payloads[i].index = i;
     payloads[i].threads = nthreads;
+    if (i > 0) {
+      payloads[i].kD_splay_tree =
+        dmnsn_kD_splay_copy(payloads[i].kD_splay_tree);
+    }
 
     if (pthread_create(&threads[i], NULL,
                        &dmnsn_raytrace_scene_multithread_thread,
@@ -168,6 +182,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
 /* Actual raytracing implementation */
 static int dmnsn_raytrace_scene_impl(dmnsn_progress *progress,
                                      dmnsn_scene *scene,
+                                     dmnsn_kD_splay_tree *kD_splay_tree,
                                      unsigned int index, unsigned int threads);
 
 /* Multi-threading thread callback */
@@ -178,20 +193,23 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
   int *retval = malloc(sizeof(int));
   if (retval) {
     *retval = dmnsn_raytrace_scene_impl(payload->progress, payload->scene,
+                                        payload->kD_splay_tree,
                                         payload->index, payload->threads);
   }
   return retval;
 }
 
 /* Helper for dmnsn_raytrace_scene_impl - shoot a ray */
-static dmnsn_color dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color,
-                                        dmnsn_line ray);
+static dmnsn_color dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
+                                        dmnsn_kD_splay_tree *kD_splay_tree,
+                                        dmnsn_color color);
 
 /*
  * Actually raytrace a scene
  */
 static int
 dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
+                          dmnsn_kD_splay_tree *kD_splay_tree,
                           unsigned int index, unsigned int threads)
 {
   unsigned int x, y;
@@ -217,7 +235,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
                                        ((double)x)/(scene->canvas->x - 1),
                                        ((double)y)/(scene->canvas->y - 1));
         /* Shoot a ray */
-        color = dmnsn_raytrace_shoot(scene, color, ray);
+        color = dmnsn_raytrace_shoot(ray, scene, kD_splay_tree, color);
       }
 
       dmnsn_set_pixel(scene->canvas, x, y, color);
@@ -231,31 +249,14 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 
 /* Shoot a ray, and calculate the color, using `color' as the background */
 static dmnsn_color
-dmnsn_raytrace_shoot(dmnsn_scene *scene, dmnsn_color color, dmnsn_line ray)
+dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
+                     dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color color)
 {
-  dmnsn_line ray_trans;
-  dmnsn_object *object;
-  dmnsn_intersection *intersection = NULL, *intersection_temp;
+  dmnsn_intersection *intersection;
   const dmnsn_texture *texture;
   const dmnsn_pigment *pigment;
-  unsigned int i;
 
-  for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
-    dmnsn_array_get(scene->objects, i, &object);
-
-    /* Transform the ray according to the object */
-    ray_trans = dmnsn_matrix_line_mul(object->trans, ray);
-
-    /* Test for intersections with objects */
-    intersection_temp = (*object->intersection_fn)(object, ray_trans);
-
-    /* Find the closest intersection to the camera */
-    if (intersection_temp &&
-        (!intersection || intersection_temp->t < intersection->t)) {
-      dmnsn_delete_intersection(intersection);
-      intersection = intersection_temp;
-    }
-  }
+  intersection = dmnsn_kD_splay_search(kD_splay_tree, ray);
 
   if (intersection) {
     /* Default to black if we have no texture/pigment */
