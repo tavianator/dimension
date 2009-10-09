@@ -51,10 +51,14 @@ dmnsn_kD_splay_node *dmnsn_kD_splay_copy(dmnsn_kD_splay_node *root)
   if (root) {
     node = dmnsn_new_kD_splay_node();
     *node = *root;
-    node->contains  = dmnsn_kD_splay_copy(node->contains);
-    node->container = dmnsn_kD_splay_copy(node->container);
-    node->contains->parent  = node;
-    node->container->parent = node;
+    if (node->contains) {
+      node->contains = dmnsn_kD_splay_copy(node->contains);
+      node->contains->parent = node;
+    }
+    if (node->container) {
+      node->container = dmnsn_kD_splay_copy(node->container);
+      node->container->parent = node;
+    }
   }
   return node;
 }
