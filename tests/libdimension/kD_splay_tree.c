@@ -27,7 +27,7 @@
 int
 main()
 {
-  dmnsn_kD_splay_node *tree;
+  dmnsn_kD_splay_tree *tree;
   dmnsn_object *obj1, *obj2, *obj3;
 
   obj1 = dmnsn_new_object();
@@ -45,28 +45,28 @@ main()
 
   tree = dmnsn_new_kD_splay_tree();
 
-  tree = dmnsn_kD_splay_insert(tree, obj1);
-  if (tree->object != obj1) {
+  dmnsn_kD_splay_insert(tree, obj1);
+  if (tree->root->object != obj1) {
     fprintf(stderr, "Wrong kD splay tree built.\n");
     return EXIT_FAILURE;
   }
 
-  tree = dmnsn_kD_splay_insert(tree, obj2);
-  if (tree->object != obj2 || tree->contains->object != obj1) {
+  dmnsn_kD_splay_insert(tree, obj2);
+  if (tree->root->object != obj2 || tree->root->contains->object != obj1) {
     fprintf(stderr, "Wrong kD splay tree built.\n");
     return EXIT_FAILURE;
   }
 
-  tree = dmnsn_kD_splay_insert(tree, obj3);
-  if (tree->object != obj3 || tree->contains->object != obj1
-      || tree->container->object != obj2) {
+  dmnsn_kD_splay_insert(tree, obj3);
+  if (tree->root->object != obj3 || tree->root->contains->object != obj1
+      || tree->root->container->object != obj2) {
     fprintf(stderr, "Wrong kD splay tree built.\n");
     return EXIT_FAILURE;
   }
 
+  dmnsn_delete_kD_splay_tree(tree);
   dmnsn_delete_object(obj3);
   dmnsn_delete_object(obj2);
   dmnsn_delete_object(obj1);
-  dmnsn_delete_kD_splay_tree(tree);
   return EXIT_SUCCESS;
 }

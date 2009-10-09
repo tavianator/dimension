@@ -21,72 +21,80 @@
 #include "dimension_impl.h"
 #include <stdlib.h>
 
-static dmnsn_kD_splay_node *
-dmnsn_new_kD_splay_node()
-{
-  dmnsn_kD_splay_node *node = malloc(sizeof(dmnsn_kD_splay_node));
-  if (!node) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "kD splay tree node allocation failed.");
-  }
-  return node;
-}
-
-static void
-dmnsn_delete_kD_splay_node(dmnsn_kD_splay_node *node)
-{
-  free(node);
-}
+static dmnsn_kD_splay_node *dmnsn_new_kD_splay_node();
+static void dmnsn_delete_kD_splay_node(dmnsn_kD_splay_node *node);
 
 /* Return an empty tree */
-dmnsn_kD_splay_node *
+dmnsn_kD_splay_tree *
 dmnsn_new_kD_splay_tree()
 {
-  return NULL;
+  dmnsn_kD_splay_tree *tree = malloc(sizeof(dmnsn_kD_splay_tree));
+  if (!tree) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "kD splay tree allocation failed.");
+  }
+  tree->root = NULL;
+  return tree;
+}
+
+/* Recursively copy the nodes of a kD splay tree */
+static dmnsn_kD_splay_node *
+dmnsn_kD_splay_copy_recursive(dmnsn_kD_splay_node *root)
+{
+  dmnsn_kD_splay_node *node = dmnsn_new_kD_splay_node();
+  *node = *root;
+  if (node->contains) {
+    node->contains = dmnsn_kD_splay_copy_recursive(node->contains);
+    node->contains->parent = node;
+  }
+  if (node->container) {
+    node->container = dmnsn_kD_splay_copy_recursive(node->container);
+    node->container->parent = node;
+  }
+  return node;
 }
 
 /* Copy a kD splay tree */
-dmnsn_kD_splay_node *dmnsn_kD_splay_copy(dmnsn_kD_splay_node *root)
+dmnsn_kD_splay_tree *
+dmnsn_kD_splay_copy(dmnsn_kD_splay_tree *tree)
 {
-  dmnsn_kD_splay_node *node = NULL;
-  if (root) {
-    node = dmnsn_new_kD_splay_node();
-    *node = *root;
-    if (node->contains) {
-      node->contains = dmnsn_kD_splay_copy(node->contains);
-      node->contains->parent = node;
-    }
-    if (node->container) {
-      node->container = dmnsn_kD_splay_copy(node->container);
-      node->container->parent = node;
-    }
-  }
-  return node;
+  dmnsn_kD_splay_tree *copy = dmnsn_new_kD_splay_tree();
+  if (tree->root)
+    copy->root = dmnsn_kD_splay_copy_recursive(tree->root);
+  else
+    copy->root = NULL;
+  return copy;
 }
 
 /* Recursively free a kD splay tree */
 void
-dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_node *root)
+dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_tree *tree)
 {
-  if (root) {
-    dmnsn_delete_kD_splay_tree(root->contains);
-    dmnsn_delete_kD_splay_tree(root->container);
-    dmnsn_delete_kD_splay_node(root);
+  dmnsn_kD_splay_node *node = tree->root;
+  if (node) {
+    tree->root = node->contains;
+    dmnsn_delete_kD_splay_tree(tree);
+
+    tree->root = node->container;
+    dmnsn_delete_kD_splay_tree(tree);
+
+    dmnsn_delete_kD_splay_node(node);
   }
 }
 
 /* Return whether node1 contains node2 */
-static int dmnsn_kD_splay_contains(const dmnsn_kD_splay_node *node1,
-                                   const dmnsn_kD_splay_node *node2);
+static int dmnsn_box_contains(dmnsn_vector p,
+                              dmnsn_vector min, dmnsn_vector max);
 /* Expand node to contain the bounding box from min to max */
-static void dmnsn_kD_splay_swallow(dmnsn_kD_splay_node *node,
-                                   dmnsn_vector min, dmnsn_vector max);
+static void dmnsn_kD_splay_node_swallow(dmnsn_kD_splay_node *node,
+                                        dmnsn_vector min, dmnsn_vector max);
 
-/* Insert an object into the tree.  Returns the new tree root. */
-dmnsn_kD_splay_node *
-dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root, dmnsn_object *object)
+/* Insert an object into the tree */
+void
+dmnsn_kD_splay_insert(dmnsn_kD_splay_tree *tree, dmnsn_object *object)
 {
   dmnsn_vector corner;
-  dmnsn_kD_splay_node *node = dmnsn_new_kD_splay_node();
+  dmnsn_matrix trans_inv;
+  dmnsn_kD_splay_node *node = dmnsn_new_kD_splay_node(), *parent = tree->root;
 
   node->contains = NULL;
   node->container = NULL;
@@ -96,86 +104,83 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root, dmnsn_object *object)
   /* Calculate the new bounding box by finding the minimum coordinate of the
      transformed corners of the object's original bounding box */
 
-  node->min = dmnsn_matrix_vector_mul(object->trans, object->min);
+  trans_inv = dmnsn_matrix_inverse(object->trans);
+  node->min = dmnsn_matrix_vector_mul(trans_inv, object->min);
   node->max = node->min;
 
   corner = dmnsn_vector_construct(object->min.x, object->min.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_swallow(node, corner, corner);
+  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->min.x, object->max.y, object->min.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_swallow(node, corner, corner);
+  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->min.x, object->max.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_swallow(node, corner, corner);
+  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->max.x, object->min.y, object->min.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_swallow(node, corner, corner);
+  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->max.x, object->min.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_swallow(node, corner, corner);
+  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->max.x, object->max.y, object->min.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_swallow(node, corner, corner);
+  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->max.x, object->max.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_swallow(node, corner, corner);
+  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   /* Now insert the node */
 
-  while (root) {
-    if (dmnsn_kD_splay_contains(root, node)) {
-      /* node <= root */
-      if (root->contains)
-        root = root->contains;
+  while (parent) {
+    if (dmnsn_box_contains(node->min, parent->min, parent->max)
+        && dmnsn_box_contains(node->max, parent->min, parent->max)) {
+      /* parent fully contains node */
+      if (parent->contains)
+        parent = parent->contains;
       else {
-        /* We found our parent; insert and splay */
-        root->contains = node;
-        node->parent = root;
-        dmnsn_kD_splay(node);
+        /* We found our parent; insert node into the tree */
+        parent->contains = node;
+        node->parent = parent;
         break;
       }
     } else {
-      /* Expand the bounding box to fully contain root if it doesn't
-          already */
-      dmnsn_kD_splay_swallow(node, root->min, root->max);
-      /* node > root */
-      if (root->container)
-        root = root->container;
+      /* Expand node's bounding box to fully contain parent's if it doesn't
+         already */
+      dmnsn_kD_splay_node_swallow(node, parent->min, parent->max);
+      /* node now fully contains parent */
+      if (parent->container)
+        parent = parent->container;
       else {
-        /* We found our parent; insert and splay */
-        root->container = node;
-        node->parent = root;
-        dmnsn_kD_splay(node);
+        /* We found our parent; insert node into the tree */
+        parent->container = node;
+        node->parent = parent;
         break;
       }
     }
   }
 
-  return node;
+  dmnsn_kD_splay(tree, node);
 }
 
-/* Return whether node1 contains node2 */
+/* Return whether p is within the axis-aligned box with corners min and max */
 static int
-dmnsn_kD_splay_contains(const dmnsn_kD_splay_node *node1,
-                        const dmnsn_kD_splay_node *node2)
+dmnsn_box_contains(dmnsn_vector p, dmnsn_vector min, dmnsn_vector max)
 {
-  return (node1->min.x <= node2->min.x && node1->min.y <= node2->min.y
-          && node1->min.z <= node2->min.z)
-         && (node1->max.x >= node2->max.x && node1->max.y >= node2->max.y
-             && node1->max.z >= node2->max.z);
+  return (p.x >= min.x && p.y >= min.y && p.z >= min.z)
+    && (p.x <= max.x && p.y <= max.y && p.z <= max.z);
 }
 
 /* Expand node to contain the bounding box from min to max */
 static void
-dmnsn_kD_splay_swallow(dmnsn_kD_splay_node *node,
-                       dmnsn_vector min, dmnsn_vector max)
+dmnsn_kD_splay_node_swallow(dmnsn_kD_splay_node *node,
+                            dmnsn_vector min, dmnsn_vector max)
 {
   if (node->min.x > min.x) node->min.x = min.x;
   if (node->min.y > min.y) node->min.y = min.z;
@@ -191,13 +196,13 @@ static void dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node);
 
 /* Splay a node: move it to the root via tree rotations */
 void
-dmnsn_kD_splay(dmnsn_kD_splay_node *node)
+dmnsn_kD_splay(dmnsn_kD_splay_tree *tree, dmnsn_kD_splay_node *node)
 {
   while (node->parent) {
     if (!node->parent->parent) {
       /* Zig step - we are a child of the root node */
       dmnsn_kD_splay_rotate(node);
-      return;
+      break;
     } else if ((node == node->parent->contains
                 && node->parent == node->parent->parent->contains)
                || (node == node->parent->container
@@ -211,6 +216,7 @@ dmnsn_kD_splay(dmnsn_kD_splay_node *node)
       dmnsn_kD_splay_rotate(node);
     }
   }
+  tree->root = node;
 }
 
 /* Rotate a tree on the edge connecting node and node->parent */
@@ -289,121 +295,80 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
                                 double t);
 
 dmnsn_intersection *
-dmnsn_kD_splay_search(dmnsn_kD_splay_node *root, dmnsn_line ray)
+dmnsn_kD_splay_search(dmnsn_kD_splay_tree *tree, dmnsn_line ray)
 {
-  dmnsn_kD_splay_search_result result =
-    dmnsn_kD_splay_search_recursive(root, ray, -1.0);
-
+  dmnsn_kD_splay_search_result result;
+  result = dmnsn_kD_splay_search_recursive(tree->root, ray, -1.0);
   if (result.node)
-    dmnsn_kD_splay(result.node);
-
+    dmnsn_kD_splay(tree, result.node);
   return result.intersection;
 }
 
-static double dmnsn_ray_box_intersection(dmnsn_line ray,
-                                         dmnsn_vector min, dmnsn_vector max);
+static int dmnsn_ray_box_intersection(dmnsn_line ray, dmnsn_vector min,
+                                      dmnsn_vector max, double t);
 
 static dmnsn_kD_splay_search_result
 dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
                                 double t)
 {
-  double t_temp;
   dmnsn_line ray_trans;
-  dmnsn_kD_splay_search_result result = { NULL, NULL }, result_temp;
-  int search_left; /* Whether to search the left branch */
-  int test_object; /* Whether to test for an intersection with the object */
+  dmnsn_kD_splay_search_result result = { NULL, NULL }, result_rec;
+  double t_temp;
 
   if (!node)
     return result;
 
-  if ((ray.x0.x >= node->min.x && ray.x0.y >= node->min.y
-       && ray.x0.z >= node->min.z)
-      && (ray.x0.x <= node->max.x && ray.x0.y <= node->max.y
-          && ray.x0.z <= node->max.z))
+  if (dmnsn_box_contains(ray.x0, node->min, node->max)
+      || dmnsn_ray_box_intersection(ray, node->min, node->max, t))
   {
-    /*
-     * Our line's origin is inside the bounding box - we have no choice but to
-     * recurse down both sides of the tree.
-     */
-    search_left = 1;
-  } else {
-    /*
-     * We are outside the bounding box, so only follow the left branch if we
-     * intersect this one, and only test the object if the bounding box is
-     * closer than `t'.
-     */
-    t_temp = dmnsn_ray_box_intersection(ray, node->min, node->max);
-    search_left = t_temp >= 0.0 && (t < 0.0 || t_temp < t);
-  }
-
-  if (search_left) {
     /* Transform the ray according to the object */
     ray_trans = dmnsn_matrix_line_mul(node->object->trans, ray);
 
-    if ((ray_trans.x0.x >= node->object->min.x
-          && ray_trans.x0.y >= node->object->min.y
-          && ray_trans.x0.z >= node->object->min.z)
-        && (ray_trans.x0.x <= node->object->max.x
-            && ray_trans.x0.y <= node->object->max.y
-            && ray_trans.x0.z <= node->object->max.z))
+    if (dmnsn_box_contains(ray_trans.x0, node->object->min, node->object->max)
+        || dmnsn_ray_box_intersection(ray_trans, node->object->min,
+                                      node->object->max, t))
     {
-      /* Our line's origin is inside the object's true bounding box */
-      test_object = 1;
-    } else {
-      t_temp = dmnsn_ray_box_intersection(ray, node->min, node->max);
-      test_object = t_temp >= 0.0 && (t < 0.0 || t_temp < t);
-    }
-
-    if (test_object) {
-      /* Test for an intersection with the current object */
       result.intersection =
         (*node->object->intersection_fn)(node->object, ray_trans);
 
-      if (result.intersection) {
-        if (t < 0.0 || result.intersection->t < t) {
-          result.node = node;
-          t = result.intersection->t;
-        } else {
-          dmnsn_delete_intersection(result.intersection);
-          result.intersection = NULL;
-        }
+      if (result.intersection && (t < 0.0 || result.intersection->t < t)) {
+        result.node = node;
+        t = result.intersection->t;
+      } else {
+        dmnsn_delete_intersection(result.intersection);
+        result.intersection = NULL;
       }
     }
 
-    /* Go down the left branch */
-    result_temp = dmnsn_kD_splay_search_recursive(node->contains, ray, t);
-    if (result_temp.intersection) {
-      if (t < 0.0 || result_temp.intersection->t < t) {
-        if (result.intersection)
-          dmnsn_delete_intersection(result.intersection);
-        result = result_temp;
-        t = result.intersection->t;
-      } else {
-        dmnsn_delete_intersection(result_temp.intersection);
-      }
+    /* Go down the left subtree */
+    result_rec = dmnsn_kD_splay_search_recursive(node->contains, ray, t);
+    if (result_rec.node && (t < 0.0 || result_rec.intersection->t < t)) {
+      dmnsn_delete_intersection(result.intersection);
+      result = result_rec;
+      t = result.intersection->t;
+    } else {
+      dmnsn_delete_intersection(result_rec.intersection);
     }
   }
 
-  /* Go down the right branch */
-  result_temp = dmnsn_kD_splay_search_recursive(node->container, ray, t);
-  if (result_temp.intersection) {
-    if (t < 0.0 || result_temp.intersection->t < t) {
-      if (result.intersection)
-        dmnsn_delete_intersection(result.intersection);
-      result = result_temp;
-      t = result.intersection->t;
-    } else {
-      dmnsn_delete_intersection(result_temp.intersection);
-    }
+  /* Go down the right subtree */
+  result_rec = dmnsn_kD_splay_search_recursive(node->container, ray, t);
+  if (result_rec.node && (t < 0.0 || result_rec.intersection->t < t)) {
+    dmnsn_delete_intersection(result.intersection);
+    result = result_rec;
+    t = result.intersection->t;
+  } else {
+    dmnsn_delete_intersection(result_rec.intersection);
   }
 
   return result;
 }
 
-static double
-dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max)
+static int
+dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max,
+                           double t)
 {
-  double t = -1.0, t_temp;
+  double t_temp;
   dmnsn_vector p;
 
   if (line.n.x != 0.0) {
@@ -412,18 +377,14 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max)
     p = dmnsn_line_point(line, t_temp);
     if (p.y >= min.y && p.y <= max.y && p.z >= min.z && p.z <= max.z
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-    }
+      return 1;
 
     /* x == max.x */
     t_temp = (max.x - line.x0.x)/line.n.x;
     p = dmnsn_line_point(line, t_temp);
     if (p.y >= min.y && p.y <= max.y && p.z >= min.z && p.z <= max.z
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-    }
+      return 1;
   }
 
   if (line.n.y != 0.0) {
@@ -432,18 +393,14 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max)
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= min.x && p.x <= max.x && p.z >= min.z && p.z <= max.z
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-    }
+      return 1;
 
     /* y == 1.0 */
     t_temp = (1.0 - line.x0.y)/line.n.y;
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= min.x && p.x <= max.x && p.z >= min.z && p.z <= max.z
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-    }
+      return 1;
   }
 
   if (line.n.z != 0.0) {
@@ -452,19 +409,31 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max)
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-    }
+      return 1;
 
     /* z == 1.0 */
     t_temp = (1.0 - line.x0.z)/line.n.z;
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-    }
+      return 1;
   }
 
-  return t;
+  return 0;
+}
+
+static dmnsn_kD_splay_node *
+dmnsn_new_kD_splay_node()
+{
+  dmnsn_kD_splay_node *node = malloc(sizeof(dmnsn_kD_splay_node));
+  if (!node) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "kD splay tree node allocation failed.");
+  }
+  return node;
+}
+
+static void
+dmnsn_delete_kD_splay_node(dmnsn_kD_splay_node *node)
+{
+  free(node);
 }

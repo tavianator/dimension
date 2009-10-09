@@ -32,7 +32,12 @@
 #ifndef DIMENSION_IMPL_KD_SPLAY_TREE_H
 #define DIMENSION_IMPL_KD_SPLAY_TREE_H
 
+typedef struct dmnsn_kD_splay_tree dmnsn_kD_splay_tree;
 typedef struct dmnsn_kD_splay_node dmnsn_kD_splay_node;
+
+struct dmnsn_kD_splay_tree {
+  dmnsn_kD_splay_node *root;
+};
 
 struct dmnsn_kD_splay_node {
   /* Tree children */
@@ -48,15 +53,14 @@ struct dmnsn_kD_splay_node {
   dmnsn_object *object;
 };
 
-dmnsn_kD_splay_node *dmnsn_new_kD_splay_tree();
-dmnsn_kD_splay_node *dmnsn_kD_splay_copy(dmnsn_kD_splay_node *root);
-void dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_node *root);
+dmnsn_kD_splay_tree *dmnsn_new_kD_splay_tree();
+dmnsn_kD_splay_tree *dmnsn_kD_splay_copy(dmnsn_kD_splay_tree *tree);
+void dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_tree *tree);
 
-dmnsn_kD_splay_node *dmnsn_kD_splay_insert(dmnsn_kD_splay_node *root,
-                                           dmnsn_object *object);
-void dmnsn_kD_splay(dmnsn_kD_splay_node *node);
+void dmnsn_kD_splay_insert(dmnsn_kD_splay_tree *tree, dmnsn_object *object);
+void dmnsn_kD_splay(dmnsn_kD_splay_tree *tree, dmnsn_kD_splay_node *node);
 
-dmnsn_intersection *dmnsn_kD_splay_search(dmnsn_kD_splay_node *root,
+dmnsn_intersection *dmnsn_kD_splay_search(dmnsn_kD_splay_tree *tree,
                                           dmnsn_line ray);
 
 #endif /* DIMENSION_IMPL_KD_SPLAY_TREE_H */
