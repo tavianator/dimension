@@ -313,7 +313,6 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
 {
   dmnsn_line ray_trans;
   dmnsn_kD_splay_search_result result = { NULL, NULL }, result_rec;
-  double t_temp;
 
   if (!node)
     return result;
