@@ -232,6 +232,9 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
 
   /* Connect the context to the window */
   glXMakeCurrent(display->dpy, display->win, display->cx);
+  glClearColor(0.0, 0.0, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  dmnsn_display_flush(display);
 
   return display;
 }
@@ -251,7 +254,7 @@ dmnsn_delete_display(dmnsn_display *display)
 void
 dmnsn_display_flush(dmnsn_display *display)
 {
-  glFlush();
+  glXWaitX();
   glXSwapBuffers(display->dpy, display->win);
 }
 
