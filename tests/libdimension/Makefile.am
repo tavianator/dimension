@@ -23,7 +23,8 @@ check_LTLIBRARIES = libdimension-tests.la
 check_PROGRAMS    = error-test                                                 \
                     warning-test                                               \
                     kD_splay_tree-test                                         \
-                    png-test
+                    png-test                                                   \
+                    gl-test
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
 
@@ -41,3 +42,6 @@ kD_splay_tree_test_LDADD   = libdimension-tests.la
 
 png_test_SOURCES = png.c
 png_test_LDADD   = libdimension-tests.la
+
+gl_test_SOURCES = gl.c
+gl_test_LDADD   = libdimension-tests.la
