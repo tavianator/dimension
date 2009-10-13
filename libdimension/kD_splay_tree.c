@@ -388,14 +388,14 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max,
 
   if (line.n.y != 0.0) {
     /* y == -1.0 */
-    t_temp = (-1.0 - line.x0.y)/line.n.y;
+    t_temp = (min.y - line.x0.y)/line.n.y;
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= min.x && p.x <= max.x && p.z >= min.z && p.z <= max.z
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
       return 1;
 
     /* y == 1.0 */
-    t_temp = (1.0 - line.x0.y)/line.n.y;
+    t_temp = (max.y - line.x0.y)/line.n.y;
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= min.x && p.x <= max.x && p.z >= min.z && p.z <= max.z
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
@@ -404,14 +404,14 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max,
 
   if (line.n.z != 0.0) {
     /* z == -1.0 */
-    t_temp = (-1.0 - line.x0.z)/line.n.z;
+    t_temp = (min.z - line.x0.z)/line.n.z;
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
       return 1;
 
     /* z == 1.0 */
-    t_temp = (1.0 - line.x0.z)/line.n.z;
+    t_temp = (max.z - line.x0.z)/line.n.z;
     p = dmnsn_line_point(line, t_temp);
     if (p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
