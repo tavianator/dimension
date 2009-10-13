@@ -19,6 +19,7 @@
 
 INCLUDES = -I$(top_srcdir)/libdimension
 
+check_LTLIBRARIES = libdimension-tests.la
 check_PROGRAMS    = error-test                                                 \
                     warning-test                                               \
                     kD_splay_tree-test                                         \
@@ -26,14 +27,17 @@ check_PROGRAMS    = error-test                                                 \
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
 
+libdimension_tests_la_SOURCES = tests.c tests.h
+libdimension_tests_la_LIBADD  = $(top_srcdir)/libdimension/libdimension.la
+
 error_test_SOURCES = error.c
-error_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
+error_test_LDADD   = libdimension-tests.la
 
 warning_test_SOURCES = warning.c
-warning_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
+warning_test_LDADD   = libdimension-tests.la
 
 kD_splay_tree_test_SOURCES = kD_splay_tree.c
-kD_splay_tree_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
+kD_splay_tree_test_LDADD   = libdimension-tests.la
 
-png_test_SOURCES = png.c tests.c tests.h
-png_test_LDADD   = $(top_srcdir)/libdimension/libdimension.la
+png_test_SOURCES = png.c
+png_test_LDADD   = libdimension-tests.la
