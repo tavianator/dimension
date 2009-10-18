@@ -23,8 +23,12 @@
 #include <stdio.h>  /* For fprintf() */
 #include <stdlib.h> /* For exit()    */
 
+static void dmnsn_default_fatal_error_fn();
+static dmnsn_fatal_error_fn *dmnsn_fatal = &dmnsn_default_fatal_error_fn;
+
 static dmnsn_severity dmnsn_resilience = DMNSN_SEVERITY_MEDIUM;
 static pthread_mutex_t dmnsn_resilience_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t dmnsn_fatal_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* Called by dmnsn_error macro (don't call directly). */
 void
@@ -34,7 +38,7 @@ dmnsn_report_error(dmnsn_severity severity, const char *func, unsigned int line,
   if (severity >= dmnsn_get_resilience()) {
     /* An error more severe than our resilience happened, bail out */
     fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n", func, line, str);
-    exit(EXIT_FAILURE);
+    (*dmnsn_fatal)();
   } else {
     /* A trivial error happened, warn and continue */
     fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n", func, line, str);
@@ -71,7 +75,7 @@ dmnsn_set_resilience(dmnsn_severity resilience)
     /* Tried to set an illegal resilience, bail out */
     fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n", DMNSN_FUNC, __LINE__,
             "Resilience has wrong value.");
-    exit(EXIT_FAILURE);
+    (*dmnsn_fatal)();
   }
 
   if (pthread_mutex_lock(&dmnsn_resilience_mutex) != 0) {
@@ -88,4 +92,42 @@ dmnsn_set_resilience(dmnsn_severity resilience)
             DMNSN_FUNC, __LINE__,
             "Couldn't unlock resilience mutex.");
   }
+}
+
+dmnsn_fatal_error_fn *dmnsn_get_fatal_error_fn()
+{
+  dmnsn_fatal_error_fn *fatal;
+  if (pthread_mutex_lock(&dmnsn_fatal_mutex) != 0) {
+    fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
+            DMNSN_FUNC, __LINE__,
+            "Couldn't lock fatal error handler mutex.");
+  }
+  fatal = dmnsn_fatal;
+  if (pthread_mutex_unlock(&dmnsn_fatal_mutex) != 0) {
+    fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
+            DMNSN_FUNC, __LINE__,
+            "Couldn't unlock fatal error handler mutex.");
+  }
+  return fatal;
+}
+
+void dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal)
+{
+  if (pthread_mutex_lock(&dmnsn_fatal_mutex) != 0) {
+    fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
+            DMNSN_FUNC, __LINE__,
+            "Couldn't lock fatal error handler mutex.");
+  }
+  dmnsn_fatal = fatal;
+  if (pthread_mutex_unlock(&dmnsn_fatal_mutex) != 0) {
+    fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
+            DMNSN_FUNC, __LINE__,
+            "Couldn't unlock fatal error handler mutex.");
+  }
+}
+
+static void
+dmnsn_default_fatal_error_fn()
+{
+  exit(EXIT_FAILURE);
 }

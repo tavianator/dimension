@@ -54,4 +54,12 @@ void dmnsn_report_error(dmnsn_severity severity,
 dmnsn_severity dmnsn_get_resilience();
 void dmnsn_set_resilience(dmnsn_severity resilience);
 
+/* Fatal error callback type */
+typedef void dmnsn_fatal_error_fn();
+
+/* Get and set libdimension fatal error handling strategy - the default is
+   exit(EXIT_FAILURE) */
+dmnsn_fatal_error_fn *dmnsn_get_fatal_error_fn();
+void dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal);
+
 #endif /* DIMENSION_ERROR_H */
