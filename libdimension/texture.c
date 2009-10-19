@@ -54,5 +54,8 @@ dmnsn_new_texture()
 void
 dmnsn_delete_texture(dmnsn_texture *texture)
 {
-  free(texture);
+  if (texture) {
+    dmnsn_delete_pigment(texture->pigment);
+    free(texture);
+  }
 }

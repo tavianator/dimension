@@ -57,6 +57,7 @@ void
 dmnsn_delete_object(dmnsn_object *object)
 {
   if (object) {
+    dmnsn_delete_texture(object->texture);
     if (object->free_fn) {
       (*object->free_fn)(object->ptr);
     }

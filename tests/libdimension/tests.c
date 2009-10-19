@@ -94,7 +94,6 @@ dmnsn_new_default_scene()
 
   sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
   if (!sphere->texture->pigment) {
-    dmnsn_delete_texture(sphere->texture);
     dmnsn_delete_object(sphere);
     dmnsn_delete_camera(scene->camera);
     dmnsn_delete_canvas(scene->canvas);
@@ -109,8 +108,6 @@ dmnsn_new_default_scene()
 
   cube = dmnsn_new_cube();
   if (!cube) {
-    dmnsn_delete_pigment(sphere->texture->pigment);
-    dmnsn_delete_texture(sphere->texture);
     dmnsn_delete_object(sphere);
     dmnsn_delete_camera(scene->camera);
     dmnsn_delete_canvas(scene->canvas);
@@ -121,8 +118,6 @@ dmnsn_new_default_scene()
   cube->texture = dmnsn_new_texture();
   if (!cube->texture) {
     dmnsn_delete_object(cube);
-    dmnsn_delete_pigment(sphere->texture->pigment);
-    dmnsn_delete_texture(sphere->texture);
     dmnsn_delete_object(sphere);
     dmnsn_delete_camera(scene->camera);
     dmnsn_delete_canvas(scene->canvas);
@@ -132,10 +127,7 @@ dmnsn_new_default_scene()
 
   cube->texture->pigment = dmnsn_new_solid_pigment(dmnsn_black);
   if (!cube->texture->pigment) {
-    dmnsn_delete_texture(cube->texture);
     dmnsn_delete_object(cube);
-    dmnsn_delete_pigment(sphere->texture->pigment);
-    dmnsn_delete_texture(sphere->texture);
     dmnsn_delete_object(sphere);
     dmnsn_delete_camera(scene->camera);
     dmnsn_delete_canvas(scene->canvas);
@@ -158,14 +150,8 @@ dmnsn_delete_default_scene(dmnsn_scene *scene)
   dmnsn_array_get(scene->objects, 0, &sphere);
   dmnsn_array_get(scene->objects, 1, &cube);
 
-  dmnsn_delete_pigment(cube->texture->pigment);
-  dmnsn_delete_texture(cube->texture);
   dmnsn_delete_object(cube);
-
-  dmnsn_delete_pigment(sphere->texture->pigment);
-  dmnsn_delete_texture(sphere->texture);
   dmnsn_delete_object(sphere);
-
   dmnsn_delete_camera(scene->camera);
   dmnsn_delete_canvas(scene->canvas);
   dmnsn_delete_scene(scene);
