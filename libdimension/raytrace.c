@@ -140,7 +140,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
     payloads[i].threads = nthreads;
     if (i > 0) {
       payloads[i].kD_splay_tree =
-        dmnsn_kD_splay_copy(payloads[i].kD_splay_tree);
+        dmnsn_kD_splay_copy(payloads[0].kD_splay_tree);
     }
 
     if (pthread_create(&threads[i], NULL,
@@ -148,11 +148,14 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
                        &payloads[i]) != 0)
     {
       for (j = 0; j < i; ++j) {
-        if (pthread_join(threads[i], &ptr)) {
+        if (pthread_join(threads[j], &ptr)) {
           dmnsn_error(DMNSN_SEVERITY_MEDIUM,
                       "Couldn't join worker thread in failed raytrace engine"
                       " initialization.");
         } else {
+          /* Only free on a successful join - otherwise we might free a pointer
+             out from under a running thread */
+          dmnsn_delete_kD_splay_tree(payloads[j].kD_splay_tree);
           free(ptr);
         }
       }
@@ -170,6 +173,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
       if (retval == 0) {
         retval = *(int *)ptr;
       }
+      dmnsn_delete_kD_splay_tree(payloads[i].kD_splay_tree);
       free(ptr);
     }
   }

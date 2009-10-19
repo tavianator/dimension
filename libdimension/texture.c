@@ -32,11 +32,16 @@ dmnsn_new_pigment()
   return pigment;
 }
 
-/* Free a dummy pigment */
+/* Free a pigment */
 void
 dmnsn_delete_pigment(dmnsn_pigment *pigment)
 {
-  free(pigment);
+  if (pigment) {
+    if (pigment->free_fn) {
+      (*pigment->free_fn)(pigment->ptr);
+    }
+    free(pigment);
+  }
 }
 
 /* Allocate a dummy texture */

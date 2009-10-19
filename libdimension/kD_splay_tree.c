@@ -29,10 +29,11 @@ dmnsn_kD_splay_tree *
 dmnsn_new_kD_splay_tree()
 {
   dmnsn_kD_splay_tree *tree = malloc(sizeof(dmnsn_kD_splay_tree));
-  if (!tree) {
+  if (tree) {
+    tree->root = NULL;
+  } else {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "kD splay tree allocation failed.");
   }
-  tree->root = NULL;
   return tree;
 }
 
@@ -67,17 +68,22 @@ dmnsn_kD_splay_copy(dmnsn_kD_splay_tree *tree)
 
 /* Recursively free a kD splay tree */
 void
+dmnsn_delete_kD_splay_tree_recursive(dmnsn_kD_splay_node *node)
+{
+  if (node) {
+    dmnsn_delete_kD_splay_tree_recursive(node->contains);
+    dmnsn_delete_kD_splay_tree_recursive(node->container);
+    dmnsn_delete_kD_splay_node(node);
+  }
+}
+
+/* Free a kD splay tree */
+void
 dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_tree *tree)
 {
-  dmnsn_kD_splay_node *node = tree->root;
-  if (node) {
-    tree->root = node->contains;
-    dmnsn_delete_kD_splay_tree(tree);
-
-    tree->root = node->container;
-    dmnsn_delete_kD_splay_tree(tree);
-
-    dmnsn_delete_kD_splay_node(node);
+  if (tree) {
+    dmnsn_delete_kD_splay_tree_recursive(tree->root);
+    free(tree);
   }
 }
 

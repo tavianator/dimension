@@ -40,6 +40,7 @@ dmnsn_new_solid_pigment(dmnsn_color color)
     *solid = color;
 
     pigment->pigment_fn = &dmnsn_solid_pigment_fn;
+    pigment->free_fn    = &free;
     pigment->ptr        = solid;
   }
 
