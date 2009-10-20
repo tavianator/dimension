@@ -45,7 +45,7 @@ dmnsn_new_default_scene()
   /* Allocate a canvas */
   scene->canvas = dmnsn_new_canvas(768, 480);
   if (!scene->canvas) {
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_default_scene(scene);
     return NULL;
   }
 
@@ -67,8 +67,7 @@ dmnsn_new_default_scene()
   /* Create a perspective camera */
   scene->camera = dmnsn_new_perspective_camera();
   if (!scene->camera) {
-    dmnsn_delete_canvas(scene->canvas);
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_default_scene(scene);
     return NULL;
   }
   dmnsn_set_perspective_camera_trans(scene->camera, trans);
@@ -77,68 +76,49 @@ dmnsn_new_default_scene()
 
   sphere = dmnsn_new_sphere();
   if (!sphere) {
-    dmnsn_delete_camera(scene->camera);
-    dmnsn_delete_canvas(scene->canvas);
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_default_scene(scene);
     return NULL;
   }
+  dmnsn_array_push(scene->objects, &sphere);
 
   sphere->texture = dmnsn_new_texture();
   if (!sphere->texture) {
-    dmnsn_delete_object(sphere);
-    dmnsn_delete_camera(scene->camera);
-    dmnsn_delete_canvas(scene->canvas);
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_default_scene(scene);
     return NULL;
   }
 
   sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
   if (!sphere->texture->pigment) {
-    dmnsn_delete_object(sphere);
-    dmnsn_delete_camera(scene->camera);
-    dmnsn_delete_canvas(scene->canvas);
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_default_scene(scene);
     return NULL;
   }
 
   sphere->trans = dmnsn_matrix_inverse(
     dmnsn_scale_matrix(dmnsn_vector_construct(1.25, 1.25, 1.25))
   );
-  dmnsn_array_push(scene->objects, &sphere);
 
   cube = dmnsn_new_cube();
   if (!cube) {
-    dmnsn_delete_object(sphere);
-    dmnsn_delete_camera(scene->camera);
-    dmnsn_delete_canvas(scene->canvas);
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_default_scene(scene);
     return NULL;
   }
+  dmnsn_array_push(scene->objects, &cube);
 
   cube->texture = dmnsn_new_texture();
   if (!cube->texture) {
-    dmnsn_delete_object(cube);
-    dmnsn_delete_object(sphere);
-    dmnsn_delete_camera(scene->camera);
-    dmnsn_delete_canvas(scene->canvas);
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_default_scene(scene);
     return NULL;
   }
 
   cube->texture->pigment = dmnsn_new_solid_pigment(dmnsn_black);
   if (!cube->texture->pigment) {
-    dmnsn_delete_object(cube);
-    dmnsn_delete_object(sphere);
-    dmnsn_delete_camera(scene->camera);
-    dmnsn_delete_canvas(scene->canvas);
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_default_scene(scene);
     return NULL;
   }
 
   cube->trans = dmnsn_matrix_inverse(
     dmnsn_rotation_matrix(dmnsn_vector_construct(0.75, 0.0, 0.0))
   );
-  dmnsn_array_push(scene->objects, &cube);
 
   return scene;
 }
@@ -146,9 +126,13 @@ dmnsn_new_default_scene()
 void
 dmnsn_delete_default_scene(dmnsn_scene *scene)
 {
-  dmnsn_object *sphere, *cube;
-  dmnsn_array_get(scene->objects, 0, &sphere);
-  dmnsn_array_get(scene->objects, 1, &cube);
+  dmnsn_object *sphere = NULL, *cube = NULL;
+
+  if (dmnsn_array_size(scene->objects) >= 1)
+    dmnsn_array_get(scene->objects, 0, &sphere);
+
+  if (dmnsn_array_size(scene->objects) >= 2)
+    dmnsn_array_get(scene->objects, 1, &cube);
 
   dmnsn_delete_object(cube);
   dmnsn_delete_object(sphere);
@@ -175,47 +159,48 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
     GLX_BLUE_SIZE, 1,
     None
   };
-  dmnsn_display *display;
-  XVisualInfo *vi;
   XSetWindowAttributes swa;
+  dmnsn_display *display;
 
   display = malloc(sizeof(dmnsn_display));
   if (!display) {
     return NULL;
   }
 
+  display->dpy  = NULL;
+  display->win  = 0;
+  display->cmap = NULL;
+  display->cx   = NULL;
+  display->vi   = NULL;
+
   /* Get an X connection */
   display->dpy = XOpenDisplay(0);
   if (!display->dpy) {
-    free(display);
+    dmnsn_delete_display(display);
     return NULL;
   }
 
   /* Get an appropriate visual */
-  vi = glXChooseVisual(display->dpy, DefaultScreen(display->dpy),
-                       attributeList);
-  if (!vi) {
-    XCloseDisplay(display->dpy);
-    free(display);
+  display->vi = glXChooseVisual(display->dpy, DefaultScreen(display->dpy),
+                                attributeList);
+  if (!display->vi) {
+    dmnsn_delete_display(display);
     return NULL;
   }
 
   /* Create a GLX context */
-  display->cx = glXCreateContext(display->dpy, vi, 0, GL_TRUE);
+  display->cx = glXCreateContext(display->dpy, display->vi, 0, GL_TRUE);
   if (!display->cx) {
-    XCloseDisplay(display->dpy);
-    free(display);
+    dmnsn_delete_display(display);
     return NULL;
   }
 
   /* Create a color map */
   display->cmap = XCreateColormap(display->dpy,
-                                  RootWindow(display->dpy, vi->screen),
-                                  vi->visual, AllocNone);
+                                  RootWindow(display->dpy, display->vi->screen),
+                                  display->vi->visual, AllocNone);
   if (!display->cmap) {
-    glXDestroyContext(display->dpy, display->cx);
-    XCloseDisplay(display->dpy);
-    free(display);
+    dmnsn_delete_display(display);
     return NULL;
   }
 
@@ -224,15 +209,13 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
   swa.border_pixel = 0;
   swa.event_mask = StructureNotifyMask;
   display->win = XCreateWindow(display->dpy,
-                               RootWindow(display->dpy, vi->screen),
+                               RootWindow(display->dpy, display->vi->screen),
                                0, 0, canvas->x, canvas->y,
-                               0, vi->depth, InputOutput, vi->visual,
+                               0, display->vi->depth, InputOutput,
+                               display->vi->visual,
                                CWBorderPixel|CWColormap|CWEventMask, &swa);
   if (!display->win) {
-    XFreeColormap(display->dpy, display->cmap);
-    glXDestroyContext(display->dpy, display->cx);
-    XCloseDisplay(display->dpy);
-    free(display);
+    dmnsn_delete_display(display);
     return NULL;
   }
 
@@ -254,10 +237,21 @@ void
 dmnsn_delete_display(dmnsn_display *display)
 {
   if (display) {
-    XDestroyWindow(display->dpy, display->win);
-    XFreeColormap(display->dpy, display->cmap);
-    glXDestroyContext(display->dpy, display->cx);
-    XCloseDisplay(display->dpy);
+    if (display->win)
+      XDestroyWindow(display->dpy, display->win);
+
+    if (display->cmap)
+      XFreeColormap(display->dpy, display->cmap);
+
+    if (display->cx)
+      glXDestroyContext(display->dpy, display->cx);
+
+    if (display->vi)
+      XFree(display->vi);
+
+    if (display->dpy)
+      XCloseDisplay(display->dpy);
+
     free(display);
   }
 }

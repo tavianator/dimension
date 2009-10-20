@@ -48,6 +48,7 @@ typedef struct {
   Colormap cmap;
   GLXContext cx;
   XEvent event;
+  XVisualInfo *vi;
 } dmnsn_display;
 
 dmnsn_display *dmnsn_new_display(const dmnsn_canvas *canvas);
