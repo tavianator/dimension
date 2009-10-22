@@ -19,12 +19,16 @@
 
 INCLUDES = -I$(top_srcdir)/libdimension
 
-EXTRA_PROGRAMS = bench-array
+EXTRA_PROGRAMS = bench-array bench-geometry
 
 bench_array_SOURCES = array.c
 bench_array_LDADD   = -lsandglass $(top_srcdir)/libdimension/libdimension.la
 
-bench: bench-array$(EXEEXT)
+bench_geometry_SOURCES = geometry.c
+bench_geometry_LDADD   = -lsandglass $(top_srcdir)/libdimension/libdimension.la
+
+bench: bench-array$(EXEEXT) bench-geometry$(EXEEXT)
 	./bench-array$(EXEEXT)
+	./bench-geometry$(EXEEXT)
 
 .PHONY: bench
