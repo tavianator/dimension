@@ -169,7 +169,7 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
 
   display->dpy  = NULL;
   display->win  = 0;
-  display->cmap = NULL;
+  display->cmap = 0;
   display->cx   = NULL;
   display->vi   = NULL;
 
