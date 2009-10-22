@@ -173,6 +173,6 @@ main()
   }
   printf("\n");
 
-  dmnsn_array_delet(array);
+  dmnsn_delete_array(array);
   return EXIT_SUCCESS;
 }
