@@ -33,7 +33,7 @@ main()
   const unsigned int count = 32;
 
   sandglass_t sandglass;
-  sandglass_attributes_t attr = { SANDGLASS_MONOTONIC, SANDGLASS_REALTICKS };
+  sandglass_attributes_t attr = { SANDGLASS_MONOTONIC, SANDGLASS_CPUTIME };
 
   if (sandglass_create(&sandglass, &attr, &attr) != 0) {
     perror("sandglass_create()");
@@ -41,7 +41,7 @@ main()
   }
 
   /* Benchmark allocation and deallocation */
-  sandglass_bench(&sandglass, {
+  sandglass_bench_fine(&sandglass, {
     array = dmnsn_new_array(sizeof(object));
     dmnsn_delete_array(array);
   });
@@ -54,79 +54,43 @@ main()
 
   printf("dmnsn_array_push():");
 
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-  sandglass.baseline = sandglass.grains;
-
   for (i = 0; i < count; ++i) {
-    sandglass_begin(&sandglass);
-      dmnsn_array_push(array, &object);
-    sandglass_elapse(&sandglass);
-    sandglass.grains -= sandglass.baseline;
-
+    sandglass_bench_noprecache(&sandglass, dmnsn_array_push(array, &object));
     printf(" %ld", sandglass.grains);
   }
   printf("\n");
 
   /* dmnsn_array_get() */
-  sandglass_bench(&sandglass, dmnsn_array_get(array, count/2, &object));
+  sandglass_bench_fine(&sandglass, dmnsn_array_get(array, count/2, &object));
   printf("dmnsn_array_get(): %ld\n", sandglass.grains);
 
   /* dmnsn_array_set() */
-  sandglass_bench(&sandglass, dmnsn_array_set(array, count/2, &object));
+  sandglass_bench_fine(&sandglass, dmnsn_array_set(array, count/2, &object));
   printf("dmnsn_array_set(): %ld\n", sandglass.grains);
 
   /* dmnsn_array_at() */
-  sandglass_bench(&sandglass, ptr = dmnsn_array_at(array, count/2));
+  sandglass_bench_fine(&sandglass, ptr = dmnsn_array_at(array, count/2));
   printf("dmnsn_array_at(): %ld\n", sandglass.grains);
 
   /* dmnsn_array_size() */
-  sandglass_bench(&sandglass, size = dmnsn_array_size(array));
+  sandglass_bench_fine(&sandglass, size = dmnsn_array_size(array));
   printf("dmnsn_array_size(): %ld\n", sandglass.grains);
 
   /* dmnsn_array_resize() */
-
   dmnsn_array_resize(array, count);
-
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-  sandglass.baseline = sandglass.grains;
-
-  sandglass_begin(&sandglass);
-    dmnsn_array_resize(array, count * 2);
-  sandglass_elapse(&sandglass);
-  sandglass.grains -= sandglass.baseline;
+  sandglass_bench_noprecache(&sandglass, dmnsn_array_resize(array, count * 2));
   printf("dmnsn_array_resize(): %ld", sandglass.grains);
 
-  sandglass_begin(&sandglass);
-    dmnsn_array_resize(array, count);
-  sandglass_elapse(&sandglass);
-  sandglass.grains -= sandglass.baseline;
+  sandglass_bench_noprecache(&sandglass, dmnsn_array_resize(array, count));
   printf(" %ld\n", sandglass.grains);
 
   /* dmnsn_array_insert() */
 
   printf("dmnsn_array_insert():");
 
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-  sandglass.baseline = sandglass.grains;
-
   for (i = 0; i < count; ++i) {
-    sandglass_begin(&sandglass);
-      dmnsn_array_insert(array, count/2, &object);
-    sandglass_elapse(&sandglass);
-    sandglass.grains -= sandglass.baseline;
-
+    sandglass_bench_noprecache(&sandglass,
+                               dmnsn_array_insert(array, count/2, &object));
     printf(" %ld", sandglass.grains);
   }
   printf("\n");
@@ -135,19 +99,9 @@ main()
 
   printf("dmnsn_array_remove():");
 
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-  sandglass.baseline = sandglass.grains;
-
   for (i = 0; i < count; ++i) {
-    sandglass_begin(&sandglass);
-      dmnsn_array_remove(array, count/2);
-    sandglass_elapse(&sandglass);
-    sandglass.grains -= sandglass.baseline;
-
+    sandglass_bench_noprecache(&sandglass,
+                               dmnsn_array_remove(array, count/2));
     printf(" %ld", sandglass.grains);
   }
   printf("\n");
@@ -156,19 +110,8 @@ main()
 
   printf("dmnsn_array_pop():");
 
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-  sandglass.baseline = sandglass.grains;
-
   for (i = 0; i < count; ++i) {
-    sandglass_begin(&sandglass);
-      dmnsn_array_pop(array, &object);
-    sandglass_elapse(&sandglass);
-    sandglass.grains -= sandglass.baseline;
-
+    sandglass_bench_noprecache(&sandglass, dmnsn_array_pop(array, &object));
     printf(" %ld", sandglass.grains);
   }
   printf("\n");

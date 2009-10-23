@@ -47,13 +47,12 @@ int
 main()
 {
   dmnsn_kD_splay_tree *tree;
-  dmnsn_object        *object;
-  dmnsn_array         *objects;
-  dmnsn_intersection  *intersection;
+  dmnsn_intersection *intersection;
   dmnsn_line ray;
+  const unsigned int nobjects = 128;
+  dmnsn_object *objects[nobjects];
   unsigned int i;
   long grains;
-  const unsigned int nobjects = 128;
 
   sandglass_t sandglass;
   sandglass_attributes_t attr = { SANDGLASS_MONOTONIC, SANDGLASS_CPUTIME };
@@ -64,39 +63,27 @@ main()
   }
 
   tree = dmnsn_new_kD_splay_tree();
-  objects = dmnsn_new_array(sizeof(dmnsn_object *));
 
   for (i = 0; i < nobjects; ++i) {
-    object = dmnsn_new_object();
-    if (!object) {
+    objects[i] = dmnsn_new_object();
+    if (!objects[i]) {
       fprintf(stderr, "--- Couldn't allocate object! ---\n");
       return EXIT_FAILURE;
     }
 
     /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
-    object->min = dmnsn_random_vector(dmnsn_vector_construct(-1.0, -1.0, -1.0));
-    object->max = dmnsn_random_vector(object->min);
-    object->intersection_fn = &dmnsn_fake_intersection_fn;
-    dmnsn_array_push(objects, &object);
+    objects[i]->min =
+      dmnsn_random_vector(dmnsn_vector_construct(-1.0, -1.0, -1.0));
+    objects[i]->max = dmnsn_random_vector(objects[i]->min);
+    objects[i]->intersection_fn = &dmnsn_fake_intersection_fn;
   }
 
   /* dmnsn_kD_splay_insert() */
 
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-  sandglass.baseline = sandglass.grains;
-
   grains = 0;
   for (i = 0; i < nobjects; ++i) {
-    dmnsn_array_get(objects, i, &object);
-
-    sandglass_begin(&sandglass);
-      dmnsn_kD_splay_insert(tree, object);
-    sandglass_elapse(&sandglass);
-
+    sandglass_bench_noprecache(&sandglass,
+                               dmnsn_kD_splay_insert(tree, objects[i]));
     sandglass.grains += grains;
     grains = sandglass.grains;
   }
@@ -107,27 +94,18 @@ main()
   ray.x0 = dmnsn_vector_construct(0.0, 0.0, -2.0);
   ray.n  = dmnsn_vector_construct(0.0, 0.0, 1.0);
 
-  dmnsn_delete_intersection((*object->intersection_fn)(object, ray));
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-
-  sandglass_begin(&sandglass);
-  sandglass_elapse(&sandglass);
-  sandglass.baseline = sandglass.grains;
-
-  sandglass_begin(&sandglass);
+  dmnsn_delete_intersection((*objects[0]->intersection_fn)(objects[0], ray));
+  sandglass_bench_noprecache(&sandglass, {
     intersection = dmnsn_kD_splay_search(tree, ray);
-  sandglass_elapse(&sandglass);
+  });
   dmnsn_delete_intersection(intersection);
   printf("dmnsn_kD_splay_search(): %ld\n", sandglass.grains);
 
   /* Cleanup */
   dmnsn_delete_kD_splay_tree(tree);
   for (i = 0; i < nobjects; ++i) {
-    dmnsn_array_get(objects, i, &object);
-    dmnsn_delete_object(object);
+    dmnsn_delete_object(objects[i]);
   }
-  dmnsn_delete_array(objects);
 
   return EXIT_SUCCESS;
 }
