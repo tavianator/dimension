@@ -28,8 +28,11 @@ check_PROGRAMS    = error-test                                                 \
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
 
+.PHONY: clean-local-png-test
+clean-local: clean-local-png-test
+
 libdimension_tests_la_SOURCES = tests.c tests.h
-libdimension_tests_la_LIBADD  = $(top_srcdir)/libdimension/libdimension.la
+libdimension_tests_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
 error_test_SOURCES = error.c
 error_test_LDADD   = libdimension-tests.la
@@ -42,6 +45,8 @@ kD_splay_tree_test_LDADD   = libdimension-tests.la
 
 png_test_SOURCES = png.c
 png_test_LDADD   = libdimension-tests.la
+clean-local-png-test:
+	rm -f *.png
 
 gl_test_SOURCES = gl.c
 gl_test_LDADD   = libdimension-tests.la

@@ -22,13 +22,13 @@ INCLUDES = -I$(top_srcdir)/libdimension
 EXTRA_PROGRAMS = bench-array bench-geometry bench-kD_splay_tree
 
 bench_array_SOURCES = array.c
-bench_array_LDADD   = -lsandglass $(top_srcdir)/libdimension/libdimension.la
+bench_array_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
 
 bench_geometry_SOURCES = geometry.c
-bench_geometry_LDADD   = -lsandglass $(top_srcdir)/libdimension/libdimension.la
+bench_geometry_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
 
 bench_kD_splay_tree_SOURCES = kD_splay_tree.c
-bench_kD_splay_tree_LDADD   = -lsandglass $(top_srcdir)/libdimension/libdimension.la
+bench_kD_splay_tree_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
 
 bench: bench-array$(EXEEXT) bench-geometry$(EXEEXT) bench-kD_splay_tree$(EXEEXT)
 	./bench-array$(EXEEXT)
