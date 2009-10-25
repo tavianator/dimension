@@ -30,17 +30,40 @@ dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line)
   return intersection;
 }
 
-dmnsn_vector
-dmnsn_random_vector(dmnsn_vector min)
+void
+dmnsn_randomize_bounding_box(dmnsn_object *object)
 {
-  dmnsn_vector ret;
-  ret.x = 2.0*((double)rand())/RAND_MAX - 1.0;
-  ret.y = 2.0*((double)rand())/RAND_MAX - 1.0;
-  ret.z = 2.0*((double)rand())/RAND_MAX - 1.0;
-  if (ret.x < min.x) ret.x += 2.0;
-  if (ret.y < min.y) ret.y += 2.0;
-  if (ret.z < min.z) ret.z += 2.0;
-  return ret;
+  double rand1, rand2;
+
+  rand1 = 2.0*((double)rand())/RAND_MAX - 1.0;
+  rand2 = 2.0*((double)rand())/RAND_MAX - 1.0;
+  if (rand1 < rand2) {
+    object->min.x = rand1;
+    object->max.x = rand2;
+  } else {
+    object->max.x = rand1;
+    object->min.x = rand2;
+  }
+
+  rand1 = 2.0*((double)rand())/RAND_MAX - 1.0;
+  rand2 = 2.0*((double)rand())/RAND_MAX - 1.0;
+  if (rand1 < rand2) {
+    object->min.y = rand1;
+    object->max.y = rand2;
+  } else {
+    object->max.y = rand1;
+    object->min.y = rand2;
+  }
+
+  rand1 = 2.0*((double)rand())/RAND_MAX - 1.0;
+  rand2 = 2.0*((double)rand())/RAND_MAX - 1.0;
+  if (rand1 < rand2) {
+    object->min.z = rand1;
+    object->max.z = rand2;
+  } else {
+    object->max.z = rand1;
+    object->min.z = rand2;
+  }
 }
 
 dmnsn_kD_splay_node *
@@ -107,9 +130,7 @@ main()
     }
 
     /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
-    objects[i]->min =
-      dmnsn_random_vector(dmnsn_vector_construct(-1.0, -1.0, -1.0));
-    objects[i]->max = dmnsn_random_vector(objects[i]->min);
+    dmnsn_randomize_bounding_box(objects[i]);
     objects[i]->intersection_fn = &dmnsn_fake_intersection_fn;
   }
 
