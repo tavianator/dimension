@@ -43,10 +43,45 @@ dmnsn_random_vector(dmnsn_vector min)
   return ret;
 }
 
+dmnsn_kD_splay_node *
+dmnsn_kD_splay_deepest_recursive(dmnsn_kD_splay_node *node,
+                                 unsigned int depth, unsigned int *deepest)
+{
+  dmnsn_kD_splay_node *left = NULL, *right = NULL;
+  unsigned int left_depth = 0, right_depth = 0;
+  if (node->contains) {
+    left = dmnsn_kD_splay_deepest_recursive(node->contains,
+                                            depth + 1, &left_depth);
+  }
+  if (node->container) {
+    right = dmnsn_kD_splay_deepest_recursive(node->container,
+                                             depth + 1, &right_depth);
+  }
+
+  if (right && right_depth > left_depth) {
+    *deepest = right_depth;
+    return right;
+  } else if (left) {
+    *deepest = left_depth;
+    return left;
+  } else {
+    *deepest = depth;
+    return node;
+  }
+}
+
+dmnsn_kD_splay_node *
+dmnsn_kD_splay_deepest(dmnsn_kD_splay_tree *tree)
+{
+  unsigned int deepest = 0;
+  return dmnsn_kD_splay_deepest_recursive(tree->root, 0, &deepest);
+}
+
 int
 main()
 {
   dmnsn_kD_splay_tree *tree;
+  dmnsn_kD_splay_node *node;
   dmnsn_intersection *intersection;
   dmnsn_line ray;
   const unsigned int nobjects = 128;
@@ -100,6 +135,16 @@ main()
   });
   dmnsn_delete_intersection(intersection);
   printf("dmnsn_kD_splay_search(): %ld\n", sandglass.grains);
+
+  /* dmnsn_kD_splay() */
+  grains = 0;
+  for (i = 0; i < nobjects; ++i) {
+    node = dmnsn_kD_splay_deepest(tree);
+    sandglass_bench_noprecache(&sandglass, dmnsn_kD_splay(tree, node));
+    sandglass.grains += grains;
+    grains = sandglass.grains;
+  }
+  printf("dmnsn_kD_splay(): %ld\n", sandglass.grains/nobjects);
 
   /* Cleanup */
   dmnsn_delete_kD_splay_tree(tree);
