@@ -31,7 +31,6 @@ typedef struct {
 
   /* An array of dmnsn_canvas_optimizer's */
   dmnsn_array *optimizers;
-  int too_late; /* Is it too late to add optimizers? */
 
   /*
    * Stored in first-quadrant representation (origin is bottom-left).  The pixel
@@ -63,8 +62,8 @@ dmnsn_canvas *dmnsn_new_canvas(unsigned int x, unsigned int y);
 void dmnsn_delete_canvas(dmnsn_canvas *canvas);
 
 /* Set a canvas optimizer */
-int dmnsn_optimize_canvas(dmnsn_canvas *canvas,
-                          dmnsn_canvas_optimizer optimizer);
+void dmnsn_optimize_canvas(dmnsn_canvas *canvas,
+                           dmnsn_canvas_optimizer optimizer);
 
 /* Pixel accessors */
 

@@ -54,11 +54,7 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
     return 1;
   }
 
-  if (dmnsn_optimize_canvas(canvas, optimizer) != 0) {
-    free(optimizer.ptr);
-    return 1;
-  }
-
+  dmnsn_optimize_canvas(canvas, optimizer);
   return 0;
 }
 

@@ -43,7 +43,6 @@ dmnsn_new_canvas(unsigned int x, unsigned int y)
 
     /* Allocate room for the optimizers */
     canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
-    canvas->too_late = 0;
   }
 
   return canvas;
@@ -73,16 +72,10 @@ dmnsn_delete_canvas(dmnsn_canvas *canvas)
 }
 
 /* Set a canvas optimizer */
-int
+void
 dmnsn_optimize_canvas(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer)
 {
-  if (canvas->too_late) {
-    /* Don't set an optimizer if dmnsn_set_pixel() has been called */
-    return 1;
-  } else {
-    dmnsn_array_push(canvas->optimizers, &optimizer);
-    return 0;
-  }
+  dmnsn_array_push(canvas->optimizers, &optimizer);
 }
 
 /* Set the color of a pixel */
@@ -92,9 +85,6 @@ dmnsn_set_pixel(dmnsn_canvas *canvas, unsigned int x, unsigned int y,
 {
   unsigned int i;
   dmnsn_canvas_optimizer optimizer;
-
-  /* Don't allow any more optimizers */
-  canvas->too_late = 1;
 
   /* Set the pixel */
   canvas->pixels[y*canvas->x + x] = color;

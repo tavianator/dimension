@@ -53,12 +53,7 @@ dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
   }
 
   /* Set a new optimizer */
-  if (dmnsn_optimize_canvas(canvas, optimizer) != 0) {
-    /* Set failed; dmnsn_set_pixel() has probably been called already */
-    free(optimizer.ptr);
-    return 1;
-  }
-
+  dmnsn_optimize_canvas(canvas, optimizer);
   return 0;
 }
 
