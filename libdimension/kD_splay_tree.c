@@ -318,10 +318,20 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
                                 double t)
 {
   dmnsn_line ray_trans;
-  dmnsn_kD_splay_search_result result = { NULL, NULL }, result_rec;
+  dmnsn_kD_splay_search_result result = { NULL, NULL }, result_temp;
 
   if (!node)
     return result;
+
+  /* Go down the right subtree first because the closest object is more likely
+     to lie in the larger bounding boxes */
+  result_temp = dmnsn_kD_splay_search_recursive(node->container, ray, t);
+  if (result_temp.node && (t < 0.0 || result_temp.intersection->t < t)) {
+    result = result_temp;
+    t = result.intersection->t;
+  } else {
+    dmnsn_delete_intersection(result_temp.intersection);
+  }
 
   if (dmnsn_box_contains(ray.x0, node->min, node->max)
       || dmnsn_ray_box_intersection(ray, node->min, node->max, t))
@@ -333,37 +343,29 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
         || dmnsn_ray_box_intersection(ray_trans, node->object->min,
                                       node->object->max, t))
     {
-      result.intersection =
+      result_temp.intersection =
         (*node->object->intersection_fn)(node->object, ray_trans);
 
-      if (result.intersection && (t < 0.0 || result.intersection->t < t)) {
+      if (result_temp.intersection
+          && (t < 0.0 || result_temp.intersection->t < t)) {
+        dmnsn_delete_intersection(result.intersection);
         result.node = node;
+        result.intersection = result_temp.intersection;
         t = result.intersection->t;
       } else {
-        dmnsn_delete_intersection(result.intersection);
-        result.intersection = NULL;
+        dmnsn_delete_intersection(result_temp.intersection);
       }
     }
 
     /* Go down the left subtree */
-    result_rec = dmnsn_kD_splay_search_recursive(node->contains, ray, t);
-    if (result_rec.node && (t < 0.0 || result_rec.intersection->t < t)) {
+    result_temp = dmnsn_kD_splay_search_recursive(node->contains, ray, t);
+    if (result_temp.node && (t < 0.0 || result_temp.intersection->t < t)) {
       dmnsn_delete_intersection(result.intersection);
-      result = result_rec;
+      result = result_temp;
       t = result.intersection->t;
     } else {
-      dmnsn_delete_intersection(result_rec.intersection);
+      dmnsn_delete_intersection(result_temp.intersection);
     }
-  }
-
-  /* Go down the right subtree */
-  result_rec = dmnsn_kD_splay_search_recursive(node->container, ray, t);
-  if (result_rec.node && (t < 0.0 || result_rec.intersection->t < t)) {
-    dmnsn_delete_intersection(result.intersection);
-    result = result_rec;
-    t = result.intersection->t;
-  } else {
-    dmnsn_delete_intersection(result_rec.intersection);
   }
 
   return result;
