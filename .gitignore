@@ -37,6 +37,9 @@ Makefile.in
 /doc/*.vrs
 /doc/texinfo.tex
 
+# Files created by `make'
+/dimension/dimension
+
 # Files created by `make check'
 /tests/*/*-test
 /tests/*/*.png

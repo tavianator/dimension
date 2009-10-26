@@ -17,16 +17,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = libdimension                                                         \
-          dimension                                                            \
-          tests                                                                \
-          bench                                                                \
-          doc
+INCLUDES = -I$(top_srcdir)/libdimension
 
-EXTRA_DIST = autogen.sh
+bin_PROGRAMS = dimension
 
-bench: all-recursive
-	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench
-
-.PHONY: bench
+dimension_SOURCES = main.c
+dimension_LDADD   = $(top_builddir)/libdimension/libdimension.la
