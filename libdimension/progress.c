@@ -178,7 +178,9 @@ void
 dmnsn_wait_progress(const dmnsn_progress *progress, double prog)
 {
   if (pthread_mutex_lock(progress->mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_LOW, "Couldn't lock condition mutex.");
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock condition mutex.");
+    /* Busy-wait if we can't use the condition variable */
+    while (dmnsn_get_progress(progress) < prog);
   } else {
     while (dmnsn_get_progress(progress) < prog) {
       if (pthread_cond_wait(progress->cond, progress->mutex) != 0) {
@@ -188,7 +190,7 @@ dmnsn_wait_progress(const dmnsn_progress *progress, double prog)
     }
 
     if (pthread_mutex_unlock(progress->mutex) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_LOW, "Couldn't unlock condition mutex.");
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock condition mutex.");
     }
   }
 }
@@ -198,7 +200,9 @@ void
 dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total)
 {
   dmnsn_progress_element element = { .progress = 0, .total = total };
-  dmnsn_array_push(progress->elements, &element);
+  dmnsn_progress_wrlock(progress);
+    dmnsn_array_push(progress->elements, &element);
+  dmnsn_progress_unlock(progress);
 }
 
 /* Only the innermost loop needs to call this function - it handles the rest
@@ -221,11 +225,17 @@ dmnsn_increment_progress(dmnsn_progress *progress)
       element = dmnsn_array_at(progress->elements, size - 1);
       ++element->progress; /* Increment the next element */
     }
-
-    if (pthread_cond_broadcast(progress->cond) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
-    }
   dmnsn_progress_unlock(progress);
+
+  if (pthread_mutex_lock(progress->mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock condition mutex.");
+  }
+  if (pthread_cond_broadcast(progress->cond) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
+  }
+  if (pthread_mutex_unlock(progress->mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock condition mutex.");
+  }
 }
 
 /* Immediately set to 100% completion */
@@ -238,11 +248,17 @@ dmnsn_done_progress(dmnsn_progress *progress)
     dmnsn_array_resize(progress->elements, 1);
     element = dmnsn_array_at(progress->elements, 0);
     element->progress = element->total;
-
-    if (pthread_cond_broadcast(progress->cond) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
-    }
   dmnsn_progress_unlock(progress);
+
+  if (pthread_mutex_lock(progress->mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock condition mutex.");
+  }
+  if (pthread_cond_broadcast(progress->cond) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
+  }
+  if (pthread_mutex_unlock(progress->mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock condition mutex.");
+  }
 }
 
 /* Thread synchronization */

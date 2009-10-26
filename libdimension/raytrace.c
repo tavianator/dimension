@@ -133,7 +133,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
   dmnsn_new_progress_element(payload->progress,
                              nthreads*payload->scene->canvas->y);
 
-  /* Create the threads */
+  /* Create the payloads */
   for (i = 0; i < nthreads; ++i) {
     payloads[i] = *payload;
     payloads[i].index = i;
@@ -142,7 +142,10 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
       payloads[i].kD_splay_tree =
         dmnsn_kD_splay_copy(payloads[0].kD_splay_tree);
     }
+  }
 
+  /* Create the threads */
+  for (i = 0; i < nthreads; ++i) {
     if (pthread_create(&threads[i], NULL,
                        &dmnsn_raytrace_scene_multithread_thread,
                        &payloads[i]) != 0)
