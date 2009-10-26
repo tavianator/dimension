@@ -136,9 +136,6 @@ int dmnsn_finish_progress(dmnsn_progress *progress)
   int retval = 1;
 
   if (progress) {
-    /* Wake up all waiters */
-    dmnsn_done_progress(progress);
-
     if (pthread_join(progress->thread, &ptr) != 0) {
       /* Medium severity because an unjoined thread likely means that the thread
          is incomplete or invalid */
@@ -146,6 +143,8 @@ int dmnsn_finish_progress(dmnsn_progress *progress)
     } else if (ptr) {
       retval = *(int *)ptr;
       free(ptr);
+      /* Wake up all waiters */
+      dmnsn_done_progress(progress);
     }
     dmnsn_delete_progress(progress);
   }
