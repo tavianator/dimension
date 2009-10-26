@@ -71,25 +71,24 @@ dmnsn_kD_splay_deepest_recursive(dmnsn_kD_splay_node *node,
                                  unsigned int depth, unsigned int *deepest)
 {
   dmnsn_kD_splay_node *left = NULL, *right = NULL;
-  unsigned int left_depth = 0, right_depth = 0;
+
   if (node->contains) {
-    left = dmnsn_kD_splay_deepest_recursive(node->contains,
-                                            depth + 1, &left_depth);
+    left = dmnsn_kD_splay_deepest_recursive(node->contains, depth + 1, deepest);
   }
   if (node->container) {
     right = dmnsn_kD_splay_deepest_recursive(node->container,
-                                             depth + 1, &right_depth);
+                                             depth + 1, deepest);
   }
 
-  if (right && right_depth > left_depth) {
-    *deepest = right_depth;
+  if (right) {
     return right;
   } else if (left) {
-    *deepest = left_depth;
     return left;
-  } else {
+  } else if (depth >= *deepest) {
     *deepest = depth;
     return node;
+  } else {
+    return NULL;
   }
 }
 
