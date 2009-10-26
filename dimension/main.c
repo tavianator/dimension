@@ -19,8 +19,71 @@
 
 #include "../libdimension/dimension.h"
 #include <stdlib.h>
+#include <getopt.h>
+
+const char *output = NULL, *input = NULL;
+int tokenize = 0;
 
 int
-main() {
+main(int argc, char **argv) {
+  /* Parse the command-line options */
+
+  static struct option long_options[] = {
+    { "output",   required_argument, NULL,      'o' },
+    { "input",    required_argument, NULL,      'i' },
+    { "tokenize", no_argument,       &tokenize, 1   },
+    { 0,          0,                 0,         0   }
+  };
+  int opt, opt_index;
+
+  while (1) {
+    opt = getopt_long(argc, argv, "o:i:", long_options, &opt_index);
+
+    if (opt == -1)
+      break;
+
+    switch (opt) {
+    case 0:
+      /* Option set a flag - do nothing here */
+      break;
+
+    case 'o':
+      if (output) {
+        dmnsn_error(DMNSN_SEVERITY_HIGH, "--output specified more than once.");
+      } else {
+        output = optarg;
+      }
+      break;
+
+    case 'i':
+      if (input) {
+        dmnsn_error(DMNSN_SEVERITY_HIGH, "--input specified more than once.");
+      } else {
+        input = optarg;
+      }
+      break;
+
+    default:
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Error parsing command line.");
+    };
+  }
+
+  if (optind == argc - 1) {
+    if (input) {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Multiple input files specified.");
+    } else {
+      input = argv[optind];
+    }
+  } else if (optind < argc) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid extranious command line options.");
+  }
+
+  if (!output) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "No output file specified.");
+  }
+  if (!input) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "No input file specified.");
+  }
+
   return EXIT_SUCCESS;
 }
