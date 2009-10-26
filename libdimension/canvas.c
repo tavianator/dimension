@@ -34,15 +34,15 @@ dmnsn_new_canvas(unsigned int x, unsigned int y)
     canvas->x = x;
     canvas->y = y;
 
+    /* Allocate room for the optimizers */
+    canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
+
     /* Allocate the pixels */
     canvas->pixels = malloc(sizeof(dmnsn_color)*x*y);
     if (!canvas->pixels) {
-      free(canvas);
+      dmnsn_delete_canvas(canvas);
       return NULL;
     }
-
-    /* Allocate room for the optimizers */
-    canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
   }
 
   return canvas;

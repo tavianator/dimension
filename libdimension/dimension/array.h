@@ -36,6 +36,16 @@ typedef struct {
   size_t obj_size, length, capacity;
 } dmnsn_array;
 
+/* Delete an array */
+DMNSN_INLINE void
+dmnsn_delete_array(dmnsn_array *array)
+{
+  if (array) {
+    free(array->ptr);
+    free(array);
+  }
+}
+
 /* Array allocation never returns NULL - if dmnsn_new_array returns, it
    succeeded */
 DMNSN_INLINE dmnsn_array *
@@ -50,6 +60,7 @@ dmnsn_new_array(size_t obj_size)
     /* Allocate the memory */
     array->ptr = malloc(array->capacity*array->obj_size);
     if (!array->ptr) {
+      dmnsn_delete_array(array);
       dmnsn_error(DMNSN_SEVERITY_HIGH, "Array allocation failed.");
     }
   } else {
@@ -57,16 +68,6 @@ dmnsn_new_array(size_t obj_size)
   }
 
   return array;
-}
-
-/* Delete the array */
-DMNSN_INLINE void
-dmnsn_delete_array(dmnsn_array *array)
-{
-  if (array) {
-    free(array->ptr);
-    free(array);
-  }
 }
 
 /* Get the size of the array */

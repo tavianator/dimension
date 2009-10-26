@@ -37,71 +37,43 @@ dmnsn_new_progress()
     progress->elements = dmnsn_new_array(sizeof(dmnsn_progress_element));
     dmnsn_array_push(progress->elements, &element);
 
-    /* Allocate space for the rwlock, condition variable, and mutex */
+    /* Initialize the rwlock, condition variable, and mutex */
+
+    progress->rwlock = NULL;
+    progress->mutex  = NULL;
+    progress->cond   = NULL;
 
     progress->rwlock = malloc(sizeof(pthread_rwlock_t));
     if (!progress->rwlock) {
-      dmnsn_delete_array(progress->elements);
-      free(progress);
+      dmnsn_delete_progress(progress);
+      return NULL;
+    }
+    if (pthread_rwlock_init(progress->rwlock, NULL) != 0) {
+      dmnsn_delete_progress(progress);
       return NULL;
     }
 
     progress->cond = malloc(sizeof(pthread_cond_t));
     if (!progress->cond) {
-      free(progress->rwlock);
-      dmnsn_delete_array(progress->elements);
-      free(progress);
+      dmnsn_delete_progress(progress);
+      return NULL;
+    }
+    if (pthread_cond_init(progress->cond, NULL) != 0) {
+      dmnsn_delete_progress(progress);
       return NULL;
     }
 
     progress->mutex = malloc(sizeof(pthread_mutex_t));
     if (!progress->mutex) {
-      free(progress->rwlock);
-      free(progress->cond);
-      dmnsn_delete_array(progress->elements);
-      free(progress);
-      return NULL;
-    }
-
-    /* Initialize the rwlock, condition variable, and mutex */
-
-    if (pthread_rwlock_init(progress->rwlock, NULL) != 0) {
-      free(progress->rwlock);
-      free(progress->mutex);
-      free(progress->cond);
-      dmnsn_delete_array(progress->elements);
-      free(progress);
-      return NULL;
-    }
-    if (pthread_cond_init(progress->cond, NULL) != 0) {
-      if (pthread_rwlock_destroy(progress->rwlock) != 0) {
-        dmnsn_error(DMNSN_SEVERITY_LOW,
-                    "Leaking rwlock in failed allocation.");
-      }
-      free(progress->rwlock);
-      free(progress->mutex);
-      free(progress->cond);
-      dmnsn_delete_array(progress->elements);
-      free(progress);
+      dmnsn_delete_progress(progress);
       return NULL;
     }
     if (pthread_mutex_init(progress->mutex, NULL) != 0) {
-      if (pthread_rwlock_destroy(progress->rwlock) != 0) {
-        dmnsn_error(DMNSN_SEVERITY_LOW,
-                    "Leaking rwlock in failed allocation.");
-      }
-      if (pthread_cond_destroy(progress->cond) != 0) {
-        dmnsn_error(DMNSN_SEVERITY_LOW,
-                    "Leaking condition variable in failed allocation.");
-      }
-      free(progress->rwlock);
-      free(progress->mutex);
-      free(progress->cond);
-      dmnsn_delete_array(progress->elements);
-      free(progress);
+      dmnsn_delete_progress(progress);
       return NULL;
     }
   }
+
   return progress;
 }
 
@@ -111,13 +83,13 @@ void
 dmnsn_delete_progress(dmnsn_progress *progress)
 {
   if (progress) {
-    if (pthread_rwlock_destroy(progress->rwlock) != 0) {
+    if (progress->rwlock && pthread_rwlock_destroy(progress->rwlock) != 0) {
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking rwlock.");
     }
-    if (pthread_mutex_destroy(progress->mutex) != 0) {
+    if (progress->mutex && pthread_mutex_destroy(progress->mutex) != 0) {
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking mutex.");
     }
-    if (pthread_cond_destroy(progress->cond) != 0) {
+    if (progress->cond && pthread_cond_destroy(progress->cond) != 0) {
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking condition variable.");
     }
 

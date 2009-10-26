@@ -27,7 +27,7 @@ dmnsn_new_intersection()
 {
   dmnsn_intersection *intersection = malloc(sizeof(dmnsn_intersection));
   if (!intersection) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate an intersection object.");
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate an intersection.");
   }
   return intersection;
 }
