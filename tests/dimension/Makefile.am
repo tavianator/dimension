@@ -19,7 +19,7 @@
 
 INCLUDES = -I$(top_srcdir)/libdimension
 
-TESTS = tokenizer.sh
-TESTS_ENVIRONMENT = TOP_BUILDDIR=$(top_builddir)
+TESTS = $(srcdir)/tokenizer.sh
+TESTS_ENVIRONMENT = top_builddir=$(top_builddir)
 
 EXTRA_DIST = braces.pov

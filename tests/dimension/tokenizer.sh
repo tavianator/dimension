@@ -1,6 +1,6 @@
 #!/bin/sh
 
-braces=$(${TOP_BUILDDIR}/dimension/dimension --tokenize braces.pov)
+braces=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/braces.pov)
 braces_exp='({ { } } } } { {)'
 
 if [ "$braces" != "$braces_exp" ]; then

@@ -40,6 +40,7 @@ AC_CONFIG_FILES([Makefile
                  dimension/Makefile
                  tests/Makefile
                  tests/libdimension/Makefile
+                 tests/dimension/Makefile
                  bench/Makefile
                  bench/libdimension/Makefile
                  doc/Makefile])
