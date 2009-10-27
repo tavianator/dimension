@@ -21,35 +21,55 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 dmnsn_array *
 dmnsn_tokenize(FILE *file)
 {
-  char c;
+  int fd = fileno(file);
+  off_t size = lseek(fd, 0, SEEK_END);
+  lseek(fd, 0, SEEK_SET);
+  char *map = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0), *next = map;
+
   dmnsn_token token;
   dmnsn_array *tokens = dmnsn_new_array(sizeof(dmnsn_token));
 
-  while (!feof(file)) {
-    fread(&c, 1, 1, file);
+  while (next - map < size) {
+    switch (*next) {
+    case ' ':
+    case '\n':
+    case '\r':
+    case '\t':
+    case '\f':
+    case '\v':
+      /* Skip whitespace */
+      break;
 
-    if (isspace(c))
-      continue;
-
-    if (c == '{') {
-      token.type  = DMNSN_LBRACE;
+    case '{':
+      token.type = DMNSN_LBRACE;
       token.value = NULL;
       dmnsn_array_push(tokens, &token);
-    } else if (c == '}') {
-      token.type  = DMNSN_RBRACE;
+      break;
+
+    case '}':
+      token.type = DMNSN_LBRACE;
       token.value = NULL;
       dmnsn_array_push(tokens, &token);
-    } else {
-      /* Invalid character */
+      break;
+
+    default:
+      /* Unrecognised character */
+      fprintf(stderr, "Unrecognized character 0x%X in input.\n", (unsigned int)*next);
       dmnsn_delete_tokens(tokens);
+      munmap(map, size);
       return NULL;
     }
+
+    ++next;
   }
 
+  munmap(map, size);
   return tokens;
 }
 
