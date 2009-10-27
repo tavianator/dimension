@@ -51,6 +51,9 @@ dmnsn_tokenize(FILE *file)
   dmnsn_array *tokens = dmnsn_new_array(sizeof(dmnsn_token));
 
   while (next - map < size) {
+    /* Saves us some code repetition in the vast majority of cases */
+    token.value = NULL;
+
     switch (*next) {
     case ' ':
     case '\n':
@@ -59,19 +62,29 @@ dmnsn_tokenize(FILE *file)
     case '\f':
     case '\v':
       /* Skip whitespace */
-      break;
+      ++next;
+      continue;
 
-    case '{':
-      token.type = DMNSN_LBRACE;
-      token.value = NULL;
-      dmnsn_array_push(tokens, &token);
-      break;
+    /* Macro to make basic symbol tokens easier */
+    #define dmnsn_simple_token(c, tp)                                          \
+    case c:                                                                    \
+      token.type = tp;                                                         \
+      break
 
-    case '}':
-      token.type = DMNSN_RBRACE;
-      token.value = NULL;
-      dmnsn_array_push(tokens, &token);
-      break;
+    /* Some simple punctuation marks */
+    dmnsn_simple_token('{', DMNSN_LBRACE);
+    dmnsn_simple_token('}', DMNSN_RBRACE);
+    dmnsn_simple_token('(', DMNSN_LPAREN);
+    dmnsn_simple_token(')', DMNSN_RPAREN);
+    dmnsn_simple_token('[', DMNSN_LBRACKET);
+    dmnsn_simple_token(']', DMNSN_RBRACKET);
+    dmnsn_simple_token('<', DMNSN_LT);
+    dmnsn_simple_token('>', DMNSN_GT);
+    dmnsn_simple_token('+', DMNSN_PLUS);
+    dmnsn_simple_token('-', DMNSN_MINUS);
+    dmnsn_simple_token('*', DMNSN_STAR);
+    dmnsn_simple_token('/', DMNSN_SLASH);
+    dmnsn_simple_token(',', DMNSN_COMMA);
 
     default:
       /* Unrecognised character */
@@ -82,6 +95,7 @@ dmnsn_tokenize(FILE *file)
       return NULL;
     }
 
+    dmnsn_array_push(tokens, &token);
     ++next;
   }
 
@@ -138,13 +152,27 @@ static const char *
 dmnsn_token_name(dmnsn_token_type token_type)
 {
   switch (token_type) {
-  case DMNSN_LBRACE:
-    return "{";
+  /* Macro to shorten this huge switch */
+  #define dmnsn_token_map(type, str)                                           \
+  case type:                                                                   \
+    return str;
 
-  case DMNSN_RBRACE:
-    return "}";
+  dmnsn_token_map(DMNSN_LBRACE,   "{");
+  dmnsn_token_map(DMNSN_RBRACE,   "}")
+  dmnsn_token_map(DMNSN_LPAREN,   "\\(");
+  dmnsn_token_map(DMNSN_RPAREN,   "\\)");
+  dmnsn_token_map(DMNSN_LBRACKET, "[");
+  dmnsn_token_map(DMNSN_RBRACKET, "]");
+  dmnsn_token_map(DMNSN_LT,       "<");
+  dmnsn_token_map(DMNSN_GT,       ">");
+  dmnsn_token_map(DMNSN_PLUS,     "+");
+  dmnsn_token_map(DMNSN_MINUS,    "-");
+  dmnsn_token_map(DMNSN_STAR,     "*");
+  dmnsn_token_map(DMNSN_SLASH,    "/");
+  dmnsn_token_map(DMNSN_COMMA,    ",");
 
   default:
+    printf("Warning: unrecognised token %d.\n", (int)token_type);
     return "unrecognized-token";
   }
 }
