@@ -27,10 +27,25 @@
 dmnsn_array *
 dmnsn_tokenize(FILE *file)
 {
+  if (fseeko(file, 0, SEEK_END) != 0) {
+    fprintf(stderr, "Couldn't seek on input stream.\n");
+    return NULL;
+  }
+
+  off_t size = ftello(file);
+
   int fd = fileno(file);
-  off_t size = lseek(fd, 0, SEEK_END);
-  lseek(fd, 0, SEEK_SET);
+  if (fd == -1) {
+    fprintf(stderr, "Couldn't get file descriptor to input stream.\n");
+    return NULL;
+  }
+
   char *map = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0), *next = map;
+
+  if (map == MAP_FAILED) {
+    fprintf(stderr, "Couldn't mmap() input stream.\n");
+    return NULL;
+  }
 
   dmnsn_token token;
   dmnsn_array *tokens = dmnsn_new_array(sizeof(dmnsn_token));
@@ -60,7 +75,8 @@ dmnsn_tokenize(FILE *file)
 
     default:
       /* Unrecognised character */
-      fprintf(stderr, "Unrecognized character 0x%X in input.\n", (unsigned int)*next);
+      fprintf(stderr, "Unrecognized character 0x%X in input.\n",
+              (unsigned int)*next);
       dmnsn_delete_tokens(tokens);
       munmap(map, size);
       return NULL;
