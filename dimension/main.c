@@ -17,16 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+#include "tokenize.h"
 #include "../libdimension/dimension.h"
 #include <stdlib.h>
 #include <getopt.h>
 
-const char *output = NULL, *input = NULL;
-int tokenize = 0;
+static const char *output = NULL, *input = NULL;
+static int tokenize = 0;
 
 int
 main(int argc, char **argv) {
-  /* Parse the command-line options */
+  dmnsn_array *tokens;
+  FILE *input_file, *output_file;
+
+  /*
+   * Parse the command-line options
+   */
 
   static struct option long_options[] = {
     { "output",   required_argument, NULL,      'o' },
@@ -78,12 +84,46 @@ main(int argc, char **argv) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid extranious command line options.");
   }
 
-  if (!output) {
+  if (!output && !tokenize) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "No output file specified.");
   }
   if (!input) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "No input file specified.");
   }
 
+  /* Open the input file */
+  input_file = fopen(input, "r");
+  if (!input_file) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't open input file.");
+  }
+
+  /* Tokenize the input file */
+  tokens = dmnsn_tokenize(input_file);
+  if (!tokens) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error tokenizing input file.");
+  }
+
+  /* Debugging option - output the list of tokens as an S-expression */
+  if (tokenize) {
+    dmnsn_print_token_sexpr(stdout, tokens);
+    dmnsn_delete_tokens(tokens);
+    fclose(input_file);
+    return EXIT_SUCCESS;
+  }
+
+  /*
+   * Now we render the scene
+   */
+
+  /* Open the output file */
+  output_file = fopen(output, "wb");
+  if (!output_file) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't open output file.");
+  }
+
+  /* Clean up and exit! */
+  dmnsn_delete_tokens(tokens);
+  fclose(output_file);
+  fclose(input_file);
   return EXIT_SUCCESS;
 }

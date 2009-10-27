@@ -21,5 +21,7 @@ INCLUDES = -I$(top_srcdir)/libdimension
 
 bin_PROGRAMS = dimension
 
-dimension_SOURCES = main.c
+dimension_SOURCES = main.c                                                     \
+                    tokenize.c                                                 \
+                    tokenize.h
 dimension_LDADD   = $(top_builddir)/libdimension/libdimension.la
