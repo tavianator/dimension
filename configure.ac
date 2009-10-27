@@ -15,9 +15,9 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_PREREQ(2.63)
+AC_PREREQ(2.64)
 AC_INIT(Dimension, 0.0.0, tavianator@gmail.com, dimension)
-AM_INIT_AUTOMAKE(dimension, 0.0.0)
+AM_INIT_AUTOMAKE([parallel-tests])
 
 dnl Programs
 AC_PROG_CC
