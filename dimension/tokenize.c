@@ -53,7 +53,7 @@ dmnsn_tokenize(FILE *file)
       break;
 
     case '}':
-      token.type = DMNSN_LBRACE;
+      token.type = DMNSN_RBRACE;
       token.value = NULL;
       dmnsn_array_push(tokens, &token);
       break;
@@ -123,12 +123,12 @@ dmnsn_token_name(dmnsn_token_type token_type)
 {
   switch (token_type) {
   case DMNSN_LBRACE:
-    return "DMNSN_LBRACE";
+    return "{";
 
   case DMNSN_RBRACE:
-    return "DMNSN_RBRACE";
+    return "}";
 
   default:
-    return "UNRECOGNIZED-TOKEN";
+    return "unrecognized-token";
   }
 }

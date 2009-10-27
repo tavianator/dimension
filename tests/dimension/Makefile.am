@@ -17,4 +17,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-SUBDIRS = libdimension dimension
+INCLUDES = -I$(top_srcdir)/libdimension
+
+TESTS = tokenizer.sh
+TESTS_ENVIRONMENT = TOP_BUILDDIR=$(top_builddir)
+
+EXTRA_DIST = braces.pov
