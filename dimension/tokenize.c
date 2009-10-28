@@ -52,7 +52,7 @@ dmnsn_tokenize(FILE *file)
   dmnsn_token token;
   dmnsn_array *tokens = dmnsn_new_array(sizeof(dmnsn_token));
 
-  unsigned int line = 0, col = 0;
+  unsigned int line = 1, col = 0;
   unsigned int i;
 
   while (next - map < size) {
@@ -96,8 +96,38 @@ dmnsn_tokenize(FILE *file)
     dmnsn_simple_token('+', DMNSN_PLUS);
     dmnsn_simple_token('-', DMNSN_MINUS);
     dmnsn_simple_token('*', DMNSN_STAR);
-    dmnsn_simple_token('/', DMNSN_SLASH);
     dmnsn_simple_token(',', DMNSN_COMMA);
+
+    /* Possible comment */
+    case '/':
+      if (*(next + 1) == '/') {
+        /* A '//' comment block */
+        do {
+          ++next;
+        } while (next - map < size && *next != '\n');
+
+        ++line;
+        col = 0;
+        continue;
+      } else if (*(next + 1) == '*') {
+        /* A '/*' comment block */
+        do {
+          ++col;
+          if (*next == '\n') {
+            ++line;
+            col = 0;
+          }
+
+          ++next;
+        } while (next - map < size - 1
+                 && !(*next == '*' && *(next + 1) == '/'));
+        next += 2;
+        continue;
+      } else {
+        /* Just the normal punctuation mark */
+        token.type = DMNSN_SLASH;
+      }
+      break;
 
     /* Numeric values */
     case '.': /* Number begins with a decimal point, as in `.2' */
@@ -145,8 +175,9 @@ dmnsn_tokenize(FILE *file)
 
     default:
       /* Unrecognised character */
-      fprintf(stderr, "Unrecognized character 0x%X in input.\n",
-              (unsigned int)*next);
+      fprintf(stderr,
+              "Unrecognized character 0x%X in input at line %u, column %u.\n",
+              (unsigned int)*next, line, col);
       dmnsn_delete_tokens(tokens);
       munmap(map, size);
       return NULL;
