@@ -38,6 +38,9 @@ typedef enum {
   /* Numeric values */
   DMNSN_INT,
   DMNSN_FLOAT,
+
+  /* Identifiers */
+  DMNSN_IDENTIFIER,
 } dmnsn_token_type;
 
 typedef struct dmnsn_token dmnsn_token;

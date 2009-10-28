@@ -96,6 +96,36 @@ dmnsn_tokenize_number(char *map, size_t size, dmnsn_token *token,
   return 0;
 }
 
+static int
+dmnsn_tokenize_identifier(char *map, size_t size, dmnsn_token *token,
+                          char **next, unsigned int *line, unsigned int *col)
+{
+  unsigned int i = 0, alloc = 32;
+
+  if (!isalpha(**next) && **next != '_') {
+    return 1;
+  }
+
+  token->type  = DMNSN_IDENTIFIER;
+  token->value = malloc(alloc);
+
+  while (*next - map < size && (isalnum(**next) || **next == '_')) {
+    if (i + 1 >= alloc) {
+      alloc *= 2;
+      token->value = realloc(token->value, alloc);
+    }
+
+    token->value[i] = **next;
+
+    ++i;
+    ++*col;
+    ++*next;
+  }
+
+  token->value[i] = '\0';
+  return 0;
+}
+
 dmnsn_array *
 dmnsn_tokenize(FILE *file)
 {
@@ -123,7 +153,6 @@ dmnsn_tokenize(FILE *file)
   dmnsn_array *tokens = dmnsn_new_array(sizeof(dmnsn_token));
 
   unsigned int line = 1, col = 0;
-  unsigned int i;
 
   while (next - map < size) {
     /* Saves some code repetition */
@@ -198,11 +227,14 @@ dmnsn_tokenize(FILE *file)
       break;
 
     default:
-      /* Unrecognised character */
-      fprintf(stderr,
-              "Unrecognized character 0x%X in input at line %u, column %u.\n",
-              (unsigned int)*next, line, col);
-      goto bailout;
+      if (dmnsn_tokenize_identifier(map, size, &token, &next, &line, &col) != 0)
+      {
+        /* Unrecognised character */
+        fprintf(stderr,
+                "Unrecognized character 0x%X in input at line %u, column %u.\n",
+                (unsigned int)*next, line, col);
+        goto bailout;
+      }
     }
 
     dmnsn_array_push(tokens, &token);
@@ -291,6 +323,9 @@ dmnsn_token_name(dmnsn_token_type token_type)
   /* Numeric values */
   dmnsn_token_map(DMNSN_INT,   "int");
   dmnsn_token_map(DMNSN_FLOAT, "float");
+
+  /* Identifiers */
+  dmnsn_token_map(DMNSN_IDENTIFIER, "identifier");
 
   default:
     printf("Warning: unrecognised token %d.\n", (int)token_type);
