@@ -24,6 +24,77 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+static int
+dmnsn_tokenize_comment(char *map, size_t size,
+                       char **next, unsigned int *line, unsigned int *col)
+{
+  if (**next != '/')
+    return 1;
+
+  if (*(*next + 1) == '/') {
+    /* A '//' comment block */
+    do {
+      ++*next;
+    } while (*next - map < size && **next != '\n');
+
+    ++*line;
+    *col = 0;
+  } else if (*(*next + 1) == '*') {
+    /* A '/*' comment block */
+    do {
+      ++col;
+      if (**next == '\n') {
+        ++line;
+        col = 0;
+      }
+
+      ++*next;
+    } while (*next - map < size - 1
+             && !(**next == '*' && *(*next + 1) == '/'));
+    *next += 2;
+  } else {
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+dmnsn_tokenize_number(char *map, size_t size, dmnsn_token *token,
+                      char **next, unsigned int *line, unsigned int *col)
+{
+  char *endf, *endi;
+
+  strtoul(*next, &endi, 0);
+  strtod(*next, &endf);
+  if (endf > endi
+      /* These *next conditions catch invalid octal integers being parsed as
+         floats, eg 08 */
+      && (*endi == '.' || *endi == 'e' || *endi == 'E' || *endi == 'p'
+          || *endi == 'P'))
+  {
+    token->type = DMNSN_FLOAT;
+    token->value = malloc(endf - *next + 1);
+    strncpy(token->value, *next, endf - *next);
+    token->value[endf - *next] = '\0';
+
+    *col += endf - *next;
+    *next = endf;
+  } else if (endi > *next) {
+    token->type = DMNSN_INT;
+    token->value = malloc(endi - *next + 1);
+    strncpy(token->value, *next, endi - *next);
+    token->value[endi - *next] = '\0';
+
+    *col += endi - *next;
+    *next = endi;
+  } else {
+    return 1;
+  }
+
+  return 0;
+}
+
 dmnsn_array *
 dmnsn_tokenize(FILE *file)
 {
@@ -40,9 +111,7 @@ dmnsn_tokenize(FILE *file)
     return NULL;
   }
 
-  char *map = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0),
-    *next = map,
-    *endi, *endf;
+  char *map = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0), *next = map;
 
   if (map == MAP_FAILED) {
     fprintf(stderr, "Couldn't mmap() input stream.\n");
@@ -56,7 +125,7 @@ dmnsn_tokenize(FILE *file)
   unsigned int i;
 
   while (next - map < size) {
-    /* Saves us some code repetition */
+    /* Saves some code repetition */
     token.value = NULL;
     token.line  = line;
     token.col   = col;
@@ -100,28 +169,7 @@ dmnsn_tokenize(FILE *file)
 
     /* Possible comment */
     case '/':
-      if (*(next + 1) == '/') {
-        /* A '//' comment block */
-        do {
-          ++next;
-        } while (next - map < size && *next != '\n');
-
-        ++line;
-        col = 0;
-        continue;
-      } else if (*(next + 1) == '*') {
-        /* A '/*' comment block */
-        do {
-          ++col;
-          if (*next == '\n') {
-            ++line;
-            col = 0;
-          }
-
-          ++next;
-        } while (next - map < size - 1
-                 && !(*next == '*' && *(next + 1) == '/'));
-        next += 2;
+      if (dmnsn_tokenize_comment(map, size, &next, &line, &col) == 0) {
         continue;
       } else {
         /* Just the normal punctuation mark */
@@ -141,35 +189,10 @@ dmnsn_tokenize(FILE *file)
     case '7':
     case '8':
     case '9':
-      strtoul(next, &endi, 0);
-      strtod(next, &endf);
-      if (endf > endi
-          /* These next conditions catch invalid octal integers being parsed as
-             floats, eg 08 */
-          && (*endi == '.' || *endi == 'e' || *endi == 'E' || *endi == 'p'
-              || *endi == 'P'))
-      {
-        token.type = DMNSN_FLOAT;
-        token.value = malloc(endf - next + 1);
-        strncpy(token.value, next, endf - next);
-        token.value[endf - next] = '\0';
-
-        col += endf - next;
-        next = endf;
-      } else if (endi > next) {
-        token.type = DMNSN_INT;
-        token.value = malloc(endi - next + 1);
-        strncpy(token.value, next, endi - next);
-        token.value[endi - next] = '\0';
-
-        col += endi - next;
-        next = endi;
-      } else {
+      if (dmnsn_tokenize_number(map, size, &token, &next, &line, &col) != 0) {
         fprintf(stderr, "Invalid numeric value on line %u, column %u.\n",
                 line, col);
-        dmnsn_delete_tokens(tokens);
-        munmap(map, size);
-        return NULL;
+        goto bailout;
       }
       break;
 
@@ -178,9 +201,7 @@ dmnsn_tokenize(FILE *file)
       fprintf(stderr,
               "Unrecognized character 0x%X in input at line %u, column %u.\n",
               (unsigned int)*next, line, col);
-      dmnsn_delete_tokens(tokens);
-      munmap(map, size);
-      return NULL;
+      goto bailout;
     }
 
     dmnsn_array_push(tokens, &token);
@@ -190,6 +211,11 @@ dmnsn_tokenize(FILE *file)
 
   munmap(map, size);
   return tokens;
+
+ bailout:
+  dmnsn_delete_tokens(tokens);
+  munmap(map, size);
+  return NULL;
 }
 
 void
