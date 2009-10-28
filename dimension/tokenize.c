@@ -41,7 +41,7 @@ dmnsn_tokenize_comment(char *map, size_t size,
     ++*line;
     *col = 0;
   } else if (*(*next + 1) == '*') {
-    /* A '/*' comment block */
+    /* A multi-line comment block (like this one) */
     do {
       ++col;
       if (**next == '\n') {
@@ -96,9 +96,10 @@ dmnsn_tokenize_number(char *map, size_t size, dmnsn_token *token,
   return 0;
 }
 
+/* Tokenize a keyword or an identifier */
 static int
-dmnsn_tokenize_identifier(char *map, size_t size, dmnsn_token *token,
-                          char **next, unsigned int *line, unsigned int *col)
+dmnsn_tokenize_label(char *map, size_t size, dmnsn_token *token,
+                     char **next, unsigned int *line, unsigned int *col)
 {
   unsigned int i = 0, alloc = 32;
 
@@ -109,7 +110,7 @@ dmnsn_tokenize_identifier(char *map, size_t size, dmnsn_token *token,
   token->type  = DMNSN_IDENTIFIER;
   token->value = malloc(alloc);
 
-  while (*next - map < size && (isalnum(**next) || **next == '_')) {
+  do {
     if (i + 1 >= alloc) {
       alloc *= 2;
       token->value = realloc(token->value, alloc);
@@ -120,9 +121,28 @@ dmnsn_tokenize_identifier(char *map, size_t size, dmnsn_token *token,
     ++i;
     ++*col;
     ++*next;
-  }
+  }  while (*next - map < size && (isalnum(**next) || **next == '_'));
 
   token->value[i] = '\0';
+
+  /* Now check if we really found a keyword */
+
+#define dmnsn_keyword(str, tp)                                                 \
+  do {                                                                         \
+    if (strcmp(token->value, str) == 0) {                                      \
+      free(token->value);                                                      \
+      token->value = NULL;                                                     \
+      token->type  = tp;                                                       \
+      return 0;                                                                \
+    }                                                                          \
+  } while (0)
+
+  dmnsn_keyword("camera", DMNSN_CAMERA);
+  dmnsn_keyword("color",  DMNSN_COLOR);
+  dmnsn_keyword("colour", DMNSN_COLOR);
+  dmnsn_keyword("sphere", DMNSN_SPHERE);
+  dmnsn_keyword("box",    DMNSN_BOX);
+
   return 0;
 }
 
@@ -178,9 +198,11 @@ dmnsn_tokenize(FILE *file)
       continue;
 
     /* Macro to make basic symbol tokens easier */
-    #define dmnsn_simple_token(c, tp)                                          \
+#define dmnsn_simple_token(c, tp)                                              \
     case c:                                                                    \
       token.type = tp;                                                         \
+      ++col;                                                                   \
+      ++next;                                                                  \
       break
 
     /* Some simple punctuation marks */
@@ -204,6 +226,8 @@ dmnsn_tokenize(FILE *file)
       } else {
         /* Just the normal punctuation mark */
         token.type = DMNSN_SLASH;
+        ++col;
+        ++next;
       }
       break;
 
@@ -227,8 +251,7 @@ dmnsn_tokenize(FILE *file)
       break;
 
     default:
-      if (dmnsn_tokenize_identifier(map, size, &token, &next, &line, &col) != 0)
-      {
+      if (dmnsn_tokenize_label(map, size, &token, &next, &line, &col) != 0) {
         /* Unrecognised character */
         fprintf(stderr,
                 "Unrecognized character 0x%X in input at line %u, column %u.\n",
@@ -238,8 +261,6 @@ dmnsn_tokenize(FILE *file)
     }
 
     dmnsn_array_push(tokens, &token);
-    ++next;
-    ++col;
   }
 
   munmap(map, size);
@@ -301,7 +322,7 @@ dmnsn_token_name(dmnsn_token_type token_type)
 {
   switch (token_type) {
   /* Macro to shorten this huge switch */
-  #define dmnsn_token_map(type, str)                                           \
+#define dmnsn_token_map(type, str)                                             \
   case type:                                                                   \
     return str;
 
@@ -323,6 +344,12 @@ dmnsn_token_name(dmnsn_token_type token_type)
   /* Numeric values */
   dmnsn_token_map(DMNSN_INT,   "int");
   dmnsn_token_map(DMNSN_FLOAT, "float");
+
+  /* Keywords */
+  dmnsn_token_map(DMNSN_CAMERA, "camera");
+  dmnsn_token_map(DMNSN_COLOR,  "color");
+  dmnsn_token_map(DMNSN_SPHERE, "sphere");
+  dmnsn_token_map(DMNSN_BOX,    "box");
 
   /* Identifiers */
   dmnsn_token_map(DMNSN_IDENTIFIER, "identifier");

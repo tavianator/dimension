@@ -39,6 +39,12 @@ typedef enum {
   DMNSN_INT,
   DMNSN_FLOAT,
 
+  /* Keywords */
+  DMNSN_CAMERA,
+  DMNSN_COLOR,
+  DMNSN_SPHERE,
+  DMNSN_BOX,
+
   /* Identifiers */
   DMNSN_IDENTIFIER,
 } dmnsn_token_type;

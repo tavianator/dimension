@@ -25,4 +25,7 @@ TESTS_ENVIRONMENT = top_builddir=$(top_builddir)
 tokenizer.sh:
 	cp $(srcdir)/tokenizer.sh .
 
-EXTRA_DIST = tokenizer.sh punctuation.pov numeric.pov
+EXTRA_DIST = tokenizer.sh                                                      \
+             punctuation.pov                                                   \
+             numeric.pov                                                       \
+             labels.pov

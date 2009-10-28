@@ -39,4 +39,13 @@ if [ "$numeric" != "$numeric_exp" ]; then
   exitstatus=1
 fi
 
+labels=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/labels.pov)
+labels_exp='(camera { } sphere { color (identifier "new_identifier") } box { color (identifier "new_identifier") })';
+
+if [ "$labels" != "$labels_exp" ]; then
+  echo "labels.pov tokenized as \"$labels\"" >&2
+  echo "            -- expected \"$labels_exp\"" >&2
+  exitstatus=1
+fi
+
 exit $exitstatus
