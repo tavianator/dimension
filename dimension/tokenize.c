@@ -362,6 +362,39 @@ dmnsn_tokenize(FILE *file)
       if (dmnsn_tokenize_directive(map, size, &token,
                                    &next, &line, &col) == 0) {
         if (token.type == DMNSN_INCLUDE) {
+          /* Skip whitespace */
+          while (next - map < size && isspace(*next) && *next != '\n') {
+            ++next;
+          }
+
+          if (dmnsn_tokenize_string(map, size, &token,
+                                    &next, &line, &col) != 0) {
+            fprintf(stderr,
+                    "Expected string after #include on line %u, column %u.\n",
+                    line, col);
+            goto bailout;
+          }
+          
+          FILE *included = fopen(token.value, "r");
+          if (!included) {
+            fprintf(stderr, "Couldn't include \"%s\" on line %u, column %u.\n",
+                    token.value, line, col);
+            goto bailout;
+          }
+
+          dmnsn_array *included_tokens = dmnsn_tokenize(included);
+          if (!included_tokens) {
+            fprintf(stderr, "Error tokenizing \"%s\"\n", token.value);
+            goto bailout;
+          }
+
+          unsigned int i;
+          for (i = 0; i < dmnsn_array_size(included_tokens); ++i) {
+            dmnsn_array_push(tokens, dmnsn_array_at(included_tokens, i));
+          }
+
+          dmnsn_delete_array(included_tokens);
+          continue;
         }
       } else {
         fprintf(stderr, "Invalid directive on line %u, column %u.\n",

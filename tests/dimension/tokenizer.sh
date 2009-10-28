@@ -59,7 +59,7 @@ if [ "$labels" != "$labels_exp" ]; then
 fi
 
 directives=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/directives.pov)
-directives_exp='(#include (string "punctuation.pov") #declare (identifier "x"))';
+directives_exp='({ \( [ < + - * / , > ] \) } #declare (identifier "x"))';
 
 if [ "$directives" != "$directives_exp" ]; then
   echo "directives.pov tokenized as \"$directives\"" >&2
