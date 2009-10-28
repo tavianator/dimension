@@ -31,7 +31,7 @@ if [ "$punctuation" != "$punctuation_exp" ]; then
 fi
 
 numeric=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/numeric.pov)
-numeric_exp='((int "1") (int "123456789") (int "01234567") (int "0x123456789") - (int "0x01") (float ".1") (float "0.1") (float "1.0") (float "0.123456789") - (float "0.123456789"))'
+numeric_exp='((int "1") (int "123456789") (int "01234567") (int "0x123456789") - (int "0x01") (float ".1") (float "0.1") (float "1.0") (float "0.123456789") - (float "0.123456789") < (int "1") , (float "2.2") , - (float "3.03") >)'
 
 if [ "$numeric" != "$numeric_exp" ]; then
   echo "numeric.pov tokenized as \"$numeric\"" >&2
