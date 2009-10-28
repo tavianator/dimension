@@ -56,8 +56,10 @@ dmnsn_tokenize(FILE *file)
   unsigned int i;
 
   while (next - map < size) {
-    /* Saves us some code repetition in the vast majority of cases */
+    /* Saves us some code repetition */
     token.value = NULL;
+    token.line  = line;
+    token.col   = col;
 
     switch (*next) {
     case ' ':
@@ -121,12 +123,16 @@ dmnsn_tokenize(FILE *file)
         token.value = malloc(endf - next + 1);
         strncpy(token.value, next, endf - next);
         token.value[endf - next] = '\0';
+
+        col += endf - next;
         next = endf;
       } else if (endi > next) {
         token.type = DMNSN_INT;
         token.value = malloc(endi - next + 1);
         strncpy(token.value, next, endi - next);
         token.value[endi - next] = '\0';
+
+        col += endi - next;
         next = endi;
       } else {
         fprintf(stderr, "Invalid numeric value on line %u, column %u.\n",

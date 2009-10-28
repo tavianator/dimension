@@ -45,6 +45,9 @@ typedef struct dmnsn_token dmnsn_token;
 struct dmnsn_token {
   dmnsn_token_type type;
   char *value;
+
+  /* Line and column numbers from source code */
+  unsigned int line, col;
 };
 
 dmnsn_array *dmnsn_tokenize(FILE *file);
