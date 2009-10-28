@@ -37,6 +37,7 @@ dmnsn_tokenize_comment(char *map, size_t size,
       ++*next;
     } while (*next - map < size && **next != '\n');
 
+    ++*next;
     ++*line;
     *col = 0;
   } else if (*(*next + 1) == '*') {
