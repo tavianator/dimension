@@ -121,7 +121,7 @@ dmnsn_tokenize_label(char *map, size_t size, dmnsn_token *token,
     ++i;
     ++*col;
     ++*next;
-  }  while (*next - map < size && (isalnum(**next) || **next == '_'));
+  } while (*next - map < size && (isalnum(**next) || **next == '_'));
 
   token->value[i] = '\0';
 
@@ -142,6 +142,113 @@ dmnsn_tokenize_label(char *map, size_t size, dmnsn_token *token,
   dmnsn_keyword("colour", DMNSN_COLOR);
   dmnsn_keyword("sphere", DMNSN_SPHERE);
   dmnsn_keyword("box",    DMNSN_BOX);
+
+  return 0;
+}
+
+/* Tokenize a language directive (#include, #declare, etc.) */
+static int
+dmnsn_tokenize_directive(char *map, size_t size, dmnsn_token *token,
+                         char **next, unsigned int *line, unsigned int *col)
+{
+  unsigned int i = 0, alloc = 32;
+
+  if (**next != '#') {
+    return 1;
+  }
+
+  char *directive = malloc(alloc);
+
+  do {
+    if (i + 1 >= alloc) {
+      alloc *= 2;
+      directive = realloc(directive, alloc);
+    }
+
+    directive[i] = **next;
+
+    ++i;
+    ++*col;
+    ++*next;
+  } while (*next - map < size && (isalnum(**next) || **next == '_'));
+
+  directive[i] = '\0';
+
+  /* Now check if we really found a directive */
+
+#define dmnsn_directive(str, tp)                                               \
+  do {                                                                         \
+    if (strcmp(directive, str) == 0) {                                         \
+      free(directive);                                                         \
+      token->type = tp;                                                        \
+      return 0;                                                                \
+    }                                                                          \
+  } while (0)
+
+  dmnsn_directive("#include", DMNSN_INCLUDE);
+  dmnsn_directive("#declare", DMNSN_DECLARE);
+
+  free(directive);
+  return 1;
+}
+
+/* Tokenize a string */
+static int
+dmnsn_tokenize_string(char *map, size_t size, dmnsn_token *token,
+                      char **next, unsigned int *line, unsigned int *col)
+{
+  unsigned int i = 0, alloc = 32;
+
+  if (**next != '"') {
+    return 1;
+  }
+  
+  token->type  = DMNSN_STRING;
+  token->value = malloc(alloc);
+
+  ++*next;
+  while (*next - map < size && **next != '"') {
+    if (i + 1 >= alloc) {
+      alloc *= 2;
+      token->value = realloc(token->value, alloc);
+    }
+
+    if (**next == '\\') {
+      ++*col;
+      ++*next;
+
+      switch (**next) {
+      case '\\':
+        token->value[i] = '\\';
+        break;
+
+      case '"':
+        token->value[i] = '"';
+        break;
+
+      case 'n':
+        token->value[i] = '\n';
+        break;
+
+      default:
+        fprintf(stderr,
+                "Warning: unrecognised escape sequence '\\%c'"
+                " on line %u, column %u\n",
+                (int)**next, *line, *col);
+        token->value[i] = **next;
+        break;
+      }
+    } else {
+      token->value[i] = **next;
+    }
+
+    ++i;
+    ++*col;
+    ++*next;
+  } 
+  ++*next;
+
+  token->value[i] = '\0';
 
   return 0;
 }
@@ -250,14 +357,37 @@ dmnsn_tokenize(FILE *file)
       }
       break;
 
+    case '#':
+      /* Language directive */
+      if (dmnsn_tokenize_directive(map, size, &token,
+                                   &next, &line, &col) == 0) {
+        if (token.type == DMNSN_INCLUDE) {
+        }
+      } else {
+        fprintf(stderr, "Invalid directive on line %u, column %u.\n",
+                line, col);
+        goto bailout;
+      }
+      break;
+
+    case '"':
+      if (dmnsn_tokenize_string(map, size, &token, &next, &line, &col) != 0) {
+        fprintf(stderr, "Invalid string on line %u, column %u.\n",
+                line, col);
+        goto bailout;
+      }
+      break;
+
     default:
       if (dmnsn_tokenize_label(map, size, &token, &next, &line, &col) != 0) {
         /* Unrecognised character */
         fprintf(stderr,
-                "Unrecognized character 0x%X in input at line %u, column %u.\n",
-                (unsigned int)*next, line, col);
+                "Unrecognized character '%c' (0x%X) in input at line %u,"
+                " column %u.\n",
+                (int)*next, (unsigned int)*next, line, col);
         goto bailout;
       }
+      break;
     }
 
     dmnsn_array_push(tokens, &token);
@@ -350,6 +480,13 @@ dmnsn_token_name(dmnsn_token_type token_type)
   dmnsn_token_map(DMNSN_COLOR,  "color");
   dmnsn_token_map(DMNSN_SPHERE, "sphere");
   dmnsn_token_map(DMNSN_BOX,    "box");
+
+  /* Directives */
+  dmnsn_token_map(DMNSN_INCLUDE, "#include");
+  dmnsn_token_map(DMNSN_DECLARE, "#declare");
+
+  /* Strings */
+  dmnsn_token_map(DMNSN_STRING, "string");
 
   /* Identifiers */
   dmnsn_token_map(DMNSN_IDENTIFIER, "identifier");

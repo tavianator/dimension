@@ -39,12 +39,31 @@ if [ "$numeric" != "$numeric_exp" ]; then
   exitstatus=1
 fi
 
+strings=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/strings.pov)
+strings_exp='((string "This is a string with
+"escape sequences"\"))'
+
+if [ "$strings" != "$strings_exp" ]; then
+  echo "strings.pov tokenized as \"$strings\"" >&2
+  echo "             -- expected \"$strings_exp\"" >&2
+  exitstatus=1
+fi
+
 labels=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/labels.pov)
 labels_exp='(camera { } sphere { color (identifier "new_identifier") } box { color (identifier "new_identifier") })';
 
 if [ "$labels" != "$labels_exp" ]; then
   echo "labels.pov tokenized as \"$labels\"" >&2
   echo "            -- expected \"$labels_exp\"" >&2
+  exitstatus=1
+fi
+
+directives=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/directives.pov)
+directives_exp='(#include (string "punctuation.pov") #declare (identifier "x"))';
+
+if [ "$directives" != "$directives_exp" ]; then
+  echo "directives.pov tokenized as \"$directives\"" >&2
+  echo "                -- expected \"$directives_exp\"" >&2
   exitstatus=1
 fi
 

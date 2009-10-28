@@ -45,8 +45,15 @@ typedef enum {
   DMNSN_SPHERE,
   DMNSN_BOX,
 
+  /* Directives (#declare, etc.) */
+  DMNSN_INCLUDE, /* Only used internally */
+  DMNSN_DECLARE,
+
   /* Identifiers */
   DMNSN_IDENTIFIER,
+
+  /* Strings */
+  DMNSN_STRING,
 } dmnsn_token_type;
 
 typedef struct dmnsn_token dmnsn_token;
