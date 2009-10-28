@@ -24,6 +24,15 @@ punctuation_exp='({ \( [ < + - * / , > ] \) })'
 
 if [ "$punctuation" != "$punctuation_exp" ]; then
   echo "punctuation.pov tokenized as \"$punctuation\"" >&2
-  echo " -- expected \"$punctuation_exp\"" >&2
+  echo "                 -- expected \"$punctuation_exp\"" >&2
+  exit 1;
+fi
+
+numeric=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/numeric.pov)
+numeric_exp='((int "1") (int "123456789") (int "01234567") (int "0x123456789") - (int "0x01") (float ".1") (float "0.1") (float "1.0") (float "0.123456789") - (float "0.123456789"))'
+
+if [ "$numeric" != "$numeric_exp" ]; then
+  echo "numeric.pov tokenized as \"$numeric\"" >&2
+  echo "             -- expected \"$numeric_exp\"" >&2
   exit 1;
 fi

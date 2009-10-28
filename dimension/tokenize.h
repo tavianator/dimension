@@ -20,6 +20,7 @@
 #include "../libdimension/dimension.h"
 
 typedef enum {
+  /* Punctuation */
   DMNSN_LBRACE,   /* { */
   DMNSN_RBRACE,   /* } */
   DMNSN_LPAREN,   /* ( */
@@ -33,6 +34,10 @@ typedef enum {
   DMNSN_STAR,     /* * */
   DMNSN_SLASH,    /* / */
   DMNSN_COMMA,    /* , */
+
+  /* Numeric values */
+  DMNSN_INT,
+  DMNSN_FLOAT,
 } dmnsn_token_type;
 
 typedef struct dmnsn_token dmnsn_token;

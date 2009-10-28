@@ -40,7 +40,9 @@ dmnsn_tokenize(FILE *file)
     return NULL;
   }
 
-  char *map = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0), *next = map;
+  char *map = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0),
+    *next = map,
+    *endi, *endf;
 
   if (map == MAP_FAILED) {
     fprintf(stderr, "Couldn't mmap() input stream.\n");
@@ -50,19 +52,28 @@ dmnsn_tokenize(FILE *file)
   dmnsn_token token;
   dmnsn_array *tokens = dmnsn_new_array(sizeof(dmnsn_token));
 
+  unsigned int line = 0, col = 0;
+  unsigned int i;
+
   while (next - map < size) {
     /* Saves us some code repetition in the vast majority of cases */
     token.value = NULL;
 
     switch (*next) {
     case ' ':
-    case '\n':
     case '\r':
     case '\t':
     case '\f':
     case '\v':
       /* Skip whitespace */
       ++next;
+      ++col;
+      continue;
+
+    case '\n':
+      ++next;
+      ++line;
+      col = 0;
       continue;
 
     /* Macro to make basic symbol tokens easier */
@@ -86,6 +97,46 @@ dmnsn_tokenize(FILE *file)
     dmnsn_simple_token('/', DMNSN_SLASH);
     dmnsn_simple_token(',', DMNSN_COMMA);
 
+    /* Numeric values */
+    case '.': /* Number begins with a decimal point, as in `.2' */
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      strtoul(next, &endi, 0);
+      strtod(next, &endf);
+      if (endf > endi
+          /* These next conditions catch invalid octal integers being parsed as
+             floats, eg 08 */
+          && (*endi == '.' || *endi == 'e' || *endi == 'E' || *endi == 'p'
+              || *endi == 'P'))
+      {
+        token.type = DMNSN_FLOAT;
+        token.value = malloc(endf - next + 1);
+        strncpy(token.value, next, endf - next);
+        token.value[endf - next] = '\0';
+        next = endf;
+      } else if (endi > next) {
+        token.type = DMNSN_INT;
+        token.value = malloc(endi - next + 1);
+        strncpy(token.value, next, endi - next);
+        token.value[endi - next] = '\0';
+        next = endi;
+      } else {
+        fprintf(stderr, "Invalid numeric value on line %u, column %u.\n",
+                line, col);
+        dmnsn_delete_tokens(tokens);
+        munmap(map, size);
+        return NULL;
+      }
+      break;
+
     default:
       /* Unrecognised character */
       fprintf(stderr, "Unrecognized character 0x%X in input.\n",
@@ -97,6 +148,7 @@ dmnsn_tokenize(FILE *file)
 
     dmnsn_array_push(tokens, &token);
     ++next;
+    ++col;
   }
 
   munmap(map, size);
@@ -157,6 +209,7 @@ dmnsn_token_name(dmnsn_token_type token_type)
   case type:                                                                   \
     return str;
 
+  /* Punctuation */
   dmnsn_token_map(DMNSN_LBRACE,   "{");
   dmnsn_token_map(DMNSN_RBRACE,   "}")
   dmnsn_token_map(DMNSN_LPAREN,   "\\(");
@@ -170,6 +223,10 @@ dmnsn_token_name(dmnsn_token_type token_type)
   dmnsn_token_map(DMNSN_STAR,     "*");
   dmnsn_token_map(DMNSN_SLASH,    "/");
   dmnsn_token_map(DMNSN_COMMA,    ",");
+
+  /* Numeric values */
+  dmnsn_token_map(DMNSN_INT,   "int");
+  dmnsn_token_map(DMNSN_FLOAT, "float");
 
   default:
     printf("Warning: unrecognised token %d.\n", (int)token_type);
