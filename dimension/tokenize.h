@@ -21,63 +21,63 @@
 
 typedef enum {
   /* Punctuation */
-  DMNSN_LBRACE,   /* { */
-  DMNSN_RBRACE,   /* } */
-  DMNSN_LPAREN,   /* ( */
-  DMNSN_RPAREN,   /* ) */
-  DMNSN_LBRACKET, /* [ */
-  DMNSN_RBRACKET, /* ] */
-  DMNSN_LT,       /* < */
-  DMNSN_GT,       /* > */
-  DMNSN_PLUS,     /* + */
-  DMNSN_MINUS,    /* - */
-  DMNSN_STAR,     /* * */
-  DMNSN_SLASH,    /* / */
-  DMNSN_COMMA,    /* , */
+  DMNSN_T_LBRACE,   /* { */
+  DMNSN_T_RBRACE,   /* } */
+  DMNSN_T_LPAREN,   /* ( */
+  DMNSN_T_RPAREN,   /* ) */
+  DMNSN_T_LBRACKET, /* [ */
+  DMNSN_T_RBRACKET, /* ] */
+  DMNSN_T_LT,       /* < */
+  DMNSN_T_GT,       /* > */
+  DMNSN_T_PLUS,     /* + */
+  DMNSN_T_MINUS,    /* - */
+  DMNSN_T_STAR,     /* * */
+  DMNSN_T_SLASH,    /* / */
+  DMNSN_T_COMMA,    /* , */
 
   /* Numeric values */
-  DMNSN_INT,
-  DMNSN_FLOAT,
+  DMNSN_T_INT,
+  DMNSN_T_FLOAT,
 
   /* Keywords */
-  DMNSN_CAMERA,
-  DMNSN_COLOR,
-  DMNSN_SPHERE,
-  DMNSN_BOX,
+  DMNSN_T_CAMERA,
+  DMNSN_T_COLOR,
+  DMNSN_T_SPHERE,
+  DMNSN_T_BOX,
 
   /* Directives (#declare, etc.) */
-  DMNSN_BREAK,
-  DMNSN_CASE,
-  DMNSN_DEBUG,
-  DMNSN_DECLARE,
-  DMNSN_DEFAULT,
-  DMNSN_ELSE,
-  DMNSN_END,
-  DMNSN_ERROR,
-  DMNSN_FCLOSE,
-  DMNSN_FOPEN,
-  DMNSN_IF,
-  DMNSN_IFDEF,
-  DMNSN_IFNDEF,
-  DMNSN_INCLUDE, /* Only used internally */
-  DMNSN_LOCAL,
-  DMNSN_MACRO,
-  DMNSN_RANGE,
-  DMNSN_READ,
-  DMNSN_RENDER,
-  DMNSN_STATISTICS,
-  DMNSN_SWITCH,
-  DMNSN_UNDEF,
-  DMNSN_VERSION,
-  DMNSN_WARNING,
-  DMNSN_WHILE,
-  DMNSN_WRITE,
+  DMNSN_T_BREAK,
+  DMNSN_T_CASE,
+  DMNSN_T_DEBUG,
+  DMNSN_T_DECLARE,
+  DMNSN_T_DEFAULT,
+  DMNSN_T_ELSE,
+  DMNSN_T_END,
+  DMNSN_T_ERROR,
+  DMNSN_T_FCLOSE,
+  DMNSN_T_FOPEN,
+  DMNSN_T_IF,
+  DMNSN_T_IFDEF,
+  DMNSN_T_IFNDEF,
+  DMNSN_T_INCLUDE, /* Only used internally */
+  DMNSN_T_LOCAL,
+  DMNSN_T_MACRO,
+  DMNSN_T_RANGE,
+  DMNSN_T_READ,
+  DMNSN_T_RENDER,
+  DMNSN_T_STATISTICS,
+  DMNSN_T_SWITCH,
+  DMNSN_T_UNDEF,
+  DMNSN_T_VERSION,
+  DMNSN_T_WARNING,
+  DMNSN_T_WHILE,
+  DMNSN_T_WRITE,
 
   /* Identifiers */
-  DMNSN_IDENTIFIER,
+  DMNSN_T_IDENTIFIER,
 
   /* Strings */
-  DMNSN_STRING,
+  DMNSN_T_STRING,
 } dmnsn_token_type;
 
 typedef struct dmnsn_token dmnsn_token;

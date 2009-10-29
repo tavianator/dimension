@@ -92,7 +92,7 @@ dmnsn_tokenize_number(const char *filename,
       && (*endi == '.' || *endi == 'e' || *endi == 'E' || *endi == 'p'
           || *endi == 'P'))
   {
-    token->type = DMNSN_FLOAT;
+    token->type = DMNSN_T_FLOAT;
     token->value = malloc(endf - *next + 1);
     strncpy(token->value, *next, endf - *next);
     token->value[endf - *next] = '\0';
@@ -100,7 +100,7 @@ dmnsn_tokenize_number(const char *filename,
     *col += endf - *next;
     *next = endf;
   } else if (endi > *next) {
-    token->type = DMNSN_INT;
+    token->type = DMNSN_T_INT;
     token->value = malloc(endi - *next + 1);
     strncpy(token->value, *next, endi - *next);
     token->value[endi - *next] = '\0';
@@ -126,7 +126,7 @@ dmnsn_tokenize_label(const char *filename,
     return 1;
   }
 
-  token->type  = DMNSN_IDENTIFIER;
+  token->type  = DMNSN_T_IDENTIFIER;
   token->value = malloc(alloc);
 
   do {
@@ -156,11 +156,11 @@ dmnsn_tokenize_label(const char *filename,
     }                                                                          \
   } while (0)
 
-  dmnsn_keyword("camera", DMNSN_CAMERA);
-  dmnsn_keyword("color",  DMNSN_COLOR);
-  dmnsn_keyword("colour", DMNSN_COLOR);
-  dmnsn_keyword("sphere", DMNSN_SPHERE);
-  dmnsn_keyword("box",    DMNSN_BOX);
+  dmnsn_keyword("camera", DMNSN_T_CAMERA);
+  dmnsn_keyword("color",  DMNSN_T_COLOR);
+  dmnsn_keyword("colour", DMNSN_T_COLOR);
+  dmnsn_keyword("sphere", DMNSN_T_SPHERE);
+  dmnsn_keyword("box",    DMNSN_T_BOX);
 
   return 0;
 }
@@ -206,32 +206,32 @@ dmnsn_tokenize_directive(const char *filename,
     }                                                                          \
   } while (0)
 
-  dmnsn_directive("#break",      DMNSN_BREAK);
-  dmnsn_directive("#case",       DMNSN_CASE);
-  dmnsn_directive("#debug",      DMNSN_DEBUG);
-  dmnsn_directive("#declare",    DMNSN_DECLARE);
-  dmnsn_directive("#default",    DMNSN_DEFAULT);
-  dmnsn_directive("#else",       DMNSN_ELSE);
-  dmnsn_directive("#end",        DMNSN_END);
-  dmnsn_directive("#error",      DMNSN_ERROR);
-  dmnsn_directive("#fclose",     DMNSN_FCLOSE);
-  dmnsn_directive("#fopen",      DMNSN_FOPEN);
-  dmnsn_directive("#if",         DMNSN_IF);
-  dmnsn_directive("#ifdef",      DMNSN_IFDEF);
-  dmnsn_directive("#ifndef",     DMNSN_IFNDEF);
-  dmnsn_directive("#include",    DMNSN_INCLUDE);
-  dmnsn_directive("#local",      DMNSN_LOCAL);
-  dmnsn_directive("#macro",      DMNSN_MACRO);
-  dmnsn_directive("#range",      DMNSN_RANGE);
-  dmnsn_directive("#read",       DMNSN_READ);
-  dmnsn_directive("#render",     DMNSN_RENDER);
-  dmnsn_directive("#statistics", DMNSN_STATISTICS);
-  dmnsn_directive("#switch",     DMNSN_SWITCH);
-  dmnsn_directive("#undef",      DMNSN_UNDEF);
-  dmnsn_directive("#version",    DMNSN_VERSION);
-  dmnsn_directive("#warning",    DMNSN_WARNING);
-  dmnsn_directive("#while",      DMNSN_WHILE);
-  dmnsn_directive("#write",      DMNSN_WRITE);
+  dmnsn_directive("#break",      DMNSN_T_BREAK);
+  dmnsn_directive("#case",       DMNSN_T_CASE);
+  dmnsn_directive("#debug",      DMNSN_T_DEBUG);
+  dmnsn_directive("#declare",    DMNSN_T_DECLARE);
+  dmnsn_directive("#default",    DMNSN_T_DEFAULT);
+  dmnsn_directive("#else",       DMNSN_T_ELSE);
+  dmnsn_directive("#end",        DMNSN_T_END);
+  dmnsn_directive("#error",      DMNSN_T_ERROR);
+  dmnsn_directive("#fclose",     DMNSN_T_FCLOSE);
+  dmnsn_directive("#fopen",      DMNSN_T_FOPEN);
+  dmnsn_directive("#if",         DMNSN_T_IF);
+  dmnsn_directive("#ifdef",      DMNSN_T_IFDEF);
+  dmnsn_directive("#ifndef",     DMNSN_T_IFNDEF);
+  dmnsn_directive("#include",    DMNSN_T_INCLUDE);
+  dmnsn_directive("#local",      DMNSN_T_LOCAL);
+  dmnsn_directive("#macro",      DMNSN_T_MACRO);
+  dmnsn_directive("#range",      DMNSN_T_RANGE);
+  dmnsn_directive("#read",       DMNSN_T_READ);
+  dmnsn_directive("#render",     DMNSN_T_RENDER);
+  dmnsn_directive("#statistics", DMNSN_T_STATISTICS);
+  dmnsn_directive("#switch",     DMNSN_T_SWITCH);
+  dmnsn_directive("#undef",      DMNSN_T_UNDEF);
+  dmnsn_directive("#version",    DMNSN_T_VERSION);
+  dmnsn_directive("#warning",    DMNSN_T_WARNING);
+  dmnsn_directive("#while",      DMNSN_T_WHILE);
+  dmnsn_directive("#write",      DMNSN_T_WRITE);
 
   free(directive);
   return 1;
@@ -251,7 +251,7 @@ dmnsn_tokenize_string(const char *filename,
     return 1;
   }
   
-  token->type  = DMNSN_STRING;
+  token->type  = DMNSN_T_STRING;
   token->value = malloc(alloc);
 
   ++*next;
@@ -429,18 +429,18 @@ dmnsn_tokenize(const char *filename, FILE *file)
       break
 
     /* Some simple punctuation marks */
-    dmnsn_simple_token('{', DMNSN_LBRACE);
-    dmnsn_simple_token('}', DMNSN_RBRACE);
-    dmnsn_simple_token('(', DMNSN_LPAREN);
-    dmnsn_simple_token(')', DMNSN_RPAREN);
-    dmnsn_simple_token('[', DMNSN_LBRACKET);
-    dmnsn_simple_token(']', DMNSN_RBRACKET);
-    dmnsn_simple_token('<', DMNSN_LT);
-    dmnsn_simple_token('>', DMNSN_GT);
-    dmnsn_simple_token('+', DMNSN_PLUS);
-    dmnsn_simple_token('-', DMNSN_MINUS);
-    dmnsn_simple_token('*', DMNSN_STAR);
-    dmnsn_simple_token(',', DMNSN_COMMA);
+    dmnsn_simple_token('{', DMNSN_T_LBRACE);
+    dmnsn_simple_token('}', DMNSN_T_RBRACE);
+    dmnsn_simple_token('(', DMNSN_T_LPAREN);
+    dmnsn_simple_token(')', DMNSN_T_RPAREN);
+    dmnsn_simple_token('[', DMNSN_T_LBRACKET);
+    dmnsn_simple_token(']', DMNSN_T_RBRACKET);
+    dmnsn_simple_token('<', DMNSN_T_LT);
+    dmnsn_simple_token('>', DMNSN_T_GT);
+    dmnsn_simple_token('+', DMNSN_T_PLUS);
+    dmnsn_simple_token('-', DMNSN_T_MINUS);
+    dmnsn_simple_token('*', DMNSN_T_STAR);
+    dmnsn_simple_token(',', DMNSN_T_COMMA);
 
     /* Possible comment */
     case '/':
@@ -449,7 +449,7 @@ dmnsn_tokenize(const char *filename, FILE *file)
         continue;
       } else {
         /* Just the normal punctuation mark */
-        token.type = DMNSN_SLASH;
+        token.type = DMNSN_T_SLASH;
         ++col;
         ++next;
       }
@@ -478,7 +478,7 @@ dmnsn_tokenize(const char *filename, FILE *file)
       /* Language directive */
       if (dmnsn_tokenize_directive(filename, &line, &col,
                                    map, size, &next, &token) == 0) {
-        if (token.type == DMNSN_INCLUDE) {
+        if (token.type == DMNSN_T_INCLUDE) {
           /* Skip whitespace */
           while (next - map < size && isspace(*next) && *next != '\n') {
             ++next;
@@ -644,63 +644,63 @@ dmnsn_token_name(dmnsn_token_type token_type)
     return str;
 
   /* Punctuation */
-  dmnsn_token_map(DMNSN_LBRACE,   "{");
-  dmnsn_token_map(DMNSN_RBRACE,   "}")
-  dmnsn_token_map(DMNSN_LPAREN,   "\\(");
-  dmnsn_token_map(DMNSN_RPAREN,   "\\)");
-  dmnsn_token_map(DMNSN_LBRACKET, "[");
-  dmnsn_token_map(DMNSN_RBRACKET, "]");
-  dmnsn_token_map(DMNSN_LT,       "<");
-  dmnsn_token_map(DMNSN_GT,       ">");
-  dmnsn_token_map(DMNSN_PLUS,     "+");
-  dmnsn_token_map(DMNSN_MINUS,    "-");
-  dmnsn_token_map(DMNSN_STAR,     "*");
-  dmnsn_token_map(DMNSN_SLASH,    "/");
-  dmnsn_token_map(DMNSN_COMMA,    ",");
+  dmnsn_token_map(DMNSN_T_LBRACE,   "{");
+  dmnsn_token_map(DMNSN_T_RBRACE,   "}")
+  dmnsn_token_map(DMNSN_T_LPAREN,   "\\(");
+  dmnsn_token_map(DMNSN_T_RPAREN,   "\\)");
+  dmnsn_token_map(DMNSN_T_LBRACKET, "[");
+  dmnsn_token_map(DMNSN_T_RBRACKET, "]");
+  dmnsn_token_map(DMNSN_T_LT,       "<");
+  dmnsn_token_map(DMNSN_T_GT,       ">");
+  dmnsn_token_map(DMNSN_T_PLUS,     "+");
+  dmnsn_token_map(DMNSN_T_MINUS,    "-");
+  dmnsn_token_map(DMNSN_T_STAR,     "*");
+  dmnsn_token_map(DMNSN_T_SLASH,    "/");
+  dmnsn_token_map(DMNSN_T_COMMA,    ",");
 
   /* Numeric values */
-  dmnsn_token_map(DMNSN_INT,   "int");
-  dmnsn_token_map(DMNSN_FLOAT, "float");
+  dmnsn_token_map(DMNSN_T_INT,   "int");
+  dmnsn_token_map(DMNSN_T_FLOAT, "float");
 
   /* Keywords */
-  dmnsn_token_map(DMNSN_CAMERA, "camera");
-  dmnsn_token_map(DMNSN_COLOR,  "color");
-  dmnsn_token_map(DMNSN_SPHERE, "sphere");
-  dmnsn_token_map(DMNSN_BOX,    "box");
+  dmnsn_token_map(DMNSN_T_CAMERA, "camera");
+  dmnsn_token_map(DMNSN_T_COLOR,  "color");
+  dmnsn_token_map(DMNSN_T_SPHERE, "sphere");
+  dmnsn_token_map(DMNSN_T_BOX,    "box");
 
   /* Directives */
-  dmnsn_token_map(DMNSN_BREAK,      "#break");
-  dmnsn_token_map(DMNSN_CASE,       "#case");
-  dmnsn_token_map(DMNSN_DEBUG,      "#debug");
-  dmnsn_token_map(DMNSN_DECLARE,    "#declare");
-  dmnsn_token_map(DMNSN_DEFAULT,    "#default");
-  dmnsn_token_map(DMNSN_ELSE,       "#else");
-  dmnsn_token_map(DMNSN_END,        "#end");
-  dmnsn_token_map(DMNSN_ERROR,      "#error");
-  dmnsn_token_map(DMNSN_FCLOSE,     "#fclose");
-  dmnsn_token_map(DMNSN_FOPEN,      "#fopen");
-  dmnsn_token_map(DMNSN_IF,         "#if");
-  dmnsn_token_map(DMNSN_IFDEF,      "#ifdef");
-  dmnsn_token_map(DMNSN_IFNDEF,     "#ifndef");
-  dmnsn_token_map(DMNSN_INCLUDE,    "#include");
-  dmnsn_token_map(DMNSN_LOCAL,      "#local");
-  dmnsn_token_map(DMNSN_MACRO,      "#macro");
-  dmnsn_token_map(DMNSN_RANGE,      "#range");
-  dmnsn_token_map(DMNSN_READ,       "#read");
-  dmnsn_token_map(DMNSN_RENDER,     "#render");
-  dmnsn_token_map(DMNSN_STATISTICS, "#statistics");
-  dmnsn_token_map(DMNSN_SWITCH,     "#switch");
-  dmnsn_token_map(DMNSN_UNDEF,      "#undef");
-  dmnsn_token_map(DMNSN_VERSION,    "#version");
-  dmnsn_token_map(DMNSN_WARNING,    "#warning");
-  dmnsn_token_map(DMNSN_WHILE,      "#while");
-  dmnsn_token_map(DMNSN_WRITE,      "#write");
+  dmnsn_token_map(DMNSN_T_BREAK,      "#break");
+  dmnsn_token_map(DMNSN_T_CASE,       "#case");
+  dmnsn_token_map(DMNSN_T_DEBUG,      "#debug");
+  dmnsn_token_map(DMNSN_T_DECLARE,    "#declare");
+  dmnsn_token_map(DMNSN_T_DEFAULT,    "#default");
+  dmnsn_token_map(DMNSN_T_ELSE,       "#else");
+  dmnsn_token_map(DMNSN_T_END,        "#end");
+  dmnsn_token_map(DMNSN_T_ERROR,      "#error");
+  dmnsn_token_map(DMNSN_T_FCLOSE,     "#fclose");
+  dmnsn_token_map(DMNSN_T_FOPEN,      "#fopen");
+  dmnsn_token_map(DMNSN_T_IF,         "#if");
+  dmnsn_token_map(DMNSN_T_IFDEF,      "#ifdef");
+  dmnsn_token_map(DMNSN_T_IFNDEF,     "#ifndef");
+  dmnsn_token_map(DMNSN_T_INCLUDE,    "#include");
+  dmnsn_token_map(DMNSN_T_LOCAL,      "#local");
+  dmnsn_token_map(DMNSN_T_MACRO,      "#macro");
+  dmnsn_token_map(DMNSN_T_RANGE,      "#range");
+  dmnsn_token_map(DMNSN_T_READ,       "#read");
+  dmnsn_token_map(DMNSN_T_RENDER,     "#render");
+  dmnsn_token_map(DMNSN_T_STATISTICS, "#statistics");
+  dmnsn_token_map(DMNSN_T_SWITCH,     "#switch");
+  dmnsn_token_map(DMNSN_T_UNDEF,      "#undef");
+  dmnsn_token_map(DMNSN_T_VERSION,    "#version");
+  dmnsn_token_map(DMNSN_T_WARNING,    "#warning");
+  dmnsn_token_map(DMNSN_T_WHILE,      "#while");
+  dmnsn_token_map(DMNSN_T_WRITE,      "#write");
 
   /* Strings */
-  dmnsn_token_map(DMNSN_STRING, "string");
+  dmnsn_token_map(DMNSN_T_STRING, "string");
 
   /* Identifiers */
-  dmnsn_token_map(DMNSN_IDENTIFIER, "identifier");
+  dmnsn_token_map(DMNSN_T_IDENTIFIER, "identifier");
 
   default:
     printf("Warning: unrecognised token %d.\n", (int)token_type);
