@@ -23,5 +23,7 @@ bin_PROGRAMS = dimension
 
 dimension_SOURCES = main.c                                                     \
                     tokenize.c                                                 \
-                    tokenize.h
+                    tokenize.h                                                 \
+                    utility.c                                                  \
+                    utility.h
 dimension_LDADD   = $(top_builddir)/libdimension/libdimension.la

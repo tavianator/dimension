@@ -18,27 +18,13 @@
  *************************************************************************/
 
 #include "tokenize.h"
+#include "utility.h"
 #include <stdlib.h>   /* For strtoul(), etc. */
 #include <string.h>
-#include <stdarg.h>
 #include <ctype.h>    /* For isalpha(), etc. */
 #include <sys/mman.h> /* For mmap()          */
 #include <libgen.h>   /* For dirname()       */
 #include <locale.h>
-
-static void
-dmnsn_diagnostic(const char *filename, unsigned int line, unsigned int col,
-                 const char *format, ...)
-{
-  va_list ap;
-  va_start(ap, format);
-
-  fprintf(stderr, "%s:%u:%u: ", filename, line, col);
-  vfprintf(stderr, format, ap);
-  fprintf(stderr, "\n");
-
-  va_end(ap);
-}
 
 static int
 dmnsn_tokenize_comment(const char *filename,
@@ -596,31 +582,42 @@ dmnsn_delete_tokens(dmnsn_array *tokens)
   dmnsn_delete_array(tokens);
 }
 
-static const char *dmnsn_token_name(dmnsn_token_type token_type);
-
 static void
-dmnsn_print_token(FILE *file, dmnsn_token *token)
+dmnsn_print_token(FILE *file, const dmnsn_token *token)
 {
-  if (token->value) {
-    fprintf(file, "(%s \"%s\")", dmnsn_token_name(token->type), token->value);
+  const char *tname;
+  if (token->type == DMNSN_T_LPAREN) {
+    tname = "\\(";
+  } else if (token->type == DMNSN_T_RPAREN) {
+    tname = "\\)";
   } else {
-    fprintf(file, "%s", dmnsn_token_name(token->type));
+    tname = dmnsn_token_name(token->type);
+  }
+
+  if (token->value) {
+    fprintf(file, "(%s \"%s\")", tname, token->value);
+  } else {
+    fprintf(file, "%s", tname);
   }
 }
 
 void
-dmnsn_print_token_sexpr(FILE *file, dmnsn_array *tokens)
+dmnsn_print_token_sexpr(FILE *file, const dmnsn_array *tokens)
 {
+  dmnsn_token token;
   unsigned int i;
+
   if (dmnsn_array_size(tokens) == 0) {
     fprintf(file, "()");
   } else {
     fprintf(file, "(");
-    dmnsn_print_token(file, dmnsn_array_at(tokens, 0));
+    dmnsn_array_get(tokens, 0, &token);
+    dmnsn_print_token(file, &token);
 
     for (i = 1; i < dmnsn_array_size(tokens); ++i) {
       fprintf(file, " ");
-      dmnsn_print_token(file, dmnsn_array_at(tokens, i));
+      dmnsn_array_get(tokens, i, &token);
+      dmnsn_print_token(file, &token);
     }
 
     fprintf(file, ")");
@@ -629,7 +626,7 @@ dmnsn_print_token_sexpr(FILE *file, dmnsn_array *tokens)
   fprintf(file, "\n");
 }
 
-static const char *
+const char *
 dmnsn_token_name(dmnsn_token_type token_type)
 {
   switch (token_type) {
@@ -641,8 +638,8 @@ dmnsn_token_name(dmnsn_token_type token_type)
   /* Punctuation */
   dmnsn_token_map(DMNSN_T_LBRACE,      "{");
   dmnsn_token_map(DMNSN_T_RBRACE,      "}")
-  dmnsn_token_map(DMNSN_T_LPAREN,      "\\(");
-  dmnsn_token_map(DMNSN_T_RPAREN,      "\\)");
+  dmnsn_token_map(DMNSN_T_LPAREN,      "(");
+  dmnsn_token_map(DMNSN_T_RPAREN,      ")");
   dmnsn_token_map(DMNSN_T_LBRACKET,    "[");
   dmnsn_token_map(DMNSN_T_RBRACKET,    "]");
   dmnsn_token_map(DMNSN_T_LT,          "<");

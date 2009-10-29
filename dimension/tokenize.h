@@ -99,6 +99,14 @@ struct dmnsn_token {
   unsigned int line, col;
 };
 
+/* The workhorse */
 dmnsn_array *dmnsn_tokenize(const char *filename, FILE *file);
+
+/* Free an array of tokens - use this rather than dmnsn_delete_array() */
 void dmnsn_delete_tokens(dmnsn_array *tokens);
-void dmnsn_print_token_sexpr(FILE *file, dmnsn_array *tokens);
+
+/* Print an S-expression of a list of tokens to `file' */
+void dmnsn_print_token_sexpr(FILE *file, const dmnsn_array *tokens);
+
+/* Returns a readable name for a token type (ex. DMNSN_T_FLOAT -> float) */
+const char *dmnsn_token_name(dmnsn_token_type token_type);
