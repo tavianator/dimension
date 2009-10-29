@@ -206,8 +206,32 @@ dmnsn_tokenize_directive(const char *filename,
     }                                                                          \
   } while (0)
 
-  dmnsn_directive("#include", DMNSN_INCLUDE);
-  dmnsn_directive("#declare", DMNSN_DECLARE);
+  dmnsn_directive("#break",      DMNSN_BREAK);
+  dmnsn_directive("#case",       DMNSN_CASE);
+  dmnsn_directive("#debug",      DMNSN_DEBUG);
+  dmnsn_directive("#declare",    DMNSN_DECLARE);
+  dmnsn_directive("#default",    DMNSN_DEFAULT);
+  dmnsn_directive("#else",       DMNSN_ELSE);
+  dmnsn_directive("#end",        DMNSN_END);
+  dmnsn_directive("#error",      DMNSN_ERROR);
+  dmnsn_directive("#fclose",     DMNSN_FCLOSE);
+  dmnsn_directive("#fopen",      DMNSN_FOPEN);
+  dmnsn_directive("#if",         DMNSN_IF);
+  dmnsn_directive("#ifdef",      DMNSN_IFDEF);
+  dmnsn_directive("#ifndef",     DMNSN_IFNDEF);
+  dmnsn_directive("#include",    DMNSN_INCLUDE);
+  dmnsn_directive("#local",      DMNSN_LOCAL);
+  dmnsn_directive("#macro",      DMNSN_MACRO);
+  dmnsn_directive("#range",      DMNSN_RANGE);
+  dmnsn_directive("#read",       DMNSN_READ);
+  dmnsn_directive("#render",     DMNSN_RENDER);
+  dmnsn_directive("#statistics", DMNSN_STATISTICS);
+  dmnsn_directive("#switch",     DMNSN_SWITCH);
+  dmnsn_directive("#undef",      DMNSN_UNDEF);
+  dmnsn_directive("#version",    DMNSN_VERSION);
+  dmnsn_directive("#warning",    DMNSN_WARNING);
+  dmnsn_directive("#while",      DMNSN_WHILE);
+  dmnsn_directive("#write",      DMNSN_WRITE);
 
   free(directive);
   return 1;
@@ -645,8 +669,32 @@ dmnsn_token_name(dmnsn_token_type token_type)
   dmnsn_token_map(DMNSN_BOX,    "box");
 
   /* Directives */
-  dmnsn_token_map(DMNSN_INCLUDE, "#include");
-  dmnsn_token_map(DMNSN_DECLARE, "#declare");
+  dmnsn_token_map(DMNSN_BREAK,      "#break");
+  dmnsn_token_map(DMNSN_CASE,       "#case");
+  dmnsn_token_map(DMNSN_DEBUG,      "#debug");
+  dmnsn_token_map(DMNSN_DECLARE,    "#declare");
+  dmnsn_token_map(DMNSN_DEFAULT,    "#default");
+  dmnsn_token_map(DMNSN_ELSE,       "#else");
+  dmnsn_token_map(DMNSN_END,        "#end");
+  dmnsn_token_map(DMNSN_ERROR,      "#error");
+  dmnsn_token_map(DMNSN_FCLOSE,     "#fclose");
+  dmnsn_token_map(DMNSN_FOPEN,      "#fopen");
+  dmnsn_token_map(DMNSN_IF,         "#if");
+  dmnsn_token_map(DMNSN_IFDEF,      "#ifdef");
+  dmnsn_token_map(DMNSN_IFNDEF,     "#ifndef");
+  dmnsn_token_map(DMNSN_INCLUDE,    "#include");
+  dmnsn_token_map(DMNSN_LOCAL,      "#local");
+  dmnsn_token_map(DMNSN_MACRO,      "#macro");
+  dmnsn_token_map(DMNSN_RANGE,      "#range");
+  dmnsn_token_map(DMNSN_READ,       "#read");
+  dmnsn_token_map(DMNSN_RENDER,     "#render");
+  dmnsn_token_map(DMNSN_STATISTICS, "#statistics");
+  dmnsn_token_map(DMNSN_SWITCH,     "#switch");
+  dmnsn_token_map(DMNSN_UNDEF,      "#undef");
+  dmnsn_token_map(DMNSN_VERSION,    "#version");
+  dmnsn_token_map(DMNSN_WARNING,    "#warning");
+  dmnsn_token_map(DMNSN_WHILE,      "#while");
+  dmnsn_token_map(DMNSN_WRITE,      "#write");
 
   /* Strings */
   dmnsn_token_map(DMNSN_STRING, "string");
