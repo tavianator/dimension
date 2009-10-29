@@ -42,87 +42,230 @@ dmnsn_diagnostic(const char *filename, unsigned int line, unsigned int col,
 
 static int
 dmnsn_tokenize_comment(const char *filename,
-                       unsigned int *line, unsigned int *col,
-                       char *map, size_t size, char **next)
+                       unsigned int *linep, unsigned int *colp,
+                       char *map, size_t size, char **nextp)
 {
-  if (**next != '/')
+  unsigned int line = *linep, col = *colp;
+  char *next = *nextp;
+
+  if (*next != '/')
     return 1;
 
-  if (*(*next + 1) == '/') {
+  if (*(next + 1) == '/') {
     /* A '//' comment block */
     do {
-      ++*next;
-    } while (*next - map < size && **next != '\n');
+      ++next;
+    } while (next - map < size && *next != '\n');
 
-    ++*next;
-    ++*line;
-    *col = 0;
-  } else if (*(*next + 1) == '*') {
+    ++next;
+    ++line;
+    col = 0;
+  } else if (*(next + 1) == '*') {
     /* A multi-line comment block (like this one) */
     do {
-      ++*col;
-      if (**next == '\n') {
-        ++*line;
-        *col = 0;
+      ++col;
+      if (*next == '\n') {
+        ++line;
+        col = 0;
       }
 
-      ++*next;
-    } while (*next - map < size - 1
-             && !(**next == '*' && *(*next + 1) == '/'));
-    *next += 2;
+      ++next;
+    } while (next - map < size - 1
+             && !(*next == '*' && *(next + 1) == '/'));
+    next += 2;
   } else {
     return 1;
   }
 
+  *linep = line;
+  *colp  = col;
+  *nextp = next;
   return 0;
 }
 
 static int
 dmnsn_tokenize_number(const char *filename,
-                      unsigned int *line, unsigned int *col,
-                      char *map, size_t size, char **next, dmnsn_token *token)
+                      unsigned int *linep, unsigned int *colp,
+                      char *map, size_t size, char **nextp, dmnsn_token *token)
 {
+  unsigned int line = *linep, col = *colp;
+  char *next = *nextp;
   char *endf, *endi;
 
-  strtoul(*next, &endi, 0);
-  strtod(*next, &endf);
+  strtoul(next, &endi, 0);
+  strtod(next, &endf);
   if (endf > endi
-      /* These *next conditions catch invalid octal integers being parsed as
+      /* These next conditions catch invalid octal integers being parsed as
          floats, eg 08 */
       && (*endi == '.' || *endi == 'e' || *endi == 'E' || *endi == 'p'
           || *endi == 'P'))
   {
     token->type = DMNSN_T_FLOAT;
-    token->value = malloc(endf - *next + 1);
-    strncpy(token->value, *next, endf - *next);
-    token->value[endf - *next] = '\0';
+    token->value = malloc(endf - next + 1);
+    strncpy(token->value, next, endf - next);
+    token->value[endf - next] = '\0';
 
-    *col += endf - *next;
-    *next = endf;
-  } else if (endi > *next) {
+    col += endf - next;
+    next = endf;
+  } else if (endi > next) {
     token->type = DMNSN_T_INT;
-    token->value = malloc(endi - *next + 1);
-    strncpy(token->value, *next, endi - *next);
-    token->value[endi - *next] = '\0';
+    token->value = malloc(endi - next + 1);
+    strncpy(token->value, next, endi - next);
+    token->value[endi - next] = '\0';
 
-    *col += endi - *next;
-    *next = endi;
+    col += endi - next;
+    next = endi;
   } else {
     return 1;
   }
 
+  *linep = line;
+  *colp  = col;
+  *nextp = next;
+  return 0;
+}
+
+/* Tokenize a string */
+static int
+dmnsn_tokenize_string(const char *filename,
+                      unsigned int *linep, unsigned int *colp,
+                      char *map, size_t size, char **nextp, dmnsn_token *token)
+{
+  unsigned int line = *linep, col = *colp;
+  char *next = *nextp;
+  unsigned int i = 0, alloc = 32;
+  char unicode[5] = { 0 }, *end;
+  unsigned long wchar;
+
+  if (*next != '"') {
+    return 1;
+  }
+  
+  token->type  = DMNSN_T_STRING;
+  token->value = malloc(alloc);
+
+  ++next;
+  while (next - map < size && *next != '"') {
+    if (i + 1 >= alloc) {
+      alloc *= 2;
+      token->value = realloc(token->value, alloc);
+    }
+
+    if (*next == '\\') {
+      ++col;
+      ++next;
+
+      switch (*next) {
+      case 'a':
+        token->value[i] = '\a';
+        break;
+
+      case 'b':
+        token->value[i] = '\b';
+        break;
+
+      case 'f':
+        token->value[i] = '\f';
+        break;
+
+      case 'n':
+        token->value[i] = '\n';
+        break;
+
+      case 'r':
+        token->value[i] = '\r';
+        break;
+
+      case 't':
+        token->value[i] = '\t';
+        break;
+
+      case 'u':
+        /* Escaped unicode character */
+        strncpy(unicode, next + 1, 4);
+        wchar = strtoul(unicode, &end, 16);
+        if (next - map >= size - 4) {
+          dmnsn_diagnostic(filename, line, col,
+                           "EOF before end of escape sequence");
+          free(token->value);
+          return 1;
+        }
+        if (end != &unicode[4]) {
+          dmnsn_diagnostic(filename, line, col,
+                           "WARNING: Invalid unicode character \"\\u%s\"",
+                           unicode);
+        } else {
+          token->value[i] = wchar/256;
+          ++i;
+          if (i + 1 >= alloc) {
+            alloc *= 2;
+            token->value = realloc(token->value, alloc);
+          }
+          token->value[i] = wchar%256;
+
+          col  += 4;
+          next += 4;
+        }
+        break;
+
+      case 'v':
+        token->value[i] = '\v';
+        break;
+
+      case '\\':
+        token->value[i] = '\\';
+        break;
+
+      case '\'':
+        token->value[i] = '\'';
+        break;
+
+      case '"':
+        token->value[i] = '"';
+        break;
+
+      default:
+        dmnsn_diagnostic(filename, line, col,
+                         "WARNING: unrecognised escape sequence '\\%c'",
+                         (int)*next);
+        token->value[i] = *next;
+        break;
+      }
+    } else {
+      token->value[i] = *next;
+    }
+
+    ++i;
+    ++col;
+    ++next;
+  } 
+
+  if (*next != '"') {
+    dmnsn_diagnostic(filename, line, col, "Non-terminated string");
+    free(token->value);
+    return 1;
+  }
+
+  ++next;
+  token->value[i] = '\0';
+
+  *linep = line;
+  *colp  = col;
+  *nextp = next;
   return 0;
 }
 
 /* Tokenize a keyword or an identifier */
 static int
 dmnsn_tokenize_label(const char *filename,
-                     unsigned int *line, unsigned int *col,
-                     char *map, size_t size, char **next, dmnsn_token *token)
+                     unsigned int *linep, unsigned int *colp,
+                     char *map, size_t size, char **nextp, dmnsn_token *token)
 {
+  unsigned int line = *linep, col = *colp;
+  char *next = *nextp;
   unsigned int i = 0, alloc = 32;
 
-  if (!isalpha(**next) && **next != '_') {
+  if (!isalpha(*next) && *next != '_') {
     return 1;
   }
 
@@ -135,12 +278,12 @@ dmnsn_tokenize_label(const char *filename,
       token->value = realloc(token->value, alloc);
     }
 
-    token->value[i] = **next;
+    token->value[i] = *next;
 
     ++i;
-    ++*col;
-    ++*next;
-  } while (*next - map < size && (isalnum(**next) || **next == '_'));
+    ++col;
+    ++next;
+  } while (next - map < size && (isalnum(*next) || *next == '_'));
 
   token->value[i] = '\0';
 
@@ -152,6 +295,10 @@ dmnsn_tokenize_label(const char *filename,
       free(token->value);                                                      \
       token->value = NULL;                                                     \
       token->type  = tp;                                                       \
+                                                                               \
+      *linep = line;                                                           \
+      *colp  = col;                                                            \
+      *nextp = next;                                                           \
       return 0;                                                                \
     }                                                                          \
   } while (0)
@@ -162,41 +309,46 @@ dmnsn_tokenize_label(const char *filename,
   dmnsn_keyword("sphere", DMNSN_T_SPHERE);
   dmnsn_keyword("box",    DMNSN_T_BOX);
 
+  *linep = line;
+  *colp  = col;
+  *nextp = next;
   return 0;
 }
 
 /* Tokenize a language directive (#include, #declare, etc.) */
 static int
 dmnsn_tokenize_directive(const char *filename,
-                         unsigned int *line, unsigned int *col,
-                         char *map, size_t size, char **next,
+                         unsigned int *linep, unsigned int *colp,
+                         char *map, size_t size, char **nextp,
                          dmnsn_token *token)
 {
+  unsigned int line = *linep, col = *colp;
+  char *next = *nextp;
   unsigned int i = 0, alloc = 32;
 
-  if (**next != '#') {
+  if (*next != '#') {
     return 1;
   }
 
-  ++*next;
+  ++next;
   /* Handle spaces between `#' and directive */
-  while (*next - map < size && (**next == ' ' || **next == '\t')) {
-    ++*next;
+  while (next - map < size && (*next == ' ' || *next == '\t')) {
+    ++next;
   }
 
   char *directive = malloc(alloc);
 
-  while (*next - map < size && (isalnum(**next) || **next == '_')) {
+  while (next - map < size && (isalnum(*next) || *next == '_')) {
     if (i + 1 >= alloc) {
       alloc *= 2;
       directive = realloc(directive, alloc);
     }
 
-    directive[i] = **next;
+    directive[i] = *next;
 
     ++i;
-    ++*col;
-    ++*next;
+    ++col;
+    ++next;
   }
 
   directive[i] = '\0';
@@ -208,6 +360,10 @@ dmnsn_tokenize_directive(const char *filename,
     if (strcmp(directive, str) == 0) {                                         \
       free(directive);                                                         \
       token->type = tp;                                                        \
+                                                                               \
+      *linep = line;                                                           \
+      *colp  = col;                                                            \
+      *nextp = next;                                                           \
       return 0;                                                                \
     }                                                                          \
   } while (0)
@@ -241,130 +397,6 @@ dmnsn_tokenize_directive(const char *filename,
 
   free(directive);
   return 1;
-}
-
-/* Tokenize a string */
-static int
-dmnsn_tokenize_string(const char *filename,
-                      unsigned int *line, unsigned int *col,
-                      char *map, size_t size, char **next, dmnsn_token *token)
-{
-  unsigned int i = 0, alloc = 32;
-  char unicode[5] = { 0 }, *end;
-  unsigned long wchar;
-
-  if (**next != '"') {
-    return 1;
-  }
-  
-  token->type  = DMNSN_T_STRING;
-  token->value = malloc(alloc);
-
-  ++*next;
-  while (*next - map < size && **next != '"') {
-    if (i + 1 >= alloc) {
-      alloc *= 2;
-      token->value = realloc(token->value, alloc);
-    }
-
-    if (**next == '\\') {
-      ++*col;
-      ++*next;
-
-      switch (**next) {
-      case 'a':
-        token->value[i] = '\a';
-        break;
-
-      case 'b':
-        token->value[i] = '\b';
-        break;
-
-      case 'f':
-        token->value[i] = '\f';
-        break;
-
-      case 'n':
-        token->value[i] = '\n';
-        break;
-
-      case 'r':
-        token->value[i] = '\r';
-        break;
-
-      case 't':
-        token->value[i] = '\t';
-        break;
-
-      case 'u':
-        /* Escaped unicode character */
-        strncpy(unicode, *next + 1, 4);
-        wchar = strtoul(unicode, &end, 16);
-        if (*next - map >= size - 4) {
-          dmnsn_diagnostic(filename, *line, *col,
-                           "EOF before end of escape sequence");
-          free(token->value);
-          return 1;
-        }
-        if (end != &unicode[4]) {
-          dmnsn_diagnostic(filename, *line, *col,
-                           "WARNING: Invalid unicode character \"\\u%s\"",
-                           unicode);
-        } else {
-          token->value[i] = wchar/256;
-          ++i;
-          if (i + 1 >= alloc) {
-            alloc *= 2;
-            token->value = realloc(token->value, alloc);
-          }
-          token->value[i] = wchar%256;
-
-          *col  += 4;
-          *next += 4;
-        }
-        break;
-
-      case 'v':
-        token->value[i] = '\v';
-        break;
-
-      case '\\':
-        token->value[i] = '\\';
-        break;
-
-      case '\'':
-        token->value[i] = '\'';
-        break;
-
-      case '"':
-        token->value[i] = '"';
-        break;
-
-      default:
-        dmnsn_diagnostic(filename, *line, *col,
-                         "WARNING: unrecognised escape sequence '\\%c'",
-                         (int)**next);
-        token->value[i] = **next;
-        break;
-      }
-    } else {
-      token->value[i] = **next;
-    }
-
-    ++i;
-    ++*col;
-    ++*next;
-  } 
-
-  if (**next != '"') {
-    dmnsn_diagnostic(filename, *line, *col, "Non-terminated string");
-    free(token->value);
-    return 1;
-  }
-
-  ++*next;
-  token->value[i] = '\0';
-  return 0;
 }
 
 dmnsn_array *
