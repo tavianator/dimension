@@ -24,6 +24,7 @@
 #include <ctype.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <libgen.h>
 
 static void
 dmnsn_diagnostic(const char *filename, unsigned int line, unsigned int col,
@@ -394,29 +395,48 @@ dmnsn_tokenize(const char *filename, FILE *file)
                              "Expected string after #include");
             goto bailout;
           }
-          
-          FILE *included = fopen(token.value, "r");
-          if (!included) {
+
+          /* Search in same directory as current file */
+          char *filename_copy = strdup(filename);
+          char *localdir = dirname(filename_copy);
+          char *local_include = malloc(strlen(localdir)
+                                       + strlen(token.value)
+                                       + 2);
+          strcpy(local_include, localdir);
+          strcat(local_include, "/");
+          strcat(local_include, token.value);
+          free(filename_copy);
+          free(token.value);
+
+          /* Try to open the included file */
+          FILE *include = fopen(local_include, "r");
+          if (!include) {
             dmnsn_diagnostic(filename, line, col,
                              "Couldn't open included file \"%s\"",
-                             token.value);
+                             local_include);
+            free(local_include);
             goto bailout;
           }
 
-          dmnsn_array *included_tokens = dmnsn_tokenize(token.value, included);
+          /* Parse it recursively */
+          dmnsn_array *included_tokens = dmnsn_tokenize(local_include, include);
           if (!included_tokens) {
             dmnsn_diagnostic(filename, line, col,
                              "Error tokenizing included file \"%s\"",
-                             token.value);
+                             local_include);
+            free(local_include);
             goto bailout;
           }
 
+          fclose(include);
+          free(local_include);
+
+          /* Append the tokens from the included file */
           unsigned int i;
           for (i = 0; i < dmnsn_array_size(included_tokens); ++i) {
             dmnsn_array_push(tokens, dmnsn_array_at(included_tokens, i));
           }
 
-          free(token.value);
           dmnsn_delete_array(included_tokens);
           continue;
         }
@@ -446,7 +466,6 @@ dmnsn_tokenize(const char *filename, FILE *file)
       break;
     }
 
-    token.filename = malloc(strlen(filename) + 1);
     token.filename = strdup(filename);
     dmnsn_array_push(tokens, &token);
   }
