@@ -470,7 +470,7 @@ dmnsn_tokenize(const char *filename, FILE *file)
     dmnsn_simple_token('?', DMNSN_T_QUESTION);
     dmnsn_simple_token(':', DMNSN_T_COLON);
     dmnsn_simple_token('&', DMNSN_T_AND);
-    dmnsn_simple_token('!', DMNSN_T_EXCLAMATION);
+    dmnsn_simple_token('!', DMNSN_T_BANG);
     dmnsn_simple_token('|', DMNSN_T_PIPE);
 
     /* Possible comment */
@@ -636,27 +636,27 @@ dmnsn_token_name(dmnsn_token_type token_type)
     return str;
 
   /* Punctuation */
-  dmnsn_token_map(DMNSN_T_LBRACE,      "{");
-  dmnsn_token_map(DMNSN_T_RBRACE,      "}")
-  dmnsn_token_map(DMNSN_T_LPAREN,      "(");
-  dmnsn_token_map(DMNSN_T_RPAREN,      ")");
-  dmnsn_token_map(DMNSN_T_LBRACKET,    "[");
-  dmnsn_token_map(DMNSN_T_RBRACKET,    "]");
-  dmnsn_token_map(DMNSN_T_LT,          "<");
-  dmnsn_token_map(DMNSN_T_GT,          ">");
-  dmnsn_token_map(DMNSN_T_PLUS,        "+");
-  dmnsn_token_map(DMNSN_T_MINUS,       "-");
-  dmnsn_token_map(DMNSN_T_STAR,        "*");
-  dmnsn_token_map(DMNSN_T_SLASH,       "/");
-  dmnsn_token_map(DMNSN_T_COMMA,       ",");
-  dmnsn_token_map(DMNSN_T_EQUALS,      "=");
-  dmnsn_token_map(DMNSN_T_SEMICOLON,   ";");
-  dmnsn_token_map(DMNSN_T_QUESTION,    "?");
-  dmnsn_token_map(DMNSN_T_COLON,       ":");
-  dmnsn_token_map(DMNSN_T_AND,         "&");
-  dmnsn_token_map(DMNSN_T_EXCLAMATION, "!");
-  dmnsn_token_map(DMNSN_T_DOT,         ".");
-  dmnsn_token_map(DMNSN_T_PIPE,        "|");
+  dmnsn_token_map(DMNSN_T_LBRACE,    "{");
+  dmnsn_token_map(DMNSN_T_RBRACE,    "}")
+  dmnsn_token_map(DMNSN_T_LPAREN,    "(");
+  dmnsn_token_map(DMNSN_T_RPAREN,    ")");
+  dmnsn_token_map(DMNSN_T_LBRACKET,  "[");
+  dmnsn_token_map(DMNSN_T_RBRACKET,  "]");
+  dmnsn_token_map(DMNSN_T_LT,        "<");
+  dmnsn_token_map(DMNSN_T_GT,        ">");
+  dmnsn_token_map(DMNSN_T_PLUS,      "+");
+  dmnsn_token_map(DMNSN_T_MINUS,     "-");
+  dmnsn_token_map(DMNSN_T_STAR,      "*");
+  dmnsn_token_map(DMNSN_T_SLASH,     "/");
+  dmnsn_token_map(DMNSN_T_COMMA,     ",");
+  dmnsn_token_map(DMNSN_T_EQUALS,    "=");
+  dmnsn_token_map(DMNSN_T_SEMICOLON, ";");
+  dmnsn_token_map(DMNSN_T_QUESTION,  "?");
+  dmnsn_token_map(DMNSN_T_COLON,     ":");
+  dmnsn_token_map(DMNSN_T_AND,       "&");
+  dmnsn_token_map(DMNSN_T_BANG,      "!");
+  dmnsn_token_map(DMNSN_T_DOT,       ".");
+  dmnsn_token_map(DMNSN_T_PIPE,      "|");
 
   /* Numeric values */
   dmnsn_token_map(DMNSN_T_INT,   "int");
