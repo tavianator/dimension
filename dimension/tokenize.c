@@ -388,14 +388,6 @@ dmnsn_tokenize_directive(const char *filename,
 dmnsn_array *
 dmnsn_tokenize(const char *filename, FILE *file)
 {
-  /* Save the current locale */
-  char *lc_ctype   = strdup(setlocale(LC_CTYPE, NULL));
-  char *lc_numeric = strdup(setlocale(LC_NUMERIC, NULL));
-
-  /* Set the locale to `C' to make isalpha(), strtoul(), etc. consistent */
-  setlocale(LC_CTYPE, "C");
-  setlocale(LC_NUMERIC, "C");
-
   if (fseeko(file, 0, SEEK_END) != 0) {
     fprintf(stderr, "Couldn't seek on input stream\n");
     return NULL;
@@ -415,6 +407,14 @@ dmnsn_tokenize(const char *filename, FILE *file)
     fprintf(stderr, "Couldn't mmap() input stream\n");
     return NULL;
   }
+
+  /* Save the current locale */
+  char *lc_ctype   = strdup(setlocale(LC_CTYPE, NULL));
+  char *lc_numeric = strdup(setlocale(LC_NUMERIC, NULL));
+
+  /* Set the locale to `C' to make isalpha(), strtoul(), etc. consistent */
+  setlocale(LC_CTYPE, "C");
+  setlocale(LC_NUMERIC, "C");
 
   dmnsn_token token;
   dmnsn_array *tokens = dmnsn_new_array(sizeof(dmnsn_token));
