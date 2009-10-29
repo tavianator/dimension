@@ -19,13 +19,27 @@
 
 INCLUDES = -I$(top_srcdir)/libdimension
 
-TESTS = tokenizer.sh
+TESTS = punctuation.sh numeric.sh strings.sh labels.sh directives.sh
 TESTS_ENVIRONMENT = top_builddir=$(top_builddir)
 
-tokenizer.sh:
-	cp $(srcdir)/tokenizer.sh .
+punctuation.sh:
+	cp $(srcdir)/punctuation.sh .
 
-EXTRA_DIST = tokenizer.sh                                                      \
+numeric.sh:
+	cp $(srcdir)/numeric.sh .
+
+strings.sh:
+	cp $(srcdir)/strings.sh .
+
+labels.sh:
+	cp $(srcdir)/labels.sh .
+
+directives.sh:
+	cp $(srcdir)/directives.sh .
+
+EXTRA_DIST = $(TESTS)                                                          \
              punctuation.pov                                                   \
              numeric.pov                                                       \
-             labels.pov
+             strings.pov                                                       \
+             labels.pov                                                        \
+             directives.pov

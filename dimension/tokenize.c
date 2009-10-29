@@ -447,7 +447,7 @@ dmnsn_tokenize(const char *filename, FILE *file)
     }
 
     token.filename = malloc(strlen(filename) + 1);
-    strcpy(token.filename, filename);
+    token.filename = strdup(filename);
     dmnsn_array_push(tokens, &token);
   }
 
