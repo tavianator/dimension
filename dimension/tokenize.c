@@ -18,13 +18,13 @@
  *************************************************************************/
 
 #include "tokenize.h"
-#include <stdlib.h>
+#include <stdlib.h>   /* For strtoul(), etc. */
 #include <string.h>
 #include <stdarg.h>
-#include <ctype.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <libgen.h>
+#include <ctype.h>    /* For isalpha(), etc. */
+#include <sys/mman.h> /* For mmap()          */
+#include <libgen.h>   /* For dirname()       */
+#include <locale.h>
 
 static void
 dmnsn_diagnostic(const char *filename, unsigned int line, unsigned int col,
@@ -277,6 +277,14 @@ dmnsn_tokenize_string(const char *filename,
 dmnsn_array *
 dmnsn_tokenize(const char *filename, FILE *file)
 {
+  /* Save the current locale */
+  char *lc_ctype   = strdup(setlocale(LC_CTYPE, NULL));
+  char *lc_numeric = strdup(setlocale(LC_NUMERIC, NULL));
+
+  /* Set the locale to `C' to make isalpha(), strtoul(), etc. consistent */
+  setlocale(LC_CTYPE, "C");
+  setlocale(LC_NUMERIC, "C");
+
   if (fseeko(file, 0, SEEK_END) != 0) {
     fprintf(stderr, "Couldn't seek on input stream\n");
     return NULL;
@@ -471,11 +479,25 @@ dmnsn_tokenize(const char *filename, FILE *file)
   }
 
   munmap(map, size);
+
+  /* Restore the original locale */
+  setlocale(LC_CTYPE, lc_ctype);
+  setlocale(LC_NUMERIC, lc_numeric);
+  free(lc_ctype);
+  free(lc_numeric);
+
   return tokens;
 
  bailout:
   dmnsn_delete_tokens(tokens);
   munmap(map, size);
+
+  /* Restore the original locale */
+  setlocale(LC_CTYPE, lc_ctype);
+  setlocale(LC_NUMERIC, lc_numeric);
+  free(lc_ctype);
+  free(lc_numeric);
+
   return NULL;
 }
 
