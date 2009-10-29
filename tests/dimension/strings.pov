@@ -18,4 +18,4 @@
  *************************************************************************/
 
 // Test string handling, including escape sequences
-"This is a string with\n\"escape sequences\"\\"
+"This is a string with escape sequences: \a\b\f\n\r\t\u2123\v\\\'\""

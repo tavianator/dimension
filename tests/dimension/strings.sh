@@ -20,8 +20,7 @@
 #########################################################################
 
 strings=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/strings.pov)
-strings_exp='((string "This is a string with
-"escape sequences"\"))'
+strings_exp=$(echo -e "((string \"This is a string with escape sequences: \a\b\f\n\r\t!#\v\\\'\"\"))")
 
 if [ "$strings" != "$strings_exp" ]; then
   echo "strings.pov tokenized as \"$strings\"" >&2

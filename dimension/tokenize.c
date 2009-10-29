@@ -220,6 +220,8 @@ dmnsn_tokenize_string(const char *filename,
                       char *map, size_t size, char **next, dmnsn_token *token)
 {
   unsigned int i = 0, alloc = 32;
+  char unicode[5] = { 0 }, *end;
+  unsigned long wchar;
 
   if (**next != '"') {
     return 1;
@@ -240,16 +242,72 @@ dmnsn_tokenize_string(const char *filename,
       ++*next;
 
       switch (**next) {
-      case '\\':
-        token->value[i] = '\\';
+      case 'a':
+        token->value[i] = '\a';
         break;
 
-      case '"':
-        token->value[i] = '"';
+      case 'b':
+        token->value[i] = '\b';
+        break;
+
+      case 'f':
+        token->value[i] = '\f';
         break;
 
       case 'n':
         token->value[i] = '\n';
+        break;
+
+      case 'r':
+        token->value[i] = '\r';
+        break;
+
+      case 't':
+        token->value[i] = '\t';
+        break;
+
+      case 'u':
+        /* Escaped unicode character */
+        strncpy(unicode, *next + 1, 4);
+        wchar = strtoul(unicode, &end, 16);
+        if (*next - map >= size - 4) {
+          dmnsn_diagnostic(filename, *line, *col,
+                           "EOF before end of escape sequence");
+          free(token->value);
+          return 1;
+        }
+        if (end != &unicode[4]) {
+          dmnsn_diagnostic(filename, *line, *col,
+                           "WARNING: Invalid unicode character \"\\u%s\"",
+                           unicode);
+        } else {
+          token->value[i] = wchar/256;
+          ++i;
+          if (i + 1 >= alloc) {
+            alloc *= 2;
+            token->value = realloc(token->value, alloc);
+          }
+          token->value[i] = wchar%256;
+
+          *col  += 4;
+          *next += 4;
+        }
+        break;
+
+      case 'v':
+        token->value[i] = '\v';
+        break;
+
+      case '\\':
+        token->value[i] = '\\';
+        break;
+
+      case '\'':
+        token->value[i] = '\'';
+        break;
+
+      case '"':
+        token->value[i] = '"';
         break;
 
       default:
@@ -267,10 +325,15 @@ dmnsn_tokenize_string(const char *filename,
     ++*col;
     ++*next;
   } 
+
+  if (**next != '"') {
+    dmnsn_diagnostic(filename, *line, *col, "Non-terminated string");
+    free(token->value);
+    return 1;
+  }
+
   ++*next;
-
   token->value[i] = '\0';
-
   return 0;
 }
 
