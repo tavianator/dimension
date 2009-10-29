@@ -98,7 +98,7 @@ main(int argc, char **argv) {
   }
 
   /* Tokenize the input file */
-  tokens = dmnsn_tokenize(input_file);
+  tokens = dmnsn_tokenize(input, input_file);
   if (!tokens) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Error tokenizing input file.");
   }

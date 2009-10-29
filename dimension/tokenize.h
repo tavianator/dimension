@@ -62,10 +62,11 @@ struct dmnsn_token {
   dmnsn_token_type type;
   char *value;
 
-  /* Line and column numbers from source code */
+  /* File name, and line and column numbers from source code */
+  char *filename;
   unsigned int line, col;
 };
 
-dmnsn_array *dmnsn_tokenize(FILE *file);
+dmnsn_array *dmnsn_tokenize(const char *filename, FILE *file);
 void dmnsn_delete_tokens(dmnsn_array *tokens);
 void dmnsn_print_token_sexpr(FILE *file, dmnsn_array *tokens);

@@ -20,13 +20,29 @@
 #include "tokenize.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
+static void
+dmnsn_diagnostic(const char *filename, unsigned int line, unsigned int col,
+                 const char *format, ...)
+{
+  va_list ap;
+  va_start(ap, format);
+
+  fprintf(stderr, "%s:%u:%u: ", filename, line, col);
+  vfprintf(stderr, format, ap);
+  fprintf(stderr, "\n");
+
+  va_end(ap);
+}
+
 static int
-dmnsn_tokenize_comment(char *map, size_t size,
-                       char **next, unsigned int *line, unsigned int *col)
+dmnsn_tokenize_comment(const char *filename,
+                       unsigned int *line, unsigned int *col,
+                       char *map, size_t size, char **next)
 {
   if (**next != '/')
     return 1;
@@ -43,10 +59,10 @@ dmnsn_tokenize_comment(char *map, size_t size,
   } else if (*(*next + 1) == '*') {
     /* A multi-line comment block (like this one) */
     do {
-      ++col;
+      ++*col;
       if (**next == '\n') {
-        ++line;
-        col = 0;
+        ++*line;
+        *col = 0;
       }
 
       ++*next;
@@ -61,8 +77,9 @@ dmnsn_tokenize_comment(char *map, size_t size,
 }
 
 static int
-dmnsn_tokenize_number(char *map, size_t size, dmnsn_token *token,
-                      char **next, unsigned int *line, unsigned int *col)
+dmnsn_tokenize_number(const char *filename,
+                      unsigned int *line, unsigned int *col,
+                      char *map, size_t size, char **next, dmnsn_token *token)
 {
   char *endf, *endi;
 
@@ -98,8 +115,9 @@ dmnsn_tokenize_number(char *map, size_t size, dmnsn_token *token,
 
 /* Tokenize a keyword or an identifier */
 static int
-dmnsn_tokenize_label(char *map, size_t size, dmnsn_token *token,
-                     char **next, unsigned int *line, unsigned int *col)
+dmnsn_tokenize_label(const char *filename,
+                     unsigned int *line, unsigned int *col,
+                     char *map, size_t size, char **next, dmnsn_token *token)
 {
   unsigned int i = 0, alloc = 32;
 
@@ -148,8 +166,10 @@ dmnsn_tokenize_label(char *map, size_t size, dmnsn_token *token,
 
 /* Tokenize a language directive (#include, #declare, etc.) */
 static int
-dmnsn_tokenize_directive(char *map, size_t size, dmnsn_token *token,
-                         char **next, unsigned int *line, unsigned int *col)
+dmnsn_tokenize_directive(const char *filename,
+                         unsigned int *line, unsigned int *col,
+                         char *map, size_t size, char **next,
+                         dmnsn_token *token)
 {
   unsigned int i = 0, alloc = 32;
 
@@ -194,8 +214,9 @@ dmnsn_tokenize_directive(char *map, size_t size, dmnsn_token *token,
 
 /* Tokenize a string */
 static int
-dmnsn_tokenize_string(char *map, size_t size, dmnsn_token *token,
-                      char **next, unsigned int *line, unsigned int *col)
+dmnsn_tokenize_string(const char *filename,
+                      unsigned int *line, unsigned int *col,
+                      char *map, size_t size, char **next, dmnsn_token *token)
 {
   unsigned int i = 0, alloc = 32;
 
@@ -231,10 +252,9 @@ dmnsn_tokenize_string(char *map, size_t size, dmnsn_token *token,
         break;
 
       default:
-        fprintf(stderr,
-                "Warning: unrecognised escape sequence '\\%c'"
-                " on line %u, column %u\n",
-                (int)**next, *line, *col);
+        dmnsn_diagnostic(filename, *line, *col,
+                         "WARNING: unrecognised escape sequence '\\%c'",
+                         (int)**next);
         token->value[i] = **next;
         break;
       }
@@ -254,10 +274,10 @@ dmnsn_tokenize_string(char *map, size_t size, dmnsn_token *token,
 }
 
 dmnsn_array *
-dmnsn_tokenize(FILE *file)
+dmnsn_tokenize(const char *filename, FILE *file)
 {
   if (fseeko(file, 0, SEEK_END) != 0) {
-    fprintf(stderr, "Couldn't seek on input stream.\n");
+    fprintf(stderr, "Couldn't seek on input stream\n");
     return NULL;
   }
 
@@ -265,14 +285,14 @@ dmnsn_tokenize(FILE *file)
 
   int fd = fileno(file);
   if (fd == -1) {
-    fprintf(stderr, "Couldn't get file descriptor to input stream.\n");
+    fprintf(stderr, "Couldn't get file descriptor to input stream\n");
     return NULL;
   }
 
   char *map = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0), *next = map;
 
   if (map == MAP_FAILED) {
-    fprintf(stderr, "Couldn't mmap() input stream.\n");
+    fprintf(stderr, "Couldn't mmap() input stream\n");
     return NULL;
   }
 
@@ -328,7 +348,8 @@ dmnsn_tokenize(FILE *file)
 
     /* Possible comment */
     case '/':
-      if (dmnsn_tokenize_comment(map, size, &next, &line, &col) == 0) {
+      if (dmnsn_tokenize_comment(filename, &line, &col,
+                                 map, size, &next) == 0) {
         continue;
       } else {
         /* Just the normal punctuation mark */
@@ -350,41 +371,43 @@ dmnsn_tokenize(FILE *file)
     case '7':
     case '8':
     case '9':
-      if (dmnsn_tokenize_number(map, size, &token, &next, &line, &col) != 0) {
-        fprintf(stderr, "Invalid numeric value on line %u, column %u.\n",
-                line, col);
+      if (dmnsn_tokenize_number(filename, &line, &col,
+                                map, size, &next, &token) != 0) {
+        dmnsn_diagnostic(filename, line, col, "Invalid numeric value");
         goto bailout;
       }
       break;
 
     case '#':
       /* Language directive */
-      if (dmnsn_tokenize_directive(map, size, &token,
-                                   &next, &line, &col) == 0) {
+      if (dmnsn_tokenize_directive(filename, &line, &col,
+                                   map, size, &next, &token) == 0) {
         if (token.type == DMNSN_INCLUDE) {
           /* Skip whitespace */
           while (next - map < size && isspace(*next) && *next != '\n') {
             ++next;
           }
 
-          if (dmnsn_tokenize_string(map, size, &token,
-                                    &next, &line, &col) != 0) {
-            fprintf(stderr,
-                    "Expected string after #include on line %u, column %u.\n",
-                    line, col);
+          if (dmnsn_tokenize_string(filename, &line, &col,
+                                    map, size, &next, &token) != 0) {
+            dmnsn_diagnostic(filename, line, col,
+                             "Expected string after #include");
             goto bailout;
           }
           
           FILE *included = fopen(token.value, "r");
           if (!included) {
-            fprintf(stderr, "Couldn't include \"%s\" on line %u, column %u.\n",
-                    token.value, line, col);
+            dmnsn_diagnostic(filename, line, col,
+                             "Couldn't open included file \"%s\"",
+                             token.value);
             goto bailout;
           }
 
-          dmnsn_array *included_tokens = dmnsn_tokenize(included);
+          dmnsn_array *included_tokens = dmnsn_tokenize(token.value, included);
           if (!included_tokens) {
-            fprintf(stderr, "Error tokenizing \"%s\"\n", token.value);
+            dmnsn_diagnostic(filename, line, col,
+                             "Error tokenizing included file \"%s\"",
+                             token.value);
             goto bailout;
           }
 
@@ -393,36 +416,38 @@ dmnsn_tokenize(FILE *file)
             dmnsn_array_push(tokens, dmnsn_array_at(included_tokens, i));
           }
 
+          free(token.value);
           dmnsn_delete_array(included_tokens);
           continue;
         }
       } else {
-        fprintf(stderr, "Invalid directive on line %u, column %u.\n",
-                line, col);
+        dmnsn_diagnostic(filename, line, col, "Invalid language directive");
         goto bailout;
       }
       break;
 
     case '"':
-      if (dmnsn_tokenize_string(map, size, &token, &next, &line, &col) != 0) {
-        fprintf(stderr, "Invalid string on line %u, column %u.\n",
-                line, col);
+      if (dmnsn_tokenize_string(filename, &line, &col,
+                                map, size, &next, &token) != 0) {
+        dmnsn_diagnostic(filename, line, col, "Invalid string");
         goto bailout;
       }
       break;
 
     default:
-      if (dmnsn_tokenize_label(map, size, &token, &next, &line, &col) != 0) {
+      if (dmnsn_tokenize_label(filename, &line, &col,
+                               map, size, &next, &token) != 0) {
         /* Unrecognised character */
-        fprintf(stderr,
-                "Unrecognized character '%c' (0x%X) in input at line %u,"
-                " column %u.\n",
-                (int)*next, (unsigned int)*next, line, col);
+        dmnsn_diagnostic(filename, line, col,
+                         "Unrecognized character '%c' (0x%X)",
+                         (int)*next, (unsigned int)*next);
         goto bailout;
       }
       break;
     }
 
+    token.filename = malloc(strlen(filename) + 1);
+    strcpy(token.filename, filename);
     dmnsn_array_push(tokens, &token);
   }
 
@@ -442,6 +467,7 @@ dmnsn_delete_tokens(dmnsn_array *tokens)
   unsigned int i;
   for (i = 0; i < dmnsn_array_size(tokens); ++i) {
     token = dmnsn_array_at(tokens, i);
+    free(token->filename);
     free(token->value);
   }
   dmnsn_delete_array(tokens);
