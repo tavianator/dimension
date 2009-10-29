@@ -21,19 +21,27 @@
 
 typedef enum {
   /* Punctuation */
-  DMNSN_T_LBRACE,   /* { */
-  DMNSN_T_RBRACE,   /* } */
-  DMNSN_T_LPAREN,   /* ( */
-  DMNSN_T_RPAREN,   /* ) */
-  DMNSN_T_LBRACKET, /* [ */
-  DMNSN_T_RBRACKET, /* ] */
-  DMNSN_T_LT,       /* < */
-  DMNSN_T_GT,       /* > */
-  DMNSN_T_PLUS,     /* + */
-  DMNSN_T_MINUS,    /* - */
-  DMNSN_T_STAR,     /* * */
-  DMNSN_T_SLASH,    /* / */
-  DMNSN_T_COMMA,    /* , */
+  DMNSN_T_LBRACE,      /* { */
+  DMNSN_T_RBRACE,      /* } */
+  DMNSN_T_LPAREN,      /* ( */
+  DMNSN_T_RPAREN,      /* ) */
+  DMNSN_T_LBRACKET,    /* [ */
+  DMNSN_T_RBRACKET,    /* ] */
+  DMNSN_T_LT,          /* < */
+  DMNSN_T_GT,          /* > */
+  DMNSN_T_PLUS,        /* + */
+  DMNSN_T_MINUS,       /* - */
+  DMNSN_T_STAR,        /* * */
+  DMNSN_T_SLASH,       /* / */
+  DMNSN_T_COMMA,       /* , */
+  DMNSN_T_EQUALS,      /* = */
+  DMNSN_T_SEMICOLON,   /* ; */
+  DMNSN_T_QUESTION,    /* ? */
+  DMNSN_T_COLON,       /* : */
+  DMNSN_T_AND,         /* & */
+  DMNSN_T_EXCLAMATION, /* ! */
+  DMNSN_T_DOT,         /* . */
+  DMNSN_T_PIPE,        /* | */
 
   /* Numeric values */
   DMNSN_T_INT,
@@ -59,7 +67,7 @@ typedef enum {
   DMNSN_T_IF,
   DMNSN_T_IFDEF,
   DMNSN_T_IFNDEF,
-  DMNSN_T_INCLUDE, /* Only used internally */
+  DMNSN_T_INCLUDE,
   DMNSN_T_LOCAL,
   DMNSN_T_MACRO,
   DMNSN_T_RANGE,

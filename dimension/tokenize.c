@@ -178,9 +178,15 @@ dmnsn_tokenize_directive(const char *filename,
     return 1;
   }
 
+  ++*next;
+  /* Handle spaces between `#' and directive */
+  while (*next - map < size && (**next == ' ' || **next == '\t')) {
+    ++*next;
+  }
+
   char *directive = malloc(alloc);
 
-  do {
+  while (*next - map < size && (isalnum(**next) || **next == '_')) {
     if (i + 1 >= alloc) {
       alloc *= 2;
       directive = realloc(directive, alloc);
@@ -191,7 +197,7 @@ dmnsn_tokenize_directive(const char *filename,
     ++i;
     ++*col;
     ++*next;
-  } while (*next - map < size && (isalnum(**next) || **next == '_'));
+  }
 
   directive[i] = '\0';
 
@@ -206,32 +212,32 @@ dmnsn_tokenize_directive(const char *filename,
     }                                                                          \
   } while (0)
 
-  dmnsn_directive("#break",      DMNSN_T_BREAK);
-  dmnsn_directive("#case",       DMNSN_T_CASE);
-  dmnsn_directive("#debug",      DMNSN_T_DEBUG);
-  dmnsn_directive("#declare",    DMNSN_T_DECLARE);
-  dmnsn_directive("#default",    DMNSN_T_DEFAULT);
-  dmnsn_directive("#else",       DMNSN_T_ELSE);
-  dmnsn_directive("#end",        DMNSN_T_END);
-  dmnsn_directive("#error",      DMNSN_T_ERROR);
-  dmnsn_directive("#fclose",     DMNSN_T_FCLOSE);
-  dmnsn_directive("#fopen",      DMNSN_T_FOPEN);
-  dmnsn_directive("#if",         DMNSN_T_IF);
-  dmnsn_directive("#ifdef",      DMNSN_T_IFDEF);
-  dmnsn_directive("#ifndef",     DMNSN_T_IFNDEF);
-  dmnsn_directive("#include",    DMNSN_T_INCLUDE);
-  dmnsn_directive("#local",      DMNSN_T_LOCAL);
-  dmnsn_directive("#macro",      DMNSN_T_MACRO);
-  dmnsn_directive("#range",      DMNSN_T_RANGE);
-  dmnsn_directive("#read",       DMNSN_T_READ);
-  dmnsn_directive("#render",     DMNSN_T_RENDER);
-  dmnsn_directive("#statistics", DMNSN_T_STATISTICS);
-  dmnsn_directive("#switch",     DMNSN_T_SWITCH);
-  dmnsn_directive("#undef",      DMNSN_T_UNDEF);
-  dmnsn_directive("#version",    DMNSN_T_VERSION);
-  dmnsn_directive("#warning",    DMNSN_T_WARNING);
-  dmnsn_directive("#while",      DMNSN_T_WHILE);
-  dmnsn_directive("#write",      DMNSN_T_WRITE);
+  dmnsn_directive("break",      DMNSN_T_BREAK);
+  dmnsn_directive("case",       DMNSN_T_CASE);
+  dmnsn_directive("debug",      DMNSN_T_DEBUG);
+  dmnsn_directive("declare",    DMNSN_T_DECLARE);
+  dmnsn_directive("default",    DMNSN_T_DEFAULT);
+  dmnsn_directive("else",       DMNSN_T_ELSE);
+  dmnsn_directive("end",        DMNSN_T_END);
+  dmnsn_directive("error",      DMNSN_T_ERROR);
+  dmnsn_directive("fclose",     DMNSN_T_FCLOSE);
+  dmnsn_directive("fopen",      DMNSN_T_FOPEN);
+  dmnsn_directive("if",         DMNSN_T_IF);
+  dmnsn_directive("ifdef",      DMNSN_T_IFDEF);
+  dmnsn_directive("ifndef",     DMNSN_T_IFNDEF);
+  dmnsn_directive("include",    DMNSN_T_INCLUDE);
+  dmnsn_directive("local",      DMNSN_T_LOCAL);
+  dmnsn_directive("macro",      DMNSN_T_MACRO);
+  dmnsn_directive("range",      DMNSN_T_RANGE);
+  dmnsn_directive("read",       DMNSN_T_READ);
+  dmnsn_directive("render",     DMNSN_T_RENDER);
+  dmnsn_directive("statistics", DMNSN_T_STATISTICS);
+  dmnsn_directive("switch",     DMNSN_T_SWITCH);
+  dmnsn_directive("undef",      DMNSN_T_UNDEF);
+  dmnsn_directive("version",    DMNSN_T_VERSION);
+  dmnsn_directive("warning",    DMNSN_T_WARNING);
+  dmnsn_directive("while",      DMNSN_T_WHILE);
+  dmnsn_directive("write",      DMNSN_T_WRITE);
 
   free(directive);
   return 1;
@@ -441,6 +447,13 @@ dmnsn_tokenize(const char *filename, FILE *file)
     dmnsn_simple_token('-', DMNSN_T_MINUS);
     dmnsn_simple_token('*', DMNSN_T_STAR);
     dmnsn_simple_token(',', DMNSN_T_COMMA);
+    dmnsn_simple_token('=', DMNSN_T_EQUALS);
+    dmnsn_simple_token(';', DMNSN_T_SEMICOLON);
+    dmnsn_simple_token('?', DMNSN_T_QUESTION);
+    dmnsn_simple_token(':', DMNSN_T_COLON);
+    dmnsn_simple_token('&', DMNSN_T_AND);
+    dmnsn_simple_token('!', DMNSN_T_EXCLAMATION);
+    dmnsn_simple_token('|', DMNSN_T_PIPE);
 
     /* Possible comment */
     case '/':
@@ -456,7 +469,6 @@ dmnsn_tokenize(const char *filename, FILE *file)
       break;
 
     /* Numeric values */
-    case '.': /* Number begins with a decimal point, as in `.2' */
     case '0':
     case '1':
     case '2':
@@ -474,68 +486,19 @@ dmnsn_tokenize(const char *filename, FILE *file)
       }
       break;
 
+    case '.': /* Number may begin with a decimal point, as in `.2' */
+      if (dmnsn_tokenize_number(filename, &line, &col,
+                                map, size, &next, &token) != 0) {
+        token.type = DMNSN_T_DOT;
+        ++col;
+        ++next;
+      }
+      break;
+
     case '#':
       /* Language directive */
       if (dmnsn_tokenize_directive(filename, &line, &col,
-                                   map, size, &next, &token) == 0) {
-        if (token.type == DMNSN_T_INCLUDE) {
-          /* Skip whitespace */
-          while (next - map < size && isspace(*next) && *next != '\n') {
-            ++next;
-          }
-
-          if (dmnsn_tokenize_string(filename, &line, &col,
-                                    map, size, &next, &token) != 0) {
-            dmnsn_diagnostic(filename, line, col,
-                             "Expected string after #include");
-            goto bailout;
-          }
-
-          /* Search in same directory as current file */
-          char *filename_copy = strdup(filename);
-          char *localdir = dirname(filename_copy);
-          char *local_include = malloc(strlen(localdir)
-                                       + strlen(token.value)
-                                       + 2);
-          strcpy(local_include, localdir);
-          strcat(local_include, "/");
-          strcat(local_include, token.value);
-          free(filename_copy);
-          free(token.value);
-
-          /* Try to open the included file */
-          FILE *include = fopen(local_include, "r");
-          if (!include) {
-            dmnsn_diagnostic(filename, line, col,
-                             "Couldn't open included file \"%s\"",
-                             local_include);
-            free(local_include);
-            goto bailout;
-          }
-
-          /* Parse it recursively */
-          dmnsn_array *included_tokens = dmnsn_tokenize(local_include, include);
-          if (!included_tokens) {
-            dmnsn_diagnostic(filename, line, col,
-                             "Error tokenizing included file \"%s\"",
-                             local_include);
-            free(local_include);
-            goto bailout;
-          }
-
-          fclose(include);
-          free(local_include);
-
-          /* Append the tokens from the included file */
-          unsigned int i;
-          for (i = 0; i < dmnsn_array_size(included_tokens); ++i) {
-            dmnsn_array_push(tokens, dmnsn_array_at(included_tokens, i));
-          }
-
-          dmnsn_delete_array(included_tokens);
-          continue;
-        }
-      } else {
+                                   map, size, &next, &token) != 0) {
         dmnsn_diagnostic(filename, line, col, "Invalid language directive");
         goto bailout;
       }
@@ -644,19 +607,27 @@ dmnsn_token_name(dmnsn_token_type token_type)
     return str;
 
   /* Punctuation */
-  dmnsn_token_map(DMNSN_T_LBRACE,   "{");
-  dmnsn_token_map(DMNSN_T_RBRACE,   "}")
-  dmnsn_token_map(DMNSN_T_LPAREN,   "\\(");
-  dmnsn_token_map(DMNSN_T_RPAREN,   "\\)");
-  dmnsn_token_map(DMNSN_T_LBRACKET, "[");
-  dmnsn_token_map(DMNSN_T_RBRACKET, "]");
-  dmnsn_token_map(DMNSN_T_LT,       "<");
-  dmnsn_token_map(DMNSN_T_GT,       ">");
-  dmnsn_token_map(DMNSN_T_PLUS,     "+");
-  dmnsn_token_map(DMNSN_T_MINUS,    "-");
-  dmnsn_token_map(DMNSN_T_STAR,     "*");
-  dmnsn_token_map(DMNSN_T_SLASH,    "/");
-  dmnsn_token_map(DMNSN_T_COMMA,    ",");
+  dmnsn_token_map(DMNSN_T_LBRACE,      "{");
+  dmnsn_token_map(DMNSN_T_RBRACE,      "}")
+  dmnsn_token_map(DMNSN_T_LPAREN,      "\\(");
+  dmnsn_token_map(DMNSN_T_RPAREN,      "\\)");
+  dmnsn_token_map(DMNSN_T_LBRACKET,    "[");
+  dmnsn_token_map(DMNSN_T_RBRACKET,    "]");
+  dmnsn_token_map(DMNSN_T_LT,          "<");
+  dmnsn_token_map(DMNSN_T_GT,          ">");
+  dmnsn_token_map(DMNSN_T_PLUS,        "+");
+  dmnsn_token_map(DMNSN_T_MINUS,       "-");
+  dmnsn_token_map(DMNSN_T_STAR,        "*");
+  dmnsn_token_map(DMNSN_T_SLASH,       "/");
+  dmnsn_token_map(DMNSN_T_COMMA,       ",");
+  dmnsn_token_map(DMNSN_T_EQUALS,      "=");
+  dmnsn_token_map(DMNSN_T_SEMICOLON,   ";");
+  dmnsn_token_map(DMNSN_T_QUESTION,    "?");
+  dmnsn_token_map(DMNSN_T_COLON,       ":");
+  dmnsn_token_map(DMNSN_T_AND,         "&");
+  dmnsn_token_map(DMNSN_T_EXCLAMATION, "!");
+  dmnsn_token_map(DMNSN_T_DOT,         ".");
+  dmnsn_token_map(DMNSN_T_PIPE,        "|");
 
   /* Numeric values */
   dmnsn_token_map(DMNSN_T_INT,   "int");
@@ -703,7 +674,7 @@ dmnsn_token_name(dmnsn_token_type token_type)
   dmnsn_token_map(DMNSN_T_IDENTIFIER, "identifier");
 
   default:
-    printf("Warning: unrecognised token %d.\n", (int)token_type);
+    fprintf(stderr, "Warning: unrecognised token %d.\n", (int)token_type);
     return "unrecognized-token";
   }
 }
