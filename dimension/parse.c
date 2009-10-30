@@ -205,6 +205,7 @@ dmnsn_parse(const dmnsn_array *tokens)
   setlocale(LC_CTYPE, "C");
   setlocale(LC_NUMERIC, "C");
 
+  i = 0;
   while (i < dmnsn_array_size(tokens)) {
     dmnsn_array_get(tokens, i, &token);
 
