@@ -21,4 +21,4 @@
 
 #include "punctuation.pov"
 
-#declare x
+#declare id
