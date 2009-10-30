@@ -39,6 +39,7 @@ dmnsn_report_error(dmnsn_severity severity, const char *func, unsigned int line,
     /* An error more severe than our resilience happened, bail out */
     fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n", func, line, str);
     (*dmnsn_fatal)();
+    exit(EXIT_FAILURE); /* Failsafe in case *dmnsn_fatal doesn't exit */
   } else {
     /* A trivial error happened, warn and continue */
     fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n", func, line, str);
@@ -76,6 +77,7 @@ dmnsn_set_resilience(dmnsn_severity resilience)
     fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n", DMNSN_FUNC, __LINE__,
             "Resilience has wrong value.");
     (*dmnsn_fatal)();
+    exit(EXIT_FAILURE);
   }
 
   if (pthread_mutex_lock(&dmnsn_resilience_mutex) != 0) {
