@@ -886,19 +886,52 @@ dmnsn_tokenize(const char *filename, FILE *file)
     dmnsn_simple_token(')', DMNSN_T_RPAREN);
     dmnsn_simple_token('[', DMNSN_T_LBRACKET);
     dmnsn_simple_token(']', DMNSN_T_RBRACKET);
-    dmnsn_simple_token('<', DMNSN_T_LT);
-    dmnsn_simple_token('>', DMNSN_T_GT);
     dmnsn_simple_token('+', DMNSN_T_PLUS);
     dmnsn_simple_token('-', DMNSN_T_MINUS);
     dmnsn_simple_token('*', DMNSN_T_STAR);
     dmnsn_simple_token(',', DMNSN_T_COMMA);
-    dmnsn_simple_token('=', DMNSN_T_EQUALS);
     dmnsn_simple_token(';', DMNSN_T_SEMICOLON);
     dmnsn_simple_token('?', DMNSN_T_QUESTION);
     dmnsn_simple_token(':', DMNSN_T_COLON);
     dmnsn_simple_token('&', DMNSN_T_AND);
-    dmnsn_simple_token('!', DMNSN_T_BANG);
     dmnsn_simple_token('|', DMNSN_T_PIPE);
+    dmnsn_simple_token('=', DMNSN_T_EQUALS);
+
+    case '<':
+      if (*(next + 1) == '=') {
+        token.type = DMNSN_T_LESS_EQUAL;
+        ++col;
+        ++next;
+      } else {
+        token.type = DMNSN_T_LESS;
+      }
+      ++col;
+      ++next;
+      break;
+
+    case '>':
+      if (*(next + 1) == '=') {
+        token.type = DMNSN_T_GREATER_EQUAL;
+        ++col;
+        ++next;
+      } else {
+        token.type = DMNSN_T_GREATER;
+      }
+      ++col;
+      ++next;
+      break;
+
+    case '!':
+      if (*(next + 1) == '=') {
+        token.type = DMNSN_T_NOT_EQUAL;
+        ++col;
+        ++next;
+      } else {
+        token.type = DMNSN_T_BANG;
+      }
+      ++col;
+      ++next;
+      break;
 
     /* Possible comment */
     case '/':
@@ -1063,27 +1096,32 @@ dmnsn_token_name(dmnsn_token_type token_type)
     return str;
 
   /* Punctuation */
+
   dmnsn_token_map(DMNSN_T_LBRACE,    "{");
   dmnsn_token_map(DMNSN_T_RBRACE,    "}")
   dmnsn_token_map(DMNSN_T_LPAREN,    "(");
   dmnsn_token_map(DMNSN_T_RPAREN,    ")");
   dmnsn_token_map(DMNSN_T_LBRACKET,  "[");
   dmnsn_token_map(DMNSN_T_RBRACKET,  "]");
-  dmnsn_token_map(DMNSN_T_LT,        "<");
-  dmnsn_token_map(DMNSN_T_GT,        ">");
   dmnsn_token_map(DMNSN_T_PLUS,      "+");
   dmnsn_token_map(DMNSN_T_MINUS,     "-");
   dmnsn_token_map(DMNSN_T_STAR,      "*");
   dmnsn_token_map(DMNSN_T_SLASH,     "/");
   dmnsn_token_map(DMNSN_T_COMMA,     ",");
-  dmnsn_token_map(DMNSN_T_EQUALS,    "=");
   dmnsn_token_map(DMNSN_T_SEMICOLON, ";");
   dmnsn_token_map(DMNSN_T_QUESTION,  "?");
   dmnsn_token_map(DMNSN_T_COLON,     ":");
   dmnsn_token_map(DMNSN_T_AND,       "&");
-  dmnsn_token_map(DMNSN_T_BANG,      "!");
   dmnsn_token_map(DMNSN_T_DOT,       ".");
   dmnsn_token_map(DMNSN_T_PIPE,      "|");
+  dmnsn_token_map(DMNSN_T_LESS,      "<");
+  dmnsn_token_map(DMNSN_T_GREATER,   ">");
+  dmnsn_token_map(DMNSN_T_BANG,      "!");
+  dmnsn_token_map(DMNSN_T_EQUALS,    "=");
+
+  dmnsn_token_map(DMNSN_T_LESS_EQUAL,    "<=");
+  dmnsn_token_map(DMNSN_T_GREATER_EQUAL, ">=");
+  dmnsn_token_map(DMNSN_T_NOT_EQUAL,     "!=");
 
   /* Numeric values */
   dmnsn_token_map(DMNSN_T_INTEGER, "int");

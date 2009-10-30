@@ -27,21 +27,24 @@ typedef enum {
   DMNSN_T_RPAREN,    /* ) */
   DMNSN_T_LBRACKET,  /* [ */
   DMNSN_T_RBRACKET,  /* ] */
-  DMNSN_T_LT,        /* < */
-  DMNSN_T_GT,        /* > */
   DMNSN_T_PLUS,      /* + */
   DMNSN_T_MINUS,     /* - */
   DMNSN_T_STAR,      /* * */
   DMNSN_T_SLASH,     /* / */
   DMNSN_T_COMMA,     /* , */
-  DMNSN_T_EQUALS,    /* = */
   DMNSN_T_SEMICOLON, /* ; */
   DMNSN_T_QUESTION,  /* ? */
   DMNSN_T_COLON,     /* : */
   DMNSN_T_AND,       /* & */
-  DMNSN_T_BANG,      /* ! */
   DMNSN_T_DOT,       /* . */
   DMNSN_T_PIPE,      /* | */
+  DMNSN_T_LESS,      /* < */
+  DMNSN_T_GREATER,   /* > */
+  DMNSN_T_BANG,      /* ! */
+  DMNSN_T_EQUALS,    /* = */
+  DMNSN_T_LESS_EQUAL,    /* <= */
+  DMNSN_T_GREATER_EQUAL, /* >= */
+  DMNSN_T_NOT_EQUAL,     /* != */
 
   /* Numeric values */
   DMNSN_T_INTEGER,

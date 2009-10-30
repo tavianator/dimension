@@ -19,12 +19,4 @@
 
 // Test that we correctly tokenize all simple punctuation marks
 
-{
-  (
-    [
-      <
-        + - * / ,
-      >
-    ]
-  )
-}
+{}()[]+-*/,;?:&.|=<>!<= >= !=
