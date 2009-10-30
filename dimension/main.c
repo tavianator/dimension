@@ -145,11 +145,14 @@ main(int argc, char **argv) {
    * Now we render the scene
    */
 
+  if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
+    fprintf(stderr, "WARNING: Couldn't optimize canvas for PNG\n");
+  }
+
   if (dmnsn_raytrace_scene(scene) != 0) {
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_realized_scene(scene);
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Error rendering scene.");
   }
-  dmnsn_delete_scene(scene);
 
   /* Open the output file */
   output_file = fopen(output, "wb");
@@ -163,6 +166,6 @@ main(int argc, char **argv) {
   }
   fclose(output_file);
 
-  /* Clean up and exit! */
+  dmnsn_delete_realized_scene(scene);
   return EXIT_SUCCESS;
 }

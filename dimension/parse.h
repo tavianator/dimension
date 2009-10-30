@@ -19,8 +19,26 @@
 
 #include "../libdimension/dimension.h"
 
+typedef enum {
+  DMNSN_AST_FLOAT,
+  DMNSN_AST_VECTOR,
+  DMNSN_AST_BOX,
+} dmnsn_astnode_type;
+
+typedef struct dmnsn_astnode dmnsn_astnode;
+
+struct dmnsn_astnode {
+  dmnsn_astnode_type type;
+
+  /* Child nodes */
+  dmnsn_array *children;
+
+  /* Generic data pointer */
+  void *ptr;
+};
+
 /* The workhorse */
-dmnsn_array *dmnsn_parse(dmnsn_array *tokens);
+dmnsn_array *dmnsn_parse(const dmnsn_array *tokens);
 
 /* Free an abstract syntax tree */
 void dmnsn_delete_astree(dmnsn_array *astree);

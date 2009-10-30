@@ -22,7 +22,53 @@
 #include "utility.h"
 
 dmnsn_scene *
-dmnsn_realize(dmnsn_array *astree)
+dmnsn_realize(const dmnsn_array *astree)
 {
-  return dmnsn_new_scene();
+  dmnsn_scene *scene = dmnsn_new_scene();
+  if (!scene) {
+    return NULL;
+  }
+
+  /* Background color */
+  dmnsn_sRGB background_sRGB = { .R = 0.0, .G = 0.05, .B = 0.1 };
+  scene->background = dmnsn_color_from_sRGB(background_sRGB);
+
+  /* Allocate a canvas */
+  scene->canvas = dmnsn_new_canvas(768, 480);
+  if (!scene->canvas) {
+    dmnsn_delete_realized_scene(scene);
+    return NULL;
+  }
+
+  /* Set up the transformation matrix for the perspective camera */
+  dmnsn_matrix trans = dmnsn_scale_matrix(
+    dmnsn_vector_construct(
+      ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
+    )
+  );
+  trans = dmnsn_matrix_mul(
+    dmnsn_translation_matrix(dmnsn_vector_construct(0.0, 0.0, -4.0)),
+    trans
+  );
+  trans = dmnsn_matrix_mul(
+    dmnsn_rotation_matrix(dmnsn_vector_construct(0.0, 1.0, 0.0)),
+    trans
+  );
+
+  /* Create a perspective camera */
+  scene->camera = dmnsn_new_perspective_camera();
+  if (!scene->camera) {
+    dmnsn_delete_realized_scene(scene);
+    return NULL;
+  }
+
+  return scene;
+}
+
+void
+dmnsn_delete_realized_scene(dmnsn_scene *scene)
+{
+  dmnsn_delete_camera(scene->camera);
+  dmnsn_delete_canvas(scene->canvas);
+  dmnsn_delete_scene(scene);
 }

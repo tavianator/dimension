@@ -19,27 +19,19 @@
 
 INCLUDES = -I$(top_srcdir)/libdimension
 
-TESTS = punctuation.sh numeric.sh strings.sh labels.sh directives.sh
+TESTS = punctuation.sh numeric.sh strings.sh labels.sh directives.sh box.sh
 TESTS_ENVIRONMENT = top_builddir=$(top_builddir)
 
-punctuation.sh:
-	cp $(srcdir)/punctuation.sh .
-
-numeric.sh:
-	cp $(srcdir)/numeric.sh .
-
-strings.sh:
-	cp $(srcdir)/strings.sh .
-
-labels.sh:
-	cp $(srcdir)/labels.sh .
-
-directives.sh:
-	cp $(srcdir)/directives.sh .
+%.sh:
+	cp $(srcdir)/$@ .
 
 EXTRA_DIST = $(TESTS)                                                          \
              punctuation.pov                                                   \
              numeric.pov                                                       \
              strings.pov                                                       \
              labels.pov                                                        \
-             directives.pov
+             directives.pov                                                    \
+             box.pov
+
+clean-local:
+	rm *.png

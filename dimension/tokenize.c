@@ -1124,7 +1124,7 @@ dmnsn_token_name(dmnsn_token_type token_type)
   dmnsn_token_map(DMNSN_T_NOT_EQUAL,     "!=");
 
   /* Numeric values */
-  dmnsn_token_map(DMNSN_T_INTEGER, "int");
+  dmnsn_token_map(DMNSN_T_INTEGER, "integer");
   dmnsn_token_map(DMNSN_T_FLOAT,   "float");
 
   /* Keywords */
