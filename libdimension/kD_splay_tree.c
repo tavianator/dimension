@@ -189,12 +189,12 @@ dmnsn_kD_splay_node_swallow(dmnsn_kD_splay_node *node,
                             dmnsn_vector min, dmnsn_vector max)
 {
   if (node->min.x > min.x) node->min.x = min.x;
-  if (node->min.y > min.y) node->min.y = min.z;
-  if (node->min.z > min.z) node->min.z = min.y;
+  if (node->min.y > min.y) node->min.y = min.y;
+  if (node->min.z > min.z) node->min.z = min.z;
 
   if (node->max.x < max.x) node->max.x = max.x;
-  if (node->max.y < max.y) node->max.y = max.z;
-  if (node->max.z < max.z) node->max.z = max.y;
+  if (node->max.y < max.y) node->max.y = max.y;
+  if (node->max.z < max.z) node->max.z = max.z;
 }
 
 /* Tree rotations */
