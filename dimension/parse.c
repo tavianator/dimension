@@ -205,10 +205,11 @@ dmnsn_parse(const dmnsn_array *tokens)
   setlocale(LC_CTYPE, "C");
   setlocale(LC_NUMERIC, "C");
 
-  for (i = 0; i < dmnsn_array_size(tokens); ++i) {
+  while (i < dmnsn_array_size(tokens)) {
     dmnsn_array_get(tokens, i, &token);
 
-    if (token.type == DMNSN_T_BOX) {
+    switch (token.type) {
+    case DMNSN_T_BOX:
       if (dmnsn_parse_box(tokens, &i, astree) != 0) {
         dmnsn_diagnostic(token.filename, token.line, token.col,
                          "Invalid box",
@@ -216,10 +217,11 @@ dmnsn_parse(const dmnsn_array *tokens)
                          dmnsn_token_name(token.type));
         goto bailout;
       }
-    } else {
+      break;
+
+    default:
       dmnsn_diagnostic(token.filename, token.line, token.col,
-                       "Expected '%s', found '%s'",
-                       dmnsn_token_name(DMNSN_T_BOX),
+                       "Unexpected token '%s'",
                        dmnsn_token_name(token.type));
       goto bailout;
     }

@@ -44,6 +44,35 @@ dmnsn_realize_vector(dmnsn_astnode astnode)
   return dmnsn_vector_construct(*x, *y, *z);
 }
 
+dmnsn_object *
+dmnsn_realize_box(dmnsn_astnode astnode)
+{
+  if (astnode.type != DMNSN_AST_BOX) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a box.");
+  }
+
+  dmnsn_astnode corner1, corner2;
+  dmnsn_array_get(astnode.children, 0, &corner1);
+  dmnsn_array_get(astnode.children, 1, &corner2);
+
+  dmnsn_vector x1 = dmnsn_realize_vector(corner1),
+               x2 = dmnsn_realize_vector(corner2);
+
+  dmnsn_object *box = dmnsn_new_cube();
+  box->trans = dmnsn_scale_matrix(dmnsn_vector_construct((x2.x - x1.x)/2.0,
+                                                         (x2.y - x1.y)/2.0,
+                                                         (x2.z - x1.z)/2.0));
+  box->trans = dmnsn_matrix_mul(
+    dmnsn_translation_matrix(dmnsn_vector_construct((x2.x + x1.x)/2.0,
+                                                    (x2.y + x1.y)/2.0,
+                                                    (x2.z + x1.z)/2.0)),
+    box->trans
+  );
+  box->trans = dmnsn_matrix_inverse(box->trans);
+
+  return box;
+}
+
 dmnsn_scene *
 dmnsn_realize(const dmnsn_array *astree)
 {
@@ -75,7 +104,7 @@ dmnsn_realize(const dmnsn_array *astree)
     trans
   );
   trans = dmnsn_matrix_mul(
-    dmnsn_rotation_matrix(dmnsn_vector_construct(0.0, 1.0, 0.0)),
+    dmnsn_rotation_matrix(dmnsn_vector_construct(0.8, 0.7, 0.0)),
     trans
   );
 
@@ -97,30 +126,16 @@ dmnsn_realize(const dmnsn_array *astree)
   for (i = 0; i < dmnsn_array_size(astree); ++i) {
     dmnsn_array_get(astree, i, &astnode);
 
-    if (astnode.type != DMNSN_AST_BOX) {
+    dmnsn_object *object;
+    switch (astnode.type) {
+    case DMNSN_AST_BOX:
+      object = dmnsn_realize_box(astnode);
+      dmnsn_array_push(scene->objects, &object);
+      break;
+
+    default:
       dmnsn_error(DMNSN_SEVERITY_HIGH, "We only handle boxes right now.");
     }
-
-    dmnsn_astnode corner1, corner2;
-    dmnsn_array_get(astnode.children, 0, &corner1);
-    dmnsn_array_get(astnode.children, 1, &corner2);
-
-    dmnsn_vector x1 = dmnsn_realize_vector(corner1),
-                 x2 = dmnsn_realize_vector(corner2);
-
-    dmnsn_object *box = dmnsn_new_cube();
-    box->trans = dmnsn_scale_matrix(dmnsn_vector_construct((x2.x - x1.x)/2.0,
-                                                           (x2.y - x1.y)/2.0,
-                                                           (x2.z - x1.z)/2.0));
-    box->trans = dmnsn_matrix_mul(
-      dmnsn_translation_matrix(dmnsn_vector_construct((x2.x + x1.x)/2.0,
-                                                      (x2.y + x1.y)/2.0,
-                                                      (x2.z + x1.z)/2.0)),
-      box->trans
-    );
-    box->trans = dmnsn_matrix_inverse(box->trans);
-
-    dmnsn_array_push(scene->objects, &box);
   }
 
   return scene;
