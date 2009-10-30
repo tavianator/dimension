@@ -306,8 +306,9 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
     dmnsn_array_get(canvas->optimizers, i, &optimizer);
     if (optimizer.optimizer_fn == &dmnsn_png_optimizer_fn) {
       for (y = 0; y < height; ++y) {
-        png_write_row(png_ptr,
-                      (png_bytep)((uint16_t *)optimizer.ptr + 4*y*width));
+        /* Invert the rows.  PNG coordinates are fourth quadrant. */
+        uint16_t *row = (uint16_t *)optimizer.ptr + 4*(height - y - 1)*width;
+        png_write_row(png_ptr, (png_bytep)row);
         dmnsn_increment_progress(progress);
       }
 
