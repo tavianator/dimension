@@ -22,6 +22,10 @@ INCLUDES = -I$(top_srcdir)/libdimension
 bin_PROGRAMS = dimension
 
 dimension_SOURCES = main.c                                                     \
+                    parse.c                                                    \
+                    parse.h                                                    \
+                    realize.c                                                  \
+                    realize.h                                                  \
                     tokenize.c                                                 \
                     tokenize.h                                                 \
                     utility.c                                                  \

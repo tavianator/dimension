@@ -18,16 +18,17 @@
  *************************************************************************/
 
 #include "tokenize.h"
+#include "parse.h"
+#include "realize.h"
 #include "../libdimension/dimension.h"
 #include <stdlib.h>
 #include <getopt.h>
 
 static const char *output = NULL, *input = NULL;
-static int tokenize = 0;
+static int tokenize = 0, parse = 0;
 
 int
 main(int argc, char **argv) {
-  dmnsn_array *tokens;
   FILE *input_file, *output_file;
 
   /*
@@ -38,6 +39,7 @@ main(int argc, char **argv) {
     { "output",   required_argument, NULL,      'o' },
     { "input",    required_argument, NULL,      'i' },
     { "tokenize", no_argument,       &tokenize, 1   },
+    { "parse",    no_argument,       &parse,    1   },
     { 0,          0,                 0,         0   }
   };
   int opt, opt_index;
@@ -81,10 +83,11 @@ main(int argc, char **argv) {
       input = argv[optind];
     }
   } else if (optind < argc) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid extranious command line options.");
+    dmnsn_error(DMNSN_SEVERITY_HIGH,
+                "Invalid extranious command line options.");
   }
 
-  if (!output && !tokenize) {
+  if (!output && !(tokenize || parse)) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "No output file specified.");
   }
   if (!input) {
@@ -98,23 +101,55 @@ main(int argc, char **argv) {
   }
 
   /* Tokenize the input file */
-  tokens = dmnsn_tokenize(input, input_file);
+  dmnsn_array *tokens = dmnsn_tokenize(input, input_file);
   if (!tokens) {
     fclose(input_file);
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Error tokenizing input file.");
   }
+  fclose(input_file);
 
   /* Debugging option - output the list of tokens as an S-expression */
   if (tokenize) {
     dmnsn_print_token_sexpr(stdout, tokens);
+
+    if (!parse) {
+      dmnsn_delete_tokens(tokens);
+      return EXIT_SUCCESS;
+    }
+  }
+
+  /* Parse the input */
+  dmnsn_array *astree = dmnsn_parse(tokens);
+  if (!astree) {
     dmnsn_delete_tokens(tokens);
-    fclose(input_file);
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error parsing input file.");
+  }
+  dmnsn_delete_tokens(tokens);
+
+  /* Debugging option - output the abstract syntax tree as an S-expression */
+  if (parse) {
+    dmnsn_print_astree_sexpr(stdout, astree);
+    dmnsn_delete_astree(astree);
     return EXIT_SUCCESS;
   }
+
+  /* Realize the input */
+  dmnsn_scene *scene = dmnsn_realize(astree);
+  if (!scene) {
+    dmnsn_delete_astree(astree);
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error realizing input file.");
+  }
+  dmnsn_delete_astree(astree);
 
   /*
    * Now we render the scene
    */
+
+  if (dmnsn_raytrace_scene(scene) != 0) {
+    dmnsn_delete_scene(scene);
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error rendering scene.");
+  }
+  dmnsn_delete_scene(scene);
 
   /* Open the output file */
   output_file = fopen(output, "wb");
@@ -122,9 +157,12 @@ main(int argc, char **argv) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't open output file.");
   }
 
-  /* Clean up and exit! */
-  dmnsn_delete_tokens(tokens);
+  if (dmnsn_png_write_canvas(scene->canvas, output_file) != 0) {
+    fclose(output_file);
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't write output.");
+  }
   fclose(output_file);
-  fclose(input_file);
+
+  /* Clean up and exit! */
   return EXIT_SUCCESS;
 }
