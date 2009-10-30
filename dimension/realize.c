@@ -21,6 +21,29 @@
 #include "parse.h"
 #include "utility.h"
 
+static dmnsn_vector
+dmnsn_realize_vector(dmnsn_astnode astnode)
+{
+  if (astnode.type != DMNSN_AST_VECTOR) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a vector.");
+  }
+
+  dmnsn_astnode xnode, ynode, znode;
+  dmnsn_array_get(astnode.children, 0, &xnode);
+  dmnsn_array_get(astnode.children, 1, &ynode);
+  dmnsn_array_get(astnode.children, 2, &znode);
+
+  if (xnode.type != DMNSN_AST_FLOAT
+      || ynode.type != DMNSN_AST_FLOAT
+      || znode.type != DMNSN_AST_FLOAT)
+  {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a float.");
+  }
+
+  double *x = xnode.ptr, *y = ynode.ptr, *z = znode.ptr;
+  return dmnsn_vector_construct(*x, *y, *z);
+}
+
 dmnsn_scene *
 dmnsn_realize(const dmnsn_array *astree)
 {
@@ -30,8 +53,9 @@ dmnsn_realize(const dmnsn_array *astree)
   }
 
   /* Background color */
-  dmnsn_sRGB background_sRGB = { .R = 0.0, .G = 0.05, .B = 0.1 };
+  dmnsn_sRGB background_sRGB = { .R = 0.0, .G = 0.0, .B = 0.1 };
   scene->background = dmnsn_color_from_sRGB(background_sRGB);
+  scene->background.filter = 0.1;
 
   /* Allocate a canvas */
   scene->canvas = dmnsn_new_canvas(768, 480);
@@ -61,6 +85,43 @@ dmnsn_realize(const dmnsn_array *astree)
     dmnsn_delete_realized_scene(scene);
     return NULL;
   }
+  dmnsn_set_perspective_camera_trans(scene->camera, trans);
+
+  /*
+   * Now parse the abstract syntax tree
+   */
+
+  dmnsn_astnode astnode;
+  unsigned int i;
+
+  for (i = 0; i < dmnsn_array_size(astree); ++i) {
+    dmnsn_array_get(astree, i, &astnode);
+
+    if (astnode.type != DMNSN_AST_BOX) {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "We only handle boxes right now.");
+    }
+
+    dmnsn_astnode corner1, corner2;
+    dmnsn_array_get(astnode.children, 0, &corner1);
+    dmnsn_array_get(astnode.children, 1, &corner2);
+
+    dmnsn_vector x1 = dmnsn_realize_vector(corner1),
+                 x2 = dmnsn_realize_vector(corner2);
+
+    dmnsn_object *box = dmnsn_new_cube();
+    box->trans = dmnsn_scale_matrix(dmnsn_vector_construct((x2.x - x1.x)/2.0,
+                                                           (x2.y - x1.y)/2.0,
+                                                           (x2.z - x1.z)/2.0));
+    box->trans = dmnsn_matrix_mul(
+      dmnsn_translation_matrix(dmnsn_vector_construct((x2.x + x1.x)/2.0,
+                                                      (x2.y + x1.y)/2.0,
+                                                      (x2.z + x1.z)/2.0)),
+      box->trans
+    );
+    box->trans = dmnsn_matrix_inverse(box->trans);
+
+    dmnsn_array_push(scene->objects, &box);
+  }
 
   return scene;
 }
@@ -68,6 +129,14 @@ dmnsn_realize(const dmnsn_array *astree)
 void
 dmnsn_delete_realized_scene(dmnsn_scene *scene)
 {
+  dmnsn_object *object;
+  unsigned int i;
+
+  for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
+    dmnsn_array_get(scene->objects, i, &object);
+    dmnsn_delete_object(object);
+  }
+
   dmnsn_delete_camera(scene->camera);
   dmnsn_delete_canvas(scene->canvas);
   dmnsn_delete_scene(scene);
