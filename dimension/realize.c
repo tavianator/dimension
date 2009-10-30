@@ -20,6 +20,7 @@
 #include "realize.h"
 #include "parse.h"
 #include "utility.h"
+#include <math.h>
 
 static dmnsn_vector
 dmnsn_realize_vector(dmnsn_astnode astnode)
@@ -59,9 +60,11 @@ dmnsn_realize_box(dmnsn_astnode astnode)
                x2 = dmnsn_realize_vector(corner2);
 
   dmnsn_object *box = dmnsn_new_cube();
-  box->trans = dmnsn_scale_matrix(dmnsn_vector_construct((x2.x - x1.x)/2.0,
-                                                         (x2.y - x1.y)/2.0,
-                                                         (x2.z - x1.z)/2.0));
+  box->trans = dmnsn_scale_matrix(
+    dmnsn_vector_construct(fabs(x2.x - x1.x)/2.0,
+                           fabs(x2.y - x1.y)/2.0,
+                           fabs(x2.z - x1.z)/2.0)
+  );
   box->trans = dmnsn_matrix_mul(
     dmnsn_translation_matrix(dmnsn_vector_construct((x2.x + x1.x)/2.0,
                                                     (x2.y + x1.y)/2.0,
