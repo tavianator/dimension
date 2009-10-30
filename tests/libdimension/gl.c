@@ -24,7 +24,7 @@
 int
 main() {
   dmnsn_display *display;
-  dmnsn_progress *progress, *barprogress;
+  dmnsn_progress *progress;
   dmnsn_scene *scene;
   dmnsn_canvas *canvas;
 
@@ -55,6 +55,7 @@ main() {
 
   /* Render the scene */
 
+  printf("Rendering scene\n");
   progress = dmnsn_raytrace_scene_async(scene);
   if (!progress) {
     dmnsn_delete_display(display);
@@ -62,8 +63,6 @@ main() {
     fprintf(stderr, "--- Couldn't start raytracing worker thread! ---\n");
     return EXIT_FAILURE;
   }
-
-  barprogress = dmnsn_progressbar_async("Raytracing scene: ", progress);
 
   /* Display the scene as it's rendered */
   while (dmnsn_get_progress(progress) < 1.0) {
@@ -76,8 +75,6 @@ main() {
     dmnsn_display_flush(display);
   }
 
-  dmnsn_finish_progress(barprogress);
-
   if (dmnsn_finish_progress(progress) != 0) {
     dmnsn_delete_display(display);
     dmnsn_delete_default_scene(scene);
@@ -86,6 +83,7 @@ main() {
   }
 
   /* Make sure we show the completed rendering */
+  printf("Drawing to OpenGL\n");
   if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
     dmnsn_delete_display(display);
     dmnsn_delete_default_scene(scene);
@@ -98,6 +96,7 @@ main() {
   sleep(1);
 
   /* Read a canvas from the GL buffer */
+  printf("Reading from OpenGL\n");
   canvas = dmnsn_gl_read_canvas(0, 0, scene->canvas->x, scene->canvas->y);
   if (!canvas) {
     dmnsn_delete_display(display);
@@ -107,6 +106,7 @@ main() {
   }
 
   /* And write it back */
+  printf("Drawing to OpenGL\n");
   if (dmnsn_gl_write_canvas(canvas) != 0) {
     dmnsn_delete_canvas(canvas);
     dmnsn_delete_display(display);

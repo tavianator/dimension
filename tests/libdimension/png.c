@@ -23,7 +23,6 @@
 
 int
 main() {
-  dmnsn_progress *progress;
   FILE *ifile, *ofile;
   dmnsn_scene *scene;
   dmnsn_canvas *canvas;
@@ -31,125 +30,94 @@ main() {
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
-  /* Render the scene */
-  {
-    /* Allocate our default scene */
-    scene = dmnsn_new_default_scene();
-    if (!scene) {
-      fprintf(stderr, "--- Allocation of default scene failed! ---\n");
-      return EXIT_FAILURE;
-    }
+  /*
+   * Render the scene
+   */
 
-    /* Optimize the canvas for PNG export */
-    if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
-      dmnsn_delete_default_scene(scene);
-      fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
-      return EXIT_FAILURE;
-    }
+  /* Allocate our default scene */
+  scene = dmnsn_new_default_scene();
+  if (!scene) {
+    fprintf(stderr, "--- Allocation of default scene failed! ---\n");
+    return EXIT_FAILURE;
+  }
 
-    /* Render scene */
+  /* Optimize the canvas for PNG export */
+  if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
+    dmnsn_delete_default_scene(scene);
+    fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
+    return EXIT_FAILURE;
+  }
 
-    progress = dmnsn_raytrace_scene_async(scene);
-    if (!progress) {
-      dmnsn_delete_default_scene(scene);
-      fprintf(stderr, "--- Couldn't start raytracing worker thread! ---\n");
-      return EXIT_FAILURE;
-    }
+  /* Render scene */
 
-    dmnsn_progressbar("Raytracing scene: ", progress);
+  printf("Rendering scene\n");
+  if (dmnsn_raytrace_scene(scene) != 0) {
+    dmnsn_delete_default_scene(scene);
+    fprintf(stderr, "--- Raytracing failed! ---\n");
+    return EXIT_FAILURE;
+  }
 
-    if (dmnsn_finish_progress(progress) != 0) {
-      dmnsn_delete_default_scene(scene);
-      fprintf(stderr, "--- Raytracing failed! ---\n");
-      return EXIT_FAILURE;
-    }
+  /* Write the image to PNG */
 
-    /* Write the image to PNG */
+  printf("Writing scene to PNG\n");
+  ofile = fopen("png1.png", "wb");
+  if (!ofile) {
+    dmnsn_delete_default_scene(scene);
+    fprintf(stderr, "--- Couldn't open 'png1.png' for writing! ---\n");
+    return EXIT_FAILURE;
+  }
 
-    ofile = fopen("png1.png", "wb");
-    if (!ofile) {
-      dmnsn_delete_default_scene(scene);
-      fprintf(stderr, "--- Couldn't open 'png1.png' for writing! ---\n");
-      return EXIT_FAILURE;
-    }
-
-    progress = dmnsn_png_write_canvas_async(scene->canvas, ofile);
-    if (!progress) {
-      fclose(ofile);
-      dmnsn_delete_default_scene(scene);
-      fprintf(stderr, "--- Couldn't start PNG writing worker thread! ---\n");
-      return EXIT_FAILURE;
-    }
-
-    dmnsn_progressbar("Writing PNG file: ", progress);
-
-    if (dmnsn_finish_progress(progress) != 0) {
-      fclose(ofile);
-      dmnsn_delete_default_scene(scene);
-      fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
-      return EXIT_FAILURE;
-    }
-
+  if (dmnsn_png_write_canvas(scene->canvas, ofile) != 0) {
     fclose(ofile);
     dmnsn_delete_default_scene(scene);
+    fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
+    return EXIT_FAILURE;
   }
 
-  /* Now test PNG import/export */
-  {
-    /* Read the image back from PNG */
+  fclose(ofile);
+  dmnsn_delete_default_scene(scene);
 
-    ifile = fopen("png1.png", "rb");
-    if (!ifile) {
-      fprintf(stderr, "--- Couldn't open 'png1.png' for reading! ---\n");
-      return EXIT_FAILURE;
-    }
+  /*
+   * Now test PNG import/export
+   */
 
-    progress = dmnsn_png_read_canvas_async(&canvas, ifile);
-    if (!progress) {
-      fclose(ifile);
-      fprintf(stderr, "--- Couldn't start PNG reading worker thread! ---\n");
-      return EXIT_FAILURE;
-    }
+  /* Read the image back from PNG */
 
-    dmnsn_progressbar("Reading PNG file: ", progress);
+  printf("Reading scene from PNG\n");
+  ifile = fopen("png1.png", "rb");
+  if (!ifile) {
+    fprintf(stderr, "--- Couldn't open 'png1.png' for reading! ---\n");
+    return EXIT_FAILURE;
+  }
 
-    if (dmnsn_finish_progress(progress) != 0) {
-      fclose(ifile);
-      fprintf(stderr, "--- Reading canvas from PNG failed! ---\n");
-      return EXIT_FAILURE;
-    }
-
+  canvas = dmnsn_png_read_canvas(ifile);
+  if (!canvas) {
     fclose(ifile);
+    fprintf(stderr, "--- Reading canvas from PNG failed! ---\n");
+    return EXIT_FAILURE;
+  }
 
-    /* And write it back */
+  fclose(ifile);
 
-    ofile = fopen("png2.png", "wb");
-    if (!ofile) {
-      fprintf(stderr, "--- Couldn't open 'png2.png' for writing! ---\n");
-      dmnsn_delete_canvas(canvas);
-      return EXIT_FAILURE;
-    }
+  /* And write it back */
 
-    progress = dmnsn_png_write_canvas_async(canvas, ofile);
-    if (!progress) {
-      fclose(ofile);
-      dmnsn_delete_canvas(canvas);
-      fprintf(stderr, "--- Couldn't start PNG writing worker thread! ---\n");
-      return EXIT_FAILURE;
-    }
+  printf("Writing scene to PNG\n");
+  ofile = fopen("png2.png", "wb");
+  if (!ofile) {
+    fprintf(stderr, "--- Couldn't open 'png2.png' for writing! ---\n");
+    dmnsn_delete_canvas(canvas);
+    return EXIT_FAILURE;
+  }
 
-    dmnsn_progressbar("Writing PNG file: ", progress);
-
-    if (dmnsn_finish_progress(progress) != 0) {
-      fclose(ofile);
-      dmnsn_delete_canvas(canvas);
-      fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
-      return EXIT_FAILURE;
-    }
-
+  if (dmnsn_png_write_canvas(canvas, ofile) != 0) {
     fclose(ofile);
     dmnsn_delete_canvas(canvas);
+    fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
+    return EXIT_FAILURE;
   }
+
+  fclose(ofile);
+  dmnsn_delete_canvas(canvas);
 
   return EXIT_SUCCESS;
 }
