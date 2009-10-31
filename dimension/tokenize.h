@@ -535,4 +535,4 @@ void dmnsn_delete_tokens(dmnsn_array *tokens);
 void dmnsn_print_token_sexpr(FILE *file, const dmnsn_array *tokens);
 
 /* Returns a readable name for a token type (ex. DMNSN_T_FLOAT -> float) */
-const char *dmnsn_token_name(dmnsn_token_type token_type);
+const char *dmnsn_token_string(dmnsn_token_type token_type);

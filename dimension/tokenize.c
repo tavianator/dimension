@@ -1043,19 +1043,19 @@ dmnsn_delete_tokens(dmnsn_array *tokens)
 }
 
 static void
-dmnsn_print_token(FILE *file, const dmnsn_token *token)
+dmnsn_print_token(FILE *file, dmnsn_token token)
 {
   const char *tname;
-  if (token->type == DMNSN_T_LPAREN) {
+  if (token.type == DMNSN_T_LPAREN) {
     tname = "\\(";
-  } else if (token->type == DMNSN_T_RPAREN) {
+  } else if (token.type == DMNSN_T_RPAREN) {
     tname = "\\)";
   } else {
-    tname = dmnsn_token_name(token->type);
+    tname = dmnsn_token_string(token.type);
   }
 
-  if (token->value) {
-    fprintf(file, "(%s \"%s\")", tname, token->value);
+  if (token.value) {
+    fprintf(file, "(%s \"%s\")", tname, token.value);
   } else {
     fprintf(file, "%s", tname);
   }
@@ -1072,12 +1072,12 @@ dmnsn_print_token_sexpr(FILE *file, const dmnsn_array *tokens)
   } else {
     fprintf(file, "(");
     dmnsn_array_get(tokens, 0, &token);
-    dmnsn_print_token(file, &token);
+    dmnsn_print_token(file, token);
 
     for (i = 1; i < dmnsn_array_size(tokens); ++i) {
       fprintf(file, " ");
       dmnsn_array_get(tokens, i, &token);
-      dmnsn_print_token(file, &token);
+      dmnsn_print_token(file, token);
     }
 
     fprintf(file, ")");
@@ -1087,7 +1087,7 @@ dmnsn_print_token_sexpr(FILE *file, const dmnsn_array *tokens)
 }
 
 const char *
-dmnsn_token_name(dmnsn_token_type token_type)
+dmnsn_token_string(dmnsn_token_type token_type)
 {
   switch (token_type) {
   /* Macro to shorten this huge switch */

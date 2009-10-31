@@ -19,4 +19,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
+box=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/box.pov)
+box_exp='(box { < - (float "0.125") , - (integer "1") , - (integer "1") > , < (float "0.125") , (integer "1") , (integer "1") > } box { < - (integer "1") , - (integer "1") , - (float "0.125") > , < (integer "1") , (integer "1") , (float "0.125") > })
+((box (vector (float -0.125) (float -1) (float -1)) (vector (float 0.125) (float 1) (float 1))) (box (vector (float -1) (float -1) (float -0.125)) (vector (float 1) (float 1) (float 0.125))))'
+
+if [ "$box" != "$box_exp" ]; then
+  echo "box.pov parsed as \"$box\"" >&2
+  echo "      -- expected \"$box_exp\"" >&2
+  exit 1
+fi
+
 ${top_builddir}/dimension/dimension -o box.png ${srcdir}/box.pov

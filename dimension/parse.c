@@ -35,13 +35,13 @@ dmnsn_parse_expect(dmnsn_token_type type, const dmnsn_array *tokens,
     if (token.type != type) {
       dmnsn_diagnostic(token.filename, token.line, token.col,
                        "Expected '%s', found '%s'",
-                       dmnsn_token_name(type),
-                       dmnsn_token_name(token.type));
+                       dmnsn_token_string(type),
+                       dmnsn_token_string(token.type));
       return 1;
     }
   } else {
     fprintf(stderr, "Expected '%s', found end of file\n",
-            dmnsn_token_name(type));
+            dmnsn_token_string(type));
     return 1;
   }
 
@@ -57,8 +57,8 @@ dmnsn_parse_float(const dmnsn_array *tokens, unsigned int *ip,
 
   if (i >= dmnsn_array_size(tokens)) {
     fprintf(stderr, "Expected '%s' or '%s', found end of file\n",
-            dmnsn_token_name(DMNSN_T_INTEGER),
-            dmnsn_token_name(DMNSN_T_FLOAT));
+            dmnsn_token_string(DMNSN_T_INTEGER),
+            dmnsn_token_string(DMNSN_T_FLOAT));
     return 1;
   }
 
@@ -72,8 +72,8 @@ dmnsn_parse_float(const dmnsn_array *tokens, unsigned int *ip,
     ++i;
     if (i >= dmnsn_array_size(tokens)) {
       fprintf(stderr, "Expected '%s' or '%s', found end of file\n",
-              dmnsn_token_name(DMNSN_T_INTEGER),
-              dmnsn_token_name(DMNSN_T_FLOAT));
+              dmnsn_token_string(DMNSN_T_INTEGER),
+              dmnsn_token_string(DMNSN_T_FLOAT));
       return 1;
     }
     dmnsn_array_get(tokens, i, &token);
@@ -88,9 +88,9 @@ dmnsn_parse_float(const dmnsn_array *tokens, unsigned int *ip,
     ++i;
   } else {
     fprintf(stderr, "Expected '%s' or '%s', found '%s'\n",
-            dmnsn_token_name(DMNSN_T_INTEGER),
-            dmnsn_token_name(DMNSN_T_FLOAT),
-            dmnsn_token_name(token.type));
+            dmnsn_token_string(DMNSN_T_INTEGER),
+            dmnsn_token_string(DMNSN_T_FLOAT),
+            dmnsn_token_string(token.type));
     return 1;
   }
 
@@ -214,8 +214,8 @@ dmnsn_parse(const dmnsn_array *tokens)
       if (dmnsn_parse_box(tokens, &i, astree) != 0) {
         dmnsn_diagnostic(token.filename, token.line, token.col,
                          "Invalid box",
-                         dmnsn_token_name(DMNSN_T_BOX),
-                         dmnsn_token_name(token.type));
+                         dmnsn_token_string(DMNSN_T_BOX),
+                         dmnsn_token_string(token.type));
         goto bailout;
       }
       break;
@@ -223,7 +223,7 @@ dmnsn_parse(const dmnsn_array *tokens)
     default:
       dmnsn_diagnostic(token.filename, token.line, token.col,
                        "Unexpected token '%s'",
-                       dmnsn_token_name(token.type));
+                       dmnsn_token_string(token.type));
       goto bailout;
     }
   }
@@ -263,7 +263,83 @@ dmnsn_delete_astree(dmnsn_array *astree)
   }
 }
 
-void
-dmnsn_print_astree_sexpr(FILE *file, const dmnsn_array *tokens)
+static void
+dmnsn_print_astnode(FILE *file, dmnsn_astnode astnode)
 {
+  double dvalue;
+
+  switch (astnode.type) {
+  case DMNSN_AST_FLOAT:
+    dvalue = *(double *)astnode.ptr;
+    fprintf(file, "(%s %g)", dmnsn_astnode_string(astnode.type), dvalue);
+    break;
+
+  default:
+    fprintf(file, "%s", dmnsn_astnode_string(astnode.type));
+  }
+}
+
+static void
+dmnsn_print_astree(FILE *file, dmnsn_astnode astnode)
+{
+  unsigned int i;
+  dmnsn_astnode child;
+
+  if (astnode.children) {
+    fprintf(file, "(");
+    dmnsn_print_astnode(file, astnode);
+    for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+      dmnsn_array_get(astnode.children, i, &child);
+      fprintf(file, " ");
+      dmnsn_print_astree(file, child);
+    }
+    fprintf(file, ")");
+  } else {
+    dmnsn_print_astnode(file, astnode);
+  }
+}
+
+void
+dmnsn_print_astree_sexpr(FILE *file, const dmnsn_array *astree)
+{
+  dmnsn_astnode astnode;
+  unsigned int i;
+
+  if (dmnsn_array_size(astree) == 0) {
+    fprintf(file, "()");
+  } else {
+    fprintf(file, "(");
+    dmnsn_array_get(astree, 0, &astnode);
+    dmnsn_print_astree(file, astnode);
+
+    for (i = 1; i < dmnsn_array_size(astree); ++i) {
+      fprintf(file, " ");
+      dmnsn_array_get(astree, i, &astnode);
+      dmnsn_print_astree(file, astnode);
+    }
+
+    fprintf(file, ")");
+  }
+
+  fprintf(file, "\n");
+}
+
+const char *
+dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
+{
+  switch (astnode_type) {
+  /* Macro to shorten this switch */
+#define dmnsn_astnode_map(type, str)                                           \
+  case type:                                                                   \
+    return str;
+
+  dmnsn_astnode_map(DMNSN_AST_BOX, "box");
+  dmnsn_astnode_map(DMNSN_AST_VECTOR, "vector");
+  dmnsn_astnode_map(DMNSN_AST_FLOAT, "float");
+
+  default:
+    fprintf(stderr, "Warning: unrecognised astnode type %d.\n",
+            (int)astnode_type);
+    return "unrecognized-astnode";
+  }
 }

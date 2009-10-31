@@ -44,4 +44,7 @@ dmnsn_array *dmnsn_parse(const dmnsn_array *tokens);
 void dmnsn_delete_astree(dmnsn_array *astree);
 
 /* Print an S-expression of the abstract syntax tree to `file' */
-void dmnsn_print_astree_sexpr(FILE *file, const dmnsn_array *tokens);
+void dmnsn_print_astree_sexpr(FILE *file, const dmnsn_array *astree);
+
+/* Returns a readable name for a token type (ex. DMNSN_T_FLOAT -> float) */
+const char *dmnsn_astnode_string(dmnsn_astnode_type astnode_type);
