@@ -19,7 +19,7 @@
 
 INCLUDES = -I$(top_srcdir)/libdimension
 
-TESTS = punctuation.sh numeric.sh strings.sh labels.sh directives.sh box.sh
+TESTS = punctuation.sh numeric.sh strings.sh labels.sh directives.sh demo.sh
 TESTS_ENVIRONMENT = top_builddir=$(top_builddir)
 
 %.sh:
@@ -31,7 +31,7 @@ EXTRA_DIST = $(TESTS)                                                          \
              strings.pov                                                       \
              labels.pov                                                        \
              directives.pov                                                    \
-             box.pov
+             demo.pov
 
 clean-local:
 	rm *.png

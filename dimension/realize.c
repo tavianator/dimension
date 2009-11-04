@@ -22,6 +22,21 @@
 #include "utility.h"
 #include <math.h>
 
+static double
+dmnsn_realize_float(dmnsn_astnode astnode)
+{
+  if (astnode.type == DMNSN_AST_FLOAT) {
+    double *x = astnode.ptr;
+    return *x;
+  } else if (astnode.type == DMNSN_AST_INTEGER) {
+    long *x = astnode.ptr;
+    return *x;
+  } else {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a float or an integer.");
+    return 0; /* Silence compiler warning */
+  }
+}
+
 static dmnsn_vector
 dmnsn_realize_vector(dmnsn_astnode astnode)
 {
@@ -34,15 +49,11 @@ dmnsn_realize_vector(dmnsn_astnode astnode)
   dmnsn_array_get(astnode.children, 1, &ynode);
   dmnsn_array_get(astnode.children, 2, &znode);
 
-  if (xnode.type != DMNSN_AST_FLOAT
-      || ynode.type != DMNSN_AST_FLOAT
-      || znode.type != DMNSN_AST_FLOAT)
-  {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a float.");
-  }
+  double x = dmnsn_realize_float(xnode),
+         y = dmnsn_realize_float(ynode),
+         z = dmnsn_realize_float(znode);
 
-  double *x = xnode.ptr, *y = ynode.ptr, *z = znode.ptr;
-  return dmnsn_vector_construct(*x, *y, *z);
+  return dmnsn_vector_construct(x, y, z);
 }
 
 dmnsn_object *
@@ -60,6 +71,10 @@ dmnsn_realize_box(dmnsn_astnode astnode)
                x2 = dmnsn_realize_vector(corner2);
 
   dmnsn_object *box = dmnsn_new_cube();
+  if (!box) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate box.");
+  }
+
   box->trans = dmnsn_scale_matrix(
     dmnsn_vector_construct(fabs(x2.x - x1.x)/2.0,
                            fabs(x2.y - x1.y)/2.0,
@@ -74,6 +89,44 @@ dmnsn_realize_box(dmnsn_astnode astnode)
   box->trans = dmnsn_matrix_inverse(box->trans);
 
   return box;
+}
+
+dmnsn_object *
+dmnsn_realize_sphere(dmnsn_astnode astnode)
+{
+  if (astnode.type != DMNSN_AST_SPHERE) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a sphere.");
+  }
+
+  dmnsn_astnode center, radius;
+  dmnsn_array_get(astnode.children, 0, &center);
+  dmnsn_array_get(astnode.children, 1, &radius);
+
+  dmnsn_vector x0 = dmnsn_realize_vector(center);
+  double r = dmnsn_realize_float(radius);
+
+  dmnsn_object *sphere = dmnsn_new_sphere();
+  if (!sphere) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate sphere.");
+  }
+
+  sphere->texture = dmnsn_new_texture();
+  if (!sphere->texture) {
+    dmnsn_delete_object(sphere);
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate sphere texture.");
+  }
+
+  sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
+  if (!sphere->texture->pigment) {
+    dmnsn_delete_object(sphere);
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate sphere pigment.");
+  }
+
+  sphere->trans = dmnsn_scale_matrix(dmnsn_vector_construct(r, r, r));
+  sphere->trans = dmnsn_matrix_mul(dmnsn_translation_matrix(x0), sphere->trans);
+  sphere->trans = dmnsn_matrix_inverse(sphere->trans);
+
+  return sphere;
 }
 
 dmnsn_scene *
@@ -107,7 +160,11 @@ dmnsn_realize(const dmnsn_array *astree)
     trans
   );
   trans = dmnsn_matrix_mul(
-    dmnsn_rotation_matrix(dmnsn_vector_construct(0.8, 0.7, 0.0)),
+    dmnsn_rotation_matrix(dmnsn_vector_construct(0.0, 1.0, 0.0)),
+    trans
+  );
+  trans = dmnsn_matrix_mul(
+    dmnsn_rotation_matrix(dmnsn_vector_construct(-0.75, 0.0, 0.0)),
     trans
   );
 
@@ -136,8 +193,16 @@ dmnsn_realize(const dmnsn_array *astree)
       dmnsn_array_push(scene->objects, &object);
       break;
 
+    case DMNSN_AST_SPHERE:
+      object = dmnsn_realize_sphere(astnode);
+      dmnsn_array_push(scene->objects, &object);
+      break;
+
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "We only handle boxes right now.");
+      fprintf(stderr, "Unrecognised syntax element '%s'.\n",
+              dmnsn_astnode_string(astnode.type));
+      dmnsn_delete_realized_scene(scene);
+      return NULL;
     }
   }
 

@@ -190,6 +190,45 @@ dmnsn_parse_box(const dmnsn_array *tokens, unsigned int *ip,
   return 1;
 }
 
+static int
+dmnsn_parse_sphere(const dmnsn_array *tokens, unsigned int *ip,
+                   dmnsn_array *astree)
+{
+  unsigned int i = *ip;
+
+  if (dmnsn_parse_expect(DMNSN_T_SPHERE, tokens, &i) != 0)
+    return 1;
+  if (dmnsn_parse_expect(DMNSN_T_LBRACE, tokens, &i) != 0)
+    return 1;
+
+  dmnsn_astnode astnode;
+  astnode.type     = DMNSN_AST_SPHERE;
+  astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
+  astnode.ptr      = NULL;
+
+  /* Center */
+  if (dmnsn_parse_vector(tokens, &i, astnode.children) != 0)
+    goto bailout;
+
+  if (dmnsn_parse_expect(DMNSN_T_COMMA, tokens, &i) != 0)
+    goto bailout;
+
+  /* Radius */
+  if (dmnsn_parse_float(tokens, &i, astnode.children) != 0)
+    goto bailout;
+
+  if (dmnsn_parse_expect(DMNSN_T_RBRACE, tokens, &i) != 0)
+    goto bailout;
+
+  dmnsn_array_push(astree, &astnode);
+  *ip = i;
+  return 0;
+
+ bailout:
+  dmnsn_delete_astree(astnode.children);
+  return 1;
+}
+
 dmnsn_array *
 dmnsn_parse(const dmnsn_array *tokens)
 {
@@ -212,10 +251,15 @@ dmnsn_parse(const dmnsn_array *tokens)
     switch (token.type) {
     case DMNSN_T_BOX:
       if (dmnsn_parse_box(tokens, &i, astree) != 0) {
+        dmnsn_diagnostic(token.filename, token.line, token.col, "Invalid box");
+        goto bailout;
+      }
+      break;
+
+    case DMNSN_T_SPHERE:
+      if (dmnsn_parse_sphere(tokens, &i, astree) != 0) {
         dmnsn_diagnostic(token.filename, token.line, token.col,
-                         "Invalid box",
-                         dmnsn_token_string(DMNSN_T_BOX),
-                         dmnsn_token_string(token.type));
+                         "Invalid sphere");
         goto bailout;
       }
       break;
@@ -336,6 +380,7 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_BOX, "box");
   dmnsn_astnode_map(DMNSN_AST_VECTOR, "vector");
   dmnsn_astnode_map(DMNSN_AST_FLOAT, "float");
+  dmnsn_astnode_map(DMNSN_AST_SPHERE, "sphere");
 
   default:
     fprintf(stderr, "Warning: unrecognised astnode type %d.\n",

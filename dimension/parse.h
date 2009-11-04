@@ -21,8 +21,10 @@
 
 typedef enum {
   DMNSN_AST_FLOAT,
+  DMNSN_AST_INTEGER,
   DMNSN_AST_VECTOR,
   DMNSN_AST_BOX,
+  DMNSN_AST_SPHERE,
 } dmnsn_astnode_type;
 
 typedef struct dmnsn_astnode dmnsn_astnode;
