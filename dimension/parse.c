@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <locale.h>
 
+/* Expect a particular token next, and complain if we see something else */
 static int
 dmnsn_parse_expect(dmnsn_token_type type, const dmnsn_array *tokens,
                    unsigned int *ip)
@@ -49,6 +50,7 @@ dmnsn_parse_expect(dmnsn_token_type type, const dmnsn_array *tokens,
   return 0;
 }
 
+/* Parse a number - a float or an integer */
 static int
 dmnsn_parse_number(const dmnsn_array *tokens, unsigned int *ip,
                    dmnsn_array *astree)
@@ -69,6 +71,7 @@ dmnsn_parse_number(const dmnsn_array *tokens, unsigned int *ip,
   astnode.children = NULL;
 
   if (token.type == DMNSN_T_INTEGER) {
+    /* An exact integer */
     astnode.type = DMNSN_AST_INTEGER;
 
     long *value = malloc(sizeof(double));
@@ -79,6 +82,7 @@ dmnsn_parse_number(const dmnsn_array *tokens, unsigned int *ip,
     astnode.ptr = value;
     ++i;
   } else if (token.type == DMNSN_T_FLOAT) {
+    /* A floating-point value */
     astnode.type = DMNSN_AST_FLOAT;
 
     double *value = malloc(sizeof(double));
@@ -106,6 +110,7 @@ dmnsn_parse_number(const dmnsn_array *tokens, unsigned int *ip,
   return 1;
 }
 
+/* Map an operator token to an operator node type */
 static dmnsn_astnode_type
 dmnsn_op_map(dmnsn_token_type type)
 {
@@ -128,6 +133,7 @@ dmnsn_op_map(dmnsn_token_type type)
   }
 }
 
+/* Return the precedence of a given operator */
 static int
 dmnsn_op_precedence(dmnsn_astnode_type type)
 {
@@ -147,13 +153,38 @@ dmnsn_op_precedence(dmnsn_astnode_type type)
   }
 }
 
-static int dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
-                                dmnsn_array *astree);
-
+/* Parse an arithmetic expression */
 static int
 dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
                      dmnsn_array *astree)
 {
+  /*
+   * We use a stack of numbers (numstack), and a stack of operators (opstack).
+   * Each time we see a number (or a parenthetical sub-expression, which is
+   * evaluated recursively), it goes on the numstack.  When we see an operator,
+   * it goes on the opstack, but if it has the same or lower precedence than
+   * the operator below it on the stack, the two top elements of numstack are
+   * folded with the correct operator until either opstack is empty or the
+   * current operator has a higher precedence.  Example:
+   *
+   *   1 - 2 * 3 - 4 * 5 --> ... - 4 * 5 -->  ... - 4 * 5   --> ... - 4 * 5
+   *                         _____       -->  ___________   --> _______________
+   *                         3 | *            (* 2 3) | -       (- 1 (* 2 3)) |
+   *                         2 | -            1       |
+   *                         1 |
+   *
+   *   --> ...
+   *   --> _________________
+   *       5             | *
+   *       4             | -
+   *       (- 1 (* 2 3)) |
+   *
+   * Then the stack is collapsed from the top down until we have a single value:
+   *
+   *   --> _________________ --> (- (- 1 (* 2 3)) (* 4 5))
+   *       (* 4 5)       | -
+   *       (- 1 (* 2 3)) |
+   */
   dmnsn_token token;
   unsigned int i = *ip;
 
@@ -169,13 +200,16 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
     dmnsn_array_get(tokens, i, &token);
 
     if (token.type == DMNSN_T_INTEGER || token.type == DMNSN_T_FLOAT) {
+      /* Item is a number */
       dmnsn_parse_number(tokens, &i, numstack);
     } else if (token.type == DMNSN_T_LPAREN) {
-      ++i;
+      ++i; /* Skip past '(' */
 
+      /* Parse the contents of the parentheses */
       if (dmnsn_parse_arithexp(tokens, &i, numstack) != 0)
         goto bailout;
 
+      /* Match a closing ')' */
       if (dmnsn_parse_expect(DMNSN_T_RPAREN, tokens, &i) != 0)
         goto bailout;
     } else if (token.type == DMNSN_T_PLUS
@@ -184,7 +218,9 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
                || token.type == DMNSN_T_SLASH)
 
     {
+      /* Item is an operator */
       if (dmnsn_array_size(opstack) == dmnsn_array_size(numstack)) {
+        /* The last item was an operator too */
         if (token.type == DMNSN_T_MINUS) {
           /* Unary '-' -- negation */
           dmnsn_astnode astnode;
@@ -210,6 +246,7 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
           return 1;
         }
       } else if (dmnsn_array_size(opstack) == 0) {
+        /* opstack is empty; push the operator */
         dmnsn_astnode_type type = dmnsn_op_map(token.type);
         dmnsn_array_push(opstack, &type);
         ++i;
@@ -218,6 +255,7 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
         dmnsn_array_get(opstack, dmnsn_array_size(opstack) - 1, &last_type);
 
         while (dmnsn_op_precedence(type) <= dmnsn_op_precedence(last_type)) {
+          /* Repeatedly collapse numstack */
           dmnsn_astnode astnode, lhs, rhs;
           astnode.type     = last_type;
           astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
@@ -243,10 +281,12 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
         ++i;
       }
     } else {
+      /* Unrecognized token; arithmetic expression must be over */
       break;
     }
   }
 
+  /* Prevent us from matching nothing */
   if (dmnsn_array_size(numstack) == 0) {
     dmnsn_diagnostic(token.filename, token.line, token.col,
                      "Expected arithmetic expression, found '%s'",
@@ -255,6 +295,7 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
   }
 
   while (dmnsn_array_size(numstack) > 1) {
+    /* Collapse numstack */
     dmnsn_astnode_type type;
     dmnsn_array_pop(opstack, &type);
 
@@ -284,6 +325,7 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
   return 1;
 }
 
+/* Parse a vector */
 static int
 dmnsn_parse_vector(const dmnsn_array *tokens, unsigned int *ip,
                    dmnsn_array *astree)
@@ -291,6 +333,7 @@ dmnsn_parse_vector(const dmnsn_array *tokens, unsigned int *ip,
   dmnsn_token token;
   unsigned int i = *ip;
 
+  /* Vectors start with '<' */
   if (dmnsn_parse_expect(DMNSN_T_LESS, tokens, &i) != 0)
     return 1;
 
@@ -300,6 +343,7 @@ dmnsn_parse_vector(const dmnsn_array *tokens, unsigned int *ip,
   astnode.ptr      = NULL;
 
   do {
+    /* Parse comma-separated aritexp's, closed by '>' */
     if (dmnsn_parse_arithexp(tokens, &i, astnode.children) != 0)
       goto bailout;
 
@@ -325,12 +369,14 @@ dmnsn_parse_vector(const dmnsn_array *tokens, unsigned int *ip,
   return 1;
 }
 
+/* Parse a box definition */
 static int
 dmnsn_parse_box(const dmnsn_array *tokens, unsigned int *ip,
                 dmnsn_array *astree)
 {
   unsigned int i = *ip;
 
+  /* Opens with "box {" */
   if (dmnsn_parse_expect(DMNSN_T_BOX, tokens, &i) != 0)
     return 1;
   if (dmnsn_parse_expect(DMNSN_T_LBRACE, tokens, &i) != 0)
@@ -364,12 +410,14 @@ dmnsn_parse_box(const dmnsn_array *tokens, unsigned int *ip,
   return 1;
 }
 
+/* Parse a sphere definition */
 static int
 dmnsn_parse_sphere(const dmnsn_array *tokens, unsigned int *ip,
                    dmnsn_array *astree)
 {
   unsigned int i = *ip;
 
+  /* Opens with "sphere {" */
   if (dmnsn_parse_expect(DMNSN_T_SPHERE, tokens, &i) != 0)
     return 1;
   if (dmnsn_parse_expect(DMNSN_T_LBRACE, tokens, &i) != 0)
@@ -414,7 +462,7 @@ dmnsn_parse(const dmnsn_array *tokens)
   char *lc_ctype   = strdup(setlocale(LC_CTYPE, NULL));
   char *lc_numeric = strdup(setlocale(LC_NUMERIC, NULL));
 
-  /* Set the locale to `C' to make strtoul(), etc. consistent */
+  /* Set the locale to `C' to make strtol(), etc. consistent */
   setlocale(LC_CTYPE, "C");
   setlocale(LC_NUMERIC, "C");
 
