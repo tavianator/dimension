@@ -18,10 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <sys/syscall.h> /* For gettid() where supported */
+#include <execinfo.h>    /* For backtrace() etc. */
+
 #include "dimension.h"
 #include <pthread.h>
-#include <stdio.h>  /* For fprintf() */
-#include <stdlib.h> /* For exit()    */
+#include <stdio.h>       /* For fprintf() */
+#include <stdlib.h>      /* For exit() */
 
 static void dmnsn_default_fatal_error_fn();
 static dmnsn_fatal_error_fn *dmnsn_fatal = &dmnsn_default_fatal_error_fn;
@@ -131,5 +136,25 @@ void dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal)
 static void
 dmnsn_default_fatal_error_fn()
 {
+  const unsigned int size = 64;
+  void *buffer[size];
+
+  int nptrs = backtrace(buffer, size);
+  /* buffer + 1 to hide this static function */
+  backtrace_symbols_fd(buffer + 1, nptrs - 1, STDERR_FILENO);
+
+#ifdef SYS_gettid
+  pid_t pid = getpid(),
+        tid = syscall(SYS_gettid);
+
+  if (pid == tid) {
+    exit(EXIT_FAILURE);
+  } else {
+    int *ret = malloc(sizeof(int));
+    *ret = 1;
+    pthread_exit(ret);
+  }
+#else
   exit(EXIT_FAILURE);
+#endif
 }
