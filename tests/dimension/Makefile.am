@@ -34,4 +34,4 @@ EXTRA_DIST = $(TESTS)                                                          \
              demo.pov
 
 clean-local:
-	rm *.png
+	rm -f *.png
