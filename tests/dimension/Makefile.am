@@ -22,7 +22,7 @@ INCLUDES = -I$(top_srcdir)/libdimension
 TESTS = punctuation.sh numeric.sh strings.sh labels.sh directives.sh demo.sh
 TESTS_ENVIRONMENT = top_builddir=$(top_builddir)
 
-%.sh:
+.sh:
 	cp $(srcdir)/$@ .
 
 EXTRA_DIST = $(TESTS)                                                          \
