@@ -42,6 +42,10 @@ struct dmnsn_astnode {
 
   /* Generic data pointer */
   void *ptr;
+
+  /* File name, and line and column numbers from source code */
+  char *filename;
+  unsigned int line, col;
 };
 
 /* The workhorse */

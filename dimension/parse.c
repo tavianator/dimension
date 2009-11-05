@@ -24,6 +24,19 @@
 #include <stdio.h>
 #include <locale.h>
 
+/* Create a new astnode, populating filename, line, and col from a token */
+static dmnsn_astnode
+dmnsn_new_astnode(dmnsn_astnode_type type, dmnsn_token token)
+{
+  dmnsn_astnode astnode = {
+    .type = type,
+    .children = dmnsn_new_array(sizeof(dmnsn_astnode)),
+    .ptr = NULL,
+    .filename = token.filename, .line = token.line, .col = token.col
+  };
+  return astnode;
+}
+
 /* Expect a particular token next, and complain if we see something else */
 static int
 dmnsn_parse_expect(dmnsn_token_type type, const dmnsn_array *tokens,
@@ -68,11 +81,10 @@ dmnsn_parse_number(const dmnsn_array *tokens, unsigned int *ip,
   dmnsn_array_get(tokens, i, &token);
 
   dmnsn_astnode astnode;
-  astnode.children = NULL;
 
   if (token.type == DMNSN_T_INTEGER) {
     /* An exact integer */
-    astnode.type = DMNSN_AST_INTEGER;
+    astnode = dmnsn_new_astnode(DMNSN_AST_INTEGER, token);
 
     long *value = malloc(sizeof(double));
     if (!value)
@@ -83,7 +95,7 @@ dmnsn_parse_number(const dmnsn_array *tokens, unsigned int *ip,
     ++i;
   } else if (token.type == DMNSN_T_FLOAT) {
     /* A floating-point value */
-    astnode.type = DMNSN_AST_FLOAT;
+    astnode = dmnsn_new_astnode(DMNSN_AST_FLOAT, token);
 
     double *value = malloc(sizeof(double));
     if (!value)
@@ -223,10 +235,7 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
         /* The last item was an operator too */
         if (token.type == DMNSN_T_MINUS) {
           /* Unary '-' -- negation */
-          dmnsn_astnode astnode;
-          astnode.type     = DMNSN_AST_NEGATE;
-          astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
-          astnode.ptr      = NULL;
+          dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_NEGATE, token);
 
           ++i;
           dmnsn_array_get(tokens, i, &token);
@@ -256,10 +265,7 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
 
         while (dmnsn_op_precedence(type) <= dmnsn_op_precedence(last_type)) {
           /* Repeatedly collapse numstack */
-          dmnsn_astnode astnode, lhs, rhs;
-          astnode.type     = last_type;
-          astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
-          astnode.ptr      = NULL;
+          dmnsn_astnode lhs, rhs, astnode = dmnsn_new_astnode(last_type, token);
 
           dmnsn_array_pop(numstack, &rhs);
           dmnsn_array_pop(numstack, &lhs);
@@ -333,14 +339,13 @@ dmnsn_parse_vector(const dmnsn_array *tokens, unsigned int *ip,
   dmnsn_token token;
   unsigned int i = *ip;
 
+  dmnsn_array_get(tokens, i, &token);
+
   /* Vectors start with '<' */
   if (dmnsn_parse_expect(DMNSN_T_LESS, tokens, &i) != 0)
     return 1;
 
-  dmnsn_astnode astnode;
-  astnode.type     = DMNSN_AST_VECTOR;
-  astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
-  astnode.ptr      = NULL;
+  dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_VECTOR, token);
 
   do {
     /* Parse comma-separated aritexp's, closed by '>' */
@@ -374,7 +379,10 @@ static int
 dmnsn_parse_box(const dmnsn_array *tokens, unsigned int *ip,
                 dmnsn_array *astree)
 {
+  dmnsn_token token;
   unsigned int i = *ip;
+
+  dmnsn_array_get(tokens, i, &token);
 
   /* Opens with "box {" */
   if (dmnsn_parse_expect(DMNSN_T_BOX, tokens, &i) != 0)
@@ -382,10 +390,7 @@ dmnsn_parse_box(const dmnsn_array *tokens, unsigned int *ip,
   if (dmnsn_parse_expect(DMNSN_T_LBRACE, tokens, &i) != 0)
     return 1;
 
-  dmnsn_astnode astnode;
-  astnode.type     = DMNSN_AST_BOX;
-  astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
-  astnode.ptr      = NULL;
+  dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_BOX, token);
 
   /* First corner */
   if (dmnsn_parse_vector(tokens, &i, astnode.children) != 0)
@@ -415,7 +420,10 @@ static int
 dmnsn_parse_sphere(const dmnsn_array *tokens, unsigned int *ip,
                    dmnsn_array *astree)
 {
+  dmnsn_token token;
   unsigned int i = *ip;
+
+  dmnsn_array_get(tokens, i, &token);
 
   /* Opens with "sphere {" */
   if (dmnsn_parse_expect(DMNSN_T_SPHERE, tokens, &i) != 0)
@@ -423,10 +431,7 @@ dmnsn_parse_sphere(const dmnsn_array *tokens, unsigned int *ip,
   if (dmnsn_parse_expect(DMNSN_T_LBRACE, tokens, &i) != 0)
     return 1;
 
-  dmnsn_astnode astnode;
-  astnode.type     = DMNSN_AST_SPHERE;
-  astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
-  astnode.ptr      = NULL;
+  dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_SPHERE, token);
 
   /* Center */
   if (dmnsn_parse_vector(tokens, &i, astnode.children) != 0)
@@ -552,7 +557,7 @@ dmnsn_print_astree(FILE *file, dmnsn_astnode astnode)
   unsigned int i;
   dmnsn_astnode child;
 
-  if (astnode.children) {
+  if (astnode.children && dmnsn_array_size(astnode.children) > 0) {
     fprintf(file, "(");
     dmnsn_print_astnode(file, astnode);
     for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
