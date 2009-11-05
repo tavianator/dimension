@@ -25,14 +25,41 @@
 static double
 dmnsn_realize_float(dmnsn_astnode astnode)
 {
-  if (astnode.type == DMNSN_AST_FLOAT) {
-    double *x = astnode.ptr;
-    return *x;
-  } else if (astnode.type == DMNSN_AST_INTEGER) {
-    long *x = astnode.ptr;
-    return *x;
-  } else {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a float or an integer.");
+  dmnsn_astnode lhs, rhs;
+
+  switch (astnode.type) {
+  case DMNSN_AST_FLOAT:
+    return *(double *)astnode.ptr;
+
+  case DMNSN_AST_INTEGER:
+    return *(long *)astnode.ptr;
+
+  case DMNSN_AST_NEGATE:
+    dmnsn_array_get(astnode.children, 0, &rhs);
+    return -dmnsn_realize_float(rhs);
+
+  case DMNSN_AST_ADD:
+    dmnsn_array_get(astnode.children, 0, &lhs);
+    dmnsn_array_get(astnode.children, 1, &rhs);
+    return dmnsn_realize_float(lhs) + dmnsn_realize_float(rhs);
+
+  case DMNSN_AST_SUB:
+    dmnsn_array_get(astnode.children, 0, &lhs);
+    dmnsn_array_get(astnode.children, 1, &rhs);
+    return dmnsn_realize_float(lhs) - dmnsn_realize_float(rhs);
+
+  case DMNSN_AST_MUL:
+    dmnsn_array_get(astnode.children, 0, &lhs);
+    dmnsn_array_get(astnode.children, 1, &rhs);
+    return dmnsn_realize_float(lhs) * dmnsn_realize_float(rhs);
+
+  case DMNSN_AST_DIV:
+    dmnsn_array_get(astnode.children, 0, &lhs);
+    dmnsn_array_get(astnode.children, 1, &rhs);
+    return dmnsn_realize_float(lhs) / dmnsn_realize_float(rhs);
+
+  default:
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid arithmetic expression.");
     return 0; /* Silence compiler warning */
   }
 }
