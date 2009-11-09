@@ -50,11 +50,38 @@ dmnsn_pigment *dmnsn_new_pigment();
 void dmnsn_delete_pigment(dmnsn_pigment *pigment);
 
 /*
+ * Finishes
+ */
+
+/* Forward-declare dmnsn_finish */
+typedef struct dmnsn_finish dmnsn_finish;
+
+/* Finish callback */
+typedef dmnsn_color dmnsn_finish_fn(const dmnsn_finish *finish,
+                                    dmnsn_color color, dmnsn_vector x0,
+                                    dmnsn_vector normal,
+                                    dmnsn_vector reflected);
+
+/* dmnsn_finish definition */
+struct dmnsn_finish {
+  /* Callbacks */
+  dmnsn_finish_fn *finish_fn;
+  dmnsn_free_fn *free_fn;
+
+  /* Generic pointer */
+  void *ptr;
+};
+
+dmnsn_finish *dmnsn_new_finish();
+void dmnsn_delete_finish(dmnsn_finish *finish);
+
+/*
  * A complete texture
  */
 
 typedef struct {
   dmnsn_pigment *pigment;
+  dmnsn_finish  *finish;
 } dmnsn_texture;
 
 dmnsn_texture *dmnsn_new_texture();

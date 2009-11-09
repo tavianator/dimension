@@ -21,47 +21,21 @@
 #include "dimension.h"
 #include <stdlib.h> /* For malloc */
 
-/* Allocate an empty scene */
-dmnsn_scene *
-dmnsn_new_scene()
+static dmnsn_color
+dmnsn_specular_finish_fn(const dmnsn_finish *finish,
+                         dmnsn_color color, dmnsn_vector x0,
+                         dmnsn_vector normal, dmnsn_vector reflected)
 {
-  dmnsn_scene *scene = malloc(sizeof(dmnsn_scene));
-  if (scene) {
-    scene->default_texture = dmnsn_new_texture();
-
-    scene->camera  = NULL;
-    scene->canvas  = NULL;
-    scene->objects = dmnsn_new_array(sizeof(dmnsn_object *));
-    scene->lights  = dmnsn_new_array(sizeof(dmnsn_light *));
-    scene->quality = DMNSN_RENDER_FULL;
-  }
-  return scene;
+  return dmnsn_color_mul(dmnsn_vector_dot(normal, reflected), color);
 }
 
-/* Free a scene */
-void
-dmnsn_delete_scene(dmnsn_scene *scene)
+/* A specular finish */
+dmnsn_finish *
+dmnsn_new_specular_finish()
 {
-  if (scene) {
-    unsigned int i;
-    dmnsn_light *light;
-    dmnsn_object *object;
-
-    for (i = 0; i < dmnsn_array_size(scene->lights); ++i) {
-      dmnsn_array_get(scene->lights, i, &light);
-      dmnsn_delete_light(light);
-    }
-
-    for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
-      dmnsn_array_get(scene->objects, i, &object);
-      dmnsn_delete_object(object);
-    }
-
-    dmnsn_delete_array(scene->lights);
-    dmnsn_delete_array(scene->objects);
-    dmnsn_delete_canvas(scene->canvas);
-    dmnsn_delete_camera(scene->camera);
-    dmnsn_delete_texture(scene->default_texture);
-    free(scene);
+  dmnsn_finish *finish = dmnsn_new_finish();
+  if (finish) {
+    finish->finish_fn = &dmnsn_specular_finish_fn;
   }
+  return finish;
 }

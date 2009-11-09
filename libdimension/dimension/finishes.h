@@ -18,50 +18,14 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
-#include <stdlib.h> /* For malloc */
+/*
+ * Custom finishes.
+ */
 
-/* Allocate an empty scene */
-dmnsn_scene *
-dmnsn_new_scene()
-{
-  dmnsn_scene *scene = malloc(sizeof(dmnsn_scene));
-  if (scene) {
-    scene->default_texture = dmnsn_new_texture();
+#ifndef DIMENSION_FINISHES_H
+#define DIMENSION_FINISHES_H
 
-    scene->camera  = NULL;
-    scene->canvas  = NULL;
-    scene->objects = dmnsn_new_array(sizeof(dmnsn_object *));
-    scene->lights  = dmnsn_new_array(sizeof(dmnsn_light *));
-    scene->quality = DMNSN_RENDER_FULL;
-  }
-  return scene;
-}
+/* A specular finish */
+dmnsn_finish *dmnsn_new_specular_finish();
 
-/* Free a scene */
-void
-dmnsn_delete_scene(dmnsn_scene *scene)
-{
-  if (scene) {
-    unsigned int i;
-    dmnsn_light *light;
-    dmnsn_object *object;
-
-    for (i = 0; i < dmnsn_array_size(scene->lights); ++i) {
-      dmnsn_array_get(scene->lights, i, &light);
-      dmnsn_delete_light(light);
-    }
-
-    for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
-      dmnsn_array_get(scene->objects, i, &object);
-      dmnsn_delete_object(object);
-    }
-
-    dmnsn_delete_array(scene->lights);
-    dmnsn_delete_array(scene->objects);
-    dmnsn_delete_canvas(scene->canvas);
-    dmnsn_delete_camera(scene->camera);
-    dmnsn_delete_texture(scene->default_texture);
-    free(scene);
-  }
-}
+#endif /* DIMENSION_FINISHES_H */
