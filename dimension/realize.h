@@ -20,4 +20,3 @@
 #include "../libdimension/dimension.h"
 
 dmnsn_scene *dmnsn_realize(const dmnsn_array *astree);
-void dmnsn_delete_realized_scene(dmnsn_scene *scene);

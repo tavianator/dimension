@@ -36,7 +36,6 @@ extern "C" {
  */
 
 dmnsn_scene *dmnsn_new_default_scene();
-void dmnsn_delete_default_scene(dmnsn_scene *scene);
 
 /*
  * Windowing

@@ -40,7 +40,7 @@ main() {
 
   /* Optimize the canvas for GL drawing */
   if (dmnsn_gl_optimize_canvas(scene->canvas) != 0) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Couldn't optimize canvas for GL! ---\n");
     return EXIT_FAILURE;
   }
@@ -48,7 +48,7 @@ main() {
   /* Create a new glX display */
   display = dmnsn_new_display(scene->canvas);
   if (!display) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Couldn't initialize X or glX! ---\n");
     return EXIT_FAILURE;
   }
@@ -59,7 +59,7 @@ main() {
   progress = dmnsn_raytrace_scene_async(scene);
   if (!progress) {
     dmnsn_delete_display(display);
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Couldn't start raytracing worker thread! ---\n");
     return EXIT_FAILURE;
   }
@@ -68,7 +68,7 @@ main() {
   while (dmnsn_get_progress(progress) < 1.0) {
     if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
       dmnsn_delete_display(display);
-      dmnsn_delete_default_scene(scene);
+      dmnsn_delete_scene(scene);
       fprintf(stderr, "--- Drawing to openGL failed! ---\n");
       return EXIT_FAILURE;
     }
@@ -77,7 +77,7 @@ main() {
 
   if (dmnsn_finish_progress(progress) != 0) {
     dmnsn_delete_display(display);
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Raytracing failed! ---\n");
     return EXIT_FAILURE;
   }
@@ -86,7 +86,7 @@ main() {
   printf("Drawing to OpenGL\n");
   if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
     dmnsn_delete_display(display);
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Drawing to openGL failed! ---\n");
     return EXIT_FAILURE;
   }
@@ -100,7 +100,7 @@ main() {
   canvas = dmnsn_gl_read_canvas(0, 0, scene->canvas->x, scene->canvas->y);
   if (!canvas) {
     dmnsn_delete_display(display);
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Reading canvas from GL buffer failed! ---\n");
     return EXIT_FAILURE;
   }
@@ -110,7 +110,7 @@ main() {
   if (dmnsn_gl_write_canvas(canvas) != 0) {
     dmnsn_delete_canvas(canvas);
     dmnsn_delete_display(display);
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Drawing to openGL failed! ---\n");
     return EXIT_FAILURE;
   }
@@ -121,6 +121,6 @@ main() {
 
   dmnsn_delete_canvas(canvas);
   dmnsn_delete_display(display);
-  dmnsn_delete_default_scene(scene);
+  dmnsn_delete_scene(scene);
   return EXIT_SUCCESS;
 }

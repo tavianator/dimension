@@ -150,7 +150,7 @@ main(int argc, char **argv) {
   }
 
   if (dmnsn_raytrace_scene(scene) != 0) {
-    dmnsn_delete_realized_scene(scene);
+    dmnsn_delete_scene(scene);
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Error rendering scene.");
   }
 
@@ -166,6 +166,6 @@ main(int argc, char **argv) {
   }
   fclose(output_file);
 
-  dmnsn_delete_realized_scene(scene);
+  dmnsn_delete_scene(scene);
   return EXIT_SUCCESS;
 }

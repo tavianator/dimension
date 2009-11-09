@@ -45,7 +45,7 @@ dmnsn_new_default_scene()
   /* Allocate a canvas */
   scene->canvas = dmnsn_new_canvas(768, 480);
   if (!scene->canvas) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     return NULL;
   }
 
@@ -67,7 +67,7 @@ dmnsn_new_default_scene()
   /* Create a perspective camera */
   scene->camera = dmnsn_new_perspective_camera();
   if (!scene->camera) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     return NULL;
   }
   dmnsn_set_perspective_camera_trans(scene->camera, trans);
@@ -76,20 +76,20 @@ dmnsn_new_default_scene()
 
   sphere = dmnsn_new_sphere();
   if (!sphere) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     return NULL;
   }
   dmnsn_array_push(scene->objects, &sphere);
 
   sphere->texture = dmnsn_new_texture();
   if (!sphere->texture) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     return NULL;
   }
 
   sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
   if (!sphere->texture->pigment) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     return NULL;
   }
 
@@ -99,20 +99,20 @@ dmnsn_new_default_scene()
 
   cube = dmnsn_new_cube();
   if (!cube) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     return NULL;
   }
   dmnsn_array_push(scene->objects, &cube);
 
   cube->texture = dmnsn_new_texture();
   if (!cube->texture) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     return NULL;
   }
 
   cube->texture->pigment = dmnsn_new_solid_pigment(dmnsn_black);
   if (!cube->texture->pigment) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     return NULL;
   }
 
@@ -121,24 +121,6 @@ dmnsn_new_default_scene()
   );
 
   return scene;
-}
-
-void
-dmnsn_delete_default_scene(dmnsn_scene *scene)
-{
-  dmnsn_object *sphere = NULL, *cube = NULL;
-
-  if (dmnsn_array_size(scene->objects) >= 1)
-    dmnsn_array_get(scene->objects, 0, &sphere);
-
-  if (dmnsn_array_size(scene->objects) >= 2)
-    dmnsn_array_get(scene->objects, 1, &cube);
-
-  dmnsn_delete_object(cube);
-  dmnsn_delete_object(sphere);
-  dmnsn_delete_camera(scene->camera);
-  dmnsn_delete_canvas(scene->canvas);
-  dmnsn_delete_scene(scene);
 }
 
 /* XIfEvent callback */

@@ -43,8 +43,25 @@ void
 dmnsn_delete_scene(dmnsn_scene *scene)
 {
   if (scene) {
+    unsigned int i;
+    dmnsn_light *light;
+    dmnsn_object *object;
+
+    for (i = 0; i < dmnsn_array_size(scene->lights); ++i) {
+      dmnsn_array_get(scene->lights, i, &light);
+      dmnsn_delete_light(light);
+    }
+
+    for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
+      dmnsn_array_get(scene->objects, i, &object);
+      dmnsn_delete_object(object);
+    }
+
     dmnsn_delete_array(scene->lights);
     dmnsn_delete_array(scene->objects);
+    dmnsn_delete_canvas(scene->canvas);
+    dmnsn_delete_camera(scene->camera);
+    dmnsn_delete_texture(scene->default_texture);
     free(scene);
   }
 }

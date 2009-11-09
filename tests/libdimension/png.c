@@ -43,7 +43,7 @@ main() {
 
   /* Optimize the canvas for PNG export */
   if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
     return EXIT_FAILURE;
   }
@@ -52,7 +52,7 @@ main() {
 
   printf("Rendering scene\n");
   if (dmnsn_raytrace_scene(scene) != 0) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Raytracing failed! ---\n");
     return EXIT_FAILURE;
   }
@@ -62,20 +62,20 @@ main() {
   printf("Writing scene to PNG\n");
   ofile = fopen("png1.png", "wb");
   if (!ofile) {
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Couldn't open 'png1.png' for writing! ---\n");
     return EXIT_FAILURE;
   }
 
   if (dmnsn_png_write_canvas(scene->canvas, ofile) != 0) {
     fclose(ofile);
-    dmnsn_delete_default_scene(scene);
+    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
     return EXIT_FAILURE;
   }
 
   fclose(ofile);
-  dmnsn_delete_default_scene(scene);
+  dmnsn_delete_scene(scene);
 
   /*
    * Now test PNG import/export

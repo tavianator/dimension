@@ -172,7 +172,7 @@ dmnsn_realize(const dmnsn_array *astree)
   /* Allocate a canvas */
   scene->canvas = dmnsn_new_canvas(768, 480);
   if (!scene->canvas) {
-    dmnsn_delete_realized_scene(scene);
+    dmnsn_delete_scene(scene);
     return NULL;
   }
 
@@ -198,7 +198,7 @@ dmnsn_realize(const dmnsn_array *astree)
   /* Create a perspective camera */
   scene->camera = dmnsn_new_perspective_camera();
   if (!scene->camera) {
-    dmnsn_delete_realized_scene(scene);
+    dmnsn_delete_scene(scene);
     return NULL;
   }
   dmnsn_set_perspective_camera_trans(scene->camera, trans);
@@ -228,26 +228,10 @@ dmnsn_realize(const dmnsn_array *astree)
     default:
       fprintf(stderr, "Unrecognised syntax element '%s'.\n",
               dmnsn_astnode_string(astnode.type));
-      dmnsn_delete_realized_scene(scene);
+      dmnsn_delete_scene(scene);
       return NULL;
     }
   }
 
   return scene;
-}
-
-void
-dmnsn_delete_realized_scene(dmnsn_scene *scene)
-{
-  dmnsn_object *object;
-  unsigned int i;
-
-  for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
-    dmnsn_array_get(scene->objects, i, &object);
-    dmnsn_delete_object(object);
-  }
-
-  dmnsn_delete_camera(scene->camera);
-  dmnsn_delete_canvas(scene->canvas);
-  dmnsn_delete_scene(scene);
 }
