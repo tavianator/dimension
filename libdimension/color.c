@@ -263,20 +263,58 @@ dmnsn_sRGB_from_color(dmnsn_color color)
 dmnsn_color
 dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
 {
-  dmnsn_CIE_Lab Lab, Lab1, Lab2;
-  dmnsn_color ret;
+  dmnsn_CIE_Lab Lab1 = dmnsn_Lab_from_color(color1, dmnsn_whitepoint);
+  dmnsn_CIE_Lab Lab2 = dmnsn_Lab_from_color(color2, dmnsn_whitepoint);
 
-  Lab1 = dmnsn_Lab_from_color(color1, dmnsn_whitepoint);
-  Lab2 = dmnsn_Lab_from_color(color2, dmnsn_whitepoint);
+  dmnsn_CIE_Lab Lab = { .L = Lab1.L + Lab2.L,
+                        .a = Lab1.a + Lab2.a,
+                        .b = Lab1.b + Lab2.b };
 
-  Lab.L = Lab1.L + Lab2.L;
-  Lab.a = Lab1.a + Lab2.a;
-  Lab.b = Lab1.b + Lab2.b;
-
-  ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
+  dmnsn_color ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
   /* Weighted average of transparencies by intensity */
   ret.filter = (Lab1.L*color1.filter + Lab2.L*color2.filter)/Lab.L;
   ret.trans  = (Lab1.L*color1.trans  + Lab2.L*color2.trans)/Lab.L;
+
+  return ret;
+}
+
+/* Multiply a color by a scalar */
+dmnsn_color
+dmnsn_color_mul(double n, dmnsn_color color)
+{
+  dmnsn_CIE_Lab Lab = dmnsn_Lab_from_color(color, dmnsn_whitepoint);
+  double LabL = Lab.L;
+  Lab.L *= n;
+  Lab.a *= n;
+  Lab.b *= n;
+
+  dmnsn_color ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
+  ret.filter = color.filter;
+  ret.trans  = color.trans;
+
+  return ret;
+}
+
+/* Illuminates `color' with `light' */
+dmnsn_color
+dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color)
+{
+  dmnsn_CIE_Lab Lab1 = dmnsn_Lab_from_color(light, dmnsn_whitepoint);
+  dmnsn_CIE_Lab Lab2 = dmnsn_Lab_from_color(color, dmnsn_whitepoint);
+
+  double dot  = Lab1.L*Lab2.L + Lab1.a*Lab2.a + Lab1.b*Lab2.b;
+  double norm = sqrt(Lab2.L*Lab2.L + Lab2.a*Lab2.a + Lab2.b*Lab2.b);
+
+  if (norm == 0.0)
+    return dmnsn_black;
+
+  dmnsn_CIE_Lab Lab = { .L = dot*Lab2.L/norm/100.0,
+                        .a = dot*Lab2.a/norm,
+                        .b = dot*Lab2.b/norm };
+
+  dmnsn_color ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
+  ret.filter = color.filter;
+  ret.trans  = color.trans;
 
   return ret;
 }

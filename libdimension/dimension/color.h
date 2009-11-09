@@ -80,10 +80,10 @@ dmnsn_CIE_Lab dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 dmnsn_sRGB    dmnsn_sRGB_from_color(dmnsn_color color);
 
-/* Perceptually correct color combination */
+/* Perceptual color manipulation */
 dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
-
-/* Perceptual color difference */
+dmnsn_color dmnsn_color_mul(double n, dmnsn_color color);
+dmnsn_color dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color);
 double dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2);
 
 #endif /* DIMENSION_COLOR_H */

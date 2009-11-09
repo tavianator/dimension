@@ -116,7 +116,7 @@ dmnsn_new_default_scene()
   /* Now make a light */
 
   dmnsn_light *light = dmnsn_new_point_light(
-    dmnsn_vector_construct(0.0, 3.0, 0.0),
+    dmnsn_vector_construct(-5.0, 20.0, -5.0),
     dmnsn_white
   );
   if (!light) {
