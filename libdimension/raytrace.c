@@ -332,8 +332,9 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
         }
 
         dmnsn_delete_intersection(shadow_caster);
-        color = illum;
       }
+
+      color = illum;
     }
 
     /* Delete the intersection */
