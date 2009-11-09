@@ -98,9 +98,10 @@ static void dmnsn_kD_splay_node_swallow(dmnsn_kD_splay_node *node,
 void
 dmnsn_kD_splay_insert(dmnsn_kD_splay_tree *tree, dmnsn_object *object)
 {
-  dmnsn_vector corner;
-  dmnsn_matrix trans_inv;
   dmnsn_kD_splay_node *node = dmnsn_new_kD_splay_node(), *parent = tree->root;
+
+  /* Store the inverse of the transformation matrix */
+  object->trans_inv = dmnsn_matrix_inverse(object->trans);
 
   node->contains = NULL;
   node->container = NULL;
@@ -110,36 +111,36 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_tree *tree, dmnsn_object *object)
   /* Calculate the new bounding box by finding the minimum coordinate of the
      transformed corners of the object's original bounding box */
 
-  trans_inv = dmnsn_matrix_inverse(object->trans);
-  node->min = dmnsn_matrix_vector_mul(trans_inv, object->min);
+  node->min = dmnsn_matrix_vector_mul(object->trans, object->min);
   node->max = node->min;
 
+  dmnsn_vector corner;
   corner = dmnsn_vector_construct(object->min.x, object->min.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->min.x, object->max.y, object->min.z);
-  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->min.x, object->max.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->max.x, object->min.y, object->min.z);
-  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->max.x, object->min.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->max.x, object->max.y, object->min.z);
-  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   corner = dmnsn_vector_construct(object->max.x, object->max.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(trans_inv, corner);
+  corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
   /* Now insert the node */
@@ -337,7 +338,7 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
       || dmnsn_ray_box_intersection(ray, node->min, node->max, t))
   {
     /* Transform the ray according to the object */
-    ray_trans = dmnsn_matrix_line_mul(node->object->trans, ray);
+    ray_trans = dmnsn_matrix_line_mul(node->object->trans_inv, ray);
 
     if (dmnsn_box_contains(ray_trans.x0, node->object->min, node->object->max)
         || dmnsn_ray_box_intersection(ray_trans, node->object->min,

@@ -56,7 +56,7 @@ struct dmnsn_object {
   dmnsn_texture *texture;
 
   /* Transformation matrix */
-  dmnsn_matrix trans;
+  dmnsn_matrix trans, trans_inv;
 
   /* Bounding box */
   dmnsn_vector min, max;

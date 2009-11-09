@@ -86,9 +86,7 @@ dmnsn_new_default_scene()
     return NULL;
   }
 
-  sphere->trans = dmnsn_matrix_inverse(
-    dmnsn_scale_matrix(dmnsn_vector_construct(1.25, 1.25, 1.25))
-  );
+  sphere->trans = dmnsn_scale_matrix(dmnsn_vector_construct(1.25, 1.25, 1.25));
 
   dmnsn_object *cube = dmnsn_new_cube();
   if (!cube) {
@@ -109,9 +107,7 @@ dmnsn_new_default_scene()
     return NULL;
   }
 
-  cube->trans = dmnsn_matrix_inverse(
-    dmnsn_rotation_matrix(dmnsn_vector_construct(0.75, 0.0, 0.0))
-  );
+  cube->trans = dmnsn_rotation_matrix(dmnsn_vector_construct(0.75, 0.0, 0.0));
 
   /* Now make a light */
 

@@ -113,7 +113,6 @@ dmnsn_realize_box(dmnsn_astnode astnode)
                                                     (x2.z + x1.z)/2.0)),
     box->trans
   );
-  box->trans = dmnsn_matrix_inverse(box->trans);
 
   return box;
 }
@@ -151,7 +150,6 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
 
   sphere->trans = dmnsn_scale_matrix(dmnsn_vector_construct(r, r, r));
   sphere->trans = dmnsn_matrix_mul(dmnsn_translation_matrix(x0), sphere->trans);
-  sphere->trans = dmnsn_matrix_inverse(sphere->trans);
 
   return sphere;
 }
