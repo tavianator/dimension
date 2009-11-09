@@ -283,7 +283,6 @@ dmnsn_color
 dmnsn_color_mul(double n, dmnsn_color color)
 {
   dmnsn_CIE_Lab Lab = dmnsn_Lab_from_color(color, dmnsn_whitepoint);
-  double LabL = Lab.L;
   Lab.L *= n;
   Lab.a *= n;
   Lab.b *= n;
