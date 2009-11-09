@@ -37,14 +37,17 @@ typedef struct {
   dmnsn_color background;
   dmnsn_texture *default_texture;
 
-  /* Objects */
-  dmnsn_array *objects;
-
   /* Camera */
   dmnsn_camera *camera;
 
   /* Canvas */
   dmnsn_canvas *canvas;
+
+  /* Objects */
+  dmnsn_array *objects;
+
+  /* Lights */
+  dmnsn_array *lights;
 
   /* Rendering quality */
   dmnsn_quality quality;

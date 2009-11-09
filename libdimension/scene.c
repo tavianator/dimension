@@ -27,10 +27,12 @@ dmnsn_new_scene()
 {
   dmnsn_scene *scene = malloc(sizeof(dmnsn_scene));
   if (scene) {
-    scene->camera = NULL;
-    scene->canvas = NULL;
     scene->default_texture = NULL;
-    scene->objects = dmnsn_new_array(sizeof(dmnsn_object*));
+
+    scene->camera  = NULL;
+    scene->canvas  = NULL;
+    scene->objects = dmnsn_new_array(sizeof(dmnsn_object *));
+    scene->lights  = dmnsn_new_array(sizeof(dmnsn_light *));
     scene->quality = DMNSN_RENDER_FULL;
   }
   return scene;
@@ -41,6 +43,7 @@ void
 dmnsn_delete_scene(dmnsn_scene *scene)
 {
   if (scene) {
+    dmnsn_delete_array(scene->lights);
     dmnsn_delete_array(scene->objects);
     free(scene);
   }
