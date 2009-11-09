@@ -30,6 +30,9 @@ dmnsn_new_default_scene()
     return NULL;
   }
 
+  /* Default finish */
+  scene->default_texture->finish = dmnsn_new_specular_finish();
+
   /* Background color */
   dmnsn_sRGB sRGB = { .R = 0.0, .G = 0.0, .B = 0.1 };
   scene->background = dmnsn_color_from_sRGB(sRGB);

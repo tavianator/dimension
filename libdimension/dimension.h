@@ -70,6 +70,7 @@ typedef void dmnsn_free_fn(void *ptr);
 #include <dimension/png.h>
 #include <dimension/texture.h>
 #include <dimension/pigments.h>
+#include <dimension/finishes.h>
 #include <dimension/object.h>
 #include <dimension/objects.h>
 #include <dimension/light.h>

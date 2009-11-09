@@ -254,6 +254,95 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   return 0;
 }
 
+static dmnsn_color
+dmnsn_raytrace_pigment(dmnsn_intersection *intersection, dmnsn_scene *scene)
+{
+  /* Default to black if there's no texture/pigment */
+  dmnsn_color color = dmnsn_black;
+
+  /* Use the default texture if given a NULL texture */
+  const dmnsn_texture *texture = intersection->texture ? intersection->texture
+                                                       : scene->default_texture;
+
+  if (texture) {
+    /* Use the default pigment if given a NULL pigment */
+    const dmnsn_pigment *pigment
+      = texture->pigment ? texture->pigment
+                         : scene->default_texture->pigment;
+
+    if (pigment) {
+      color = (*pigment->pigment_fn)(
+        pigment,
+        dmnsn_line_point(intersection->ray, intersection->t)
+      );
+    }
+  }
+
+  return color;
+}
+
+static dmnsn_color
+dmnsn_raytrace_shadow(dmnsn_intersection *intersection, dmnsn_scene *scene,
+                      dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color color)
+{
+  /* Use the default texture if given a NULL texture */
+  const dmnsn_texture *texture = intersection->texture ? intersection->texture
+                                                       : scene->default_texture;
+
+  const dmnsn_finish *finish = NULL;
+  if (texture) {
+    /* Use the default finish if given a NULL finish */
+    finish = texture->finish ? texture->finish : scene->default_texture->finish;
+  }
+
+  dmnsn_color illum = dmnsn_color_mul(0.3, color);
+
+  const dmnsn_light *light;
+  unsigned int i;
+
+  for (i = 0; i < dmnsn_array_size(scene->lights); ++i) {
+    dmnsn_array_get(scene->lights, i, &light);
+    dmnsn_vector x0 = dmnsn_line_point(intersection->ray, intersection->t);
+    dmnsn_line shadow_ray = dmnsn_line_construct(
+      /* Add epsilon*(light->x0 - x0) to avoid hitting ourself with the shadow
+         ray */
+      dmnsn_vector_add(
+        x0,
+        dmnsn_vector_mul(1.0e-9, dmnsn_vector_sub(light->x0, x0))
+      ),
+      dmnsn_vector_sub(light->x0, x0)
+    );
+
+    dmnsn_intersection *shadow_caster
+      = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
+
+    if (!shadow_caster || shadow_caster->t > 1.0) {
+      dmnsn_vector normal = intersection->normal;
+      dmnsn_vector reflected = dmnsn_vector_normalize(
+        dmnsn_vector_add(
+          dmnsn_vector_normalize(dmnsn_vector_sub(intersection->ray.x0, x0)),
+          dmnsn_vector_normalize(dmnsn_vector_sub(light->x0, x0))
+        )
+      );
+
+      dmnsn_color effective
+        = dmnsn_color_illuminate((*light->light_fn)(light, x0), color);
+
+      if (scene->quality >= DMNSN_RENDER_FINISH && finish) {
+        illum = dmnsn_color_add((*finish->finish_fn)(finish, effective, x0,
+                                                     normal, reflected),
+                                illum);
+      } else {
+        illum = effective;
+      }
+    }
+
+    dmnsn_delete_intersection(shadow_caster);
+  }
+
+  return illum;
+}
+
 /* Shoot a ray, and calculate the color, using `color' as the background */
 static dmnsn_color
 dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
@@ -262,75 +351,17 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
   dmnsn_intersection *intersection = dmnsn_kD_splay_search(kD_splay_tree, ray);
 
   if (intersection) {
-    /* Default to black if we have no texture/pigment */
+    /* Default to black if we aren't rendering pigments */
     color = dmnsn_black;
 
     if (scene->quality >= DMNSN_RENDER_PIGMENT) {
-      /* Use the default texture if given a NULL texture */
-      const dmnsn_texture *texture
-        = intersection->texture ? intersection->texture
-                                : scene->default_texture;
-
-      if (texture) {
-        /* Use the default pigment if given a NULL pigment */
-        const dmnsn_pigment *pigment
-          = texture->pigment ? texture->pigment
-                             : scene->default_texture->pigment;
-
-        if (pigment) {
-          color = (*pigment->pigment_fn)(
-            pigment,
-            dmnsn_line_point(intersection->ray, intersection->t)
-          );
-        }
-      }
+      color = dmnsn_raytrace_pigment(intersection, scene);
     }
 
     if (scene->quality >= DMNSN_RENDER_LIGHTS) {
-      dmnsn_color illum = dmnsn_color_mul(0.3, color);
-
-      const dmnsn_light *light;
-      unsigned int i;
-
-      for (i = 0; i < dmnsn_array_size(scene->lights); ++i) {
-        dmnsn_array_get(scene->lights, i, &light);
-        dmnsn_vector x0 = dmnsn_line_point(ray, intersection->t);
-        dmnsn_line shadow_ray = dmnsn_line_construct(
-          dmnsn_vector_add(
-            x0,
-            dmnsn_vector_mul(1.0e-6, dmnsn_vector_sub(light->x0, x0))
-          ),
-          dmnsn_vector_sub(light->x0, x0)
-        );
-
-        dmnsn_intersection *shadow_caster
-          = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
-
-        if (!shadow_caster || shadow_caster->t > 1.0) {
-          dmnsn_vector object_normal = intersection->normal;
-          dmnsn_vector normal = dmnsn_vector_normalize(
-            dmnsn_vector_add(
-              dmnsn_vector_normalize(dmnsn_vector_sub(ray.x0, x0)),
-              dmnsn_vector_normalize(dmnsn_vector_sub(light->x0, x0))
-            )
-          );
-
-          illum = dmnsn_color_add(
-            dmnsn_color_mul(
-              dmnsn_vector_dot(normal, object_normal),
-              dmnsn_color_illuminate((*light->light_fn)(light, x0), color)
-            ),
-            illum
-          );
-        }
-
-        dmnsn_delete_intersection(shadow_caster);
-      }
-
-      color = illum;
+      color = dmnsn_raytrace_shadow(intersection, scene, kD_splay_tree, color);
     }
 
-    /* Delete the intersection */
     dmnsn_delete_intersection(intersection);
   }
 

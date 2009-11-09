@@ -356,10 +356,13 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
         result.intersection = result_temp.intersection;
         t = result.intersection->t;
 
-        /* Transform the normal vector back to the observer's view */
-        result.intersection->normal = dmnsn_matrix_vector_mul(
-          node->object->trans,
-          result.intersection->normal
+        /* Transform the intersection back to the observer's view */
+        result.intersection->ray = ray;
+        result.intersection->normal = dmnsn_vector_normalize(
+          dmnsn_matrix_vector_mul(
+            node->object->trans,
+            result.intersection->normal
+          )
         );
       } else {
         dmnsn_delete_intersection(result_temp.intersection);
