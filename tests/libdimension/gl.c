@@ -49,8 +49,8 @@ main() {
   display = dmnsn_new_display(scene->canvas);
   if (!display) {
     dmnsn_delete_scene(scene);
-    fprintf(stderr, "--- Couldn't initialize X or glX! ---\n");
-    return EXIT_FAILURE;
+    fprintf(stderr, "--- WARNING: Couldn't initialize X or glX! ---\n");
+    return EXIT_SUCCESS;
   }
 
   /* Render the scene */
