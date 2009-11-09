@@ -26,6 +26,8 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/error.h                                     \
                          dimension/geometry.h                                  \
                          dimension/gl.h                                        \
+                         dimension/light.h                                     \
+                         dimension/lights.h                                    \
                          dimension/object.h                                    \
                          dimension/objects.h                                   \
                          dimension/pigments.h                                  \
@@ -38,17 +40,19 @@ nobase_include_HEADERS = dimension.h                                           \
 lib_LTLIBRARIES = libdimension.la
 
 libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
-                          dimension_impl.h                                     \
                           camera.c                                             \
                           cameras.c                                            \
                           canvas.c                                             \
                           color.c                                              \
+                          dimension_impl.h                                     \
                           error.c                                              \
                           geometry.c                                           \
                           gl.c                                                 \
                           inlines.c                                            \
                           kD_splay_tree.c                                      \
                           kD_splay_tree.h                                      \
+                          light.c                                              \
+                          lights.c                                             \
                           object.c                                             \
                           objects.c                                            \
                           pigments.c                                           \

@@ -72,6 +72,8 @@ typedef void dmnsn_free_fn(void *ptr);
 #include <dimension/pigments.h>
 #include <dimension/object.h>
 #include <dimension/objects.h>
+#include <dimension/light.h>
+#include <dimension/lights.h>
 #include <dimension/camera.h>
 #include <dimension/cameras.h>
 #include <dimension/scene.h>
