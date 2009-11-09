@@ -23,10 +23,6 @@ dmnsn_scene *
 dmnsn_new_default_scene()
 {
   dmnsn_scene *scene;
-  dmnsn_object *sphere, *cube;
-  dmnsn_matrix trans;
-  dmnsn_sRGB sRGB;
-  dmnsn_color color;
 
   /* Allocate a new scene */
   scene = dmnsn_new_scene();
@@ -35,12 +31,9 @@ dmnsn_new_default_scene()
   }
 
   /* Background color */
-  sRGB.R = 0.0;
-  sRGB.G = 0.0;
-  sRGB.B = 0.1;
-  color = dmnsn_color_from_sRGB(sRGB);
-  color.filter = 0.1;
-  scene->background = color;
+  dmnsn_sRGB sRGB = { .R = 0.0, .G = 0.0, .B = 0.1 };
+  scene->background = dmnsn_color_from_sRGB(sRGB);
+  scene->background.filter = 0.1;
 
   /* Allocate a canvas */
   scene->canvas = dmnsn_new_canvas(768, 480);
@@ -50,7 +43,7 @@ dmnsn_new_default_scene()
   }
 
   /* Set up the transformation matrix for the perspective camera */
-  trans = dmnsn_scale_matrix(
+  dmnsn_matrix trans = dmnsn_scale_matrix(
     dmnsn_vector_construct(
       ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
     )
@@ -74,7 +67,7 @@ dmnsn_new_default_scene()
 
   /* Now make our objects */
 
-  sphere = dmnsn_new_sphere();
+  dmnsn_object *sphere = dmnsn_new_sphere();
   if (!sphere) {
     dmnsn_delete_scene(scene);
     return NULL;
@@ -97,7 +90,7 @@ dmnsn_new_default_scene()
     dmnsn_scale_matrix(dmnsn_vector_construct(1.25, 1.25, 1.25))
   );
 
-  cube = dmnsn_new_cube();
+  dmnsn_object *cube = dmnsn_new_cube();
   if (!cube) {
     dmnsn_delete_scene(scene);
     return NULL;
@@ -119,6 +112,18 @@ dmnsn_new_default_scene()
   cube->trans = dmnsn_matrix_inverse(
     dmnsn_rotation_matrix(dmnsn_vector_construct(0.75, 0.0, 0.0))
   );
+
+  /* Now make a light */
+
+  dmnsn_light *light = dmnsn_new_point_light(
+    dmnsn_vector_construct(0.0, 3.0, 0.0),
+    dmnsn_white
+  );
+  if (!light) {
+    dmnsn_delete_scene(scene);
+    return NULL;
+  }
+  dmnsn_array_push(scene->lights, &light);
 
   return scene;
 }
