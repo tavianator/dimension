@@ -101,7 +101,7 @@ dmnsn_new_default_scene()
     return NULL;
   }
 
-  cube->texture->pigment = dmnsn_new_solid_pigment(dmnsn_black);
+  cube->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
   if (!cube->texture->pigment) {
     dmnsn_delete_scene(scene);
     return NULL;
@@ -113,7 +113,7 @@ dmnsn_new_default_scene()
 
   dmnsn_light *light = dmnsn_new_point_light(
     dmnsn_vector_construct(-5.0, 20.0, -5.0),
-    dmnsn_white
+    dmnsn_color_mul(0.9, dmnsn_white)
   );
   if (!light) {
     dmnsn_delete_scene(scene);

@@ -71,6 +71,7 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line)
       intersection = dmnsn_new_intersection();
       intersection->ray     = line;
       intersection->t       = t;
+      intersection->normal  = dmnsn_line_point(line, t);
       intersection->texture = sphere->texture;
     }
   }
@@ -114,7 +115,7 @@ static dmnsn_intersection *
 dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
 {
   double t = -1.0, t_temp;
-  dmnsn_vector p;
+  dmnsn_vector p, normal;
   dmnsn_intersection *intersection = NULL;
 
   /* Six ray-plane intersection tests (x, y, z) = +/- 1.0 */
@@ -127,6 +128,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
+      normal = dmnsn_vector_construct(-1.0, 0.0, 0.0);
     }
 
     /* x = 1.0 */
@@ -136,6 +138,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
+      normal = dmnsn_vector_construct(1.0, 0.0, 0.0);
     }
   }
 
@@ -147,6 +150,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
+      normal = dmnsn_vector_construct(0.0, -1.0, 0.0);
     }
 
     /* y = 1.0 */
@@ -156,6 +160,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
+      normal = dmnsn_vector_construct(0.0, 1.0, 0.0);
     }
   }
 
@@ -167,6 +172,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
+      normal = dmnsn_vector_construct(0.0, 0.0, -1.0);
     }
 
     /* z = 1.0 */
@@ -176,6 +182,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
+      normal = dmnsn_vector_construct(0.0, 0.0, 1.0);
     }
   }
 
@@ -183,6 +190,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
     intersection = dmnsn_new_intersection();
     intersection->ray     = line;
     intersection->t       = t;
+    intersection->normal  = normal;
     intersection->texture = cube->texture;
   }
 

@@ -307,7 +307,7 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
           = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
 
         if (!shadow_caster || shadow_caster->t > 1.0) {
-          dmnsn_vector object_normal = x0;
+          dmnsn_vector object_normal = intersection->normal;
           dmnsn_vector normal = dmnsn_vector_normalize(
             dmnsn_vector_add(
               dmnsn_vector_normalize(dmnsn_vector_sub(ray.x0, x0)),
@@ -319,13 +319,6 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
             dmnsn_color_mul(
               dmnsn_vector_dot(normal, object_normal),
               dmnsn_color_illuminate((*light->light_fn)(light, x0), color)
-            ),
-            illum
-          );
-          illum = dmnsn_color_add(
-            dmnsn_color_mul(
-              0.1*dmnsn_vector_dot(normal, object_normal),
-              dmnsn_color_illuminate((*light->light_fn)(light, x0), dmnsn_white)
             ),
             illum
           );

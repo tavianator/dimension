@@ -31,6 +31,9 @@ typedef struct {
   dmnsn_line ray;
   double t;
 
+  /* The surface normal at the intersection point */
+  dmnsn_vector normal;
+
   /* The texture at the intersection point */
   const dmnsn_texture *texture;
 } dmnsn_intersection;

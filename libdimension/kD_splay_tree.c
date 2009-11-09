@@ -304,10 +304,12 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
 dmnsn_intersection *
 dmnsn_kD_splay_search(dmnsn_kD_splay_tree *tree, dmnsn_line ray)
 {
-  dmnsn_kD_splay_search_result result;
-  result = dmnsn_kD_splay_search_recursive(tree->root, ray, -1.0);
+  dmnsn_kD_splay_search_result result
+    = dmnsn_kD_splay_search_recursive(tree->root, ray, -1.0);
+
   if (result.node)
     dmnsn_kD_splay(tree, result.node);
+
   return result.intersection;
 }
 
@@ -353,6 +355,12 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
         result.node = node;
         result.intersection = result_temp.intersection;
         t = result.intersection->t;
+
+        /* Transform the normal vector back to the observer's view */
+        result.intersection->normal = dmnsn_matrix_vector_mul(
+          node->object->trans,
+          result.intersection->normal
+        );
       } else {
         dmnsn_delete_intersection(result_temp.intersection);
       }
