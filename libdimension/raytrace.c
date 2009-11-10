@@ -227,12 +227,9 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   width  = scene->canvas->x;
   height = scene->canvas->y;
 
-  /* Initialize `x' */
-  x = width + index;
-
   /* Iterate through each pixel */
-  for (y = 0; y < height; ++y) {
-    for (x -= width; x < width; x += threads) {
+  for (y = index; y < height; y += threads) {
+    for (x = 0; x < width; ++x) {
       /* Set the pixel to the background color */
       color = scene->background;
 
