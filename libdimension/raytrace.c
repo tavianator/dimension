@@ -295,7 +295,7 @@ dmnsn_raytrace_shadow(dmnsn_intersection *intersection, dmnsn_scene *scene,
     finish = texture->finish ? texture->finish : scene->default_texture->finish;
   }
 
-  dmnsn_color illum = dmnsn_color_mul(0.3, color);
+  dmnsn_color illum = dmnsn_color_mul(0.1, color);
 
   const dmnsn_light *light;
   unsigned int i;

@@ -116,7 +116,7 @@ dmnsn_new_default_scene()
 
   dmnsn_light *light = dmnsn_new_point_light(
     dmnsn_vector_construct(-5.0, 20.0, -5.0),
-    dmnsn_color_mul(0.9, dmnsn_white)
+    dmnsn_white
   );
   if (!light) {
     dmnsn_delete_scene(scene);
