@@ -298,28 +298,15 @@ dmnsn_color_mul(double n, dmnsn_color color)
 dmnsn_color
 dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color)
 {
-  dmnsn_CIE_Lab Lab1 = dmnsn_Lab_from_color(light, dmnsn_whitepoint);
-  dmnsn_CIE_Lab Lab2 = dmnsn_Lab_from_color(color, dmnsn_whitepoint);
+  /* TODO: make this work in a perceptually uniform colorspace */
+  dmnsn_sRGB sRGB1 = dmnsn_sRGB_from_color(light);
+  dmnsn_sRGB sRGB2 = dmnsn_sRGB_from_color(color);
 
-  /*
-   * This is derived from the simple illumination equation for RGB color:
-   *   RGB' = (R_light*R_color, G_light*G_color, B_light*B_color)
-   *
-   * CIE L*a*b* may be transformed to an RGB colorspace by considering `a'
-   * to be the green -> magenta opponent process (from negative to positive),
-   * and `b' to be the blue -> yellow opponent process:
-   *   RGB  = (L + a + b, L - a + b, L + a - b)
-   *
-   * The reverse transformation is:
-   *   Lab  = ((G + B)/2, (R - G)/2, (R - B)/2)
-   */
-  dmnsn_CIE_Lab Lab = {
-    .L = (Lab1.L*Lab2.L + (Lab1.b - Lab1.a)*(Lab2.b - Lab2.a))/100.0,
-    .a = (Lab1.a*(Lab2.L + Lab2.b) + Lab2.a*(Lab1.L + Lab1.b))/100.0,
-    .b = (Lab1.b*(Lab2.L + Lab2.a) + Lab2.b*(Lab1.L + Lab1.a))/100.0
-  };
+  dmnsn_sRGB sRGB = { .R = sRGB1.R*sRGB2.R,
+                      .G = sRGB1.G*sRGB2.G,
+                      .B = sRGB1.B*sRGB2.B };
 
-  dmnsn_color ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
+  dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
   ret.filter = color.filter;
   ret.trans  = color.trans;
 
