@@ -28,17 +28,19 @@ EXTRA_DIST = autogen.sh
 
 if PGO
 all-recursive:
-	cd $(top_builddir)/libdimension && $(MAKE) $(AM_MAKEFLAGS) libdimension-pgo.la
-	cd $(top_builddir)/tests/libdimension && $(MAKE) check
-	@for gcda in $(top_builddir)/tests/libdimension/pgo/.libs/*_pgo*.gcda; do \
-	  mv $$gcda $${gcda/_pgo/}; \
-	done
+	@if ! ls $(top_builddir)/tests/libdimension/pgo/.libs/*.gcda >/dev/null; then \
+	  (cd $(top_builddir)/libdimension && $(MAKE) $(AM_MAKEFLAGS) libdimension-pgo.la) && \
+	  (cd $(top_builddir)/tests/libdimension && $(MAKE) check) && \
+	  for gcda in $$(ls $(top_builddir)/tests/libdimension/pgo/.libs/*_pgo*.gcda); do \
+	    mv $$gcda $${gcda/_pgo/}; \
+	  done \
+	fi
 	cd $(top_builddir)/libdimension && $(MAKE) $(AM_MAKEFLAGS) libdimension.la
 	cd $(top_builddir)/dimension && $(MAKE) $(AM_MAKEFLAGS) all
 	cd $(top_builddir)/doc && $(MAKE) $(AM_MAKEFLAGS) all
 endif
 
-bench: all-recursive
+bench: all
 	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench
 
 .PHONY: bench
