@@ -28,10 +28,18 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
+dnl Profile-guided optimization (default disabled)
+AC_ARG_ENABLE([pgo],
+              [AS_HELP_STRING([--enable-pgo],
+                              [Enable profile-guided optimization])],
+              [],
+              [enable_pgo=no])
+AM_CONDITIONAL([PGO], [test "$enable_pgo" != "no"])
+
 dnl Timing library for benchmarks
 AC_CHECK_LIB([sandglass], [sandglass_create],
              [],
-             [AC_MSG_WARN([libsandglass not found - benchmarking suite will not work correctly])])
+             [AC_MSG_WARN([libsandglass not found - benchmarking suite will not work])])
 
 dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])

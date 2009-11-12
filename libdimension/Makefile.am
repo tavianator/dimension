@@ -65,3 +65,12 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           texture.c
 libdimension_la_LDFLAGS = -version-info 0:0:0
 libdimension_la_LIBADD  = -lm -lpthread -lpng -lGL
+
+if PGO
+EXTRA_LTLIBRARIES = libdimension-pgo.la
+libdimension_pgo_la_SOURCES = $(libdimension_la_SOURCES)
+libdimension_pgo_la_LIBADD  = $(libdimension_la_LIBADD) -lgcov
+libdimension_pgo_la_CFLAGS  = -fprofile-generate=./pgo
+
+libdimension_la_CFLAGS = -fprofile-correction -fprofile-use=$(top_builddir)/tests/libdimension/pgo
+endif

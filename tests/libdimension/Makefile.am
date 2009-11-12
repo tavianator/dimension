@@ -28,11 +28,19 @@ check_PROGRAMS    = error-test                                                 \
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
 
-.PHONY: clean-local-png-test
-clean-local: clean-local-png-test
+.PHONY: clean-local-tests clean-local-png-test
+clean-local: clean-local-tests clean-local-png-test
 
 libdimension_tests_la_SOURCES = tests.c tests.h
-libdimension_tests_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
+
+if PGO
+libdimension_tests_la_LIBADD = $(top_builddir)/libdimension/libdimension-pgo.la
+clean-local-tests:
+	rm -rf ./pgo
+else
+libdimension_tests_la_LIBADD = $(top_builddir)/libdimension/libdimension.la
+clean-local-tests:
+endif
 
 error_test_SOURCES = error.c
 error_test_LDADD   = libdimension-tests.la
