@@ -17,7 +17,6 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-info_TEXINFOS = libdimension.texi                                              \
-                libdimensionxx.texi
+info_TEXINFOS = libdimension.texi
+
 libdimension_la_TEXI   = libdimension.texi
-libdimensionxx_la_TEXI = libdimensionxx.texi
