@@ -67,10 +67,20 @@ libdimension_la_LDFLAGS = -version-info 0:0:0
 libdimension_la_LIBADD  = -lm -lpthread -lpng -lGL
 
 if PGO
-EXTRA_LTLIBRARIES = libdimension-pgo.la
+
+noinst_LTLIBRARIES = libdimension-pgo.la
 libdimension_pgo_la_SOURCES = $(libdimension_la_SOURCES)
 libdimension_pgo_la_LIBADD  = $(libdimension_la_LIBADD) -lgcov
-libdimension_pgo_la_CFLAGS  = -fprofile-generate=./pgo
+libdimension_pgo_la_CFLAGS  = -fprofile-generate=$$(readlink -f $(builddir))/pgo
 
-libdimension_la_CFLAGS = -fprofile-correction -fprofile-use=$(top_builddir)/tests/libdimension/pgo
+libdimension_la_CFLAGS = -fprofile-correction -fprofile-use=./pgo
+
+all-local: libdimension.la
+	@for Plo in .deps/libdimension_la*.Plo; do \
+	  [ -f "pgo/.libs/$$(basename $$Plo .Plo).gcda" ] && sed -ri 's|^(libdimension_la-.*).lo: ([^ ])|\1.lo:  pgo/.libs/\1.gcda \2|g' "$$Plo"; \
+	  true; \
+	done
+
+clean-local:
+	rm -rf pgo
 endif

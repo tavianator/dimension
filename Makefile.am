@@ -27,20 +27,20 @@ SUBDIRS = libdimension                                                         \
 EXTRA_DIST = autogen.sh
 
 if PGO
-all-recursive:
-	@if ! ls $(top_builddir)/tests/libdimension/pgo/.libs/*.gcda >/dev/null; then \
-	  (cd $(top_builddir)/libdimension && $(MAKE) $(AM_MAKEFLAGS) libdimension-pgo.la) && \
-	  (cd $(top_builddir)/tests/libdimension && $(MAKE) check) && \
-	  for gcda in $$(ls $(top_builddir)/tests/libdimension/pgo/.libs/*_pgo*.gcda); do \
-	    mv $$gcda $${gcda/_pgo/}; \
-	  done \
+
+.PHONY: pgo bench
+pgo:
+	@if [ ! -d $(top_builddir)/libdimension/pgo/.libs ] || [ -z "$$(ls $(top_builddir)/libdimension/pgo/.libs/*.gcda 2>/dev/null)" ]; then \
+	  $(MAKE) $(AM_MAKEFLAGS) -C libdimension libdimension-pgo.la && \
+	  $(MAKE) -j1 -C tests/libdimension check; \
 	fi
-	cd $(top_builddir)/libdimension && $(MAKE) $(AM_MAKEFLAGS) libdimension.la
-	cd $(top_builddir)/dimension && $(MAKE) $(AM_MAKEFLAGS) all
-	cd $(top_builddir)/doc && $(MAKE) $(AM_MAKEFLAGS) all
-endif
+	@rename _pgo_la _la $$(find $(top_builddir)/libdimension/pgo/.libs/)
 
-bench: all
-	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench
+all-recursive check-recursive install-recursive installcheck-recursive distdir: pgo
 
+else  ## PGO
 .PHONY: bench
+endif ## PGO
+
+bench: all-recursive
+	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench

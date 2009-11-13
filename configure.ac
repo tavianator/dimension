@@ -31,7 +31,7 @@ AC_PROG_LIBTOOL
 dnl Profile-guided optimization (default disabled)
 AC_ARG_ENABLE([pgo],
               [AS_HELP_STRING([--enable-pgo],
-                              [Enable profile-guided optimization])],
+                              [Enable profile-guided optimization [default=no]])],
               [],
               [enable_pgo=no])
 AM_CONDITIONAL([PGO], [test "$enable_pgo" != "no"])
