@@ -77,6 +77,14 @@ dmnsn_line_construct(dmnsn_vector x0, dmnsn_vector n)
 /* Vector and matrix arithmetic */
 
 DMNSN_INLINE dmnsn_vector
+dmnsn_vector_negate(dmnsn_vector rhs)
+{
+  /* 3 negations */
+  dmnsn_vector v = { -rhs.x, -rhs.y, -rhs.z };
+  return v;
+}
+
+DMNSN_INLINE dmnsn_vector
 dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
 {
   /* 3 additions */

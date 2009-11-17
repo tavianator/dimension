@@ -32,6 +32,7 @@ dmnsn_new_default_scene()
 
   /* Default finish */
   scene->default_texture->finish = dmnsn_new_diffuse_finish();
+  scene->default_texture->finish->ambient = 0.1;
 
   /* Background color */
   dmnsn_sRGB sRGB = { .R = 0.0, .G = 0.0, .B = 0.1 };

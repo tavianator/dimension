@@ -21,12 +21,15 @@
 #include "dimension.h"
 #include <stdlib.h> /* For malloc */
 
-static dmnsn_color
+dmnsn_color
 dmnsn_diffuse_finish_fn(const dmnsn_finish *finish,
-                         dmnsn_color color, dmnsn_vector x0,
-                         dmnsn_vector normal, dmnsn_vector reflected)
+                        dmnsn_color light, dmnsn_color color,
+                        dmnsn_vector ray, dmnsn_vector normal,
+                        dmnsn_vector viewer)
 {
-  return dmnsn_color_mul(dmnsn_vector_dot(normal, reflected), color);
+  double diffuse = dmnsn_vector_dot(ray, normal);
+  dmnsn_color illum = dmnsn_color_illuminate(light, color);
+  return dmnsn_color_mul(diffuse, illum);
 }
 
 /* A diffuse finish */

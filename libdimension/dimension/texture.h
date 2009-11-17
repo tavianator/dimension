@@ -58,12 +58,15 @@ typedef struct dmnsn_finish dmnsn_finish;
 
 /* Finish callback */
 typedef dmnsn_color dmnsn_finish_fn(const dmnsn_finish *finish,
-                                    dmnsn_color color, dmnsn_vector x0,
-                                    dmnsn_vector normal,
-                                    dmnsn_vector reflected);
+                                    dmnsn_color light, dmnsn_color color,
+                                    dmnsn_vector ray, dmnsn_vector normal,
+                                    dmnsn_vector viewer);
 
 /* dmnsn_finish definition */
 struct dmnsn_finish {
+  /* Ambient contribution factor */
+  double ambient;
+
   /* Callbacks */
   dmnsn_finish_fn *finish_fn;
   dmnsn_free_fn *free_fn;
