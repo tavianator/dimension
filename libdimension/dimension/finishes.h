@@ -25,7 +25,7 @@
 #ifndef DIMENSION_FINISHES_H
 #define DIMENSION_FINISHES_H
 
-/* A specular finish */
-dmnsn_finish *dmnsn_new_specular_finish();
+/* A diffuse finish */
+dmnsn_finish *dmnsn_new_diffuse_finish();
 
 #endif /* DIMENSION_FINISHES_H */

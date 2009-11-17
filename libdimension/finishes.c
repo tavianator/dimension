@@ -22,20 +22,20 @@
 #include <stdlib.h> /* For malloc */
 
 static dmnsn_color
-dmnsn_specular_finish_fn(const dmnsn_finish *finish,
+dmnsn_diffuse_finish_fn(const dmnsn_finish *finish,
                          dmnsn_color color, dmnsn_vector x0,
                          dmnsn_vector normal, dmnsn_vector reflected)
 {
   return dmnsn_color_mul(dmnsn_vector_dot(normal, reflected), color);
 }
 
-/* A specular finish */
+/* A diffuse finish */
 dmnsn_finish *
-dmnsn_new_specular_finish()
+dmnsn_new_diffuse_finish()
 {
   dmnsn_finish *finish = dmnsn_new_finish();
   if (finish) {
-    finish->finish_fn = &dmnsn_specular_finish_fn;
+    finish->finish_fn = &dmnsn_diffuse_finish_fn;
   }
   return finish;
 }
