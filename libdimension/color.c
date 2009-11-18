@@ -28,9 +28,41 @@ const dmnsn_CIE_XYZ dmnsn_whitepoint = { .X = 0.9504060171449392,
 
 /* Standard colors */
 const dmnsn_color dmnsn_black = { .X = 0.0, .Y = 0.0, .Z = 0.0 };
-const dmnsn_color dmnsn_white = { .X = 0.9504060171449392,
-                                  .Y = 0.9999085943425312,
-                                  .Z = 1.089062231497274 };
+const dmnsn_color dmnsn_white = {
+  .X = 0.9504060171449392,
+  .Y = 0.9999085943425312,
+  .Z = 1.089062231497274
+};
+const dmnsn_color dmnsn_red = {
+  .X = 0.4123808838268995,
+  .Y = 0.2126198631048975,
+  .Z = 0.0193434956789248
+};
+const dmnsn_color dmnsn_green = {
+  .X = 0.3575728355732478,
+  .Y = 0.7151387878413206,
+  .Z = 0.1192121694056356
+};
+const dmnsn_color dmnsn_blue = {
+  .X = 0.1804522977447919,
+  .Y = 0.0721499433963131,
+  .Z = 0.950506566412713
+};
+const dmnsn_color dmnsn_magenta = {
+  .X = 0.5928331815716914,
+  .Y = 0.2847698065012106,
+  .Z = 0.9698500620916378
+};
+const dmnsn_color dmnsn_yellow = {
+  .X = 0.7699537194001473,
+  .Y = 0.9277586509462181,
+  .Z = 0.1385556650845604
+};
+const dmnsn_color dmnsn_cyan = {
+  .X = 0.5380251333180397,
+  .Y = 0.7872887312376337,
+  .Z = 1.069718735818349
+};
 
 /* Convert a CIE XYZ color to a dmnsn_color (actually a no-op) */
 dmnsn_color
@@ -45,11 +77,26 @@ dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ)
 dmnsn_color
 dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY)
 {
-  dmnsn_color ret = { .X = xyY.Y*xyY.x/xyY.y,
-                      .Y = xyY.Y,
-                      .Z = xyY.Y*(1.0 - xyY.x - xyY.y)/xyY.y,
-                      .filter = 0.0,
-                      .trans = 0.0 };
+  dmnsn_color ret = {
+    .X = xyY.Y*xyY.x/xyY.y,
+    .Y = xyY.Y,
+    .Z = xyY.Y*(1.0 - xyY.x - xyY.y)/xyY.y,
+    .filter = 0.0,
+    .trans = 0.0
+  };
+  return ret;
+}
+
+dmnsn_color
+dmnsn_color_from_RGB(dmnsn_CIE_RGB RGB)
+{
+  dmnsn_color ret = {
+    .X = 0.49*RGB.R    + 0.31*RGB.G    + 0.20*RGB.B,
+    .Y = 0.17697*RGB.R + 0.81240*RGB.G + 0.01063*RGB.B,
+    .Z = 0.00*RGB.R    + 0.01*RGB.G    + 0.99*RGB.B,
+    .filter = 0.0,
+    .trans = 0.0
+  };
   return ret;
 }
 
@@ -168,9 +215,25 @@ dmnsn_XYZ_from_color(dmnsn_color color)
 dmnsn_CIE_xyY
 dmnsn_xyY_from_color(dmnsn_color color)
 {
-  dmnsn_CIE_xyY ret = { .x = color.X/(color.X + color.Y + color.Z),
-                        .y = color.Y/(color.X + color.Y + color.Z),
-                        .Y = color.Y };
+  dmnsn_CIE_xyY ret = {
+    .x = color.X/(color.X + color.Y + color.Z),
+    .y = color.Y/(color.X + color.Y + color.Z),
+    .Y = color.Y
+  };
+  return ret;
+}
+
+dmnsn_CIE_RGB
+dmnsn_RGB_from_color(dmnsn_color color)
+{
+  dmnsn_CIE_RGB ret = {
+    .R = 2.36461384653836548*color.X + -0.89654057073966797*color.Y
+      + -0.46807327579869740*color.Z,
+    .G = -0.51516620844788796*color.X + 1.42640810385638872*color.Y
+      + 0.08875810459149917*color.Z,
+    .B = 0.00520369907523119*color.X + -0.01440816266521605*color.Y
+      + 1.00920446358998483*color.Z
+  };
   return ret;
 }
 
@@ -298,15 +361,20 @@ dmnsn_color_mul(double n, dmnsn_color color)
 dmnsn_color
 dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color)
 {
-  /* TODO: make this work in a perceptually uniform colorspace */
-  dmnsn_sRGB sRGB1 = dmnsn_sRGB_from_color(light);
-  dmnsn_sRGB sRGB2 = dmnsn_sRGB_from_color(color);
+  static dmnsn_CIE_RGB white = { 0.0 };
+  if (!white.R)
+    white = dmnsn_RGB_from_color(dmnsn_white);
 
-  dmnsn_sRGB sRGB = { .R = sRGB1.R*sRGB2.R,
-                      .G = sRGB1.G*sRGB2.G,
-                      .B = sRGB1.B*sRGB2.B };
+  dmnsn_CIE_RGB RGB1 = dmnsn_RGB_from_color(light);
+  dmnsn_CIE_RGB RGB2 = dmnsn_RGB_from_color(color);
 
-  dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
+  dmnsn_CIE_RGB RGB = {
+    .R = RGB1.R*RGB2.R/white.R,
+    .G = RGB1.G*RGB2.G/white.G,
+    .B = RGB1.B*RGB2.B/white.B
+  };
+
+  dmnsn_color ret = dmnsn_color_from_RGB(RGB);
   ret.filter = color.filter;
   ret.trans  = color.trans;
 

@@ -22,17 +22,15 @@
 dmnsn_scene *
 dmnsn_new_default_scene()
 {
-  dmnsn_scene *scene;
-
   /* Allocate a new scene */
-  scene = dmnsn_new_scene();
+  dmnsn_scene *scene = dmnsn_new_scene();
   if (!scene) {
     return NULL;
   }
 
   /* Default finish */
 
-  scene->default_texture->finish = dmnsn_new_phong_finish(1.0, 0.2, 50.0);
+  scene->default_texture->finish = dmnsn_new_phong_finish(1.0, 0.5, 50.0);
   if (!scene->default_texture->finish) {
     dmnsn_delete_scene(scene);
     return NULL;
@@ -90,7 +88,7 @@ dmnsn_new_default_scene()
     return NULL;
   }
 
-  sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
+  sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_yellow);
   if (!sphere->texture->pigment) {
     dmnsn_delete_scene(scene);
     return NULL;
@@ -111,7 +109,7 @@ dmnsn_new_default_scene()
     return NULL;
   }
 
-  cube->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
+  cube->texture->pigment = dmnsn_new_solid_pigment(dmnsn_magenta);
   if (!cube->texture->pigment) {
     dmnsn_delete_scene(scene);
     return NULL;
@@ -123,7 +121,7 @@ dmnsn_new_default_scene()
 
   dmnsn_light *light = dmnsn_new_point_light(
     dmnsn_vector_construct(-15.0, 20.0, 10.0),
-    dmnsn_white
+    dmnsn_cyan
   );
   if (!light) {
     dmnsn_delete_scene(scene);

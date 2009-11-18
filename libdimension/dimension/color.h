@@ -46,6 +46,10 @@ typedef struct {
 } dmnsn_CIE_xyY;
 
 typedef struct {
+  double R, G, B; /* CIE 1931 RGB, a linear transformation of CIE XYZ */
+} dmnsn_CIE_RGB;
+
+typedef struct {
   double L, a, b; /* L is luminence (100 = diffuse white); a and b are color-
                      opponent dimensions.  This color space is used for color
                      arithmetic. */
@@ -61,7 +65,8 @@ typedef struct {
 } dmnsn_sRGB;
 
 /* Standard colors */
-extern const dmnsn_color dmnsn_black, dmnsn_white;
+extern const dmnsn_color dmnsn_black, dmnsn_white, dmnsn_red, dmnsn_green,
+  dmnsn_blue, dmnsn_magenta, dmnsn_yellow, dmnsn_cyan;
 
 /* Standard whitepoint, determined by the conversion of sRGB white to CIE XYZ */
 extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
@@ -70,12 +75,14 @@ extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
 
 dmnsn_color dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ);
 dmnsn_color dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY);
+dmnsn_color dmnsn_color_from_RGB(dmnsn_CIE_RGB RGB);
 dmnsn_color dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white);
 dmnsn_color dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white);
 dmnsn_color dmnsn_color_from_sRGB(dmnsn_sRGB sRGB);
 
 dmnsn_CIE_XYZ dmnsn_XYZ_from_color(dmnsn_color color);
 dmnsn_CIE_xyY dmnsn_xyY_from_color(dmnsn_color color);
+dmnsn_CIE_RGB dmnsn_RGB_from_color(dmnsn_color color);
 dmnsn_CIE_Lab dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 dmnsn_sRGB    dmnsn_sRGB_from_color(dmnsn_color color);
