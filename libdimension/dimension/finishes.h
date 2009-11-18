@@ -25,7 +25,8 @@
 #ifndef DIMENSION_FINISHES_H
 #define DIMENSION_FINISHES_H
 
-/* A diffuse finish */
-dmnsn_finish *dmnsn_new_diffuse_finish();
+/* A phong finish */
+dmnsn_finish *dmnsn_new_phong_finish(double diffuse, double specular,
+                                     double exp);
 
 #endif /* DIMENSION_FINISHES_H */

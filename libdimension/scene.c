@@ -28,6 +28,10 @@ dmnsn_new_scene()
   dmnsn_scene *scene = malloc(sizeof(dmnsn_scene));
   if (scene) {
     scene->default_texture = dmnsn_new_texture();
+    if (!scene->default_texture) {
+      dmnsn_delete_scene(scene);
+      return NULL;
+    }
 
     scene->camera  = NULL;
     scene->canvas  = NULL;
