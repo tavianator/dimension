@@ -32,7 +32,7 @@ dmnsn_new_default_scene()
 
   /* Default finish */
 
-  scene->default_texture->finish = dmnsn_new_phong_finish(1.0, 0.5, 50.0);
+  scene->default_texture->finish = dmnsn_new_phong_finish(1.0, 0.2, 50.0);
   if (!scene->default_texture->finish) {
     dmnsn_delete_scene(scene);
     return NULL;
@@ -122,7 +122,7 @@ dmnsn_new_default_scene()
   /* Now make a light */
 
   dmnsn_light *light = dmnsn_new_point_light(
-    dmnsn_vector_construct(-15.0, 20.0, -5.0),
+    dmnsn_vector_construct(-15.0, 20.0, 10.0),
     dmnsn_white
   );
   if (!light) {
