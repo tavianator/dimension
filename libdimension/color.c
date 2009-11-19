@@ -382,7 +382,11 @@ dmnsn_color_filter(dmnsn_color color, dmnsn_color filter)
   dmnsn_color transmitted = dmnsn_color_mul(filter.trans, color);
   dmnsn_color filtered = dmnsn_color_mul(filter.filter,
                                          dmnsn_color_illuminate(filter, color));
-  return dmnsn_color_add(transmitted, filtered);
+
+  dmnsn_color ret = dmnsn_color_add(transmitted, filtered);
+  ret.filter = filter.filter*color.filter;
+  ret.trans  = filter.trans*color.trans;
+  return ret;
 }
 
 /* Illuminates `color' with `light' */
