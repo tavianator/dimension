@@ -22,6 +22,10 @@
 #include <unistd.h> /* For sysconf */
 #include <stdbool.h>
 
+/*
+ * Boilerplate for multithreading
+ */
+
 /* Payload type for passing arguments to worker thread */
 
 typedef struct {
@@ -207,14 +211,16 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
   return retval;
 }
 
-/* Helper for dmnsn_raytrace_scene_impl - shoot a ray */
+/*
+ * Raytracing algorithm
+ */
+
+/* Main helper for dmnsn_raytrace_scene_impl - shoot a ray */
 static dmnsn_color dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
                                         dmnsn_kD_splay_tree *kD_splay_tree,
                                         dmnsn_color color);
 
-/*
- * Actually raytrace a scene
- */
+/* Actually raytrace a scene */
 static int
 dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
                           dmnsn_kD_splay_tree *kD_splay_tree,
@@ -252,7 +258,17 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   return 0;
 }
 
-static const double epsilon = 1.0e-9;
+static dmnsn_line
+dmnsn_line_add_epsilon(dmnsn_line l)
+{
+  return dmnsn_line_construct(
+    dmnsn_vector_add(
+      l.x0,
+      dmnsn_vector_mul(1.0e-9, l.n)
+    ),
+    l.n
+  );
+}
 
 static dmnsn_color
 dmnsn_raytrace_pigment(dmnsn_intersection *intersection, dmnsn_scene *scene)
@@ -281,6 +297,55 @@ dmnsn_raytrace_pigment(dmnsn_intersection *intersection, dmnsn_scene *scene)
   return color;
 }
 
+/* Get the color of a light ray at an intersection point */
+static bool
+dmnsn_raytrace_light_ray(dmnsn_intersection *intersection, dmnsn_scene *scene,
+                         dmnsn_kD_splay_tree *kD_splay_tree,
+                         const dmnsn_light *light, dmnsn_color *color)
+{
+  *color = dmnsn_black;
+
+  dmnsn_vector x0 = dmnsn_line_point(intersection->ray, intersection->t);
+  dmnsn_line shadow_ray = dmnsn_line_construct(
+    x0,
+    dmnsn_vector_sub(light->x0, x0)
+  );
+  /* Add epsilon to avoid hitting ourselves with the shadow ray */
+  shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
+
+  /* Search for an object in the way of the light source */
+  if (dmnsn_vector_dot(shadow_ray.n, intersection->normal) < 0.0)
+    return false;
+
+  *color = (*light->light_fn)(light, x0);
+
+  dmnsn_intersection *shadow_caster;
+  while (1) {
+    shadow_caster = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
+
+    if (!shadow_caster || shadow_caster->t > 1.0) {
+      dmnsn_delete_intersection(shadow_caster);
+      break;
+    }
+
+    dmnsn_color pigment = dmnsn_raytrace_pigment(shadow_caster, scene);
+    if (pigment.filter || pigment.trans) {
+      *color = dmnsn_color_filter(*color, pigment);
+      shadow_ray.x0 = dmnsn_line_point(shadow_ray, shadow_caster->t);
+      shadow_ray.n  = dmnsn_vector_sub(light->x0, shadow_ray.x0);
+      shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
+    } else {
+      *color = dmnsn_black;
+      dmnsn_delete_intersection(shadow_caster);
+      return false;
+    }
+
+    dmnsn_delete_intersection(shadow_caster);
+  }
+
+  return true;
+}
+
 static dmnsn_color
 dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
                         dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color color)
@@ -300,60 +365,23 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
   if (finish)
     illum = dmnsn_color_mul(finish->ambient, color);
 
+  dmnsn_vector x0 = dmnsn_line_point(intersection->ray, intersection->t);
+
   const dmnsn_light *light;
   unsigned int i;
 
+  /* Iterate over each light */
   for (i = 0; i < dmnsn_array_size(scene->lights); ++i) {
     dmnsn_array_get(scene->lights, i, &light);
 
-    dmnsn_vector x0 = dmnsn_line_point(intersection->ray, intersection->t);
-    dmnsn_line shadow_ray = dmnsn_line_construct(
-      /* Add epsilon*(light->x0 - x0) to avoid hitting ourself with the shadow
-         ray */
-      dmnsn_vector_add(
-        x0,
-        dmnsn_vector_mul(epsilon, dmnsn_vector_sub(light->x0, x0))
-      ),
-      dmnsn_vector_sub(light->x0, x0)
-    );
-
-    /* Search for an object in the way of the light source */
     dmnsn_color light_color;
-    bool lit = false;
-    if (dmnsn_vector_dot(shadow_ray.n, intersection->normal) > 0.0) {
-      lit = true;
-      light_color = (*light->light_fn)(light, x0);
-
-      dmnsn_intersection *shadow_caster;
-      while (1) {
-        shadow_caster = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
-
-        if (!shadow_caster || shadow_caster->t > 1.0) {
-          dmnsn_delete_intersection(shadow_caster);
-          break;
-        }
-
-        dmnsn_color pigment = dmnsn_raytrace_pigment(shadow_caster, scene);
-        if (pigment.filter || pigment.trans) {
-          light_color = dmnsn_color_filter(light_color, pigment);
-          shadow_ray.x0 = dmnsn_vector_add(
-            dmnsn_line_point(shadow_ray, shadow_caster->t),
-            dmnsn_vector_mul(epsilon, shadow_ray.n)
-          );
-          shadow_ray.n  = dmnsn_vector_sub(light->x0, shadow_ray.x0);
-        } else {
-          lit = false;
-          dmnsn_delete_intersection(shadow_caster);
-          break;
-        }
-
-        dmnsn_delete_intersection(shadow_caster);
-      }
-    }
-
-    if (lit) {
+    if (dmnsn_raytrace_light_ray(intersection, scene, kD_splay_tree, light,
+                                 &light_color))
+    {
       if (scene->quality >= DMNSN_RENDER_FINISH && finish) {
-        dmnsn_vector ray    = dmnsn_vector_normalize(shadow_ray.n);
+        dmnsn_vector ray = dmnsn_vector_normalize(
+          dmnsn_vector_sub(light->x0, x0)
+        );
         dmnsn_vector normal = intersection->normal;
         dmnsn_vector viewer
           = dmnsn_vector_normalize(dmnsn_vector_negate(intersection->ray.n));
@@ -412,13 +440,10 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
       trans.trans  = 0.0;
 
       dmnsn_line trans_ray = dmnsn_line_construct(
-        dmnsn_vector_add(
-          dmnsn_line_point(ray, intersection->t),
-          dmnsn_vector_mul(epsilon, ray.n)
-        ),
+        dmnsn_line_point(ray, intersection->t),
         ray.n
       );
-      trans_ray.n  = ray.n;
+      trans_ray = dmnsn_line_add_epsilon(trans_ray);
 
       dmnsn_color rec = dmnsn_raytrace_shoot(trans_ray,
                                              scene,
