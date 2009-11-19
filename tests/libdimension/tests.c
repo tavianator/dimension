@@ -109,7 +109,10 @@ dmnsn_new_default_scene()
     return NULL;
   }
 
-  cube->texture->pigment = dmnsn_new_solid_pigment(dmnsn_magenta);
+  dmnsn_color cube_color = dmnsn_magenta;
+  cube_color.filter = 0.25;
+  cube_color.trans  = 0.25;
+  cube->texture->pigment = dmnsn_new_solid_pigment(cube_color);
   if (!cube->texture->pigment) {
     dmnsn_delete_scene(scene);
     return NULL;

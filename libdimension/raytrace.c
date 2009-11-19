@@ -316,28 +316,31 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
     );
 
     /* Search for an object in the way of the light source */
-    dmnsn_intersection *shadow_caster
-      = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
-    bool lit = !shadow_caster || shadow_caster->t > 1.0;
-    dmnsn_delete_intersection(shadow_caster);
+    bool lit = dmnsn_vector_dot(shadow_ray.n, intersection->normal) > 0.0;
+    if (lit) {
+      dmnsn_intersection *shadow_caster
+        = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
+      lit = (!shadow_caster || shadow_caster->t > 1.0);
+      dmnsn_delete_intersection(shadow_caster);
+    }
 
-    if (scene->quality >= DMNSN_RENDER_FINISH && finish) {
-      dmnsn_color light_color = dmnsn_black;
-      if (lit)
-        light_color = (*light->light_fn)(light, x0);
+    if (lit) {
+      if (scene->quality >= DMNSN_RENDER_FINISH && finish) {
+        dmnsn_color light_color = (*light->light_fn)(light, x0);
 
-      dmnsn_vector ray    = dmnsn_vector_normalize(shadow_ray.n);
-      dmnsn_vector normal = intersection->normal;
-      dmnsn_vector viewer
-        = dmnsn_vector_normalize(dmnsn_vector_negate(intersection->ray.n));
+        dmnsn_vector ray    = dmnsn_vector_normalize(shadow_ray.n);
+        dmnsn_vector normal = intersection->normal;
+        dmnsn_vector viewer
+          = dmnsn_vector_normalize(dmnsn_vector_negate(intersection->ray.n));
 
-      /* Get this light's color contribution to the object */
-      dmnsn_color contrib = (*finish->finish_fn)(finish,
-                                                 light_color, color,
-                                                 ray, normal, viewer);
-      illum = dmnsn_color_add(contrib, illum);
-    } else if (lit) {
-      illum = color;
+        /* Get this light's color contribution to the object */
+        dmnsn_color contrib = (*finish->finish_fn)(finish,
+                                                   light_color, color,
+                                                   ray, normal, viewer);
+        illum = dmnsn_color_add(contrib, illum);
+      } else {
+        illum = color;
+      }
     }
   }
 
@@ -347,24 +350,59 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
 /* Shoot a ray, and calculate the color, using `color' as the background */
 static dmnsn_color
 dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
-                     dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color color)
+                     dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color background)
 {
   dmnsn_intersection *intersection = dmnsn_kD_splay_search(kD_splay_tree, ray);
 
+  dmnsn_color color = background;
   if (intersection) {
-    /* Default to black if we aren't rendering pigments */
-    color = dmnsn_black;
-
+    /* Get the pigment of the object */
+    dmnsn_color pigment = dmnsn_black;
     if (scene->quality >= DMNSN_RENDER_PIGMENT) {
-      color = dmnsn_raytrace_pigment(intersection, scene);
+      pigment = dmnsn_raytrace_pigment(intersection, scene);
     }
+    color = pigment;
+    color.filter = 0.0;
+    color.trans  = 0.0;
 
+    /* Account for finishes and shadows */
+    dmnsn_color illum = pigment;
     if (scene->quality >= DMNSN_RENDER_LIGHTS) {
-      color = dmnsn_raytrace_lighting(intersection,
+      illum = dmnsn_raytrace_lighting(intersection,
                                       scene,
                                       kD_splay_tree,
-                                      color);
+                                      pigment);
     }
+    color = illum;
+    color.filter = 0.0;
+    color.trans  = 0.0;
+
+    /* Account for translucency */
+    dmnsn_color trans = illum;
+    if (scene->quality >= DMNSN_RENDER_TRANSLUCENCY
+        && (pigment.filter || pigment.trans))
+    {
+      trans = dmnsn_color_mul(1.0 - pigment.filter - pigment.trans, illum);
+      trans.filter = 0.0;
+      trans.trans  = 0.0;
+
+      dmnsn_line trans_ray = dmnsn_line_construct(
+        dmnsn_vector_add(
+          dmnsn_line_point(ray, intersection->t),
+          dmnsn_vector_mul(1.0e-9, ray.n)
+        ),
+        ray.n
+      );
+      trans_ray.n  = ray.n;
+
+      dmnsn_color rec = dmnsn_raytrace_shoot(trans_ray,
+                                             scene,
+                                             kD_splay_tree,
+                                             background);
+      dmnsn_color filtered = dmnsn_color_filter(rec, pigment);
+      trans = dmnsn_color_add(trans, filtered);
+    }
+    color = trans;
 
     dmnsn_delete_intersection(intersection);
   }

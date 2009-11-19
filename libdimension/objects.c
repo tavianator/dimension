@@ -73,6 +73,10 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line)
       intersection->t       = t;
       intersection->normal  = dmnsn_line_point(line, t);
       intersection->texture = sphere->texture;
+
+      /* Flip the normal if we're inside the sphere */
+      if (dmnsn_vector_dot(line.n, intersection->normal) > 0.0)
+        intersection->normal = dmnsn_vector_negate(intersection->normal);
     }
   }
 
@@ -128,7 +132,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_vector_construct(-1.0, 0.0, 0.0);
+      normal = dmnsn_vector_construct(-copysign(line.n.x, 1.0), 0.0, 0.0);
     }
 
     /* x = 1.0 */
@@ -138,7 +142,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_vector_construct(1.0, 0.0, 0.0);
+      normal = dmnsn_vector_construct(-copysign(line.n.x, 1.0), 0.0, 0.0);
     }
   }
 
@@ -150,7 +154,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_vector_construct(0.0, -1.0, 0.0);
+      normal = dmnsn_vector_construct(0.0, -copysign(line.n.y, 1.0), 0.0);
     }
 
     /* y = 1.0 */
@@ -160,7 +164,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_vector_construct(0.0, 1.0, 0.0);
+      normal = dmnsn_vector_construct(0.0, -copysign(line.n.y, 1.0), 0.0);
     }
   }
 
@@ -172,7 +176,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_vector_construct(0.0, 0.0, -1.0);
+      normal = dmnsn_vector_construct(0.0, 0.0, -copysign(line.n.z, 1.0));
     }
 
     /* z = 1.0 */
@@ -182,7 +186,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_vector_construct(0.0, 0.0, 1.0);
+      normal = dmnsn_vector_construct(0.0, 0.0, -copysign(line.n.z, 1.0));
     }
   }
 

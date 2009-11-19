@@ -27,41 +27,61 @@ const dmnsn_CIE_XYZ dmnsn_whitepoint = { .X = 0.9504060171449392,
                                          .Z = 1.089062231497274 };
 
 /* Standard colors */
-const dmnsn_color dmnsn_black = { .X = 0.0, .Y = 0.0, .Z = 0.0 };
+const dmnsn_color dmnsn_black = {
+  .X = 0.0,
+  .Y = 0.0,
+  .Z = 0.0,
+  .filter = 0.0,
+  .trans  = 0.0
+};
 const dmnsn_color dmnsn_white = {
   .X = 0.9504060171449392,
   .Y = 0.9999085943425312,
-  .Z = 1.089062231497274
+  .Z = 1.089062231497274,
+  .filter = 0.0,
+  .trans  = 0.0
 };
 const dmnsn_color dmnsn_red = {
   .X = 0.4123808838268995,
   .Y = 0.2126198631048975,
-  .Z = 0.0193434956789248
+  .Z = 0.0193434956789248,
+  .filter = 0.0,
+  .trans  = 0.0
 };
 const dmnsn_color dmnsn_green = {
   .X = 0.3575728355732478,
   .Y = 0.7151387878413206,
-  .Z = 0.1192121694056356
+  .Z = 0.1192121694056356,
+  .filter = 0.0,
+  .trans  = 0.0
 };
 const dmnsn_color dmnsn_blue = {
   .X = 0.1804522977447919,
   .Y = 0.0721499433963131,
-  .Z = 0.950506566412713
+  .Z = 0.950506566412713,
+  .filter = 0.0,
+  .trans  = 0.0
 };
 const dmnsn_color dmnsn_magenta = {
   .X = 0.5928331815716914,
   .Y = 0.2847698065012106,
-  .Z = 0.9698500620916378
+  .Z = 0.9698500620916378,
+  .filter = 0.0,
+  .trans  = 0.0
 };
 const dmnsn_color dmnsn_yellow = {
   .X = 0.7699537194001473,
   .Y = 0.9277586509462181,
-  .Z = 0.1385556650845604
+  .Z = 0.1385556650845604,
+  .filter = 0.0,
+  .trans  = 0.0
 };
 const dmnsn_color dmnsn_cyan = {
   .X = 0.5380251333180397,
   .Y = 0.7872887312376337,
-  .Z = 1.069718735818349
+  .Z = 1.069718735818349,
+  .filter = 0.0,
+  .trans  = 0.0
 };
 
 /* Convert a CIE XYZ color to a dmnsn_color (actually a no-op) */
@@ -335,8 +355,10 @@ dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
 
   dmnsn_color ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
   /* Weighted average of transparencies by intensity */
-  ret.filter = (Lab1.L*color1.filter + Lab2.L*color2.filter)/Lab.L;
-  ret.trans  = (Lab1.L*color1.trans  + Lab2.L*color2.trans)/Lab.L;
+  if (Lab.L) {
+    ret.filter = (Lab1.L*color1.filter + Lab2.L*color2.filter)/Lab.L;
+    ret.trans  = (Lab1.L*color1.trans  + Lab2.L*color2.trans)/Lab.L;
+  }
 
   return ret;
 }
@@ -355,6 +377,16 @@ dmnsn_color_mul(double n, dmnsn_color color)
   ret.trans  = color.trans;
 
   return ret;
+}
+
+/* Filters `color' through `filter' */
+dmnsn_color
+dmnsn_color_filter(dmnsn_color color, dmnsn_color filter)
+{
+  dmnsn_color transmitted = dmnsn_color_mul(filter.trans, color);
+  dmnsn_color filtered = dmnsn_color_mul(filter.filter,
+                                         dmnsn_color_illuminate(filter, color));
+  return dmnsn_color_add(transmitted, filtered);
 }
 
 /* Illuminates `color' with `light' */

@@ -96,8 +96,14 @@ dmnsn_png_optimizer_fn(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer,
     pixel[2] = sRGB.B*UINT16_MAX;
   }
 
-  /* color.filter + color.trans is in [0.0, 1.0] by definition */
-  pixel[3] = (color.filter + color.trans)*UINT16_MAX;
+  double alpha = color.filter + color.trans;
+  if (alpha <= 0.0) {
+    pixel[3] = 0;
+  } else if (alpha >= 1.0) {
+    pixel[3] = UINT16_MAX;
+  } else {
+    pixel[3] = alpha*UINT16_MAX;
+  }
 }
 
 /* Payload to store function arguments for thread callbacks */
@@ -359,8 +365,14 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
         row[4*x + 2] = sRGB.B*UINT16_MAX;
       }
 
-      /* color.filter + color.trans is in [0.0, 1.0] by definition */
-      row[4*x + 3] = (color.filter + color.trans)*UINT16_MAX;
+      double alpha = color.filter + color.trans;
+      if (alpha <= 0.0) {
+        row[4*x + 3] = 0;
+      } else if (alpha >= 1.0) {
+        row[4*x + 3] = UINT16_MAX;
+      } else {
+        row[4*x + 3] = alpha*UINT16_MAX;
+      }
     }
 
     /* Write the row */
