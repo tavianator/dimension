@@ -252,6 +252,8 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   return 0;
 }
 
+static const double epsilon = 1.0e-9;
+
 static dmnsn_color
 dmnsn_raytrace_pigment(dmnsn_intersection *intersection, dmnsn_scene *scene)
 {
@@ -310,24 +312,47 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
          ray */
       dmnsn_vector_add(
         x0,
-        dmnsn_vector_mul(1.0e-9, dmnsn_vector_sub(light->x0, x0))
+        dmnsn_vector_mul(epsilon, dmnsn_vector_sub(light->x0, x0))
       ),
       dmnsn_vector_sub(light->x0, x0)
     );
 
     /* Search for an object in the way of the light source */
-    bool lit = dmnsn_vector_dot(shadow_ray.n, intersection->normal) > 0.0;
-    if (lit) {
-      dmnsn_intersection *shadow_caster
-        = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
-      lit = (!shadow_caster || shadow_caster->t > 1.0);
-      dmnsn_delete_intersection(shadow_caster);
+    dmnsn_color light_color;
+    bool lit = false;
+    if (dmnsn_vector_dot(shadow_ray.n, intersection->normal) > 0.0) {
+      lit = true;
+      light_color = (*light->light_fn)(light, x0);
+
+      dmnsn_intersection *shadow_caster;
+      while (1) {
+        shadow_caster = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
+
+        if (!shadow_caster || shadow_caster->t > 1.0) {
+          dmnsn_delete_intersection(shadow_caster);
+          break;
+        }
+
+        dmnsn_color pigment = dmnsn_raytrace_pigment(shadow_caster, scene);
+        if (pigment.filter || pigment.trans) {
+          light_color = dmnsn_color_filter(light_color, pigment);
+          shadow_ray.x0 = dmnsn_vector_add(
+            dmnsn_line_point(shadow_ray, shadow_caster->t),
+            dmnsn_vector_mul(epsilon, shadow_ray.n)
+          );
+          shadow_ray.n  = dmnsn_vector_sub(light->x0, shadow_ray.x0);
+        } else {
+          lit = false;
+          dmnsn_delete_intersection(shadow_caster);
+          break;
+        }
+
+        dmnsn_delete_intersection(shadow_caster);
+      }
     }
 
     if (lit) {
       if (scene->quality >= DMNSN_RENDER_FINISH && finish) {
-        dmnsn_color light_color = (*light->light_fn)(light, x0);
-
         dmnsn_vector ray    = dmnsn_vector_normalize(shadow_ray.n);
         dmnsn_vector normal = intersection->normal;
         dmnsn_vector viewer
@@ -389,7 +414,7 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
       dmnsn_line trans_ray = dmnsn_line_construct(
         dmnsn_vector_add(
           dmnsn_line_point(ray, intersection->t),
-          dmnsn_vector_mul(1.0e-9, ray.n)
+          dmnsn_vector_mul(epsilon, ray.n)
         ),
         ray.n
       );
