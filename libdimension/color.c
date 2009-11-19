@@ -192,35 +192,32 @@ static double dmnsn_sRGB_Cinv(double CsRGB) {
   }
 }
 
+/* Perform the inverse linear sRGB conversion */
+static dmnsn_color
+dmnsn_linear_color_from_sRGB(dmnsn_sRGB sRGB)
+{
+  dmnsn_color ret = {
+    .X = 0.4123808838268995*sRGB.R + 0.3575728355732478*sRGB.G
+       + 0.1804522977447919*sRGB.B,
+    .Y = 0.2126198631048975*sRGB.R + 0.7151387878413206*sRGB.G
+       + 0.0721499433963131*sRGB.B,
+    .Z = 0.0193434956789248*sRGB.R + 0.1192121694056356*sRGB.G
+       + 0.9505065664127130*sRGB.B,
+    .filter = 0.0,
+    .trans  = 0.0
+  };
+  return ret;
+}
+
 /* Convert an sRGB value to a dmnsn_color */
 dmnsn_color
 dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
 {
-  double Rlinear, Glinear, Blinear; /* Linear RGB values - no gamma */
-  dmnsn_color ret;
+  sRGB.R = dmnsn_sRGB_Cinv(sRGB.R);
+  sRGB.G = dmnsn_sRGB_Cinv(sRGB.G);
+  sRGB.B = dmnsn_sRGB_Cinv(sRGB.B);
 
-  Rlinear = dmnsn_sRGB_Cinv(sRGB.R);
-  Glinear = dmnsn_sRGB_Cinv(sRGB.G);
-  Blinear = dmnsn_sRGB_Cinv(sRGB.B);
-
-  /*
-   * Now, the linear conversion.  Expressed as matrix multiplication, it looks
-   * like this:
-   *
-   *   [X]   [0.4124 0.3576 0.1805] [Rlinear]
-   *   [Y] = [0.2126 0.7152 0.0722]*[Glinear]
-   *   [X]   [0.0193 0.1192 0.9505] [Blinear]
-   */
-  ret.X = 0.4123808838268995*Rlinear + 0.3575728355732478*Glinear
-    + 0.1804522977447919*Blinear;
-  ret.Y = 0.2126198631048975*Rlinear + 0.7151387878413206*Glinear
-    + 0.0721499433963131*Blinear;
-  ret.Z = 0.0193434956789248*Rlinear + 0.1192121694056356*Glinear
-    + 0.9505065664127130*Blinear;
-  ret.filter = 0.0;
-  ret.trans  = 0.0;
-
-  return ret;
+  return dmnsn_linear_color_from_sRGB(sRGB);
 }
 
 /* Convert a dmnsn_color to a CIE XYZ color (actually a no-op) */
@@ -316,30 +313,29 @@ static double dmnsn_sRGB_C(double Clinear) {
   }
 }
 
+/* Perform the linear sRGB conversion */
+static dmnsn_sRGB
+dmnsn_linear_sRGB_from_color(dmnsn_color color)
+{
+  dmnsn_sRGB ret = {
+    .R =  3.2410*color.X - 1.5374*color.Y - 0.4986*color.Z,
+    .G = -0.9692*color.X + 1.8760*color.Y + 0.0416*color.Z,
+    .B =  0.0556*color.X - 0.2040*color.Y + 1.0570*color.Z
+  };
+  return ret;
+}
+
 /* Convert a dmnsn_color to an sRGB color */
 dmnsn_sRGB
 dmnsn_sRGB_from_color(dmnsn_color color)
 {
-  double Rlinear, Glinear, Blinear; /* Linear RGB values - no gamma */
-  dmnsn_sRGB ret;
+  dmnsn_sRGB sRGB = dmnsn_linear_sRGB_from_color(color);
 
-  /*
-   * First, the linear conversion.  Expressed as matrix multiplication, it looks
-   * like this:
-   *
-   *   [Rlinear]   [ 3.2410 -1.5374 -0.4986] [X]
-   *   [Glinear] = [-0.9692  1.8760  0.0416]*[Y]
-   *   [Blinear]   [ 0.0556 -0.2040  1.0570] [Z]
-   */
-  Rlinear =  3.2410*color.X - 1.5374*color.Y - 0.4986*color.Z;
-  Glinear = -0.9692*color.X + 1.8760*color.Y + 0.0416*color.Z;
-  Blinear =  0.0556*color.X - 0.2040*color.Y + 1.0570*color.Z;
+  sRGB.R = dmnsn_sRGB_C(sRGB.R);
+  sRGB.G = dmnsn_sRGB_C(sRGB.G);
+  sRGB.B = dmnsn_sRGB_C(sRGB.B);
 
-  ret.R = dmnsn_sRGB_C(Rlinear);
-  ret.G = dmnsn_sRGB_C(Glinear);
-  ret.B = dmnsn_sRGB_C(Blinear);
-
-  return ret;
+  return sRGB;
 }
 
 /* Add two colors in a perceptually correct manner, using CIE L*a*b*. */
@@ -393,20 +389,24 @@ dmnsn_color_filter(dmnsn_color color, dmnsn_color filter)
 dmnsn_color
 dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color)
 {
-  static dmnsn_CIE_RGB white = { 0.0 };
-  if (!white.R)
-    white = dmnsn_RGB_from_color(dmnsn_white);
+  /* We use the sRGB primaries */
+  dmnsn_sRGB sRGB1 = dmnsn_linear_sRGB_from_color(light),
+             sRGB2 = dmnsn_linear_sRGB_from_color(color);
 
-  dmnsn_CIE_RGB RGB1 = dmnsn_RGB_from_color(light);
-  dmnsn_CIE_RGB RGB2 = dmnsn_RGB_from_color(color);
+  double R1 = 1.16*dmnsn_Lab_f(sRGB1.R) - 0.16,
+         R2 = 1.16*dmnsn_Lab_f(sRGB2.R) - 0.16,
+         G1 = 1.16*dmnsn_Lab_f(sRGB1.G) - 0.16,
+         G2 = 1.16*dmnsn_Lab_f(sRGB2.G) - 0.16,
+         B1 = 1.16*dmnsn_Lab_f(sRGB1.B) - 0.16,
+         B2 = 1.16*dmnsn_Lab_f(sRGB2.B) - 0.16;
 
-  dmnsn_CIE_RGB RGB = {
-    .R = RGB1.R*RGB2.R/white.R,
-    .G = RGB1.G*RGB2.G/white.G,
-    .B = RGB1.B*RGB2.B/white.B
+  dmnsn_sRGB sRGB = {
+    .R = dmnsn_Lab_finv((R1*R2 + 0.16)/1.16),
+    .G = dmnsn_Lab_finv((G1*G2 + 0.16)/1.16),
+    .B = dmnsn_Lab_finv((B1*B2 + 0.16)/1.16)
   };
 
-  dmnsn_color ret = dmnsn_color_from_RGB(RGB);
+  dmnsn_color ret = dmnsn_linear_color_from_sRGB(sRGB);
   ret.filter = color.filter;
   ret.trans  = color.trans;
 
