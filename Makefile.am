@@ -32,7 +32,7 @@ if PGO
 pgo:
 	@if [ ! -d $(top_builddir)/libdimension/pgo/.libs ] || [ -z "$$(ls $(top_builddir)/libdimension/pgo/.libs/*.gcda 2>/dev/null)" ]; then \
 	  $(MAKE) $(AM_MAKEFLAGS) -C libdimension libdimension-pgo.la && \
-	  $(MAKE) -j1 -C tests/libdimension check; \
+	  $(MAKE) $(AM_MAKEFLAGS) -C tests/libdimension check; \
 	fi
 	@rename _pgo_la _la $$(find $(top_builddir)/libdimension/pgo/.libs/)
 
