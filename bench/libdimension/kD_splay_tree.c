@@ -146,8 +146,8 @@ main()
 
   /* dmnsn_kD_splay_search() */
 
-  ray.x0 = dmnsn_vector_construct(0.0, 0.0, -2.0);
-  ray.n  = dmnsn_vector_construct(0.0, 0.0, 1.0);
+  ray.x0 = dmnsn_new_vector(0.0, 0.0, -2.0);
+  ray.n  = dmnsn_new_vector(0.0, 0.0, 1.0);
 
   dmnsn_delete_intersection((*objects[0]->intersection_fn)(objects[0], ray));
   sandglass_bench_noprecache(&sandglass, {

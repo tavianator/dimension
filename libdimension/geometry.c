@@ -25,30 +25,30 @@
 dmnsn_matrix
 dmnsn_identity_matrix()
 {
-  return dmnsn_matrix_construct(1.0, 0.0, 0.0, 0.0,
-                                0.0, 1.0, 0.0, 0.0,
-                                0.0, 0.0, 1.0, 0.0,
-                                0.0, 0.0, 0.0, 1.0);
+  return dmnsn_new_matrix(1.0, 0.0, 0.0, 0.0,
+                          0.0, 1.0, 0.0, 0.0,
+                          0.0, 0.0, 1.0, 0.0,
+                          0.0, 0.0, 0.0, 1.0);
 }
 
 /* Scaling matrix */
 dmnsn_matrix
 dmnsn_scale_matrix(dmnsn_vector s)
 {
-  return dmnsn_matrix_construct(s.x, 0.0, 0.0, 0.0,
-                                0.0, s.y, 0.0, 0.0,
-                                0.0, 0.0, s.z, 0.0,
-                                0.0, 0.0, 0.0, 1.0);
+  return dmnsn_new_matrix(s.x, 0.0, 0.0, 0.0,
+                          0.0, s.y, 0.0, 0.0,
+                          0.0, 0.0, s.z, 0.0,
+                          0.0, 0.0, 0.0, 1.0);
 }
 
 /* Translation matrix */
 dmnsn_matrix
 dmnsn_translation_matrix(dmnsn_vector d)
 {
-  return dmnsn_matrix_construct(1.0, 0.0, 0.0, d.x,
-                                0.0, 1.0, 0.0, d.y,
-                                0.0, 0.0, 1.0, d.z,
-                                0.0, 0.0, 0.0, 1.0);
+  return dmnsn_new_matrix(1.0, 0.0, 0.0, d.x,
+                          0.0, 1.0, 0.0, d.y,
+                          0.0, 0.0, 1.0, d.z,
+                          0.0, 0.0, 0.0, 1.0);
 }
 
 /* Left-handed rotation matrix; theta/|theta| = axis, |theta| = angle */
@@ -56,25 +56,23 @@ dmnsn_matrix
 dmnsn_rotation_matrix(dmnsn_vector theta)
 {
   /* Two trig calls, 25 multiplications, 13 additions */
-  dmnsn_vector axis;
-  double angle, s, t, x, y, z;
 
-  angle = dmnsn_vector_norm(theta);
+  double angle = dmnsn_vector_norm(theta);
   if (angle == 0.0) {
     return dmnsn_identity_matrix();
   }
-  axis = dmnsn_vector_normalize(theta);
+  dmnsn_vector axis = dmnsn_vector_normalize(theta);
 
-  /* Shorthand to make dmnsn_matrix_construct() call legible */
+  /* Shorthand to make dmnsn_new_matrix() call legible */
 
-  s = sin(angle);
-  t = 1.0 - cos(angle);
+  double s = sin(angle);
+  double t = 1.0 - cos(angle);
 
-  x = axis.x;
-  y = axis.y;
-  z = axis.z;
+  double x = axis.x;
+  double y = axis.y;
+  double z = axis.z;
 
-  return dmnsn_matrix_construct(
+  return dmnsn_new_matrix(
     1.0 + t*(x*x - 1.0), -z*s + t*x*y,        y*s + t*x*z,         0.0,
     z*s + t*x*y,         1.0 + t*(y*y - 1.0), -x*s + t*y*z,        0.0,
     -y*s + t*x*z,        x*s + t*y*z,         1.0 + t*(z*z - 1.0), 0.0,
@@ -86,8 +84,8 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
 
 typedef struct { double n[2][2]; } dmnsn_matrix2;
 
-static dmnsn_matrix2 dmnsn_matrix2_construct(double a1, double a2,
-                                             double b1, double b2);
+static dmnsn_matrix2 dmnsn_new_matrix2(double a1, double a2,
+                                       double b1, double b2);
 static dmnsn_matrix2 dmnsn_matrix2_inverse(dmnsn_matrix2 A);
 static dmnsn_matrix2 dmnsn_matrix2_negate(dmnsn_matrix2 A);
 static dmnsn_matrix2 dmnsn_matrix2_sub(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs);
@@ -134,18 +132,18 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   }
 
   /* Partition the matrix */
-  P = dmnsn_matrix2_construct(A.n[0][0], A.n[0][1],
-                              A.n[1][0], A.n[1][1]);
-  Q = dmnsn_matrix2_construct(A.n[0][2], A.n[0][3],
-                              A.n[1][2], A.n[1][3]);
-  R = dmnsn_matrix2_construct(A.n[2][0], A.n[2][1],
-                              A.n[3][0], A.n[3][1]);
-  S = dmnsn_matrix2_construct(A.n[2][2], A.n[2][3],
-                              A.n[3][2], A.n[3][3]);
+  P = dmnsn_new_matrix2(A.n[0][0], A.n[0][1],
+                        A.n[1][0], A.n[1][1]);
+  Q = dmnsn_new_matrix2(A.n[0][2], A.n[0][3],
+                        A.n[1][2], A.n[1][3]);
+  R = dmnsn_new_matrix2(A.n[2][0], A.n[2][1],
+                        A.n[3][0], A.n[3][1]);
+  S = dmnsn_new_matrix2(A.n[2][2], A.n[2][3],
+                        A.n[3][2], A.n[3][3]);
 
   /* Do this inversion ourselves, since we already have the determinant */
-  Pi = dmnsn_matrix2_construct( P.n[1][1]/Pdet, -P.n[0][1]/Pdet,
-                               -P.n[1][0]/Pdet,  P.n[0][0]/Pdet);
+  Pi = dmnsn_new_matrix2( P.n[1][1]/Pdet, -P.n[0][1]/Pdet,
+                         -P.n[1][0]/Pdet,  P.n[0][0]/Pdet);
 
   /* Calculate R*inv(P), inv(P)*Q, and R*inv(P)*Q */
   RPi  = dmnsn_matrix2_mul(R, Pi);
@@ -159,15 +157,15 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   PP = dmnsn_matrix2_sub(Pi, dmnsn_matrix2_mul(PiQ, RR));
 
   /* Reconstruct the matrix */
-  return dmnsn_matrix_construct(PP.n[0][0], PP.n[0][1], QQ.n[0][0], QQ.n[0][1],
-                                PP.n[1][0], PP.n[1][1], QQ.n[1][0], QQ.n[1][1],
-                                RR.n[0][0], RR.n[0][1], SS.n[0][0], SS.n[0][1],
-                                RR.n[1][0], RR.n[1][1], SS.n[1][0], SS.n[1][1]);
+  return dmnsn_new_matrix(PP.n[0][0], PP.n[0][1], QQ.n[0][0], QQ.n[0][1],
+                          PP.n[1][0], PP.n[1][1], QQ.n[1][0], QQ.n[1][1],
+                          RR.n[0][0], RR.n[0][1], SS.n[0][0], SS.n[0][1],
+                          RR.n[1][0], RR.n[1][1], SS.n[1][0], SS.n[1][1]);
 }
 
 /* For nice shorthand */
 static dmnsn_matrix2
-dmnsn_matrix2_construct(double a1, double a2, double b1, double b2)
+dmnsn_new_matrix2(double a1, double a2, double b1, double b2)
 {
   dmnsn_matrix2 m = { { { a1, a2 },
                         { b1, b2 } } };
@@ -180,16 +178,16 @@ dmnsn_matrix2_inverse(dmnsn_matrix2 A)
 {
   /* 4 divisions, 2 multiplications, 1 addition */
   double det = A.n[0][0]*A.n[1][1] - A.n[0][1]*A.n[1][0];
-  return dmnsn_matrix2_construct( A.n[1][1]/det, -A.n[0][1]/det,
-                                 -A.n[1][0]/det,  A.n[0][0]/det);
+  return dmnsn_new_matrix2( A.n[1][1]/det, -A.n[0][1]/det,
+                           -A.n[1][0]/det,  A.n[0][0]/det);
 }
 
 /* Also basically a shorthand */
 static dmnsn_matrix2
 dmnsn_matrix2_negate(dmnsn_matrix2 A)
 {
-  return dmnsn_matrix2_construct(-A.n[0][0], -A.n[0][1],
-                                 -A.n[1][0], -A.n[1][1]);
+  return dmnsn_new_matrix2(-A.n[0][0], -A.n[0][1],
+                           -A.n[1][0], -A.n[1][1]);
 }
 
 /* 2x2 matrix subtraction */
@@ -197,7 +195,7 @@ static dmnsn_matrix2
 dmnsn_matrix2_sub(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs)
 {
   /* 4 additions */
-  return dmnsn_matrix2_construct(
+  return dmnsn_new_matrix2(
     lhs.n[0][0] - rhs.n[0][0], lhs.n[0][1] - rhs.n[0][1],
     lhs.n[1][0] - rhs.n[1][0], lhs.n[1][1] - rhs.n[1][1]
   );
@@ -208,7 +206,7 @@ static dmnsn_matrix2
 dmnsn_matrix2_mul(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs)
 {
   /* 8 multiplications, 4 additions */
-  return dmnsn_matrix2_construct(
+  return dmnsn_new_matrix2(
     lhs.n[0][0]*rhs.n[0][0] + lhs.n[0][1]*rhs.n[1][0],
       lhs.n[0][0]*rhs.n[0][1] + lhs.n[0][1]*rhs.n[1][1],
     lhs.n[1][0]*rhs.n[0][0] + lhs.n[1][1]*rhs.n[1][0],

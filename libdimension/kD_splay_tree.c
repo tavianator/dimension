@@ -115,31 +115,31 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_tree *tree, dmnsn_object *object)
   node->max = node->min;
 
   dmnsn_vector corner;
-  corner = dmnsn_vector_construct(object->min.x, object->min.y, object->max.z);
+  corner = dmnsn_new_vector(object->min.x, object->min.y, object->max.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
-  corner = dmnsn_vector_construct(object->min.x, object->max.y, object->min.z);
+  corner = dmnsn_new_vector(object->min.x, object->max.y, object->min.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
-  corner = dmnsn_vector_construct(object->min.x, object->max.y, object->max.z);
+  corner = dmnsn_new_vector(object->min.x, object->max.y, object->max.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
-  corner = dmnsn_vector_construct(object->max.x, object->min.y, object->min.z);
+  corner = dmnsn_new_vector(object->max.x, object->min.y, object->min.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
-  corner = dmnsn_vector_construct(object->max.x, object->min.y, object->max.z);
+  corner = dmnsn_new_vector(object->max.x, object->min.y, object->max.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
-  corner = dmnsn_vector_construct(object->max.x, object->max.y, object->min.z);
+  corner = dmnsn_new_vector(object->max.x, object->max.y, object->min.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 
-  corner = dmnsn_vector_construct(object->max.x, object->max.y, object->max.z);
+  corner = dmnsn_new_vector(object->max.x, object->max.y, object->max.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
   dmnsn_kD_splay_node_swallow(node, corner, corner);
 

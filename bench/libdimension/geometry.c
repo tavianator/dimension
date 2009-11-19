@@ -37,20 +37,20 @@ main()
     return EXIT_FAILURE;
   }
 
-  /* dmnsn_vector_construct() */
+  /* dmnsn_new_vector() */
   sandglass_bench_fine(&sandglass, {
-    vector = dmnsn_vector_construct(1.0, 2.0, 3.0);
+    vector = dmnsn_new_vector(1.0, 2.0, 3.0);
   });
-  printf("dmnsn_vector_construct(): %ld\n", sandglass.grains);
+  printf("dmnsn_new_vector(): %ld\n", sandglass.grains);
 
   /* dmnsn_matrix_construct() */
   sandglass_bench_fine(&sandglass, {
-    matrix = dmnsn_matrix_construct(1.0, 1.0, 0.0, 0.0,
-                                    1.0, 1.0, 1.0, 0.0,
-                                    0.0, 1.0, 1.0, 0.0,
-                                    0.0, 0.0, 0.0, 1.0);
+    matrix = dmnsn_new_matrix(1.0, 1.0, 0.0, 0.0,
+                              1.0, 1.0, 1.0, 0.0,
+                              0.0, 1.0, 1.0, 0.0,
+                              0.0, 0.0, 0.0, 1.0);
   });
-  printf("dmnsn_matrix_construct(): %ld\n", sandglass.grains);
+  printf("dmnsn_new_matrix(): %ld\n", sandglass.grains);
 
   /* dmnsn_identity_matrix() */
   sandglass_bench_fine(&sandglass, {
@@ -76,12 +76,12 @@ main()
   });
   printf("dmnsn_rotation_matrix(): %ld\n", sandglass.grains);
 
-  /* dmnsn_line_construct() */
-  vector2 = dmnsn_vector_construct(3.0, 2.0, 1.0);
+  /* dmnsn_new_line() */
+  vector2 = dmnsn_new_vector(3.0, 2.0, 1.0);
   sandglass_bench_fine(&sandglass, {
-    line = dmnsn_line_construct(vector, vector2);
+    line = dmnsn_new_line(vector, vector2);
   });
-  printf("dmnsn_line_construct(): %ld\n", sandglass.grains);
+  printf("dmnsn_new_line(): %ld\n", sandglass.grains);
 
   /* dmnsn_vector_add() */
   sandglass_bench_fine(&sandglass, {
@@ -138,10 +138,10 @@ main()
   printf("dmnsn_matrix_inverse(): %ld\n", sandglass.grains);
 
   /* dmnsn_matrix_inverse(HARD) */
-  matrix2 = dmnsn_matrix_construct(1.0, 1.0, 0.0, 0.0,
-                                   1.0, 1.0, 1.0, 0.0,
-                                   0.0, 1.0, 1.0, 0.0,
-                                   0.0, 0.0, 0.0, 1.0);
+  matrix2 = dmnsn_new_matrix(1.0, 1.0, 0.0, 0.0,
+                             1.0, 1.0, 1.0, 0.0,
+                             0.0, 1.0, 1.0, 0.0,
+                             0.0, 0.0, 0.0, 1.0);
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_matrix_inverse(matrix2);
   });

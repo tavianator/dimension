@@ -261,7 +261,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 static dmnsn_line
 dmnsn_line_add_epsilon(dmnsn_line l)
 {
-  return dmnsn_line_construct(
+  return dmnsn_new_line(
     dmnsn_vector_add(
       l.x0,
       dmnsn_vector_mul(1.0e-9, l.n)
@@ -306,10 +306,7 @@ dmnsn_raytrace_light_ray(dmnsn_intersection *intersection, dmnsn_scene *scene,
   *color = dmnsn_black;
 
   dmnsn_vector x0 = dmnsn_line_point(intersection->ray, intersection->t);
-  dmnsn_line shadow_ray = dmnsn_line_construct(
-    x0,
-    dmnsn_vector_sub(light->x0, x0)
-  );
+  dmnsn_line shadow_ray = dmnsn_new_line(x0, dmnsn_vector_sub(light->x0, x0));
   /* Add epsilon to avoid hitting ourselves with the shadow ray */
   shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
 
@@ -439,7 +436,7 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
       trans.filter = 0.0;
       trans.trans  = 0.0;
 
-      dmnsn_line trans_ray = dmnsn_line_construct(
+      dmnsn_line trans_ray = dmnsn_new_line(
         dmnsn_line_point(ray, intersection->t),
         ray.n
       );

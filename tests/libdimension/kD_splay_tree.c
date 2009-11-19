@@ -34,14 +34,14 @@ main()
   obj2 = dmnsn_new_object();
   obj3 = dmnsn_new_object();
 
-  obj1->min = dmnsn_vector_construct(0.0, 0.0, 0.0);
-  obj1->max = dmnsn_vector_construct(1.0, 1.0, 1.0);
+  obj1->min = dmnsn_new_vector(0.0, 0.0, 0.0);
+  obj1->max = dmnsn_new_vector(1.0, 1.0, 1.0);
 
-  obj2->min = dmnsn_vector_construct(-2.0, -2.0, -2.0);
-  obj2->max = dmnsn_vector_construct(1.0, 1.0, 1.0);
+  obj2->min = dmnsn_new_vector(-2.0, -2.0, -2.0);
+  obj2->max = dmnsn_new_vector(1.0, 1.0, 1.0);
 
-  obj3->min = dmnsn_vector_construct(-1.0, -1.0, -1.0);
-  obj3->max = dmnsn_vector_construct(0.0, 0.0, 0.0);
+  obj3->min = dmnsn_new_vector(-1.0, -1.0, -1.0);
+  obj3->max = dmnsn_new_vector(0.0, 0.0, 0.0);
 
   tree = dmnsn_new_kD_splay_tree();
 

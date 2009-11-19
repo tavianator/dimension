@@ -77,10 +77,10 @@ dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
   dmnsn_line l;
 
   /* Rays originate at the origin, oddly enough */
-  l.x0 = dmnsn_vector_construct(0.0, 0.0, 0.0);
+  l.x0 = dmnsn_new_vector(0.0, 0.0, 0.0);
 
   /* Aim at the z = 1 plane */
-  l.n = dmnsn_vector_construct(x - 0.5, y - 0.5, 1.0);
+  l.n  = dmnsn_new_vector(x - 0.5, y - 0.5, 1.0);
 
   return dmnsn_matrix_line_mul(*trans, l);
 }

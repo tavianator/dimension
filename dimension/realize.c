@@ -80,7 +80,7 @@ dmnsn_realize_vector(dmnsn_astnode astnode)
          y = dmnsn_realize_float(ynode),
          z = dmnsn_realize_float(znode);
 
-  return dmnsn_vector_construct(x, y, z);
+  return dmnsn_new_vector(x, y, z);
 }
 
 dmnsn_object *
@@ -103,14 +103,14 @@ dmnsn_realize_box(dmnsn_astnode astnode)
   }
 
   box->trans = dmnsn_scale_matrix(
-    dmnsn_vector_construct(fabs(x2.x - x1.x)/2.0,
-                           fabs(x2.y - x1.y)/2.0,
-                           fabs(x2.z - x1.z)/2.0)
+    dmnsn_new_vector(fabs(x2.x - x1.x)/2.0,
+                     fabs(x2.y - x1.y)/2.0,
+                     fabs(x2.z - x1.z)/2.0)
   );
   box->trans = dmnsn_matrix_mul(
-    dmnsn_translation_matrix(dmnsn_vector_construct((x2.x + x1.x)/2.0,
-                                                    (x2.y + x1.y)/2.0,
-                                                    (x2.z + x1.z)/2.0)),
+    dmnsn_translation_matrix(dmnsn_new_vector((x2.x + x1.x)/2.0,
+                                              (x2.y + x1.y)/2.0,
+                                              (x2.z + x1.z)/2.0)),
     box->trans
   );
 
@@ -148,7 +148,7 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate sphere pigment.");
   }
 
-  sphere->trans = dmnsn_scale_matrix(dmnsn_vector_construct(r, r, r));
+  sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(r, r, r));
   sphere->trans = dmnsn_matrix_mul(dmnsn_translation_matrix(x0), sphere->trans);
 
   return sphere;
@@ -176,20 +176,20 @@ dmnsn_realize(const dmnsn_array *astree)
 
   /* Set up the transformation matrix for the perspective camera */
   dmnsn_matrix trans = dmnsn_scale_matrix(
-    dmnsn_vector_construct(
+    dmnsn_new_vector(
       ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
     )
   );
   trans = dmnsn_matrix_mul(
-    dmnsn_translation_matrix(dmnsn_vector_construct(0.0, 0.0, -4.0)),
+    dmnsn_translation_matrix(dmnsn_new_vector(0.0, 0.0, -4.0)),
     trans
   );
   trans = dmnsn_matrix_mul(
-    dmnsn_rotation_matrix(dmnsn_vector_construct(0.0, 1.0, 0.0)),
+    dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0)),
     trans
   );
   trans = dmnsn_matrix_mul(
-    dmnsn_rotation_matrix(dmnsn_vector_construct(-0.75, 0.0, 0.0)),
+    dmnsn_rotation_matrix(dmnsn_new_vector(-0.75, 0.0, 0.0)),
     trans
   );
 

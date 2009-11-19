@@ -52,16 +52,16 @@ dmnsn_new_default_scene()
 
   /* Set up the transformation matrix for the perspective camera */
   dmnsn_matrix trans = dmnsn_scale_matrix(
-    dmnsn_vector_construct(
+    dmnsn_new_vector(
       ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
     )
   );
   trans = dmnsn_matrix_mul(
-    dmnsn_translation_matrix(dmnsn_vector_construct(0.0, 0.0, -4.0)),
+    dmnsn_translation_matrix(dmnsn_new_vector(0.0, 0.0, -4.0)),
     trans
   );
   trans = dmnsn_matrix_mul(
-    dmnsn_rotation_matrix(dmnsn_vector_construct(0.0, 1.0, 0.0)),
+    dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0)),
     trans
   );
 
@@ -94,7 +94,7 @@ dmnsn_new_default_scene()
     return NULL;
   }
 
-  sphere->trans = dmnsn_scale_matrix(dmnsn_vector_construct(1.25, 1.25, 1.25));
+  sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.25, 1.25, 1.25));
 
   dmnsn_object *cube = dmnsn_new_cube();
   if (!cube) {
@@ -118,12 +118,12 @@ dmnsn_new_default_scene()
     return NULL;
   }
 
-  cube->trans = dmnsn_rotation_matrix(dmnsn_vector_construct(0.75, 0.0, 0.0));
+  cube->trans = dmnsn_rotation_matrix(dmnsn_new_vector(0.75, 0.0, 0.0));
 
   /* Now make a light */
 
   dmnsn_light *light = dmnsn_new_point_light(
-    dmnsn_vector_construct(-15.0, 20.0, 10.0),
+    dmnsn_new_vector(-15.0, 20.0, 10.0),
     dmnsn_cyan
   );
   if (!light) {

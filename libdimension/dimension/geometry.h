@@ -42,17 +42,17 @@ typedef struct {
 /* Shorthand for vector/matrix construction */
 
 DMNSN_INLINE dmnsn_vector
-dmnsn_vector_construct(double x, double y, double z)
+dmnsn_new_vector(double x, double y, double z)
 {
   dmnsn_vector v = { x, y, z };
   return v;
 }
 
 DMNSN_INLINE dmnsn_matrix
-dmnsn_matrix_construct(double a0, double a1, double a2, double a3,
-                       double b0, double b1, double b2, double b3,
-                       double c0, double c1, double c2, double c3,
-                       double d0, double d1, double d2, double d3)
+dmnsn_new_matrix(double a0, double a1, double a2, double a3,
+                 double b0, double b1, double b2, double b3,
+                 double c0, double c1, double c2, double c3,
+                 double d0, double d1, double d2, double d3)
 {
   dmnsn_matrix m = { { { a0, a1, a2, a3 },
                        { b0, b1, b2, b3 },
@@ -68,7 +68,7 @@ dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d);
 dmnsn_matrix dmnsn_rotation_matrix(dmnsn_vector theta);
 
 DMNSN_INLINE dmnsn_line
-dmnsn_line_construct(dmnsn_vector x0, dmnsn_vector n)
+dmnsn_new_line(dmnsn_vector x0, dmnsn_vector n)
 {
   dmnsn_line l = { x0, n };
   return l;
