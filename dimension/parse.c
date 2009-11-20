@@ -37,6 +37,14 @@ dmnsn_new_astnode(dmnsn_astnode_type type, dmnsn_token token)
   return astnode;
 }
 
+/* Delete a single, unused astnode */
+static void
+dmnsn_delete_astnode(dmnsn_astnode astnode)
+{
+  dmnsn_delete_astree(astnode.children);
+  free(astnode.ptr);
+}
+
 /* Expect a particular token next, and complain if we see something else */
 static int
 dmnsn_parse_expect(dmnsn_token_type type, const dmnsn_array *tokens,
@@ -324,22 +332,22 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
    * current operator has a higher precedence.  Example:
    *
    *   1 - 2 * 3 - 4 * 5 --> ... - 4 * 5 -->  ... - 4 * 5   --> ... - 4 * 5
-   *                         _____       -->  ___________   --> _______________
-   *                         3 | *            (* 2 3) | -       (- 1 (* 2 3)) |
+   *                         _____       -->  ___________   --> ___________
+   *                         3 | *            6       | -       -5      |
    *                         2 | -            1       |
    *                         1 |
    *
    *   --> ...
-   *   --> _________________
-   *       5             | *
-   *       4             | -
-   *       (- 1 (* 2 3)) |
+   *   --> ______
+   *       5  | *
+   *       4  | -
+   *       -5 |
    *
    * Then the stack is collapsed from the top down until we have a single value:
    *
-   *   --> _________________ --> (- (- 1 (* 2 3)) (* 4 5))
-   *       (* 4 5)       | -
-   *       (- 1 (* 2 3)) |
+   *   --> _________________ --> -25
+   *       20 | -
+   *       -5 |
    */
   dmnsn_token token;
   unsigned int i = *ip;
@@ -398,6 +406,7 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
           if (rhs.type == DMNSN_AST_INTEGER || rhs.type == DMNSN_AST_FLOAT) {
             dmnsn_astnode neg = dmnsn_eval_unary(DMNSN_AST_NEGATE, rhs);
             dmnsn_array_push(numstack, &neg);
+            dmnsn_delete_astnode(astnode);
           } else {
             dmnsn_array_push(numstack, &astnode);
           }
@@ -427,6 +436,8 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
               && (rhs.type == DMNSN_AST_INTEGER || rhs.type == DMNSN_AST_FLOAT))
           {
             astnode = dmnsn_eval_binary(last_type, lhs, rhs);
+            dmnsn_delete_astnode(lhs);
+            dmnsn_delete_astnode(rhs);
           } else {
             astnode = dmnsn_new_astnode(last_type, token);
             dmnsn_array_push(astnode.children, &lhs);
@@ -472,11 +483,10 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
     if ((lhs.type == DMNSN_AST_INTEGER || lhs.type == DMNSN_AST_FLOAT)
         && (rhs.type == DMNSN_AST_INTEGER || rhs.type == DMNSN_AST_FLOAT)) {
       astnode = dmnsn_eval_binary(type, lhs, rhs);
+      dmnsn_delete_astnode(lhs);
+      dmnsn_delete_astnode(rhs);
     } else {
-      printf("%s %s %s\n\n",
-             dmnsn_astnode_string(lhs.type),
-             dmnsn_astnode_string(type),
-             dmnsn_astnode_string(rhs.type));
+      astnode = lhs; /* Steal filname, etc. from lhs */
       astnode.type     = type;
       astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
       astnode.ptr      = NULL;
