@@ -136,7 +136,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
 
   /* Set up the progress object */
   dmnsn_new_progress_element(payload->progress,
-                             nthreads*payload->scene->canvas->y);
+                             payload->scene->canvas->y);
 
   /* Create the payloads */
   for (i = 0; i < nthreads; ++i) {
