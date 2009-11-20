@@ -122,9 +122,23 @@ dmnsn_parse_number(const dmnsn_array *tokens, unsigned int *ip,
   return 1;
 }
 
-/* Map an operator token to an operator node type */
+/* Map an operator token to a unary operator node type */
 static dmnsn_astnode_type
-dmnsn_op_map(dmnsn_token_type type)
+dmnsn_unary_op_map(dmnsn_token_type type)
+{
+  switch (type) {
+  case DMNSN_T_MINUS:
+    return DMNSN_AST_NEGATE;
+
+  default:
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid token mapped to operator.");
+    return 0; /* Silence compiler warning */
+  }
+}
+
+/* Map an operator token to a binary operator node type */
+static dmnsn_astnode_type
+dmnsn_binary_op_map(dmnsn_token_type type)
 {
   switch (type) {
   case DMNSN_T_PLUS:
@@ -163,6 +177,136 @@ dmnsn_op_precedence(dmnsn_astnode_type type)
                 "Precedence asked of invalid operator.");
     return 0; /* Silence compiler warning */
   }
+}
+
+/* Erhsuate a unnary arithmetic operation */
+static dmnsn_astnode
+dmnsn_eval_unary(dmnsn_astnode_type type, dmnsn_astnode rhs)
+{
+  dmnsn_astnode astnode = rhs; /* Copy filename, etc. from rhs */
+  astnode.children = NULL;
+
+  if (rhs.type == DMNSN_AST_INTEGER) {
+    long n = *(long *)rhs.ptr;
+    long *res = malloc(sizeof(long));
+
+    switch(type) {
+    case DMNSN_AST_NEGATE:
+      *res = -n;
+      break;
+
+    default:
+      dmnsn_error(DMNSN_SEVERITY_HIGH,
+                  "Attempt to evaluate wrong unary operator.");
+    }
+
+    astnode.type = DMNSN_AST_INTEGER;
+    astnode.ptr  = res;
+  } else if (rhs.type == DMNSN_AST_FLOAT) {
+    double n = *(double *)rhs.ptr;
+    double *res = malloc(sizeof(double));
+
+    switch(type) {
+    case DMNSN_AST_NEGATE:
+      *res = -n;
+      break;
+
+    default:
+      dmnsn_error(DMNSN_SEVERITY_HIGH,
+                  "Attempt to evaluate wrong unary operator.");
+    }
+
+    astnode.type = DMNSN_AST_FLOAT;
+    astnode.ptr  = res;
+  } else {
+    dmnsn_error(DMNSN_SEVERITY_HIGH,
+                "Invalid right hand side to unary operator.");
+  }
+
+  return astnode;
+}
+
+/* Evaluate a binary arithmetic operation */
+static dmnsn_astnode
+dmnsn_eval_binary(dmnsn_astnode_type type, dmnsn_astnode lhs, dmnsn_astnode rhs)
+{
+  dmnsn_astnode astnode = lhs; /* Copy filename, etc. from lhs */
+  astnode.children = NULL;
+
+  if (lhs.type == DMNSN_AST_INTEGER && rhs.type == DMNSN_AST_INTEGER
+      && type != DMNSN_AST_DIV) {
+    long l, r;
+    l = *(long *)lhs.ptr;
+    r = *(long *)rhs.ptr;
+
+    long *res = malloc(sizeof(long));
+
+    switch(type) {
+    case DMNSN_AST_ADD:
+      *res = l + r;
+      break;
+    case DMNSN_AST_SUB:
+      *res = l - r;
+      break;
+    case DMNSN_AST_MUL:
+      *res = l*r;
+      break;
+    case DMNSN_AST_DIV:
+      *res = l/r;
+      break;
+
+    default:
+      dmnsn_error(DMNSN_SEVERITY_HIGH,
+                  "Attempt to evaluate wrong binary operator.");
+    }
+
+    astnode.type = DMNSN_AST_INTEGER;
+    astnode.ptr  = res;
+  } else {
+    double l = 0.0, r = 0.0;
+
+    if (lhs.type == DMNSN_AST_INTEGER)
+      l = *(long *)lhs.ptr;
+    else if (lhs.type == DMNSN_AST_FLOAT)
+      l = *(double *)lhs.ptr;
+    else
+      dmnsn_error(DMNSN_SEVERITY_HIGH,
+                  "Invalid left hand side to binary operator.");
+
+    if (rhs.type == DMNSN_AST_INTEGER)
+      r = *(long *)rhs.ptr;
+    else if (rhs.type == DMNSN_AST_FLOAT)
+      r = *(double *)rhs.ptr;
+    else
+      dmnsn_error(DMNSN_SEVERITY_HIGH,
+                  "Invalid right hand side to binary operator.");
+
+    double *res = malloc(sizeof(double));
+
+    switch(type) {
+    case DMNSN_AST_ADD:
+      *res = l + r;
+      break;
+    case DMNSN_AST_SUB:
+      *res = l - r;
+      break;
+    case DMNSN_AST_MUL:
+      *res = l*r;
+      break;
+    case DMNSN_AST_DIV:
+      *res = l/r;
+      break;
+
+    default:
+      dmnsn_error(DMNSN_SEVERITY_HIGH,
+                  "Attempt to evaluate wrong binary operator.");
+    }
+
+    astnode.type = DMNSN_AST_FLOAT;
+    astnode.ptr  = res;
+  }
+
+  return astnode;
 }
 
 /* Parse an arithmetic expression */
@@ -232,10 +376,11 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
     {
       /* Item is an operator */
       if (dmnsn_array_size(opstack) == dmnsn_array_size(numstack)) {
-        /* The last item was an operator too */
+        /* The last item was an operator too, or this is the first item, so it
+           must be a unary operator */
         if (token.type == DMNSN_T_MINUS) {
-          /* Unary '-' -- negation */
-          dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_NEGATE, token);
+          dmnsn_astnode_type type = dmnsn_unary_op_map(token.type);
+          dmnsn_astnode astnode = dmnsn_new_astnode(type, token);
 
           ++i;
           dmnsn_array_get(tokens, i, &token);
@@ -247,7 +392,15 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
               goto bailout;
           }
 
-          dmnsn_array_push(numstack, &astnode);
+          dmnsn_astnode rhs;
+          dmnsn_array_get(astnode.children, 0, &rhs);
+
+          if (rhs.type == DMNSN_AST_INTEGER || rhs.type == DMNSN_AST_FLOAT) {
+            dmnsn_astnode neg = dmnsn_eval_unary(DMNSN_AST_NEGATE, rhs);
+            dmnsn_array_push(numstack, &neg);
+          } else {
+            dmnsn_array_push(numstack, &astnode);
+          }
         } else {
           dmnsn_diagnostic(token.filename, token.line, token.col,
                            "Unexpected '%s' when parsing arithmetic expression",
@@ -256,31 +409,37 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
         }
       } else if (dmnsn_array_size(opstack) == 0) {
         /* opstack is empty; push the operator */
-        dmnsn_astnode_type type = dmnsn_op_map(token.type);
+        dmnsn_astnode_type type = dmnsn_binary_op_map(token.type);
         dmnsn_array_push(opstack, &type);
         ++i;
       } else {
-        dmnsn_astnode_type type = dmnsn_op_map(token.type), last_type;
+        dmnsn_astnode_type type = dmnsn_binary_op_map(token.type), last_type;
         dmnsn_array_get(opstack, dmnsn_array_size(opstack) - 1, &last_type);
 
         while (dmnsn_op_precedence(type) <= dmnsn_op_precedence(last_type)) {
           /* Repeatedly collapse numstack */
-          dmnsn_astnode lhs, rhs, astnode = dmnsn_new_astnode(last_type, token);
+          dmnsn_astnode lhs, rhs, astnode;
 
           dmnsn_array_pop(numstack, &rhs);
           dmnsn_array_pop(numstack, &lhs);
 
-          dmnsn_array_push(astnode.children, &lhs);
-          dmnsn_array_push(astnode.children, &rhs);
+          if ((lhs.type == DMNSN_AST_INTEGER || lhs.type == DMNSN_AST_FLOAT)
+              && (rhs.type == DMNSN_AST_INTEGER || rhs.type == DMNSN_AST_FLOAT))
+          {
+            astnode = dmnsn_eval_binary(last_type, lhs, rhs);
+          } else {
+            astnode = dmnsn_new_astnode(last_type, token);
+            dmnsn_array_push(astnode.children, &lhs);
+            dmnsn_array_push(astnode.children, &rhs);
+          }
 
           dmnsn_array_push(numstack, &astnode);
           dmnsn_array_resize(opstack, dmnsn_array_size(opstack) - 1);
 
-          if (dmnsn_array_size(opstack) > 0) {
+          if (dmnsn_array_size(opstack) > 0)
             dmnsn_array_get(opstack, dmnsn_array_size(opstack) - 1, &last_type);
-          } else {
+          else
             break;
-          }
         }
 
         dmnsn_array_push(opstack, &type);
@@ -306,15 +465,25 @@ dmnsn_parse_arithexp(const dmnsn_array *tokens, unsigned int *ip,
     dmnsn_array_pop(opstack, &type);
 
     dmnsn_astnode astnode, lhs, rhs;
-    astnode.type     = type;
-    astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
-    astnode.ptr      = NULL;
 
     dmnsn_array_pop(numstack, &rhs);
     dmnsn_array_pop(numstack, &lhs);
 
-    dmnsn_array_push(astnode.children, &lhs);
-    dmnsn_array_push(astnode.children, &rhs);
+    if ((lhs.type == DMNSN_AST_INTEGER || lhs.type == DMNSN_AST_FLOAT)
+        && (rhs.type == DMNSN_AST_INTEGER || rhs.type == DMNSN_AST_FLOAT)) {
+      astnode = dmnsn_eval_binary(type, lhs, rhs);
+    } else {
+      printf("%s %s %s\n\n",
+             dmnsn_astnode_string(lhs.type),
+             dmnsn_astnode_string(type),
+             dmnsn_astnode_string(rhs.type));
+      astnode.type     = type;
+      astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
+      astnode.ptr      = NULL;
+
+      dmnsn_array_push(astnode.children, &lhs);
+      dmnsn_array_push(astnode.children, &rhs);
+    }
 
     dmnsn_array_push(numstack, &astnode);
   }

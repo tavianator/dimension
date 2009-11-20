@@ -20,8 +20,8 @@
 #########################################################################
 
 demo=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/demo.pov)
-demo_exp='(box { < - (float "2.0") + (integer "1") , - (integer "2") / (float "2.0") , - (float "1.0") > , < (float "1.0") , \( (float "1.0") + (integer "2") \) * (integer "2") - (integer "5") , (float "1.0") + (integer "2") * (integer "2") - (integer "4") > } sphere { < (integer "1") / (integer "5") + - (integer "1") / (integer "5") , (integer "1") / (float "5.0") - (float "1.0") / (integer "5") , (integer "0") > , (float "1.25") })
-((box (vector (+ (- (float 2)) (integer 1)) (/ (- (integer 2)) (float 2)) (- (float 1))) (vector (float 1) (- (* (+ (float 1) (integer 2)) (integer 2)) (integer 5)) (- (+ (float 1) (* (integer 2) (integer 2))) (integer 4)))) (sphere (vector (+ (/ (integer 1) (integer 5)) (/ (- (integer 1)) (integer 5))) (- (/ (integer 1) (float 5)) (/ (float 1) (integer 5))) (integer 0)) (float 1.25)))'
+demo_exp='(box { < - (float "2.0") + (integer "1") , - (integer "2") / (float "2.0") , - (float "1.0") > , < (float "1.0") , \( (float "1.0") + (integer "2") \) * (integer "2") - (integer "5") , (float "1.0") + (integer "2") * (integer "2") - (integer "4") > } sphere { < (integer "1") / (integer "5") + - (integer "1") / (integer "5") , (integer "1") / (float "5.0") - (float "1.0") / (integer "5") , - (integer "1") - - (integer "1") > , (float "1.25") })
+((box (vector (float -1) (float -1) (float -1)) (vector (float 1) (float 1) (float 1))) (sphere (vector (float 0) (float 0) (integer 0)) (float 1.25)))'
 
 if [ "$demo" != "$demo_exp" ]; then
   echo "demo.pov parsed as \"$demo\"" >&2
