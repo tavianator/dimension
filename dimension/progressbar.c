@@ -17,50 +17,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#ifndef PARSE_H
-#define PARSE_H
+#include "progressbar.h"
+#include <stdio.h>
 
-#include "../libdimension/dimension.h"
+void
+dmnsn_progressbar(const char *str, const dmnsn_progress *progress)
+{
+  const unsigned int increments = 32;
+  unsigned int i;
 
-typedef enum {
-  DMNSN_AST_FLOAT,
-  DMNSN_AST_INTEGER,
-  DMNSN_AST_NEGATE,
-  DMNSN_AST_ADD,
-  DMNSN_AST_SUB,
-  DMNSN_AST_MUL,
-  DMNSN_AST_DIV,
-  DMNSN_AST_VECTOR,
-  DMNSN_AST_BOX,
-  DMNSN_AST_SPHERE,
-} dmnsn_astnode_type;
+  printf("%s|", str);
+  fflush(stdout);
+  for (i = 0; i < increments; ++i) {
+    dmnsn_wait_progress(progress, ((double)(i + 1))/increments);
 
-typedef struct dmnsn_astnode dmnsn_astnode;
-
-struct dmnsn_astnode {
-  dmnsn_astnode_type type;
-
-  /* Child nodes */
-  dmnsn_array *children;
-
-  /* Generic data pointer */
-  void *ptr;
-
-  /* File name, and line and column numbers from source code */
-  char *filename;
-  unsigned int line, col;
-};
-
-/* The workhorse */
-dmnsn_array *dmnsn_parse(const dmnsn_array *tokens);
-
-/* Free an abstract syntax tree */
-void dmnsn_delete_astree(dmnsn_array *astree);
-
-/* Print an S-expression of the abstract syntax tree to `file' */
-void dmnsn_print_astree_sexpr(FILE *file, const dmnsn_array *astree);
-
-/* Returns a readable name for a token type (ex. DMNSN_T_FLOAT -> float) */
-const char *dmnsn_astnode_string(dmnsn_astnode_type astnode_type);
-
-#endif /* PARSE_H */
+    printf("=");
+    fflush(stdout);
+  }
+  printf("|\n");
+  fflush(stdout);
+}

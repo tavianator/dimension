@@ -24,6 +24,8 @@ bin_PROGRAMS = dimension
 dimension_SOURCES = main.c                                                     \
                     parse.c                                                    \
                     parse.h                                                    \
+                    progressbar.c                                              \
+                    progressbar.h                                              \
                     realize.c                                                  \
                     realize.h                                                  \
                     tokenize.c                                                 \

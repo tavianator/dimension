@@ -20,6 +20,7 @@
 #include "tokenize.h"
 #include "parse.h"
 #include "realize.h"
+#include "progressbar.h"
 #include "../libdimension/dimension.h"
 #include <stdlib.h>
 #include <getopt.h>
@@ -101,6 +102,7 @@ main(int argc, char **argv) {
   }
 
   /* Tokenize the input file */
+  printf("Tokenizing input...\n");
   dmnsn_array *tokens = dmnsn_tokenize(input, input_file);
   if (!tokens) {
     fclose(input_file);
@@ -119,6 +121,7 @@ main(int argc, char **argv) {
   }
 
   /* Parse the input */
+  printf("Parsing input...\n");
   dmnsn_array *astree = dmnsn_parse(tokens);
   if (!astree) {
     dmnsn_delete_tokens(tokens);
@@ -134,6 +137,7 @@ main(int argc, char **argv) {
   }
 
   /* Realize the input */
+  printf("Generating scene...\n");
   dmnsn_scene *scene = dmnsn_realize(astree);
   if (!scene) {
     dmnsn_delete_astree(astree);
@@ -149,7 +153,15 @@ main(int argc, char **argv) {
     fprintf(stderr, "WARNING: Couldn't optimize canvas for PNG\n");
   }
 
-  if (dmnsn_raytrace_scene(scene) != 0) {
+  dmnsn_progress *render_progress = dmnsn_raytrace_scene_async(scene);
+  if (!render_progress) {
+    dmnsn_delete_scene(scene);
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error starting render.");
+  }
+
+  dmnsn_progressbar("Rendering scene: ", render_progress);
+
+  if (dmnsn_finish_progress(render_progress) != 0) {
     dmnsn_delete_scene(scene);
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Error rendering scene.");
   }
@@ -160,8 +172,19 @@ main(int argc, char **argv) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't open output file.");
   }
 
-  if (dmnsn_png_write_canvas(scene->canvas, output_file) != 0) {
+  dmnsn_progress *output_progress
+    = dmnsn_png_write_canvas_async(scene->canvas, output_file);
+  if (!output_progress) {
     fclose(output_file);
+    dmnsn_delete_scene(scene);
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't initialize PNG export.");
+  }
+
+  dmnsn_progressbar("Writing PNG:     ", output_progress);
+
+  if (dmnsn_finish_progress(output_progress) != 0) {
+    fclose(output_file);
+    dmnsn_delete_scene(scene);
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't write output.");
   }
   fclose(output_file);

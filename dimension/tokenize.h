@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+#ifndef TOKENIZE_H
+#define TOKENIZE_H
+
 #include "../libdimension/dimension.h"
 
 typedef enum {
@@ -536,3 +539,5 @@ void dmnsn_print_token_sexpr(FILE *file, const dmnsn_array *tokens);
 
 /* Returns a readable name for a token type (ex. DMNSN_T_FLOAT -> float) */
 const char *dmnsn_token_string(dmnsn_token_type token_type);
+
+#endif /* TOKENIZE_H */

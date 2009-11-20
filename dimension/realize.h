@@ -17,6 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+#ifndef REALIZE_H
+#define REALIZE_H
+
 #include "../libdimension/dimension.h"
 
 dmnsn_scene *dmnsn_realize(const dmnsn_array *astree);
+
+#endif /* REALIZE_H */
