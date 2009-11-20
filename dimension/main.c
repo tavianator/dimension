@@ -22,6 +22,7 @@
 #include "realize.h"
 #include "progressbar.h"
 #include "../libdimension/dimension.h"
+#include <stdbool.h>
 #include <stdlib.h>
 #include <getopt.h>
 
@@ -77,6 +78,8 @@ main(int argc, char **argv) {
     };
   }
 
+  bool debugging = tokenize || parse;
+
   if (optind == argc - 1) {
     if (input) {
       dmnsn_error(DMNSN_SEVERITY_HIGH, "Multiple input files specified.");
@@ -88,12 +91,16 @@ main(int argc, char **argv) {
                 "Invalid extranious command line options.");
   }
 
-  if (!output && !(tokenize || parse)) {
+  if (!output && !debugging) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "No output file specified.");
   }
   if (!input) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "No input file specified.");
   }
+
+  /*
+   * Now do the work
+   */
 
   /* Open the input file */
   input_file = fopen(input, "r");
@@ -102,7 +109,10 @@ main(int argc, char **argv) {
   }
 
   /* Tokenize the input file */
-  printf("Tokenizing input...\n");
+
+  if (!debugging)
+    printf("Tokenizing input...\n");
+
   dmnsn_array *tokens = dmnsn_tokenize(input, input_file);
   if (!tokens) {
     fclose(input_file);
@@ -121,7 +131,10 @@ main(int argc, char **argv) {
   }
 
   /* Parse the input */
-  printf("Parsing input...\n");
+
+  if (!debugging)
+    printf("Parsing input...\n");
+
   dmnsn_array *astree = dmnsn_parse(tokens);
   if (!astree) {
     dmnsn_delete_tokens(tokens);
