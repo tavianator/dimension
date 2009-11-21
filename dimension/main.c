@@ -111,7 +111,7 @@ main(int argc, char **argv) {
   /* Tokenize the input file */
 
   if (!debugging)
-    printf("Tokenizing input...\n");
+    printf("Tokenizing input ...\n");
 
   dmnsn_array *tokens = dmnsn_tokenize(input, input_file);
   if (!tokens) {
@@ -133,7 +133,7 @@ main(int argc, char **argv) {
   /* Parse the input */
 
   if (!debugging)
-    printf("Parsing input...\n");
+    printf("Parsing input    ...\n");
 
   dmnsn_array *astree = dmnsn_parse(tokens);
   if (!astree) {
@@ -150,7 +150,7 @@ main(int argc, char **argv) {
   }
 
   /* Realize the input */
-  printf("Generating scene...\n");
+  printf("Generating scene ...\n");
   dmnsn_scene *scene = dmnsn_realize(astree);
   if (!scene) {
     dmnsn_delete_astree(astree);

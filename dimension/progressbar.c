@@ -26,14 +26,14 @@ dmnsn_progressbar(const char *str, const dmnsn_progress *progress)
   const unsigned int increments = 32;
   unsigned int i;
 
-  printf("%s|", str);
+  printf("%s", str);
   fflush(stdout);
   for (i = 0; i < increments; ++i) {
     dmnsn_wait_progress(progress, ((double)(i + 1))/increments);
 
-    printf("=");
+    printf(".");
     fflush(stdout);
   }
-  printf("|\n");
+  printf("\n");
   fflush(stdout);
 }
