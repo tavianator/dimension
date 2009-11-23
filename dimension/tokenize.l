@@ -36,35 +36,45 @@
 %%
 
 %{
-#define PUSH_TOKEN(token_type)                  \
+/* Some helpful macros that set fields of a token correctly, and other stuff */
+
+#define NEW_TOKEN(token_type)                   \
   do {                                          \
     token.type     = token_type;                \
     token.filename = filename;                  \
     token.line     = yylineno;                  \
     token.col      = yycolumn;                  \
     token.value    = NULL;                      \
-    PUSH();                                    \
+  } while (0)
+
+#define CALCULATE_COLUMN() yycolumn += yyleng
+
+#define PUSH()                                  \
+  do {                                          \
+    dmnsn_array_push(tokens, &token);           \
+    CALCULATE_COLUMN();                         \
+  } while (0)
+
+#define PUSH_TOKEN(token_type)                  \
+  do {                                          \
+    NEW_TOKEN(token_type);                      \
+    PUSH();                                     \
   } while (0)
 
 #define PUSH_VALUE_TOKEN(token_type)            \
   do {                                          \
-    token.type     = token_type;                \
-    token.filename = filename;                  \
-    token.line     = yylineno;                  \
-    token.col      = yycolumn;                  \
+    NEW_TOKEN(token_type);                      \
     token.value    = strdup(yytext);            \
     PUSH();                                     \
   } while (0)
 
 #define STRING_TOKEN()                          \
   do {                                          \
-    token.type     = DMNSN_T_STRING;            \
-    token.filename = filename;                  \
-    token.line     = yylineno;                  \
-    token.col      = yycolumn;                  \
+    NEW_TOKEN(DMNSN_T_STRING);                  \
     token.value    = malloc(1);                 \
     token.value[0] = '\0';                      \
     string_length  = 0;                         \
+    CALCULATE_COLUMN();                         \
   } while (0)
 
 #define STRCAT(str, len)                                                \
@@ -72,9 +82,8 @@
     token.value = realloc(token.value, string_length + len + 1);        \
     strncpy(token.value + string_length, str, len);                     \
     string_length += len;                                               \
+    CALCULATE_COLUMN();                                                 \
   } while(0)
-
-#define PUSH() dmnsn_array_push(tokens, &token)
 
 dmnsn_token token;
 size_t string_length;
@@ -85,16 +94,20 @@ unsigned long wchar;
 
 <INITIAL,DMNSN_BLOCK_COMMENT>"/*"       {
   yy_push_state(DMNSN_BLOCK_COMMENT, yyscanner);
+  CALCULATE_COLUMN();
 }
-<DMNSN_BLOCK_COMMENT>"*/"       yy_pop_state(yyscanner);
-<DMNSN_BLOCK_COMMENT>[^*/\n]*   ;
-<DMNSN_BLOCK_COMMENT>"/"        ;
-<DMNSN_BLOCK_COMMENT>"*"        ;
+<DMNSN_BLOCK_COMMENT>"*/"       CALCULATE_COLUMN(); yy_pop_state(yyscanner);
+<DMNSN_BLOCK_COMMENT>[^*/\n]*   CALCULATE_COLUMN();
+<DMNSN_BLOCK_COMMENT>"/"        CALCULATE_COLUMN();
+<DMNSN_BLOCK_COMMENT>"*"        CALCULATE_COLUMN();
 <DMNSN_BLOCK_COMMENT>\n         ;
 
-"//"                            yy_push_state(DMNSN_LINE_COMMENT, yyscanner);
-<DMNSN_LINE_COMMENT>\n          yy_pop_state(yyscanner);
-<DMNSN_LINE_COMMENT>[^\n]+      ;
+"//"    {
+  yy_push_state(DMNSN_LINE_COMMENT, yyscanner);
+  CALCULATE_COLUMN();
+}
+<DMNSN_LINE_COMMENT>\n          ; yy_pop_state(yyscanner);
+<DMNSN_LINE_COMMENT>[^\n]+      CALCULATE_COLUMN();
 
 (?# Punctuation)
 "{"     PUSH_TOKEN(DMNSN_T_LBRACE);
@@ -153,7 +166,10 @@ unsigned long wchar;
 
 (?# String escape sequences)
 
-<DMNSN_STRING>"\\"              yy_push_state(DMNSN_STRING_ESCAPE, yyscanner);
+<DMNSN_STRING>"\\"      {
+  yy_push_state(DMNSN_STRING_ESCAPE, yyscanner);
+  CALCULATE_COLUMN();
+}
 <DMNSN_STRING_ESCAPE>"a"        STRCAT("\a", 1); yy_pop_state(yyscanner);
 <DMNSN_STRING_ESCAPE>"b"        STRCAT("\b", 1); yy_pop_state(yyscanner);
 <DMNSN_STRING_ESCAPE>"f"        STRCAT("\f", 1); yy_pop_state(yyscanner);
@@ -180,7 +196,8 @@ unsigned long wchar;
 }
 
 (?# Ignore whitespace)
-[[:space:]]+    ;
+[\b\r\t\v ]+    CALCULATE_COLUMN();
+\n              ;
 
 (?# Fall-through)
 .       {
