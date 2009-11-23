@@ -20,7 +20,7 @@
 #########################################################################
 
 numeric=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/numeric.pov)
-numeric_exp='((integer "1") (integer "123456789") (integer "01234567") (integer "0x123456789") - (integer "0x01") (float ".1") (float "0.1") (float "1.0") (float "0.123456789") - (float "0.123456789") < (integer "1") "," (float "2.2") "," - (float "3.03") >)'
+numeric_exp='((integer "1") (integer "123456789") (integer "01234567") (integer "0x123456789") - (integer "0x01") (float ".1") (float "0.1") (float "1.0") (float "0.123456789") - (float "0.123456789") < (integer "1") , (float "2.2") , - (float "3.03") >)'
 
 if [ "$numeric" != "$numeric_exp" ]; then
   echo "numeric.pov tokenized as \"$numeric\"" >&2

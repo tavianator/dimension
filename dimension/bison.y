@@ -29,13 +29,16 @@ typedef struct dmnsn_token_iterator {
   unsigned int i;
 } dmnsn_token_iterator;
 
-#define YYSTYPE const char *
-
 typedef struct dmnsn_location {
   const char *first_filename, *last_filename;
   int first_line, last_line;
   int first_column, last_column;
 } dmnsn_location;
+
+typedef union YYSTYPE {
+  const char *value;
+  dmnsn_astnode astnode;
+} YYSTYPE;
 
 #define YYLTYPE dmnsn_location
 #define YYLLOC_DEFAULT(Current, Rhs, N)                                 \
@@ -57,6 +60,29 @@ typedef struct dmnsn_location {
     }                                                                   \
   } while (0)
 
+/* Create a new astnode, populating filename, line, and col */
+static dmnsn_astnode
+dmnsn_new_astnode(dmnsn_astnode_type type, YYLTYPE lloc)
+{
+  dmnsn_astnode astnode = {
+    .type     = type,
+    .children = dmnsn_new_array(sizeof(dmnsn_astnode)),
+    .ptr      = NULL,
+    .filename = lloc.first_filename,
+    .line     = lloc.first_line,
+    .col      = lloc.first_column
+  };
+  return astnode;
+}
+
+/* Delete a single, unused astnode */
+static void
+dmnsn_delete_astnode(dmnsn_astnode astnode)
+{
+  dmnsn_delete_astree(astnode.children);
+  free(astnode.ptr);
+}
+
 static int
 yylex(YYSTYPE *lvalp, YYLTYPE *llocp, dmnsn_token_iterator *iterator)
 {
@@ -67,7 +93,7 @@ yylex(YYSTYPE *lvalp, YYLTYPE *llocp, dmnsn_token_iterator *iterator)
     dmnsn_array_get(iterator->tokens, iterator->i, &token);
     ++iterator->i;
 
-    *lvalp = token.value;
+    lvalp->value = token.value;
 
     llocp->first_filename = llocp->last_filename = token.filename;
     llocp->first_line     = llocp->last_line     = token.line;
@@ -124,8 +150,8 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_NOT_EQUAL     "!="
 
 /* Numeric values */
-%token DMNSN_T_INTEGER "integer"
-%token DMNSN_T_FLOAT   "float"
+%token <value> DMNSN_T_INTEGER "integer"
+%token <value> DMNSN_T_FLOAT   "float"
 
 /* Keywords */
 %token DMNSN_T_AA_LEVEL
@@ -585,31 +611,93 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_WRITE
 
 /* Identifiers */
-%token DMNSN_T_IDENTIFIER "identifier"
+%token <value> DMNSN_T_IDENTIFIER "identifier"
 
 /* Strings */
-%token DMNSN_T_STRING "string"
+%token <value> DMNSN_T_STRING "string"
+
+/* Top-level items */
+%type <astnode> SCENE_ITEM
+
+/* Objects */
+%type <astnode> OBJECT
+%type <astnode> FINITE_SOLID_OBJECT
+%type <astnode> BOX
+%type <astnode> SPHERE
+
+/* Vectors */
+%type <astnode> VECTOR
+%type <astnode> VECTOR_LITERAL
+
+/* Floats */
+%type <astnode> FLOAT
+%type <astnode> FLOAT_LITERAL
+
+%destructor { dmnsn_delete_astnode($$); } <astnode>
 
 %%
 
-SCENE:   /* empty */
-       | SCENE SCENE_ITEM
-       ;
+SCENE:    /* empty */ { }
+       | SCENE SCENE_ITEM {
+         dmnsn_array_push(astree, &$2);
+       }
+;
 
-SCENE_ITEM:   OBJECT
-            ;
+SCENE_ITEM:       OBJECT
+;
 
 OBJECT:   FINITE_SOLID_OBJECT
-        ;
+;
 
-FINITE_SOLID_OBJECT:   BOX | SPHERE
-                     ;
+FINITE_SOLID_OBJECT:      BOX
+                       | SPHERE
+;
 
-BOX:   "box" "{" "}"
-     ;
+BOX:      "box" "{"
+            VECTOR "," VECTOR
+          "}"
+        {
+          $$ = dmnsn_new_astnode(DMNSN_AST_BOX, @$);
+          dmnsn_array_push($$.children, &$3);
+          dmnsn_array_push($$.children, &$5);
+        }
+;
 
-SPHERE:   "sphere" "{" "}"
-        ;
+SPHERE:   "sphere" "{"
+          "}"
+        {
+          $$ = dmnsn_new_astnode(DMNSN_AST_SPHERE, @$);
+        }
+;
+
+VECTOR:   VECTOR_LITERAL
+;
+
+VECTOR_LITERAL:   "<" FLOAT "," FLOAT "," FLOAT ">"
+                {
+                  $$ = dmnsn_new_astnode(DMNSN_AST_VECTOR, @$);
+                  dmnsn_array_push($$.children, &$2);
+                  dmnsn_array_push($$.children, &$4);
+                  dmnsn_array_push($$.children, &$6);
+                }
+;
+
+FLOAT:    FLOAT_LITERAL
+;
+
+FLOAT_LITERAL:    "integer"
+                {
+                  $$ = dmnsn_new_astnode(DMNSN_AST_INTEGER, @$);
+                  $$.ptr = malloc(sizeof(long));
+                  *(long *)$$.ptr = strtol($1, NULL, 0);
+                }
+                | "float"
+                {
+                  $$ = dmnsn_new_astnode(DMNSN_AST_FLOAT, @$);
+                  $$.ptr = malloc(sizeof(double));
+                  *(double *)$$.ptr = strtod($1, NULL);
+                }
+;
 
 %%
 
@@ -713,8 +801,8 @@ dmnsn_print_astree_sexpr(FILE *file, const dmnsn_array *astree)
 const char *
 dmnsn_token_string(dmnsn_token_type token_type)
 {
-#define TOKEN_SIZE 256
-  static char token[TOKEN_SIZE];
+#define TOKEN_SIZE 255
+  static char token[TOKEN_SIZE + 1];
 
   unsigned int i = YYTRANSLATE(token_type);
   if (i > YYNTOKENS) {
@@ -722,12 +810,16 @@ dmnsn_token_string(dmnsn_token_type token_type)
     return "unrecognized-token";
   }
 
-  if (yytnamerr(NULL, yytname[i]) >= TOKEN_SIZE) {
+  /* Trim the quotation marks */
+
+  if (strlen(yytname[i]) - 1 >= TOKEN_SIZE) {
     fprintf(stderr, "Warning: name of token %d too long.\n", (int)token_type);
     return "unrepresentable-token";
   }
 
-  yytnamerr(token, yytname[i]);
+  strcpy(token, yytname[i] + 1);
+  token[strlen(token) - 1] = '\0';
+
   return token;
 #undef TOKEN_SIZE
 }

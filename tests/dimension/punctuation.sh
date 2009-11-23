@@ -20,7 +20,7 @@
 #########################################################################
 
 punctuation=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/punctuation.pov)
-punctuation_exp='({ } \( \) [ ] + - * / "," ; ? : & . | = < > ! <= >= !=)'
+punctuation_exp='({ } \( \) [ ] + - * / , ; ? : & . | = < > ! <= >= !=)'
 
 if [ "$punctuation" != "$punctuation_exp" ]; then
   echo "punctuation.pov tokenized as \"$punctuation\"" >&2
