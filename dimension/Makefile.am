@@ -28,7 +28,7 @@ dimension_SOURCES = main.c                                                     \
                     progressbar.h                                              \
                     realize.c                                                  \
                     realize.h                                                  \
-                    tokenize.c                                                 \
+                    tokenize.l                                                 \
                     tokenize.h                                                 \
                     utility.c                                                  \
                     utility.h

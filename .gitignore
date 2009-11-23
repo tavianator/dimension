@@ -10,6 +10,7 @@
 /ltmain.sh
 /m4
 /missing
+/ylwrap
 Makefile
 Makefile.in
 
@@ -39,6 +40,7 @@ Makefile.in
 
 # Files created by `make'
 /dimension/dimension
+/dimension/tokenize.c
 
 # Files created by `make check'
 /tests/*/*-test

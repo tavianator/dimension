@@ -524,7 +524,7 @@ struct dmnsn_token {
   char *value;
 
   /* File name, and line and column numbers from source code */
-  char *filename;
+  const char *filename;
   unsigned int line, col;
 };
 
