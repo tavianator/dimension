@@ -21,14 +21,17 @@ INCLUDES = -I$(top_srcdir)/libdimension
 
 bin_PROGRAMS = dimension
 
-dimension_SOURCES = main.c                                                     \
-                    parse.c                                                    \
+AM_YFLAGS = -d
+BUILT_SOURCES = bison.h
+
+dimension_SOURCES = bison.y                                                    \
+                    flex.l                                                     \
+                    main.c                                                     \
                     parse.h                                                    \
                     progressbar.c                                              \
                     progressbar.h                                              \
                     realize.c                                                  \
                     realize.h                                                  \
-                    tokenize.l                                                 \
                     tokenize.h                                                 \
                     utility.c                                                  \
                     utility.h

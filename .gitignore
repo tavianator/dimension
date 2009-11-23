@@ -40,7 +40,9 @@ Makefile.in
 
 # Files created by `make'
 /dimension/dimension
-/dimension/tokenize.c
+/dimension/bison.c
+/dimension/bison.h
+/dimension/flex.c
 
 # Files created by `make check'
 /tests/*/*-test
