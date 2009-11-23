@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-%option reentrant yylineno noyywrap
+%option reentrant stack yylineno noyywrap
 
 %{
 #define YY_DECL static int yylex(const char *filename, dmnsn_array *tokens, \
@@ -81,15 +81,19 @@ size_t string_length;
 unsigned long wchar;
 %}
 
-"/*"    BEGIN(DMNSN_BLOCK_COMMENT);
-"//"    BEGIN(DMNSN_LINE_COMMENT);
+(?# Comments)
 
-<DMNSN_BLOCK_COMMENT>"*/"       BEGIN(INITIAL);
-<DMNSN_BLOCK_COMMENT>[^*\n]*    ;
+<INITIAL,DMNSN_BLOCK_COMMENT>"/*"       {
+  yy_push_state(DMNSN_BLOCK_COMMENT, yyscanner);
+}
+<DMNSN_BLOCK_COMMENT>"*/"       yy_pop_state(yyscanner);
+<DMNSN_BLOCK_COMMENT>[^*/\n]*   ;
+<DMNSN_BLOCK_COMMENT>"/"        ;
 <DMNSN_BLOCK_COMMENT>"*"        ;
 <DMNSN_BLOCK_COMMENT>\n         ;
 
-<DMNSN_LINE_COMMENT>\n          BEGIN(INITIAL);
+"//"                            yy_push_state(DMNSN_LINE_COMMENT, yyscanner);
+<DMNSN_LINE_COMMENT>\n          yy_pop_state(yyscanner);
 <DMNSN_LINE_COMMENT>[^\n]+      ;
 
 (?# Punctuation)
@@ -143,36 +147,36 @@ unsigned long wchar;
 
 (?# Strings)
 
-"\""    STRING_TOKEN(); BEGIN(DMNSN_STRING);
+"\""    STRING_TOKEN(); yy_push_state(DMNSN_STRING, yyscanner);
 <DMNSN_STRING>[^\\\"\n]*        STRCAT(yytext, yyleng);
-<DMNSN_STRING>"\""              PUSH(); BEGIN(INITIAL);
+<DMNSN_STRING>"\""              PUSH(); yy_pop_state(yyscanner);
 
 (?# String escape sequences)
 
-<DMNSN_STRING>"\\"              BEGIN(DMNSN_STRING_ESCAPE);
-<DMNSN_STRING_ESCAPE>"a"        STRCAT("\a", 1); BEGIN(DMNSN_STRING);
-<DMNSN_STRING_ESCAPE>"b"        STRCAT("\b", 1); BEGIN(DMNSN_STRING);
-<DMNSN_STRING_ESCAPE>"f"        STRCAT("\f", 1); BEGIN(DMNSN_STRING);
-<DMNSN_STRING_ESCAPE>"n"        STRCAT("\n", 1); BEGIN(DMNSN_STRING);
-<DMNSN_STRING_ESCAPE>"r"        STRCAT("\r", 1); BEGIN(DMNSN_STRING);
-<DMNSN_STRING_ESCAPE>"t"        STRCAT("\t", 1); BEGIN(DMNSN_STRING);
-<DMNSN_STRING_ESCAPE>"v"        STRCAT("\v", 1); BEGIN(DMNSN_STRING);
-<DMNSN_STRING_ESCAPE>"\\"       STRCAT("\\", 1); BEGIN(DMNSN_STRING);
-<DMNSN_STRING_ESCAPE>"'"        STRCAT("'", 1); BEGIN(DMNSN_STRING);
-<DMNSN_STRING_ESCAPE>"\""       STRCAT("\"", 1); BEGIN(DMNSN_STRING);
+<DMNSN_STRING>"\\"              yy_push_state(DMNSN_STRING_ESCAPE, yyscanner);
+<DMNSN_STRING_ESCAPE>"a"        STRCAT("\a", 1); yy_pop_state(yyscanner);
+<DMNSN_STRING_ESCAPE>"b"        STRCAT("\b", 1); yy_pop_state(yyscanner);
+<DMNSN_STRING_ESCAPE>"f"        STRCAT("\f", 1); yy_pop_state(yyscanner);
+<DMNSN_STRING_ESCAPE>"n"        STRCAT("\n", 1); yy_pop_state(yyscanner);
+<DMNSN_STRING_ESCAPE>"r"        STRCAT("\r", 1); yy_pop_state(yyscanner);
+<DMNSN_STRING_ESCAPE>"t"        STRCAT("\t", 1); yy_pop_state(yyscanner);
+<DMNSN_STRING_ESCAPE>"v"        STRCAT("\v", 1); yy_pop_state(yyscanner);
+<DMNSN_STRING_ESCAPE>"\\"       STRCAT("\\", 1); yy_pop_state(yyscanner);
+<DMNSN_STRING_ESCAPE>"'"        STRCAT("'", 1); yy_pop_state(yyscanner);
+<DMNSN_STRING_ESCAPE>"\""       STRCAT("\"", 1); yy_pop_state(yyscanner);
 <DMNSN_STRING_ESCAPE>"u"[[:digit:]aAbBcCdDeEfF]{4}      {
   wchar = strtoul(yytext + 1, NULL, 16);
   STRCAT("", 2);
   token.value[string_length - 2] = wchar/256;
   token.value[string_length - 1] = wchar%256;
-  BEGIN(DMNSN_STRING);
+  yy_pop_state(yyscanner);
 }
 <DMNSN_STRING_ESCAPE>.          {
   dmnsn_diagnostic(filename, yylineno, yycolumn,
                    "WARNING: unrecognised escape sequence '\\%c'",
                    (int)*yytext);
   STRCAT(yytext, yyleng);
-  BEGIN(DMNSN_STRING);
+  yy_pop_state(yyscanner);
 }
 
 (?# Ignore whitespace)

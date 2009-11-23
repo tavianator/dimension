@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-// Test that we correctly tokenize all simple punctuation marks
+/* Test that we correctly tokenize all simple punctuation marks
+ * // Also make sure we handle nested /* comments */ properly
+ */
 
 {}()[]+-*/,;?:&.|=<>!<= >= !=
