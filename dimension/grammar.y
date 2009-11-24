@@ -193,6 +193,15 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_GREATER_EQUAL ">="
 %token DMNSN_T_NOT_EQUAL     "!="
 
+/* Operators */
+%left "&"
+%left "|"
+%left "==" "!="
+%left "<" "<=" ">" ">="
+%left "+" "-"
+%left "*" "/"
+%left DMNSN_T_NEGATE
+
 /* Numeric values */
 %token <value> DMNSN_T_INTEGER "integer"
 %token <value> DMNSN_T_FLOAT   "float"
@@ -671,8 +680,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 
 /* Floats */
 %type <astnode> FLOAT
-%type <astnode> FLOAT_TERM
-%type <astnode> FLOAT_FACTOR
+%type <astnode> FLOAT_EXPR
 %type <astnode> FLOAT_LITERAL
 
 /* Vectors */
@@ -715,42 +723,30 @@ SPHERE:   "sphere" "{"
         }
 ;
 
-FLOAT:    FLOAT_TERM
-        {
+FLOAT:    FLOAT_EXPR {
           $$ = dmnsn_eval_scalar($1);
           dmnsn_delete_astnode($1);
         }
-        | FLOAT "+" FLOAT_TERM
-        {
-          dmnsn_astnode sum = dmnsn_new_astnode2(DMNSN_AST_ADD, @$, $1, $3);
-          $$ = dmnsn_eval_scalar(sum);
-          dmnsn_delete_astnode(sum);
-        }
-        | FLOAT "-" FLOAT_TERM
-        {
-          dmnsn_astnode diff = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
-          $$ = dmnsn_eval_scalar(diff);
-          dmnsn_delete_astnode(diff);
-        }
-;
 
-FLOAT_TERM:       FLOAT_FACTOR
-                | FLOAT_TERM "*" FLOAT_FACTOR
-                {
+FLOAT_EXPR:       FLOAT_LITERAL
+                | FLOAT_EXPR "+" FLOAT_EXPR {
+                  $$ = dmnsn_new_astnode2(DMNSN_AST_ADD, @$, $1, $3);
+                }
+                | FLOAT_EXPR "-" FLOAT_EXPR {
+                  $$ = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
+                }
+                | FLOAT_EXPR "*" FLOAT_EXPR {
                   $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
                 }
-                | FLOAT_TERM "/" FLOAT_FACTOR
-                {
+                | FLOAT_EXPR "/" FLOAT_EXPR {
                   $$ = dmnsn_new_astnode2(DMNSN_AST_DIV, @$, $1, $3);
                 }
-
-FLOAT_FACTOR:     FLOAT_LITERAL
-                | "+" FLOAT_FACTOR { $$ = $2; }
-                | "-" FLOAT_FACTOR
-                {
+                | "+" FLOAT_EXPR %prec DMNSN_T_NEGATE { $$ = $2; }
+                | "-" FLOAT_EXPR %prec DMNSN_T_NEGATE {
                   $$ = dmnsn_new_astnode1(DMNSN_AST_NEGATE, @$, $2);
                 }
-                | "(" FLOAT ")" { $$ = $2; }
+                | "(" FLOAT_EXPR ")" { $$ = $2; }
+;
 
 FLOAT_LITERAL:    "integer"
                 {
@@ -777,8 +773,7 @@ FLOAT_LITERAL:    "integer"
 VECTOR:   VECTOR_LITERAL
 ;
 
-VECTOR_LITERAL:   "<" FLOAT "," FLOAT "," FLOAT ">"
-                {
+VECTOR_LITERAL:   "<" FLOAT "," FLOAT "," FLOAT ">" {
                   $$ = dmnsn_new_astnode3(DMNSN_AST_VECTOR, @$, $2, $4, $6);
                 }
 ;
