@@ -21,7 +21,7 @@
 #define TOKENIZE_H
 
 #include "../libdimension/dimension.h"
-#include "bison.h"
+#include "grammar.h"
 
 typedef enum yytokentype dmnsn_token_type;
 

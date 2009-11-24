@@ -22,10 +22,10 @@ INCLUDES = -I$(top_srcdir)/libdimension
 bin_PROGRAMS = dimension
 
 AM_YFLAGS = -d
-BUILT_SOURCES = bison.h
+BUILT_SOURCES = grammar.h
 
-dimension_SOURCES = bison.y                                                    \
-                    flex.l                                                     \
+dimension_SOURCES = grammar.y                                                  \
+                    lexer.l                                                    \
                     main.c                                                     \
                     parse.h                                                    \
                     progressbar.c                                              \
