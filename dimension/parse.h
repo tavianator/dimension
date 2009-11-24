@@ -57,6 +57,10 @@ dmnsn_array *dmnsn_parse(const dmnsn_array *tokens);
 /* Free an abstract syntax tree */
 void dmnsn_delete_astree(dmnsn_array *astree);
 
+/* Evaluate an arithmetic expression */
+dmnsn_astnode dmnsn_eval_scalar(dmnsn_astnode astnode);
+dmnsn_astnode dmnsn_eval_vector(dmnsn_astnode astnode);
+
 /* Print an S-expression of the abstract syntax tree to `file' */
 void dmnsn_print_astree_sexpr(FILE *file, const dmnsn_array *astree);
 
