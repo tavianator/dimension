@@ -80,7 +80,7 @@
 #define STRCAT(str, len)                                                \
   do {                                                                  \
     token.value = realloc(token.value, string_length + len + 1);        \
-    strncpy(token.value + string_length, str, len);                     \
+    strncpy(token.value + string_length, str, len + 1);                 \
     string_length += len;                                               \
     CALCULATE_COLUMN();                                                 \
   } while(0)
