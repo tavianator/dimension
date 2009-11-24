@@ -71,22 +71,27 @@
 #define STRING_TOKEN()                          \
   do {                                          \
     NEW_TOKEN(DMNSN_T_STRING);                  \
-    token.value    = malloc(1);                 \
-    token.value[0] = '\0';                      \
     string_length  = 0;                         \
+    string_extent  = 8;                         \
+    token.value    = malloc(string_extent);     \
+    token.value[0] = '\0';                      \
     CALCULATE_COLUMN();                         \
   } while (0)
 
 #define STRCAT(str, len)                                                \
   do {                                                                  \
-    token.value = realloc(token.value, string_length + len + 1);        \
+    if (string_length + len + 1 >= string_length) {                     \
+      string_extent = 2*(string_length + len + 1);                      \
+      token.value = realloc(token.value, string_extent);                \
+    }                                                                   \
+                                                                        \
     strncpy(token.value + string_length, str, len + 1);                 \
     string_length += len;                                               \
     CALCULATE_COLUMN();                                                 \
   } while(0)
 
 dmnsn_token token;
-size_t string_length;
+size_t string_length, string_extent;
 unsigned long wchar;
 %}
 
