@@ -188,6 +188,8 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %error-verbose
 %token-table
 
+%name-prefix "dmnsn_yy"
+
 %expect 0
 
 %parse-param {dmnsn_array *astree}

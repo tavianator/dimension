@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-%option reentrant stack yylineno noyywrap
+%option reentrant stack yylineno noyywrap prefix="dmnsn_yy" outfile="lex.yy.c"
 
 %{
 #define YY_DECL static int yylex(const char *filename, dmnsn_array *tokens, \
