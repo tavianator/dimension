@@ -151,10 +151,23 @@ unsigned long wchar;
 
 (?# Keywords)
 "box"           PUSH_TOKEN(DMNSN_T_BOX);
+"blue"          PUSH_TOKEN(DMNSN_T_BLUE);
 "camera"        PUSH_TOKEN(DMNSN_T_CAMERA);
 "color"         PUSH_TOKEN(DMNSN_T_COLOR);
 "colour"        PUSH_TOKEN(DMNSN_T_COLOR);
+"filter"        PUSH_TOKEN(DMNSN_T_FILTER);
+"gray"          PUSH_TOKEN(DMNSN_T_GRAY);
+"grey"          PUSH_TOKEN(DMNSN_T_GRAY);
+"green"         PUSH_TOKEN(DMNSN_T_GREEN);
+"red"           PUSH_TOKEN(DMNSN_T_RED);
 "sphere"        PUSH_TOKEN(DMNSN_T_SPHERE);
+"t"             PUSH_TOKEN(DMNSN_T_T);
+"transmit"      PUSH_TOKEN(DMNSN_T_TRANSMIT);
+"u"             PUSH_TOKEN(DMNSN_T_U);
+"v"             PUSH_TOKEN(DMNSN_T_V);
+"x"             PUSH_TOKEN(DMNSN_T_X);
+"y"             PUSH_TOKEN(DMNSN_T_Y);
+"z"             PUSH_TOKEN(DMNSN_T_Z);
 
 (?# Directives)
 "#include"      PUSH_TOKEN(DMNSN_T_INCLUDE);

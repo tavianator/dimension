@@ -274,7 +274,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_BICUBIC_PATCH
 %token DMNSN_T_BLACK_HOLE
 %token DMNSN_T_BLOB
-%token DMNSN_T_BLUE
+%token DMNSN_T_BLUE                     "blue"
 %token DMNSN_T_BLUR_SAMPLES
 %token DMNSN_T_BOUNDED_BY
 %token DMNSN_T_BOX                      "box"
@@ -362,7 +362,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_FALLOFF_ANGLE
 %token DMNSN_T_FALSE
 %token DMNSN_T_FILE_EXISTS
-%token DMNSN_T_FILTER
+%token DMNSN_T_FILTER                   "filter"
 %token DMNSN_T_FINAL_CLOCK
 %token DMNSN_T_FINAL_FRAME
 %token DMNSN_T_FINISH
@@ -386,9 +386,9 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_GLOBAL_SETTINGS
 %token DMNSN_T_GRADIENT
 %token DMNSN_T_GRANITE
-%token DMNSN_T_GRAY
+%token DMNSN_T_GRAY                     "gray"
 %token DMNSN_T_GRAY_THRESHOLD
-%token DMNSN_T_GREEN
+%token DMNSN_T_GREEN                    "green"
 %token DMNSN_T_HEIGHT_FIELD
 %token DMNSN_T_HEXAGON
 %token DMNSN_T_HF_GRAY_16
@@ -539,7 +539,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_RATIO
 %token DMNSN_T_RECIPROCAL
 %token DMNSN_T_RECURSION_LIMIT
-%token DMNSN_T_RED
+%token DMNSN_T_RED                      "red"
 %token DMNSN_T_REFLECTION
 %token DMNSN_T_REFLECTION_EXPONENT
 %token DMNSN_T_REFRACTION
@@ -597,7 +597,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_SUM
 %token DMNSN_T_SUPERELLIPSOID
 %token DMNSN_T_SYS
-%token DMNSN_T_T
+%token DMNSN_T_T                        "t"
 %token DMNSN_T_TAN
 %token DMNSN_T_TANH
 %token DMNSN_T_TARGET
@@ -618,7 +618,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_TRACE
 %token DMNSN_T_TRANSFORM
 %token DMNSN_T_TRANSLATE
-%token DMNSN_T_TRANSMIT
+%token DMNSN_T_TRANSMIT                 "transmit"
 %token DMNSN_T_TRIANGLE
 %token DMNSN_T_TRIANGLE_WAVE
 %token DMNSN_T_TRUE
@@ -626,7 +626,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_TURB_DEPTH
 %token DMNSN_T_TURBULENCE
 %token DMNSN_T_TYPE
-%token DMNSN_T_U
+%token DMNSN_T_U                        "u"
 %token DMNSN_T_U_STEPS
 %token DMNSN_T_ULTRA_WIDE_ANGLE
 %token DMNSN_T_UNION
@@ -638,7 +638,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_UV_INDICES
 %token DMNSN_T_UV_MAPPING
 %token DMNSN_T_UV_VECTORS
-%token DMNSN_T_V
+%token DMNSN_T_V                        "v"
 %token DMNSN_T_V_STEPS
 %token DMNSN_T_VAL
 %token DMNSN_T_VARIANCE
@@ -657,10 +657,10 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_WIDTH
 %token DMNSN_T_WOOD
 %token DMNSN_T_WRINKLES
-%token DMNSN_T_X
-%token DMNSN_T_Y
+%token DMNSN_T_X                        "x"
+%token DMNSN_T_Y                        "y"
 %token DMNSN_T_YES
-%token DMNSN_T_Z
+%token DMNSN_T_Z                        "z"
 
 /* Directives (#declare etc.) */
 %token DMNSN_T_BREAK
@@ -773,11 +773,70 @@ FLOAT_EXPR:       FLOAT_LITERAL
                 | "-" FLOAT_EXPR %prec DMNSN_T_NEGATE {
                   $$ = dmnsn_new_astnode1(DMNSN_AST_NEGATE, @$, $2);
                 }
+
+                | VECTOR_EXPR "." "x" {
+                  dmnsn_array_get($1.children, 0, &$$);
+                  dmnsn_array_remove($1.children, 0);
+                  dmnsn_delete_astnode($1);
+                }
+                | VECTOR_EXPR "." "u" {
+                  dmnsn_array_get($1.children, 0, &$$);
+                  dmnsn_array_remove($1.children, 0);
+                  dmnsn_delete_astnode($1);
+                }
+                | VECTOR_EXPR "." "red" {
+                  dmnsn_array_get($1.children, 0, &$$);
+                  dmnsn_array_remove($1.children, 0);
+                  dmnsn_delete_astnode($1);
+                }
+
+                | VECTOR_EXPR "." "y" {
+                  dmnsn_array_get($1.children, 1, &$$);
+                  dmnsn_array_remove($1.children, 1);
+                  dmnsn_delete_astnode($1);
+                }
+                | VECTOR_EXPR "." "v" {
+                  dmnsn_array_get($1.children, 1, &$$);
+                  dmnsn_array_remove($1.children, 1);
+                  dmnsn_delete_astnode($1);
+                }
+                | VECTOR_EXPR "." "green" {
+                  dmnsn_array_get($1.children, 1, &$$);
+                  dmnsn_array_remove($1.children, 1);
+                  dmnsn_delete_astnode($1);
+                }
+
+                | VECTOR_EXPR "." "z" {
+                  dmnsn_array_get($1.children, 2, &$$);
+                  dmnsn_array_remove($1.children, 2);
+                  dmnsn_delete_astnode($1);
+                }
+                | VECTOR_EXPR "." "blue" {
+                  dmnsn_array_get($1.children, 2, &$$);
+                  dmnsn_array_remove($1.children, 2);
+                  dmnsn_delete_astnode($1);
+                }
+
+                | VECTOR_EXPR "." "t" {
+                  dmnsn_array_get($1.children, 3, &$$);
+                  dmnsn_array_remove($1.children, 3);
+                  dmnsn_delete_astnode($1);
+                }
+                | VECTOR_EXPR "." "filter" {
+                  dmnsn_array_get($1.children, 3, &$$);
+                  dmnsn_array_remove($1.children, 3);
+                  dmnsn_delete_astnode($1);
+                }
+
+                | VECTOR_EXPR "." "transmit" {
+                  dmnsn_array_get($1.children, 4, &$$);
+                  dmnsn_array_remove($1.children, 4);
+                  dmnsn_delete_astnode($1);
+                }
                 | "(" FLOAT_EXPR ")" { $$ = $2; }
 ;
 
-FLOAT_LITERAL:    "integer"
-                {
+FLOAT_LITERAL:    "integer" {
                   $$ = dmnsn_new_astnode(DMNSN_AST_INTEGER, @$);
                   $$.ptr = malloc(sizeof(long));
                   if (!$$.ptr)
@@ -786,8 +845,7 @@ FLOAT_LITERAL:    "integer"
 
                   *(long *)$$.ptr = strtol($1, NULL, 0);
                 }
-                | "float"
-                {
+                | "float" {
                   $$ = dmnsn_new_astnode(DMNSN_AST_FLOAT, @$);
                   $$.ptr = malloc(sizeof(double));
                   if (!$$.ptr)
