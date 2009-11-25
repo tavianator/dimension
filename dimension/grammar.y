@@ -188,8 +188,6 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %error-verbose
 %token-table
 
-%expect 2
-
 %parse-param {dmnsn_array *astree}
 %parse-param {dmnsn_token_iterator *iterator}
 %lex-param {dmnsn_token_iterator *iterator}
@@ -229,6 +227,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %left "<" "<=" ">" ">="
 %left "+" "-"
 %left "*" "/"
+%left "."
 %left DMNSN_T_NEGATE
 
 /* Numeric values */
@@ -714,6 +713,14 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %type <astnode> OBJECT_MODIFIERS
 %type <astnode> OBJECT_MODIFIER
 
+/* Textures */
+%type <astnode> TEXTURE
+%type <astnode> TEXTURE_ITEMS
+
+/* Pigments */
+%type <astnode> PIGMENT
+%type <astnode> PIGMENT_TYPE
+
 /* Floats */
 %type <astnode> FLOAT
 %type <astnode> FLOAT_EXPR
@@ -723,6 +730,11 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %type <astnode> VECTOR
 %type <astnode> VECTOR_EXPR
 %type <astnode> VECTOR_LITERAL
+
+/* Colors */
+%type <astnode> COLOR
+%type <astnode> COLOR_BODY
+%type <astnode> COLOR_VECTOR
 
 %destructor { dmnsn_delete_astnode($$); } <astnode>
 
@@ -788,8 +800,45 @@ OBJECT_MODIFIERS:         /* empty */ {
                           $$ = $1;
                           dmnsn_array_push($$.children, &$2);
                         }
+;
 
-OBJECT_MODIFIER:  TRANSFORMATION
+OBJECT_MODIFIER:          TRANSFORMATION
+                        | TEXTURE
+                        | PIGMENT {
+                          $$ = dmnsn_new_astnode1(DMNSN_AST_TEXTURE, @$, $1);
+                        }
+;
+
+/* Textures */
+
+TEXTURE:          "texture" "{"
+                    TEXTURE_ITEMS
+                  "}"
+                { $$ = $3; }
+;
+
+TEXTURE_ITEMS:    /* empty */ {
+                  $$ = dmnsn_new_astnode(DMNSN_AST_TEXTURE, @$);
+                }
+                | TEXTURE_ITEMS PIGMENT {
+                  $$ = $1;
+                  dmnsn_array_push($$.children, &$2);
+                }
+;
+
+/* Pigments */
+
+PIGMENT:          "pigment" "{"
+                    PIGMENT_TYPE
+                  "}"
+                {
+                  $$ = dmnsn_new_astnode1(DMNSN_AST_PIGMENT, @$, $3);
+                }
+
+PIGMENT_TYPE:     /* empty */ {
+                  $$ = dmnsn_new_astnode(DMNSN_AST_NONE, @$);
+                }
+                | COLOR
 
 /* Floats */
 
@@ -797,6 +846,7 @@ FLOAT:    FLOAT_EXPR {
           $$ = dmnsn_eval_scalar($1);
           dmnsn_delete_astnode($1);
         }
+;
 
 FLOAT_EXPR:       FLOAT_LITERAL
                 | FLOAT_EXPR "+" FLOAT_EXPR {
@@ -942,6 +992,26 @@ VECTOR_LITERAL:    "<" FLOAT_EXPR "," FLOAT_EXPR ">" {
                                           $2, $4, $6, $8, $10);
                 }
 ;
+
+COLOR:    COLOR_BODY
+        | "color" COLOR_BODY { $$ = $2; }
+;
+
+COLOR_BODY:     COLOR_VECTOR
+;
+
+COLOR_VECTOR:   "rgb"   VECTOR { $$ = $2; }
+              | "rgbf"  VECTOR { $$ = $2; }
+              | "rgbt"  VECTOR {
+                /* Swap the transmit and filter components */
+                $$ = $2;
+                dmnsn_astnode temp;
+                dmnsn_array_get($$.children, 4, &temp);
+                dmnsn_array_set($$.children, 4, dmnsn_array_at($$.children, 3));
+                dmnsn_array_set($$.children, 3, &temp);
+              }
+              | "rgbft" VECTOR { $$ = $2; }
+              | VECTOR
 
 %%
 
@@ -1370,20 +1440,32 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   case type:                                                                   \
     return str;
 
+  dmnsn_astnode_map(DMNSN_AST_NONE, "none");
+
+  dmnsn_astnode_map(DMNSN_AST_ROTATION, "rotate");
+  dmnsn_astnode_map(DMNSN_AST_SCALE, "scale");
+  dmnsn_astnode_map(DMNSN_AST_TRANSLATION, "translate");
+
+  dmnsn_astnode_map(DMNSN_AST_BOX, "box");
+  dmnsn_astnode_map(DMNSN_AST_SPHERE, "sphere");
+
+  dmnsn_astnode_map(DMNSN_AST_OBJECT_MODIFIERS, "object-modifiers");
+
+  dmnsn_astnode_map(DMNSN_AST_TEXTURE, "texture");
+  dmnsn_astnode_map(DMNSN_AST_PIGMENT, "pigment");
+
   dmnsn_astnode_map(DMNSN_AST_FLOAT, "float");
   dmnsn_astnode_map(DMNSN_AST_INTEGER, "integer");
+
+  dmnsn_astnode_map(DMNSN_AST_VECTOR, "vector");
+
+  dmnsn_astnode_map(DMNSN_AST_COLOR, "color");
+
   dmnsn_astnode_map(DMNSN_AST_NEGATE, "-");
   dmnsn_astnode_map(DMNSN_AST_ADD, "+");
   dmnsn_astnode_map(DMNSN_AST_SUB, "-");
   dmnsn_astnode_map(DMNSN_AST_MUL, "*");
   dmnsn_astnode_map(DMNSN_AST_DIV, "/");
-  dmnsn_astnode_map(DMNSN_AST_BOX, "box");
-  dmnsn_astnode_map(DMNSN_AST_VECTOR, "vector");
-  dmnsn_astnode_map(DMNSN_AST_SPHERE, "sphere");
-  dmnsn_astnode_map(DMNSN_AST_ROTATION, "rotate");
-  dmnsn_astnode_map(DMNSN_AST_SCALE, "scale");
-  dmnsn_astnode_map(DMNSN_AST_TRANSLATION, "translate");
-  dmnsn_astnode_map(DMNSN_AST_OBJECT_MODIFIERS, "object-modifiers");
 
   default:
     fprintf(stderr, "Warning: unrecognised astnode type %d.\n",
