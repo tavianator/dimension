@@ -33,6 +33,8 @@ typedef enum {
   DMNSN_AST_VECTOR,
   DMNSN_AST_BOX,
   DMNSN_AST_SPHERE,
+  DMNSN_AST_ROTATION,
+  DMNSN_AST_OBJECT_MODIFIERS,
 } dmnsn_astnode_type;
 
 typedef struct dmnsn_astnode dmnsn_astnode;

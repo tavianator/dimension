@@ -160,6 +160,7 @@ unsigned long wchar;
 "grey"          PUSH_TOKEN(DMNSN_T_GRAY);
 "green"         PUSH_TOKEN(DMNSN_T_GREEN);
 "red"           PUSH_TOKEN(DMNSN_T_RED);
+"rotate"        PUSH_TOKEN(DMNSN_T_ROTATE);
 "sphere"        PUSH_TOKEN(DMNSN_T_SPHERE);
 "t"             PUSH_TOKEN(DMNSN_T_T);
 "transmit"      PUSH_TOKEN(DMNSN_T_TRANSMIT);

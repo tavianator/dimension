@@ -21,7 +21,7 @@
 
 arithexp=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/arithexp.pov)
 arithexp_exp='(sphere { < < (float "2.0") - (float "1.0") , (float "3.0") , (float "4.0") > . x , \( (float "1.0") + (integer "2") \) * (integer "2") - (integer "5") , (float "1.0") + (integer "2") * (integer "2") - (integer "4") > - - < (integer "0") , (integer "0") , (integer "1") > , (float "2.25") - (integer "1") * (integer "2") })
-((sphere (vector (float 0) (float 0) (float 0) (integer 0) (integer 0)) (float 0.25)))'
+((sphere (vector (float 0) (float 0) (float 0) (integer 0) (integer 0)) (float 0.25) object-modifiers))'
 
 if [ "$arithexp" != "$arithexp_exp" ]; then
   echo "arithexp.pov parsed as \"$arithexp\"" >&2

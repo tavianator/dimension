@@ -188,6 +188,8 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %error-verbose
 %token-table
 
+%expect 2
+
 %parse-param {dmnsn_array *astree}
 %parse-param {dmnsn_token_iterator *iterator}
 %lex-param {dmnsn_token_iterator *iterator}
@@ -550,7 +552,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_RGBT
 %token DMNSN_T_RIGHT
 %token DMNSN_T_RIPPLES
-%token DMNSN_T_ROTATE
+%token DMNSN_T_ROTATE                   "rotate"
 %token DMNSN_T_ROUGHNESS
 %token DMNSN_T_SAMPLES
 %token DMNSN_T_SAVE_FILE
@@ -699,11 +701,18 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 /* Top-level items */
 %type <astnode> SCENE_ITEM
 
+/* Transformations */
+%type <astnode> TRANSFORMATION
+
 /* Objects */
 %type <astnode> OBJECT
 %type <astnode> FINITE_SOLID_OBJECT
 %type <astnode> BOX
 %type <astnode> SPHERE
+
+/* Object modifiers */
+%type <astnode> OBJECT_MODIFIERS
+%type <astnode> OBJECT_MODIFIER
 
 /* Floats */
 %type <astnode> FLOAT
@@ -719,6 +728,8 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 
 %%
 
+/* Start symbol */
+
 SCENE:    /* empty */ { }
         | SCENE SCENE_ITEM {
           dmnsn_array_push(astree, &$2);
@@ -727,6 +738,14 @@ SCENE:    /* empty */ { }
 
 SCENE_ITEM:       OBJECT
 ;
+
+/* Transformations */
+
+TRANSFORMATION:   "rotate" VECTOR {
+                  $$ = dmnsn_new_astnode1(DMNSN_AST_ROTATION, @$, $2);
+                }
+
+/* Objects */
 
 OBJECT:   FINITE_SOLID_OBJECT
 ;
@@ -737,19 +756,36 @@ FINITE_SOLID_OBJECT:      BOX
 
 BOX:      "box" "{"
             VECTOR "," VECTOR
+            OBJECT_MODIFIERS
           "}"
         {
-          $$ = dmnsn_new_astnode2(DMNSN_AST_BOX, @$, $3, $5);
+          $$ = dmnsn_new_astnode3(DMNSN_AST_BOX, @$, $3, $5, $6);
         }
 ;
 
 SPHERE:   "sphere" "{"
             VECTOR "," FLOAT
+            OBJECT_MODIFIERS
           "}"
         {
-          $$ = dmnsn_new_astnode2(DMNSN_AST_SPHERE, @$, $3, $5);
+          $$ = dmnsn_new_astnode3(DMNSN_AST_SPHERE, @$, $3, $5, $6);
         }
 ;
+
+/* Object modifiers */
+
+OBJECT_MODIFIERS:         /* empty */ {
+                          $$ = dmnsn_new_astnode(DMNSN_AST_OBJECT_MODIFIERS,
+                                                 @$);
+                        }
+                        | OBJECT_MODIFIERS OBJECT_MODIFIER {
+                          $$ = $1;
+                          dmnsn_array_push($$.children, &$2);
+                        }
+
+OBJECT_MODIFIER:  TRANSFORMATION
+
+/* Floats */
 
 FLOAT:    FLOAT_EXPR {
           $$ = dmnsn_eval_scalar($1);
@@ -855,6 +891,8 @@ FLOAT_LITERAL:    "integer" {
                   *(double *)$$.ptr = strtod($1, NULL);
                 }
 ;
+
+/* Vectors */
 
 VECTOR:   VECTOR_EXPR {
           $$ = dmnsn_eval_vector($1);
@@ -1334,6 +1372,8 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_BOX, "box");
   dmnsn_astnode_map(DMNSN_AST_VECTOR, "vector");
   dmnsn_astnode_map(DMNSN_AST_SPHERE, "sphere");
+  dmnsn_astnode_map(DMNSN_AST_OBJECT_MODIFIERS, "object-modifiers");
+  dmnsn_astnode_map(DMNSN_AST_ROTATION, "rotate");
 
   default:
     fprintf(stderr, "Warning: unrecognised astnode type %d.\n",

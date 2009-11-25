@@ -25,41 +25,14 @@
 static double
 dmnsn_realize_float(dmnsn_astnode astnode)
 {
-  dmnsn_astnode lhs, rhs;
-
   switch (astnode.type) {
   case DMNSN_AST_FLOAT:
     return *(double *)astnode.ptr;
-
   case DMNSN_AST_INTEGER:
     return *(long *)astnode.ptr;
 
-  case DMNSN_AST_NEGATE:
-    dmnsn_array_get(astnode.children, 0, &rhs);
-    return -dmnsn_realize_float(rhs);
-
-  case DMNSN_AST_ADD:
-    dmnsn_array_get(astnode.children, 0, &lhs);
-    dmnsn_array_get(astnode.children, 1, &rhs);
-    return dmnsn_realize_float(lhs) + dmnsn_realize_float(rhs);
-
-  case DMNSN_AST_SUB:
-    dmnsn_array_get(astnode.children, 0, &lhs);
-    dmnsn_array_get(astnode.children, 1, &rhs);
-    return dmnsn_realize_float(lhs) - dmnsn_realize_float(rhs);
-
-  case DMNSN_AST_MUL:
-    dmnsn_array_get(astnode.children, 0, &lhs);
-    dmnsn_array_get(astnode.children, 1, &rhs);
-    return dmnsn_realize_float(lhs) * dmnsn_realize_float(rhs);
-
-  case DMNSN_AST_DIV:
-    dmnsn_array_get(astnode.children, 0, &lhs);
-    dmnsn_array_get(astnode.children, 1, &rhs);
-    return dmnsn_realize_float(lhs) / dmnsn_realize_float(rhs);
-
   default:
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid arithmetic expression.");
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid float.");
     return 0; /* Silence compiler warning */
   }
 }
@@ -83,7 +56,58 @@ dmnsn_realize_vector(dmnsn_astnode astnode)
   return dmnsn_new_vector(x, y, z);
 }
 
-dmnsn_object *
+static dmnsn_object *
+dmnsn_realize_rotation(dmnsn_astnode astnode, dmnsn_object *object)
+{
+  const double deg2rad = atan(1.0)/45.0;
+
+  dmnsn_astnode angle_node;
+  dmnsn_array_get(astnode.children, 0, &angle_node);
+
+  dmnsn_vector angle = dmnsn_vector_mul(
+    deg2rad,
+    dmnsn_realize_vector(angle_node)
+  );
+
+  /* Rotations in POV-Ray are done about the X-axis first, then Y, then Z */
+  object->trans = dmnsn_matrix_mul(
+    dmnsn_rotation_matrix(dmnsn_new_vector(angle.x, 0.0, 0.0)),
+    object->trans
+  );
+  object->trans = dmnsn_matrix_mul(
+    dmnsn_rotation_matrix(dmnsn_new_vector(0.0, angle.y, 0.0)),
+    object->trans
+  );
+  object->trans = dmnsn_matrix_mul(
+    dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 0.0, angle.z)),
+    object->trans
+  );
+
+  return object;
+}
+
+static dmnsn_object *
+dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
+{
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    dmnsn_astnode modifier;
+    dmnsn_array_get(astnode.children, i, &modifier);
+
+    switch (modifier.type) {
+    case DMNSN_AST_ROTATION:
+      object = dmnsn_realize_rotation(modifier, object);
+      break;
+
+    default:
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid object modifier.");
+    }
+  }
+
+  return object;
+}
+
+static dmnsn_object *
 dmnsn_realize_box(dmnsn_astnode astnode)
 {
   if (astnode.type != DMNSN_AST_BOX) {
@@ -114,10 +138,14 @@ dmnsn_realize_box(dmnsn_astnode astnode)
     box->trans
   );
 
+  dmnsn_astnode modifiers;
+  dmnsn_array_get(astnode.children, 2, &modifiers);
+  box = dmnsn_realize_object_modifiers(modifiers, box);
+
   return box;
 }
 
-dmnsn_object *
+static dmnsn_object *
 dmnsn_realize_sphere(dmnsn_astnode astnode)
 {
   if (astnode.type != DMNSN_AST_SPHERE) {
@@ -150,6 +178,10 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
 
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(r, r, r));
   sphere->trans = dmnsn_matrix_mul(dmnsn_translation_matrix(x0), sphere->trans);
+
+  dmnsn_astnode modifiers;
+  dmnsn_array_get(astnode.children, 2, &modifiers);
+  sphere = dmnsn_realize_object_modifiers(modifiers, sphere);
 
   return sphere;
 }
@@ -186,10 +218,6 @@ dmnsn_realize(const dmnsn_array *astree)
   );
   trans = dmnsn_matrix_mul(
     dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0)),
-    trans
-  );
-  trans = dmnsn_matrix_mul(
-    dmnsn_rotation_matrix(dmnsn_new_vector(-0.75, 0.0, 0.0)),
     trans
   );
 
