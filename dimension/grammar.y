@@ -920,16 +920,18 @@ VECTOR_EXPR:      VECTOR_LITERAL
                 | "(" VECTOR_EXPR ")" { $$ = $2; }
 ;
 
-VECTOR_LITERAL:    "<" FLOAT "," FLOAT ">" {
+VECTOR_LITERAL:    "<" FLOAT_EXPR "," FLOAT_EXPR ">" {
                   $$ = dmnsn_new_astnode2(DMNSN_AST_VECTOR, @$, $2, $4);
                 }
-                |  "<" FLOAT "," FLOAT "," FLOAT ">" {
+                |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ">" {
                   $$ = dmnsn_new_astnode3(DMNSN_AST_VECTOR, @$, $2, $4, $6);
                 }
-                |  "<" FLOAT "," FLOAT "," FLOAT "," FLOAT ">" {
+                |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ","
+                       FLOAT_EXPR ">" {
                   $$ = dmnsn_new_astnode4(DMNSN_AST_VECTOR, @$, $2, $4, $6, $8);
                 }
-                |  "<" FLOAT "," FLOAT "," FLOAT "," FLOAT "," FLOAT ">" {
+                |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ","
+                       FLOAT_EXPR "," FLOAT_EXPR ">" {
                   $$ = dmnsn_new_astnode5(DMNSN_AST_VECTOR, @$,
                                           $2, $4, $6, $8, $10);
                 }
