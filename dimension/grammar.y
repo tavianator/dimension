@@ -119,6 +119,33 @@ dmnsn_new_astnode3(dmnsn_astnode_type type, YYLTYPE lloc,
   return astnode;
 }
 
+static dmnsn_astnode
+dmnsn_new_astnode4(dmnsn_astnode_type type, YYLTYPE lloc,
+                   dmnsn_astnode n1, dmnsn_astnode n2, dmnsn_astnode n3,
+                   dmnsn_astnode n4)
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(type, lloc);
+  dmnsn_array_push(astnode.children, &n1);
+  dmnsn_array_push(astnode.children, &n2);
+  dmnsn_array_push(astnode.children, &n3);
+  dmnsn_array_push(astnode.children, &n4);
+  return astnode;
+}
+
+static dmnsn_astnode
+dmnsn_new_astnode5(dmnsn_astnode_type type, YYLTYPE lloc,
+                   dmnsn_astnode n1, dmnsn_astnode n2, dmnsn_astnode n3,
+                   dmnsn_astnode n4, dmnsn_astnode n5)
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(type, lloc);
+  dmnsn_array_push(astnode.children, &n1);
+  dmnsn_array_push(astnode.children, &n2);
+  dmnsn_array_push(astnode.children, &n3);
+  dmnsn_array_push(astnode.children, &n4);
+  dmnsn_array_push(astnode.children, &n5);
+  return astnode;
+}
+
 /* Delete a single, unused astnode */
 static void
 dmnsn_delete_astnode(dmnsn_astnode astnode)
@@ -685,6 +712,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 
 /* Vectors */
 %type <astnode> VECTOR
+%type <astnode> VECTOR_EXPR
 %type <astnode> VECTOR_LITERAL
 
 %destructor { dmnsn_delete_astnode($$); } <astnode>
@@ -692,9 +720,9 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %%
 
 SCENE:    /* empty */ { }
-       | SCENE SCENE_ITEM {
-         dmnsn_array_push(astree, &$2);
-       }
+        | SCENE SCENE_ITEM {
+          dmnsn_array_push(astree, &$2);
+        }
 ;
 
 SCENE_ITEM:       OBJECT
@@ -770,11 +798,44 @@ FLOAT_LITERAL:    "integer"
                 }
 ;
 
-VECTOR:   VECTOR_LITERAL
+VECTOR:   VECTOR_EXPR {
+          $$ = dmnsn_eval_vector($1);
+          dmnsn_delete_astnode($1);
+        }
 ;
 
-VECTOR_LITERAL:   "<" FLOAT "," FLOAT "," FLOAT ">" {
+VECTOR_EXPR:      VECTOR_LITERAL
+                | VECTOR_EXPR "+" VECTOR_EXPR {
+                  $$ = dmnsn_new_astnode2(DMNSN_AST_ADD, @$, $1, $3);
+                }
+                | VECTOR_EXPR "-" VECTOR_EXPR {
+                  $$ = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
+                }
+                | VECTOR_EXPR "*" VECTOR_EXPR {
+                  $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
+                }
+                | VECTOR_EXPR "/" VECTOR_EXPR {
+                  $$ = dmnsn_new_astnode2(DMNSN_AST_DIV, @$, $1, $3);
+                }
+                | "+" VECTOR_EXPR %prec DMNSN_T_NEGATE { $$ = $2; }
+                | "-" VECTOR_EXPR %prec DMNSN_T_NEGATE {
+                  $$ = dmnsn_new_astnode1(DMNSN_AST_NEGATE, @$, $2);
+                }
+                | "(" VECTOR_EXPR ")" { $$ = $2; }
+;
+
+VECTOR_LITERAL:    "<" FLOAT "," FLOAT ">" {
+                  $$ = dmnsn_new_astnode2(DMNSN_AST_VECTOR, @$, $2, $4);
+                }
+                |  "<" FLOAT "," FLOAT "," FLOAT ">" {
                   $$ = dmnsn_new_astnode3(DMNSN_AST_VECTOR, @$, $2, $4, $6);
+                }
+                |  "<" FLOAT "," FLOAT "," FLOAT "," FLOAT ">" {
+                  $$ = dmnsn_new_astnode4(DMNSN_AST_VECTOR, @$, $2, $4, $6, $8);
+                }
+                |  "<" FLOAT "," FLOAT "," FLOAT "," FLOAT "," FLOAT ">" {
+                  $$ = dmnsn_new_astnode5(DMNSN_AST_VECTOR, @$,
+                                          $2, $4, $6, $8, $10);
                 }
 ;
 
@@ -990,8 +1051,118 @@ dmnsn_eval_scalar(dmnsn_astnode astnode)
   }
 }
 
-/* TODO */
-dmnsn_astnode dmnsn_eval_vector(dmnsn_astnode astnode);
+static dmnsn_astnode
+dmnsn_vector_promote(dmnsn_astnode astnode)
+{
+  dmnsn_astnode promoted = dmnsn_copy_astnode(astnode), component;
+
+  if (astnode.type == DMNSN_AST_VECTOR) {
+    unsigned int i;
+    for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+      dmnsn_array_get(astnode.children, i, &component);
+      component = dmnsn_eval_scalar(component);
+      dmnsn_array_push(promoted.children, &component);
+    }
+
+    while (dmnsn_array_size(promoted.children) < 5) {
+      component = dmnsn_copy_astnode(component);
+      component.type = DMNSN_AST_INTEGER;
+
+      long *val = malloc(sizeof(long));
+      *val      = 0;
+
+      component.ptr = val;
+      dmnsn_array_push(promoted.children, &component);
+    }
+  } else {
+    component = dmnsn_eval_scalar(astnode);
+    dmnsn_array_push(promoted.children, &component);
+
+    while (dmnsn_array_size(promoted.children) < 5) {
+      component = dmnsn_eval_scalar(component);
+      dmnsn_array_push(promoted.children, &component);
+    }
+  }
+
+  return promoted;
+}
+
+static dmnsn_astnode
+dmnsn_eval_vector_unary(dmnsn_astnode astnode)
+{
+  unsigned int i;
+
+  dmnsn_astnode rhs;
+  dmnsn_array_get(astnode.children, 0, &rhs);
+  rhs = dmnsn_eval_vector(rhs);
+
+  dmnsn_astnode ret = dmnsn_copy_astnode(astnode), temp;
+  ret.type = DMNSN_AST_VECTOR;
+
+  dmnsn_astnode op = dmnsn_copy_astnode(astnode);
+  for (i = 0; i < 5; ++i) {
+    dmnsn_array_get(rhs.children, i, dmnsn_array_at(op.children, 0));
+    temp = dmnsn_eval_scalar_unary(op);
+    dmnsn_array_set(ret.children, i, &temp);
+  }
+
+  dmnsn_delete_array(op.children);
+  dmnsn_delete_astnode(rhs);
+  return ret;
+}
+
+static dmnsn_astnode
+dmnsn_eval_vector_binary(dmnsn_astnode astnode)
+{
+  unsigned int i;
+
+  dmnsn_astnode lhs, rhs;
+  dmnsn_array_get(astnode.children, 0, &lhs);
+  dmnsn_array_get(astnode.children, 0, &rhs);
+  lhs = dmnsn_eval_vector(lhs);
+  rhs = dmnsn_eval_vector(rhs);
+
+  dmnsn_astnode ret = dmnsn_copy_astnode(astnode), temp;
+  ret.type = DMNSN_AST_VECTOR;
+
+  dmnsn_astnode op = dmnsn_copy_astnode(astnode);
+  for (i = 0; i < 5; ++i) {
+    dmnsn_array_get(lhs.children, i, dmnsn_array_at(op.children, 0));
+    dmnsn_array_get(rhs.children, i, dmnsn_array_at(op.children, 1));
+    temp = dmnsn_eval_scalar_binary(op);
+    dmnsn_array_set(ret.children, i, &temp);
+  }
+
+  dmnsn_delete_array(op.children);
+  dmnsn_delete_astnode(lhs);
+  dmnsn_delete_astnode(rhs);
+  return ret;
+}
+
+dmnsn_astnode
+dmnsn_eval_vector(dmnsn_astnode astnode)
+{
+  switch (astnode.type) {
+  case DMNSN_AST_INTEGER:
+  case DMNSN_AST_FLOAT:
+  case DMNSN_AST_VECTOR:
+    return dmnsn_vector_promote(astnode);
+
+  case DMNSN_AST_NEGATE:
+    return dmnsn_eval_vector_unary(astnode);
+
+  case DMNSN_AST_ADD:
+  case DMNSN_AST_SUB:
+  case DMNSN_AST_MUL:
+  case DMNSN_AST_DIV:
+    return dmnsn_eval_vector_binary(astnode);
+
+  default:
+    dmnsn_error(DMNSN_SEVERITY_HIGH,
+                "Given non-arithmetic-expression to evaluate.");
+    return astnode; /* Silence warning */
+  }
+}
 
 static void
 dmnsn_print_astnode(FILE *file, dmnsn_astnode astnode)
