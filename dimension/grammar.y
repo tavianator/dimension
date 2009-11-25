@@ -188,6 +188,8 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %error-verbose
 %token-table
 
+%expect 0
+
 %parse-param {dmnsn_array *astree}
 %parse-param {dmnsn_token_iterator *iterator}
 %lex-param {dmnsn_token_iterator *iterator}
@@ -742,276 +744,279 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 
 /* Start symbol */
 
-SCENE:    /* empty */ { }
-        | SCENE SCENE_ITEM {
-          dmnsn_array_push(astree, &$2);
-        }
+SCENE: /* empty */ { }
+     | SCENE SCENE_ITEM {
+       dmnsn_array_push(astree, &$2);
+     }
 ;
 
-SCENE_ITEM:       OBJECT
+SCENE_ITEM: OBJECT
 ;
 
 /* Transformations */
 
-TRANSFORMATION:   "rotate" VECTOR {
-                  $$ = dmnsn_new_astnode1(DMNSN_AST_ROTATION, @$, $2);
-                }
-                | "scale" VECTOR {
-                  $$ = dmnsn_new_astnode1(DMNSN_AST_SCALE, @$, $2);
-                }
-                | "translate" VECTOR {
-                  $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSLATION, @$, $2);
-                }
+TRANSFORMATION: "rotate" VECTOR {
+                $$ = dmnsn_new_astnode1(DMNSN_AST_ROTATION, @$, $2);
+              }
+              | "scale" VECTOR {
+                $$ = dmnsn_new_astnode1(DMNSN_AST_SCALE, @$, $2);
+              }
+              | "translate" VECTOR {
+                $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSLATION, @$, $2);
+              }
+;
 
 /* Objects */
 
-OBJECT:   FINITE_SOLID_OBJECT
+OBJECT: FINITE_SOLID_OBJECT
 ;
 
-FINITE_SOLID_OBJECT:      BOX
-                        | SPHERE
+FINITE_SOLID_OBJECT: BOX
+                   | SPHERE
 ;
 
-BOX:      "box" "{"
-            VECTOR "," VECTOR
-            OBJECT_MODIFIERS
-          "}"
-        {
-          $$ = dmnsn_new_astnode3(DMNSN_AST_BOX, @$, $3, $5, $6);
-        }
+BOX: "box" "{"
+       VECTOR "," VECTOR
+       OBJECT_MODIFIERS
+     "}"
+   {
+     $$ = dmnsn_new_astnode3(DMNSN_AST_BOX, @$, $3, $5, $6);
+   }
 ;
 
-SPHERE:   "sphere" "{"
-            VECTOR "," FLOAT
-            OBJECT_MODIFIERS
-          "}"
-        {
-          $$ = dmnsn_new_astnode3(DMNSN_AST_SPHERE, @$, $3, $5, $6);
-        }
+SPHERE: "sphere" "{"
+          VECTOR "," FLOAT
+          OBJECT_MODIFIERS
+        "}"
+      {
+        $$ = dmnsn_new_astnode3(DMNSN_AST_SPHERE, @$, $3, $5, $6);
+      }
 ;
 
 /* Object modifiers */
 
-OBJECT_MODIFIERS:         /* empty */ {
-                          $$ = dmnsn_new_astnode(DMNSN_AST_OBJECT_MODIFIERS,
-                                                 @$);
-                        }
-                        | OBJECT_MODIFIERS OBJECT_MODIFIER {
-                          $$ = $1;
-                          dmnsn_array_push($$.children, &$2);
-                        }
-;
-
-OBJECT_MODIFIER:          TRANSFORMATION
-                        | TEXTURE
-                        | PIGMENT {
-                          $$ = dmnsn_new_astnode1(DMNSN_AST_TEXTURE, @$, $1);
-                        }
-;
-
-/* Textures */
-
-TEXTURE:          "texture" "{"
-                    TEXTURE_ITEMS
-                  "}"
-                { $$ = $3; }
-;
-
-TEXTURE_ITEMS:    /* empty */ {
-                  $$ = dmnsn_new_astnode(DMNSN_AST_TEXTURE, @$);
+OBJECT_MODIFIERS: /* empty */ {
+                  $$ = dmnsn_new_astnode(DMNSN_AST_OBJECT_MODIFIERS, @$);
                 }
-                | TEXTURE_ITEMS PIGMENT {
+                | OBJECT_MODIFIERS OBJECT_MODIFIER {
                   $$ = $1;
                   dmnsn_array_push($$.children, &$2);
                 }
 ;
 
+OBJECT_MODIFIER: TRANSFORMATION
+               | TEXTURE
+               | PIGMENT {
+                 $$ = dmnsn_new_astnode1(DMNSN_AST_TEXTURE, @$, $1);
+               }
+;
+
+/* Textures */
+
+TEXTURE: "texture" "{"
+           TEXTURE_ITEMS
+         "}"
+       { $$ = $3; }
+;
+
+TEXTURE_ITEMS: /* empty */ {
+               $$ = dmnsn_new_astnode(DMNSN_AST_TEXTURE, @$);
+             }
+             | TEXTURE_ITEMS PIGMENT {
+               $$ = $1;
+               dmnsn_array_push($$.children, &$2);
+             }
+;
+
 /* Pigments */
 
-PIGMENT:          "pigment" "{"
-                    PIGMENT_TYPE
-                  "}"
-                {
-                  $$ = dmnsn_new_astnode1(DMNSN_AST_PIGMENT, @$, $3);
-                }
+PIGMENT: "pigment" "{"
+           PIGMENT_TYPE
+         "}"
+       {
+         $$ = dmnsn_new_astnode1(DMNSN_AST_PIGMENT, @$, $3);
+       }
+;
 
-PIGMENT_TYPE:     /* empty */ {
-                  $$ = dmnsn_new_astnode(DMNSN_AST_NONE, @$);
-                }
-                | COLOR
+PIGMENT_TYPE: /* empty */ {
+              $$ = dmnsn_new_astnode(DMNSN_AST_NONE, @$);
+            }
+            | COLOR
+;
 
 /* Floats */
 
-FLOAT:    FLOAT_EXPR {
-          $$ = dmnsn_eval_scalar($1);
-          dmnsn_delete_astnode($1);
-        }
+FLOAT: FLOAT_EXPR {
+       $$ = dmnsn_eval_scalar($1);
+       dmnsn_delete_astnode($1);
+     }
 ;
 
-FLOAT_EXPR:       FLOAT_LITERAL
-                | FLOAT_EXPR "+" FLOAT_EXPR {
-                  $$ = dmnsn_new_astnode2(DMNSN_AST_ADD, @$, $1, $3);
-                }
-                | FLOAT_EXPR "-" FLOAT_EXPR {
-                  $$ = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
-                }
-                | FLOAT_EXPR "*" FLOAT_EXPR {
-                  $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
-                }
-                | FLOAT_EXPR "/" FLOAT_EXPR {
-                  $$ = dmnsn_new_astnode2(DMNSN_AST_DIV, @$, $1, $3);
-                }
-                | "+" FLOAT_EXPR %prec DMNSN_T_NEGATE { $$ = $2; }
-                | "-" FLOAT_EXPR %prec DMNSN_T_NEGATE {
-                  $$ = dmnsn_new_astnode1(DMNSN_AST_NEGATE, @$, $2);
-                }
+FLOAT_EXPR: FLOAT_LITERAL
+          | FLOAT_EXPR "+" FLOAT_EXPR {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_ADD, @$, $1, $3);
+          }
+          | FLOAT_EXPR "-" FLOAT_EXPR {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
+          }
+          | FLOAT_EXPR "*" FLOAT_EXPR {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
+          }
+          | FLOAT_EXPR "/" FLOAT_EXPR {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_DIV, @$, $1, $3);
+          }
+          | "+" FLOAT_EXPR %prec DMNSN_T_NEGATE { $$ = $2; }
+          | "-" FLOAT_EXPR %prec DMNSN_T_NEGATE {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_NEGATE, @$, $2);
+          }
 
-                | VECTOR_EXPR "." "x" {
-                  dmnsn_array_get($1.children, 0, &$$);
-                  dmnsn_array_remove($1.children, 0);
-                  dmnsn_delete_astnode($1);
-                }
-                | VECTOR_EXPR "." "u" {
-                  dmnsn_array_get($1.children, 0, &$$);
-                  dmnsn_array_remove($1.children, 0);
-                  dmnsn_delete_astnode($1);
-                }
-                | VECTOR_EXPR "." "red" {
-                  dmnsn_array_get($1.children, 0, &$$);
-                  dmnsn_array_remove($1.children, 0);
-                  dmnsn_delete_astnode($1);
-                }
+          | VECTOR_EXPR "." "x" {
+            dmnsn_array_get($1.children, 0, &$$);
+            dmnsn_array_remove($1.children, 0);
+            dmnsn_delete_astnode($1);
+          }
+          | VECTOR_EXPR "." "u" {
+            dmnsn_array_get($1.children, 0, &$$);
+            dmnsn_array_remove($1.children, 0);
+            dmnsn_delete_astnode($1);
+          }
+          | VECTOR_EXPR "." "red" {
+            dmnsn_array_get($1.children, 0, &$$);
+            dmnsn_array_remove($1.children, 0);
+            dmnsn_delete_astnode($1);
+          }
 
-                | VECTOR_EXPR "." "y" {
-                  dmnsn_array_get($1.children, 1, &$$);
-                  dmnsn_array_remove($1.children, 1);
-                  dmnsn_delete_astnode($1);
-                }
-                | VECTOR_EXPR "." "v" {
-                  dmnsn_array_get($1.children, 1, &$$);
-                  dmnsn_array_remove($1.children, 1);
-                  dmnsn_delete_astnode($1);
-                }
-                | VECTOR_EXPR "." "green" {
-                  dmnsn_array_get($1.children, 1, &$$);
-                  dmnsn_array_remove($1.children, 1);
-                  dmnsn_delete_astnode($1);
-                }
+          | VECTOR_EXPR "." "y" {
+            dmnsn_array_get($1.children, 1, &$$);
+            dmnsn_array_remove($1.children, 1);
+            dmnsn_delete_astnode($1);
+          }
+          | VECTOR_EXPR "." "v" {
+            dmnsn_array_get($1.children, 1, &$$);
+            dmnsn_array_remove($1.children, 1);
+            dmnsn_delete_astnode($1);
+          }
+          | VECTOR_EXPR "." "green" {
+            dmnsn_array_get($1.children, 1, &$$);
+            dmnsn_array_remove($1.children, 1);
+            dmnsn_delete_astnode($1);
+          }
 
-                | VECTOR_EXPR "." "z" {
-                  dmnsn_array_get($1.children, 2, &$$);
-                  dmnsn_array_remove($1.children, 2);
-                  dmnsn_delete_astnode($1);
-                }
-                | VECTOR_EXPR "." "blue" {
-                  dmnsn_array_get($1.children, 2, &$$);
-                  dmnsn_array_remove($1.children, 2);
-                  dmnsn_delete_astnode($1);
-                }
+          | VECTOR_EXPR "." "z" {
+            dmnsn_array_get($1.children, 2, &$$);
+            dmnsn_array_remove($1.children, 2);
+            dmnsn_delete_astnode($1);
+          }
+          | VECTOR_EXPR "." "blue" {
+            dmnsn_array_get($1.children, 2, &$$);
+            dmnsn_array_remove($1.children, 2);
+            dmnsn_delete_astnode($1);
+          }
 
-                | VECTOR_EXPR "." "t" {
-                  dmnsn_array_get($1.children, 3, &$$);
-                  dmnsn_array_remove($1.children, 3);
-                  dmnsn_delete_astnode($1);
-                }
-                | VECTOR_EXPR "." "filter" {
-                  dmnsn_array_get($1.children, 3, &$$);
-                  dmnsn_array_remove($1.children, 3);
-                  dmnsn_delete_astnode($1);
-                }
+          | VECTOR_EXPR "." "t" {
+            dmnsn_array_get($1.children, 3, &$$);
+            dmnsn_array_remove($1.children, 3);
+            dmnsn_delete_astnode($1);
+          }
+          | VECTOR_EXPR "." "filter" {
+            dmnsn_array_get($1.children, 3, &$$);
+            dmnsn_array_remove($1.children, 3);
+            dmnsn_delete_astnode($1);
+          }
 
-                | VECTOR_EXPR "." "transmit" {
-                  dmnsn_array_get($1.children, 4, &$$);
-                  dmnsn_array_remove($1.children, 4);
-                  dmnsn_delete_astnode($1);
-                }
-                | "(" FLOAT_EXPR ")" { $$ = $2; }
+          | VECTOR_EXPR "." "transmit" {
+            dmnsn_array_get($1.children, 4, &$$);
+            dmnsn_array_remove($1.children, 4);
+            dmnsn_delete_astnode($1);
+          }
+
+          | "(" FLOAT_EXPR ")" { $$ = $2; }
 ;
 
-FLOAT_LITERAL:    "integer" {
-                  $$ = dmnsn_new_astnode(DMNSN_AST_INTEGER, @$);
-                  $$.ptr = malloc(sizeof(long));
-                  if (!$$.ptr)
-                    dmnsn_error(DMNSN_SEVERITY_HIGH,
-                                "Failed to allocate room for integer.");
+FLOAT_LITERAL: "integer" {
+               $$ = dmnsn_new_astnode(DMNSN_AST_INTEGER, @$);
+               $$.ptr = malloc(sizeof(long));
+               if (!$$.ptr)
+                 dmnsn_error(DMNSN_SEVERITY_HIGH,
+                             "Failed to allocate room for integer.");
 
-                  *(long *)$$.ptr = strtol($1, NULL, 0);
-                }
-                | "float" {
-                  $$ = dmnsn_new_astnode(DMNSN_AST_FLOAT, @$);
-                  $$.ptr = malloc(sizeof(double));
-                  if (!$$.ptr)
-                    dmnsn_error(DMNSN_SEVERITY_HIGH,
-                                "Failed to allocate room for float.");
+               *(long *)$$.ptr = strtol($1, NULL, 0);
+             }
+             | "float" {
+               $$ = dmnsn_new_astnode(DMNSN_AST_FLOAT, @$);
+               $$.ptr = malloc(sizeof(double));
+               if (!$$.ptr)
+                 dmnsn_error(DMNSN_SEVERITY_HIGH,
+                             "Failed to allocate room for float.");
 
-                  *(double *)$$.ptr = strtod($1, NULL);
-                }
+                 *(double *)$$.ptr = strtod($1, NULL);
+             }
 ;
 
 /* Vectors */
 
-VECTOR:   VECTOR_EXPR {
-          $$ = dmnsn_eval_vector($1);
-          dmnsn_delete_astnode($1);
-        }
+VECTOR: VECTOR_EXPR {
+        $$ = dmnsn_eval_vector($1);
+        dmnsn_delete_astnode($1);
+      }
 ;
 
-VECTOR_EXPR:      VECTOR_LITERAL
-                | VECTOR_EXPR "+" VECTOR_EXPR {
-                  $$ = dmnsn_new_astnode2(DMNSN_AST_ADD, @$, $1, $3);
-                }
-                | VECTOR_EXPR "-" VECTOR_EXPR {
-                  $$ = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
-                }
-                | VECTOR_EXPR "*" VECTOR_EXPR {
-                  $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
-                }
-                | VECTOR_EXPR "/" VECTOR_EXPR {
-                  $$ = dmnsn_new_astnode2(DMNSN_AST_DIV, @$, $1, $3);
-                }
-                | "+" VECTOR_EXPR %prec DMNSN_T_NEGATE { $$ = $2; }
-                | "-" VECTOR_EXPR %prec DMNSN_T_NEGATE {
-                  $$ = dmnsn_new_astnode1(DMNSN_AST_NEGATE, @$, $2);
-                }
-                | "(" VECTOR_EXPR ")" { $$ = $2; }
+VECTOR_EXPR: VECTOR_LITERAL
+           | VECTOR_EXPR "+" VECTOR_EXPR {
+             $$ = dmnsn_new_astnode2(DMNSN_AST_ADD, @$, $1, $3);
+           }
+           | VECTOR_EXPR "-" VECTOR_EXPR {
+             $$ = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
+           }
+           | VECTOR_EXPR "*" VECTOR_EXPR {
+             $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
+           }
+           | VECTOR_EXPR "/" VECTOR_EXPR {
+             $$ = dmnsn_new_astnode2(DMNSN_AST_DIV, @$, $1, $3);
+           }
+           | "+" VECTOR_EXPR %prec DMNSN_T_NEGATE { $$ = $2; }
+           | "-" VECTOR_EXPR %prec DMNSN_T_NEGATE {
+             $$ = dmnsn_new_astnode1(DMNSN_AST_NEGATE, @$, $2);
+           }
+           | "(" VECTOR_EXPR ")" { $$ = $2; }
 ;
 
-VECTOR_LITERAL:    "<" FLOAT_EXPR "," FLOAT_EXPR ">" {
-                  $$ = dmnsn_new_astnode2(DMNSN_AST_VECTOR, @$, $2, $4);
-                }
-                |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ">" {
-                  $$ = dmnsn_new_astnode3(DMNSN_AST_VECTOR, @$, $2, $4, $6);
-                }
-                |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ","
-                       FLOAT_EXPR ">" {
-                  $$ = dmnsn_new_astnode4(DMNSN_AST_VECTOR, @$, $2, $4, $6, $8);
-                }
-                |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ","
-                       FLOAT_EXPR "," FLOAT_EXPR ">" {
-                  $$ = dmnsn_new_astnode5(DMNSN_AST_VECTOR, @$,
-                                          $2, $4, $6, $8, $10);
-                }
-;
-
-COLOR:    COLOR_BODY
-        | "color" COLOR_BODY { $$ = $2; }
-;
-
-COLOR_BODY:     COLOR_VECTOR
-;
-
-COLOR_VECTOR:   "rgb"   VECTOR { $$ = $2; }
-              | "rgbf"  VECTOR { $$ = $2; }
-              | "rgbt"  VECTOR {
-                /* Swap the transmit and filter components */
-                $$ = $2;
-                dmnsn_astnode temp;
-                dmnsn_array_get($$.children, 4, &temp);
-                dmnsn_array_set($$.children, 4, dmnsn_array_at($$.children, 3));
-                dmnsn_array_set($$.children, 3, &temp);
+VECTOR_LITERAL: "<" FLOAT_EXPR "," FLOAT_EXPR ">" {
+                $$ = dmnsn_new_astnode2(DMNSN_AST_VECTOR, @$, $2, $4);
               }
-              | "rgbft" VECTOR { $$ = $2; }
-              | VECTOR
+              |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ">" {
+                $$ = dmnsn_new_astnode3(DMNSN_AST_VECTOR, @$, $2, $4, $6);
+              }
+              |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ","
+                     FLOAT_EXPR ">" {
+                $$ = dmnsn_new_astnode4(DMNSN_AST_VECTOR, @$, $2, $4, $6, $8);
+              }
+              |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ","
+                     FLOAT_EXPR "," FLOAT_EXPR ">" {
+                $$ = dmnsn_new_astnode5(DMNSN_AST_VECTOR, @$,
+                                        $2, $4, $6, $8, $10);
+              }
+;
+
+COLOR: COLOR_BODY
+     | "color" COLOR_BODY { $$ = $2; }
+;
+
+COLOR_BODY: COLOR_VECTOR
+;
+
+COLOR_VECTOR: "rgb"   VECTOR { $$ = $2; }
+            | "rgbf"  VECTOR { $$ = $2; }
+            | "rgbt"  VECTOR {
+              /* Swap the transmit and filter components */
+              $$ = $2;
+              dmnsn_astnode temp;
+              dmnsn_array_get($$.children, 4, &temp);
+              dmnsn_array_set($$.children, 4, dmnsn_array_at($$.children, 3));
+              dmnsn_array_set($$.children, 3, &temp);
+            }
+            | "rgbft" VECTOR { $$ = $2; }
+            | VECTOR
 
 %%
 
