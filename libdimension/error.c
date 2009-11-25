@@ -37,17 +37,20 @@ static pthread_mutex_t dmnsn_fatal_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* Called by dmnsn_error macro (don't call directly). */
 void
-dmnsn_report_error(dmnsn_severity severity, const char *func, unsigned int line,
+dmnsn_report_error(dmnsn_severity severity,
+                   const char *func, const char *file, unsigned int line,
                    const char *str)
 {
   if (severity >= dmnsn_get_resilience()) {
     /* An error more severe than our resilience happened, bail out */
-    fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n", func, line, str);
+    fprintf(stderr, "Dimension ERROR: %s, %s:%u: %s\n",
+            func, file, line, str);
     (*dmnsn_fatal)();
     exit(EXIT_FAILURE); /* Failsafe in case *dmnsn_fatal doesn't exit */
   } else {
     /* A trivial error happened, warn and continue */
-    fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n", func, line, str);
+    fprintf(stderr, "Dimension WARNING: %s, %s:%u: %s\n",
+            func, file, line, str);
   }
 }
 

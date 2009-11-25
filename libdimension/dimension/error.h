@@ -44,11 +44,14 @@ typedef enum {
 
 /* Use this macro to report an error */
 #define dmnsn_error(severity, str)                                             \
-  dmnsn_report_error((dmnsn_severity)(severity), DMNSN_FUNC, __LINE__, (str))
+  dmnsn_report_error((dmnsn_severity)(severity),                               \
+                     DMNSN_FUNC, __FILE__, __LINE__,                           \
+                     str)
 
 /* Called by dmnsn_error() - don't call directly */
 void dmnsn_report_error(dmnsn_severity severity,
-                        const char *func, unsigned int line, const char *str);
+                        const char *func, const char *file, unsigned int line,
+                        const char *str);
 
 /* Get and set the library resilience, thread-safely */
 dmnsn_severity dmnsn_get_resilience();
