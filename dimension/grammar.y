@@ -556,7 +556,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_ROUGHNESS
 %token DMNSN_T_SAMPLES
 %token DMNSN_T_SAVE_FILE
-%token DMNSN_T_SCALE
+%token DMNSN_T_SCALE                    "scale"
 %token DMNSN_T_SCALLOP_WAVE
 %token DMNSN_T_SCATTERING
 %token DMNSN_T_SEED
@@ -619,7 +619,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_TORUS
 %token DMNSN_T_TRACE
 %token DMNSN_T_TRANSFORM
-%token DMNSN_T_TRANSLATE
+%token DMNSN_T_TRANSLATE                "translate"
 %token DMNSN_T_TRANSMIT                 "transmit"
 %token DMNSN_T_TRIANGLE
 %token DMNSN_T_TRIANGLE_WAVE
@@ -743,6 +743,12 @@ SCENE_ITEM:       OBJECT
 
 TRANSFORMATION:   "rotate" VECTOR {
                   $$ = dmnsn_new_astnode1(DMNSN_AST_ROTATION, @$, $2);
+                }
+                | "scale" VECTOR {
+                  $$ = dmnsn_new_astnode1(DMNSN_AST_SCALE, @$, $2);
+                }
+                | "translate" VECTOR {
+                  $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSLATION, @$, $2);
                 }
 
 /* Objects */
@@ -1374,8 +1380,10 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_BOX, "box");
   dmnsn_astnode_map(DMNSN_AST_VECTOR, "vector");
   dmnsn_astnode_map(DMNSN_AST_SPHERE, "sphere");
-  dmnsn_astnode_map(DMNSN_AST_OBJECT_MODIFIERS, "object-modifiers");
   dmnsn_astnode_map(DMNSN_AST_ROTATION, "rotate");
+  dmnsn_astnode_map(DMNSN_AST_SCALE, "scale");
+  dmnsn_astnode_map(DMNSN_AST_TRANSLATION, "translate");
+  dmnsn_astnode_map(DMNSN_AST_OBJECT_MODIFIERS, "object-modifiers");
 
   default:
     fprintf(stderr, "Warning: unrecognised astnode type %d.\n",

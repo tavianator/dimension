@@ -87,6 +87,31 @@ dmnsn_realize_rotation(dmnsn_astnode astnode, dmnsn_object *object)
 }
 
 static dmnsn_object *
+dmnsn_realize_scale(dmnsn_astnode astnode, dmnsn_object *object)
+{
+  dmnsn_astnode scale_node;
+  dmnsn_array_get(astnode.children, 0, &scale_node);
+  dmnsn_vector scale = dmnsn_realize_vector(scale_node);
+
+  object->trans = dmnsn_matrix_mul(dmnsn_scale_matrix(scale), object->trans);
+  return object;
+}
+
+static dmnsn_object *
+dmnsn_realize_translation(dmnsn_astnode astnode, dmnsn_object *object)
+{
+  dmnsn_astnode trans_node;
+  dmnsn_array_get(astnode.children, 0, &trans_node);
+  dmnsn_vector trans = dmnsn_realize_vector(trans_node);
+
+  object->trans = dmnsn_matrix_mul(
+    dmnsn_translation_matrix(trans),
+    object->trans
+  );
+  return object;
+}
+
+static dmnsn_object *
 dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
 {
   unsigned int i;
@@ -97,6 +122,12 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
     switch (modifier.type) {
     case DMNSN_AST_ROTATION:
       object = dmnsn_realize_rotation(modifier, object);
+      break;
+    case DMNSN_AST_SCALE:
+      object = dmnsn_realize_scale(modifier, object);
+      break;
+    case DMNSN_AST_TRANSLATION:
+      object = dmnsn_realize_translation(modifier, object);
       break;
 
     default:
