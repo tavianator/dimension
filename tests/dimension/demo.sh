@@ -20,8 +20,28 @@
 #########################################################################
 
 demo=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/demo.pov)
-demo_exp='(box { < - (integer "1") , - (integer "1") , - (integer "1") > , < (integer "1") , (integer "1") , (integer "1") > rotate < (integer "45") , (integer "0") , (integer "0") > } sphere { < (integer "0") , (integer "0") , (integer "0") > , (float "1.25") })
-((box (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0)) (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)) (object-modifiers (rotate (vector (integer 45) (integer 0) (integer 0) (integer 0) (integer 0))))) (sphere (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0)) (float 1.25) object-modifiers))'
+demo_exp="$(echo -n \
+'(box {
+    < - (integer "1") , - (integer "1") , - (integer "1") > ,
+    < (integer "1") , (integer "1") , (integer "1") >
+    rotate < (integer "45") , (integer "0") , (integer "0") >
+  }
+  sphere {
+    < (integer "0") , (integer "0") , (integer "0") > , (float "1.25")
+  })' \
+| tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
+$(echo -n \
+'((box
+    (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
+    (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
+    (object-modifiers
+      (rotate (vector (integer 45) (integer 0) (integer 0) (integer 0)
+                      (integer 0)))))
+  (sphere
+    (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
+    (float 1.25)
+    object-modifiers))' \
+| tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"
 
 if [ "$demo" != "$demo_exp" ]; then
   echo "demo.pov parsed as \"$demo\"" >&2
