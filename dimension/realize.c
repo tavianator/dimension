@@ -56,9 +56,42 @@ dmnsn_realize_vector(dmnsn_astnode astnode)
   return dmnsn_new_vector(x, y, z);
 }
 
+static dmnsn_color
+dmnsn_realize_color(dmnsn_astnode astnode)
+{
+  if (astnode.type != DMNSN_AST_VECTOR) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a color.");
+  }
+
+
+  dmnsn_astnode rnode, gnode, bnode, fnode, tnode;
+  dmnsn_array_get(astnode.children, 0, &rnode);
+  dmnsn_array_get(astnode.children, 1, &gnode);
+  dmnsn_array_get(astnode.children, 2, &bnode);
+  dmnsn_array_get(astnode.children, 3, &fnode);
+  dmnsn_array_get(astnode.children, 4, &tnode);
+
+  double r = dmnsn_realize_float(rnode),
+         g = dmnsn_realize_float(gnode),
+         b = dmnsn_realize_float(bnode),
+         f = dmnsn_realize_float(fnode),
+         t = dmnsn_realize_float(tnode);
+
+  dmnsn_sRGB sRGB = { .R = r, .G = g, .B = b };
+  dmnsn_color color = dmnsn_color_from_sRGB(sRGB);
+  color.filter = f;
+  color.trans  = t;
+
+  return color;
+}
+
 static dmnsn_object *
 dmnsn_realize_rotation(dmnsn_astnode astnode, dmnsn_object *object)
 {
+  if (astnode.type != DMNSN_AST_ROTATION) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a rotation.");
+  }
+
   const double deg2rad = atan(1.0)/45.0;
 
   dmnsn_astnode angle_node;
@@ -89,6 +122,10 @@ dmnsn_realize_rotation(dmnsn_astnode astnode, dmnsn_object *object)
 static dmnsn_object *
 dmnsn_realize_scale(dmnsn_astnode astnode, dmnsn_object *object)
 {
+  if (astnode.type != DMNSN_AST_SCALE) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a scale.");
+  }
+
   dmnsn_astnode scale_node;
   dmnsn_array_get(astnode.children, 0, &scale_node);
   dmnsn_vector scale = dmnsn_realize_vector(scale_node);
@@ -100,6 +137,10 @@ dmnsn_realize_scale(dmnsn_astnode astnode, dmnsn_object *object)
 static dmnsn_object *
 dmnsn_realize_translation(dmnsn_astnode astnode, dmnsn_object *object)
 {
+  if (astnode.type != DMNSN_AST_TRANSLATION) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a translation.");
+  }
+
   dmnsn_astnode trans_node;
   dmnsn_array_get(astnode.children, 0, &trans_node);
   dmnsn_vector trans = dmnsn_realize_vector(trans_node);
@@ -112,8 +153,77 @@ dmnsn_realize_translation(dmnsn_astnode astnode, dmnsn_object *object)
 }
 
 static dmnsn_object *
+dmnsn_realize_pigment(dmnsn_astnode astnode, dmnsn_object *object)
+{
+  if (astnode.type != DMNSN_AST_PIGMENT) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a pigment.");
+  }
+
+  if (!object->texture) {
+    object->texture = dmnsn_new_texture();
+    if (!object->texture) {
+      dmnsn_delete_object(object);
+      return NULL;
+    }
+  }
+  dmnsn_delete_pigment(object->texture->pigment);
+
+  dmnsn_astnode color_node;
+  dmnsn_array_get(astnode.children, 0, &color_node);
+
+  dmnsn_color color;
+  switch (color_node.type) {
+  case DMNSN_AST_NONE:
+    break;
+
+  case DMNSN_AST_VECTOR:
+    color = dmnsn_realize_color(color_node);
+    object->texture->pigment = dmnsn_new_solid_pigment(color);
+    if (!object->texture->pigment) {
+      dmnsn_delete_object(object);
+      return NULL;
+    }
+    break;
+
+  default:
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid pigment color.");
+  }
+
+  return object;
+}
+
+static dmnsn_object *
+dmnsn_realize_texture(dmnsn_astnode astnode, dmnsn_object *object)
+{
+  if (astnode.type != DMNSN_AST_TEXTURE) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a texture.");
+  }
+
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    dmnsn_astnode modifier;
+    dmnsn_array_get(astnode.children, i, &modifier);
+
+    switch (modifier.type) {
+    case DMNSN_AST_PIGMENT:
+      object = dmnsn_realize_pigment(modifier, object);
+      break;
+
+    default:
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid texture item.");
+    }
+  }
+
+  return object;
+}
+
+static dmnsn_object *
 dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
 {
+  if (astnode.type != DMNSN_AST_OBJECT_MODIFIERS) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected object modifiers.");
+  }
+
   unsigned int i;
   for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
     dmnsn_astnode modifier;
@@ -128,6 +238,10 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
       break;
     case DMNSN_AST_TRANSLATION:
       object = dmnsn_realize_translation(modifier, object);
+      break;
+
+    case DMNSN_AST_TEXTURE:
+      object = dmnsn_realize_texture(modifier, object);
       break;
 
     default:
@@ -225,6 +339,14 @@ dmnsn_realize(const dmnsn_array *astree)
     return NULL;
   }
 
+  /* Default finish */
+  scene->default_texture->finish = dmnsn_new_phong_finish(1.0, 0.5, 50.0);
+  if (!scene->default_texture->finish) {
+    dmnsn_delete_scene(scene);
+    return NULL;
+  }
+  scene->default_texture->finish->ambient = 0.1;
+
   /* Background color */
   dmnsn_sRGB background_sRGB = { .R = 0.0, .G = 0.0, .B = 0.1 };
   scene->background = dmnsn_color_from_sRGB(background_sRGB);
@@ -259,6 +381,18 @@ dmnsn_realize(const dmnsn_array *astree)
     return NULL;
   }
   dmnsn_set_perspective_camera_trans(scene->camera, trans);
+
+  /* Make a light */
+
+  dmnsn_light *light = dmnsn_new_point_light(
+    dmnsn_new_vector(-15.0, 20.0, 10.0),
+    dmnsn_white
+  );
+  if (!light) {
+    dmnsn_delete_scene(scene);
+    return NULL;
+  }
+  dmnsn_array_push(scene->lights, &light);
 
   /*
    * Now parse the abstract syntax tree

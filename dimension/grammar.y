@@ -505,7 +505,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_PHONG_SIZE
 %token DMNSN_T_PHOTONS
 %token DMNSN_T_PI
-%token DMNSN_T_PIGMENT
+%token DMNSN_T_PIGMENT                  "pigment"
 %token DMNSN_T_PIGMENT_MAP
 %token DMNSN_T_PIGMENT_PATTERN
 %token DMNSN_T_PLANAR
@@ -547,10 +547,10 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_REFLECTION_EXPONENT
 %token DMNSN_T_REFRACTION
 %token DMNSN_T_REPEAT
-%token DMNSN_T_RGB
-%token DMNSN_T_RGBF
-%token DMNSN_T_RGBFT
-%token DMNSN_T_RGBT
+%token DMNSN_T_RGB                      "rgb"
+%token DMNSN_T_RGBF                     "rgbf"
+%token DMNSN_T_RGBFT                    "rgbft"
+%token DMNSN_T_RGBT                     "rgbt"
 %token DMNSN_T_RIGHT
 %token DMNSN_T_RIPPLES
 %token DMNSN_T_ROTATE                   "rotate"
@@ -1463,8 +1463,6 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_INTEGER, "integer");
 
   dmnsn_astnode_map(DMNSN_AST_VECTOR, "vector");
-
-  dmnsn_astnode_map(DMNSN_AST_COLOR, "color");
 
   dmnsn_astnode_map(DMNSN_AST_NEGATE, "-");
   dmnsn_astnode_map(DMNSN_AST_ADD, "+");

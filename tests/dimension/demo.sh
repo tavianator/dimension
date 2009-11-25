@@ -25,9 +25,16 @@ demo_exp="$(echo -n \
     < - (integer "1") , - (integer "1") , - (integer "1") > ,
     < (integer "1") , (integer "1") , (integer "1") >
     rotate < (integer "45") , (integer "0") , (integer "0") >
+    pigment {
+      color rgbft < (integer "0") , (integer "0") , (integer "1") ,
+                    (float "0.25") , (float "0.25") >
+    }
   }
   sphere {
     < (integer "0") , (integer "0") , (integer "0") > , (float "1.25")
+    pigment {
+      color rgb < (integer "0") , (integer "1") , (integer "0") >
+    }
   })' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 $(echo -n \
@@ -35,12 +42,18 @@ $(echo -n \
     (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
     (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
     (object-modifiers
-      (rotate (vector (integer 45) (integer 0) (integer 0) (integer 0)
-                      (integer 0)))))
+      (rotate (vector (integer 45) (integer 0) (integer 0)
+                      (integer 0) (integer 0)))
+      (texture
+        (pigment (vector (integer 0) (integer 0) (integer 1)
+                         (float 0.25) (float 0.25))))))
   (sphere
     (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
     (float 1.25)
-    object-modifiers))' \
+    (object-modifiers
+      (texture
+        (pigment (vector (integer 0) (integer 1) (integer 0)
+                         (integer 0) (integer 0)))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"
 
 if [ "$demo" != "$demo_exp" ]; then
