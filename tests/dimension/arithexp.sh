@@ -19,14 +19,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-demo=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/demo.pov)
-demo_exp='(box { < - (integer "1") , - (integer "1") , - (integer "1") > , < (integer "1") , (integer "1") , (integer "1") > } sphere { < (integer "0") , (integer "0") , (integer "0") > , (float "1.25") })
-((box (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0)) (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))) (sphere (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0)) (float 1.25)))'
+arithexp=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/arithexp.pov)
+arithexp_exp='(sphere { < (float "1.0") , \( (float "1.0") + (integer "2") \) * (integer "2") - (integer "5") , (float "1.0") + (integer "2") * (integer "2") - (integer "4") > - - < (integer "0") , (integer "0") , (integer "1") > , (float "2.25") - (integer "1") * (integer "2") })
+((sphere (vector (float 0) (float 0) (float 0) (integer 0) (integer 0)) (float 0.25)))'
 
-if [ "$demo" != "$demo_exp" ]; then
-  echo "demo.pov parsed as \"$demo\"" >&2
-  echo "       -- expected \"$demo_exp\"" >&2
+if [ "$arithexp" != "$arithexp_exp" ]; then
+  echo "arithexp.pov parsed as \"$arithexp\"" >&2
+  echo "           -- expected \"$arithexp_exp\"" >&2
   exit 1
 fi
-
-${top_builddir}/dimension/dimension -o demo.png ${srcdir}/demo.pov
