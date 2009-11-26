@@ -32,7 +32,7 @@ arithexp_exp="$(echo -n \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 $(echo -n \
 '((sphere
-    (vector (float 0) (float 0) (float 0) (integer 0) (integer 0))
+    (vector (float 1) (float 1) (float 2) (integer 0) (integer 0))
     (float 0.25)
     object-modifiers))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"

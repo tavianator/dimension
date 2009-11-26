@@ -1309,7 +1309,7 @@ dmnsn_eval_vector_binary(dmnsn_astnode astnode)
 
   dmnsn_astnode lhs, rhs;
   dmnsn_array_get(astnode.children, 0, &lhs);
-  dmnsn_array_get(astnode.children, 0, &rhs);
+  dmnsn_array_get(astnode.children, 1, &rhs);
   lhs = dmnsn_eval_vector(lhs);
   rhs = dmnsn_eval_vector(rhs);
 
