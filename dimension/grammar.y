@@ -253,7 +253,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_ALWAYS_SAMPLE
 %token DMNSN_T_AMBIENT
 %token DMNSN_T_AMBIENT_LIGHT
-%token DMNSN_T_ANGLE
+%token DMNSN_T_ANGLE                    "angle"
 %token DMNSN_T_APERTURE
 %token DMNSN_T_APPEND
 %token DMNSN_T_ARC_ANGLE
@@ -337,7 +337,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_DIFFUSE
 %token DMNSN_T_DIMENSION_SIZE
 %token DMNSN_T_DIMENSIONS
-%token DMNSN_T_DIRECTION
+%token DMNSN_T_DIRECTION                "direction"
 %token DMNSN_T_DISC
 %token DMNSN_T_DISPERSION
 %token DMNSN_T_DISPERSION_SAMPLES
@@ -430,9 +430,9 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_LINEAR_SWEEP
 %token DMNSN_T_LN
 %token DMNSN_T_LOAD_FILE
-%token DMNSN_T_LOCATION
+%token DMNSN_T_LOCATION                 "location"
 %token DMNSN_T_LOG
-%token DMNSN_T_LOOK_AT
+%token DMNSN_T_LOOK_AT                  "look_at"
 %token DMNSN_T_LOOKS_LIKE
 %token DMNSN_T_LOW_ERROR_FACTOR
 %token DMNSN_T_MAGNET
@@ -496,7 +496,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_PARAMETRIC
 %token DMNSN_T_PASS_THROUGH
 %token DMNSN_T_PATTERN
-%token DMNSN_T_PERSPECTIVE
+%token DMNSN_T_PERSPECTIVE              "perspective"
 %token DMNSN_T_PGM
 %token DMNSN_T_PHASE
 %token DMNSN_T_PHONG
@@ -549,7 +549,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_RGBF                     "rgbf"
 %token DMNSN_T_RGBFT                    "rgbft"
 %token DMNSN_T_RGBT                     "rgbt"
-%token DMNSN_T_RIGHT
+%token DMNSN_T_RIGHT                    "right"
 %token DMNSN_T_RIPPLES
 %token DMNSN_T_ROTATE                   "rotate"
 %token DMNSN_T_ROUGHNESS
@@ -565,7 +565,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_SINE_WAVE
 %token DMNSN_T_SINH
 %token DMNSN_T_SIZE
-%token DMNSN_T_SKY
+%token DMNSN_T_SKY                      "sky"
 %token DMNSN_T_SKY_SPHERE
 %token DMNSN_T_SLICE
 %token DMNSN_T_SLOPE
@@ -631,7 +631,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_U_STEPS
 %token DMNSN_T_ULTRA_WIDE_ANGLE
 %token DMNSN_T_UNION
-%token DMNSN_T_UP
+%token DMNSN_T_UP                       "up"
 %token DMNSN_T_USE_ALPHA
 %token DMNSN_T_USE_COLOR
 %token DMNSN_T_USE_INDEX
@@ -703,6 +703,14 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 /* Transformations */
 %type <astnode> TRANSFORMATION
 
+/* The camera */
+%type <astnode> CAMERA
+%type <astnode> CAMERA_ITEMS
+%type <astnode> CAMERA_ITEM
+%type <astnode> CAMERA_TYPE
+%type <astnode> CAMERA_VECTOR
+%type <astnode> CAMERA_MODIFIER
+
 /* Atmospheric effects */
 %type <astnode> ATMOSPHERIC_EFFECT
 %type <astnode> BACKGROUND
@@ -754,6 +762,7 @@ SCENE: /* empty */ { }
 ;
 
 SCENE_ITEM: ATMOSPHERIC_EFFECT
+          | CAMERA
           | OBJECT
 ;
 
@@ -769,6 +778,56 @@ TRANSFORMATION: "rotate" VECTOR {
                 $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSLATION, @$, $2);
               }
 ;
+
+/* Cameras */
+
+CAMERA: "camera" "{"
+          CAMERA_ITEMS
+        "}"
+      {
+        $$ = $3;
+      }
+;
+
+CAMERA_ITEMS: /* empty */ {
+              $$ = dmnsn_new_astnode(DMNSN_AST_CAMERA, @$);
+            }
+            | CAMERA_ITEMS CAMERA_ITEM {
+              $$ = $1;
+              dmnsn_array_push($$.children, &$2);
+            }
+
+CAMERA_ITEM: CAMERA_TYPE
+           | CAMERA_VECTOR
+           | CAMERA_MODIFIER
+
+CAMERA_TYPE: "perspective" {
+             $$ = dmnsn_new_astnode(DMNSN_AST_PERSPECTIVE, @$);
+           }
+
+CAMERA_VECTOR: "location" VECTOR {
+               $$ = dmnsn_new_astnode1(DMNSN_AST_LOCATION, @$, $2);
+             }
+             | "right" VECTOR {
+               $$ = dmnsn_new_astnode1(DMNSN_AST_RIGHT, @$, $2);
+             }
+             | "up" VECTOR {
+               $$ = dmnsn_new_astnode1(DMNSN_AST_UP, @$, $2);
+             }
+             | "sky" VECTOR {
+               $$ = dmnsn_new_astnode1(DMNSN_AST_SKY, @$, $2);
+             }
+             | "direction" VECTOR {
+               $$ = dmnsn_new_astnode1(DMNSN_AST_DIRECTION, @$, $2);
+             }
+
+CAMERA_MODIFIER: "angle" FLOAT {
+                 $$ = dmnsn_new_astnode1(DMNSN_AST_ANGLE, @$, $2);
+               }
+               | "look_at" VECTOR {
+                 $$ = dmnsn_new_astnode1(DMNSN_AST_LOOK_AT, @$, $2);
+               }
+               | TRANSFORMATION
 
 /* Atmospheric effects */
 
@@ -1480,6 +1539,16 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_ROTATION, "rotate");
   dmnsn_astnode_map(DMNSN_AST_SCALE, "scale");
   dmnsn_astnode_map(DMNSN_AST_TRANSLATION, "translate");
+
+  dmnsn_astnode_map(DMNSN_AST_CAMERA, "camera");
+  dmnsn_astnode_map(DMNSN_AST_PERSPECTIVE, "perspective");
+  dmnsn_astnode_map(DMNSN_AST_LOCATION, "location");
+  dmnsn_astnode_map(DMNSN_AST_RIGHT, "right");
+  dmnsn_astnode_map(DMNSN_AST_UP, "up");
+  dmnsn_astnode_map(DMNSN_AST_SKY, "sky");
+  dmnsn_astnode_map(DMNSN_AST_ANGLE, "angle");
+  dmnsn_astnode_map(DMNSN_AST_LOOK_AT, "look_at");
+  dmnsn_astnode_map(DMNSN_AST_DIRECTION, "direction");
 
   dmnsn_astnode_map(DMNSN_AST_BACKGROUND, "background");
 

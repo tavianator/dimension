@@ -19,6 +19,14 @@
 
 // Render demo scene
 
+camera {
+  perspective
+  location <0, 0, -4>
+  right    <768/480, 0, 0>
+  rotate   <0, 53, 0>
+  look_at  <0, 0, 0>
+}
+
 background {
   color rgbf <0, 0, 0.1, 0.1>
 }

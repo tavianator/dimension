@@ -401,6 +401,9 @@ dmnsn_realize(const dmnsn_array *astree)
     dmnsn_light  *light;
     dmnsn_object *object;
     switch (astnode.type) {
+    case DMNSN_AST_CAMERA:
+      break;
+
     case DMNSN_AST_BACKGROUND:
       dmnsn_array_get(astnode.children, 0, &astnode);
       scene->background = dmnsn_realize_color(astnode);

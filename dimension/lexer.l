@@ -150,29 +150,37 @@ unsigned long wchar;
 }
 
 (?# Keywords)
+"angle"         PUSH_TOKEN(DMNSN_T_ANGLE);
 "background"    PUSH_TOKEN(DMNSN_T_BACKGROUND);
 "box"           PUSH_TOKEN(DMNSN_T_BOX);
 "blue"          PUSH_TOKEN(DMNSN_T_BLUE);
 "camera"        PUSH_TOKEN(DMNSN_T_CAMERA);
 "color"         PUSH_TOKEN(DMNSN_T_COLOR);
 "colour"        PUSH_TOKEN(DMNSN_T_COLOR);
+"direction"     PUSH_TOKEN(DMNSN_T_DIRECTION);
 "filter"        PUSH_TOKEN(DMNSN_T_FILTER);
 "gray"          PUSH_TOKEN(DMNSN_T_GRAY);
 "grey"          PUSH_TOKEN(DMNSN_T_GRAY);
 "green"         PUSH_TOKEN(DMNSN_T_GREEN);
+"location"      PUSH_TOKEN(DMNSN_T_LOCATION);
+"look_at"       PUSH_TOKEN(DMNSN_T_LOOK_AT);
 "light_source"  PUSH_TOKEN(DMNSN_T_LIGHT_SOURCE);
+"perspective"   PUSH_TOKEN(DMNSN_T_PERSPECTIVE);
 "pigment"       PUSH_TOKEN(DMNSN_T_PIGMENT);
 "red"           PUSH_TOKEN(DMNSN_T_RED);
 "rgb"           PUSH_TOKEN(DMNSN_T_RGB);
 "rgbf"          PUSH_TOKEN(DMNSN_T_RGBF);
 "rgbft"         PUSH_TOKEN(DMNSN_T_RGBFT);
 "rgbt"          PUSH_TOKEN(DMNSN_T_RGBT);
+"right"         PUSH_TOKEN(DMNSN_T_RIGHT);
 "rotate"        PUSH_TOKEN(DMNSN_T_ROTATE);
 "sphere"        PUSH_TOKEN(DMNSN_T_SPHERE);
+"sky"           PUSH_TOKEN(DMNSN_T_SKY);
 "t"             PUSH_TOKEN(DMNSN_T_T);
 "texture"       PUSH_TOKEN(DMNSN_T_TEXTURE);
 "transmit"      PUSH_TOKEN(DMNSN_T_TRANSMIT);
 "u"             PUSH_TOKEN(DMNSN_T_U);
+"up"            PUSH_TOKEN(DMNSN_T_UP);
 "v"             PUSH_TOKEN(DMNSN_T_V);
 "x"             PUSH_TOKEN(DMNSN_T_X);
 "y"             PUSH_TOKEN(DMNSN_T_Y);
