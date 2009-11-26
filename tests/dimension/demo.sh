@@ -19,30 +19,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-demo=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/demo.pov)
-demo_exp="$(echo -n \
-'(light_source {
-    < - (integer "15") , (integer "20") , (integer "10") > ,
-    rgb < (integer "1") , (integer "1") , (integer "1") >
-  }
-  box {
-    < - (integer "1") , - (integer "1") , - (integer "1") > ,
-    < (integer "1") , (integer "1") , (integer "1") >
-    rotate < (integer "45") , (integer "0") , (integer "0") >
-    pigment {
-      rgbft < (integer "0") , (integer "0") , (integer "1") ,
-              (float "0.25") , (float "0.25") >
-    }
-  }
-  sphere {
-    < (integer "0") , (integer "0") , (integer "0") > , (float "1.25")
-    pigment {
-      rgb < (integer "0") , (integer "1") , (integer "0") >
-    }
-  })' \
-| tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
-$(echo -n \
-'((light_source
+demo=$(${top_builddir}/dimension/dimension --parse ${srcdir}/demo.pov)
+demo_exp=$(echo -n \
+'((background
+    (vector (integer 0) (integer 0) (float 0.1) (float 0.1) (integer 0)))
+  (light_source
     (vector (integer -15) (integer 20) (integer 10) (integer 0) (integer 0))
     (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)))
   (box
@@ -61,7 +42,7 @@ $(echo -n \
       (texture
         (pigment (vector (integer 0) (integer 1) (integer 0)
                          (integer 0) (integer 0)))))))' \
-| tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"
+| tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 
 if [ "$demo" != "$demo_exp" ]; then
   echo "demo.pov parsed as \"$demo\"" >&2

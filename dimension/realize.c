@@ -356,9 +356,7 @@ dmnsn_realize(const dmnsn_array *astree)
   scene->default_texture->finish->ambient = 0.1;
 
   /* Background color */
-  dmnsn_sRGB background_sRGB = { .R = 0.0, .G = 0.0, .B = 0.1 };
-  scene->background = dmnsn_color_from_sRGB(background_sRGB);
-  scene->background.filter = 0.1;
+  scene->background = dmnsn_black;
 
   /* Allocate a canvas */
   scene->canvas = dmnsn_new_canvas(768, 480);
@@ -403,6 +401,11 @@ dmnsn_realize(const dmnsn_array *astree)
     dmnsn_light  *light;
     dmnsn_object *object;
     switch (astnode.type) {
+    case DMNSN_AST_BACKGROUND:
+      dmnsn_array_get(astnode.children, 0, &astnode);
+      scene->background = dmnsn_realize_color(astnode);
+      break;
+
     case DMNSN_AST_BOX:
       object = dmnsn_realize_box(astnode);
       dmnsn_array_push(scene->objects, &object);

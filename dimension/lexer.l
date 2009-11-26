@@ -150,6 +150,7 @@ unsigned long wchar;
 }
 
 (?# Keywords)
+"background"    PUSH_TOKEN(DMNSN_T_BACKGROUND);
 "box"           PUSH_TOKEN(DMNSN_T_BOX);
 "blue"          PUSH_TOKEN(DMNSN_T_BLUE);
 "camera"        PUSH_TOKEN(DMNSN_T_CAMERA);

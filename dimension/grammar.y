@@ -270,7 +270,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_AUTOSTOP
 %token DMNSN_T_AVERAGE
 %token DMNSN_T_B_SPLINE
-%token DMNSN_T_BACKGROUND
+%token DMNSN_T_BACKGROUND               "background"
 %token DMNSN_T_BEZIER_SPLINE
 %token DMNSN_T_BICUBIC_PATCH
 %token DMNSN_T_BLACK_HOLE
@@ -703,6 +703,10 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 /* Transformations */
 %type <astnode> TRANSFORMATION
 
+/* Atmospheric effects */
+%type <astnode> ATMOSPHERIC_EFFECT
+%type <astnode> BACKGROUND
+
 /* Objects */
 %type <astnode> OBJECT
 %type <astnode> FINITE_SOLID_OBJECT
@@ -749,7 +753,8 @@ SCENE: /* empty */ { }
      }
 ;
 
-SCENE_ITEM: OBJECT
+SCENE_ITEM: ATMOSPHERIC_EFFECT
+          | OBJECT
 ;
 
 /* Transformations */
@@ -763,6 +768,16 @@ TRANSFORMATION: "rotate" VECTOR {
               | "translate" VECTOR {
                 $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSLATION, @$, $2);
               }
+;
+
+/* Atmospheric effects */
+
+ATMOSPHERIC_EFFECT: BACKGROUND
+;
+
+BACKGROUND: "background" "{" COLOR "}" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_BACKGROUND, @$, $3);
+          }
 ;
 
 /* Objects */
@@ -1465,6 +1480,8 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_ROTATION, "rotate");
   dmnsn_astnode_map(DMNSN_AST_SCALE, "scale");
   dmnsn_astnode_map(DMNSN_AST_TRANSLATION, "translate");
+
+  dmnsn_astnode_map(DMNSN_AST_BACKGROUND, "background");
 
   dmnsn_astnode_map(DMNSN_AST_BOX, "box");
   dmnsn_astnode_map(DMNSN_AST_SPHERE, "sphere");
