@@ -21,24 +21,31 @@
 
 demo=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/demo.pov)
 demo_exp="$(echo -n \
-'(box {
+'(light_source {
+    < - (integer "15") , (integer "20") , (integer "10") > ,
+    rgb < (integer "1") , (integer "1") , (integer "1") >
+  }
+  box {
     < - (integer "1") , - (integer "1") , - (integer "1") > ,
     < (integer "1") , (integer "1") , (integer "1") >
     rotate < (integer "45") , (integer "0") , (integer "0") >
     pigment {
-      color rgbft < (integer "0") , (integer "0") , (integer "1") ,
-                    (float "0.25") , (float "0.25") >
+      rgbft < (integer "0") , (integer "0") , (integer "1") ,
+              (float "0.25") , (float "0.25") >
     }
   }
   sphere {
     < (integer "0") , (integer "0") , (integer "0") > , (float "1.25")
     pigment {
-      color rgb < (integer "0") , (integer "1") , (integer "0") >
+      rgb < (integer "0") , (integer "1") , (integer "0") >
     }
   })' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 $(echo -n \
-'((box
+'((light_source
+    (vector (integer -15) (integer 20) (integer 10) (integer 0) (integer 0))
+    (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)))
+  (box
     (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
     (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
     (object-modifiers

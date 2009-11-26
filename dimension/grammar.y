@@ -429,7 +429,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_LATHE
 %token DMNSN_T_LEOPARD
 %token DMNSN_T_LIGHT_GROUP
-%token DMNSN_T_LIGHT_SOURCE
+%token DMNSN_T_LIGHT_SOURCE             "light_source"
 %token DMNSN_T_LINEAR_SPLINE
 %token DMNSN_T_LINEAR_SWEEP
 %token DMNSN_T_LN
@@ -687,7 +687,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_RANGE
 %token DMNSN_T_READ
 %token DMNSN_T_RENDER
-%token DMNSN_T_STATISTICS 
+%token DMNSN_T_STATISTICS
 %token DMNSN_T_SWITCH
 %token DMNSN_T_UNDEF
 %token DMNSN_T_VERSION
@@ -711,6 +711,7 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %type <astnode> OBJECT
 %type <astnode> FINITE_SOLID_OBJECT
 %type <astnode> BOX
+%type <astnode> LIGHT_SOURCE
 %type <astnode> SPHERE
 
 /* Object modifiers */
@@ -771,6 +772,7 @@ TRANSFORMATION: "rotate" VECTOR {
 /* Objects */
 
 OBJECT: FINITE_SOLID_OBJECT
+      | LIGHT_SOURCE
 ;
 
 FINITE_SOLID_OBJECT: BOX
@@ -784,6 +786,14 @@ BOX: "box" "{"
    {
      $$ = dmnsn_new_astnode3(DMNSN_AST_BOX, @$, $3, $5, $6);
    }
+;
+
+LIGHT_SOURCE: "light_source" "{"
+                VECTOR "," COLOR
+              "}"
+            {
+              $$ = dmnsn_new_astnode2(DMNSN_AST_LIGHT_SOURCE, @$, $3, $5);
+            }
 ;
 
 SPHERE: "sphere" "{"
@@ -1455,6 +1465,7 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
 
   dmnsn_astnode_map(DMNSN_AST_BOX, "box");
   dmnsn_astnode_map(DMNSN_AST_SPHERE, "sphere");
+  dmnsn_astnode_map(DMNSN_AST_LIGHT_SOURCE, "light_source");
 
   dmnsn_astnode_map(DMNSN_AST_OBJECT_MODIFIERS, "object-modifiers");
 

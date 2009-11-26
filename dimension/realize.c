@@ -162,8 +162,7 @@ dmnsn_realize_pigment(dmnsn_astnode astnode, dmnsn_object *object)
   if (!object->texture) {
     object->texture = dmnsn_new_texture();
     if (!object->texture) {
-      dmnsn_delete_object(object);
-      return NULL;
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't create texture.");
     }
   }
   dmnsn_delete_pigment(object->texture->pigment);
@@ -180,8 +179,7 @@ dmnsn_realize_pigment(dmnsn_astnode astnode, dmnsn_object *object)
     color = dmnsn_realize_color(color_node);
     object->texture->pigment = dmnsn_new_solid_pigment(color);
     if (!object->texture->pigment) {
-      dmnsn_delete_object(object);
-      return NULL;
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't create pigment.");
     }
     break;
 
@@ -290,6 +288,28 @@ dmnsn_realize_box(dmnsn_astnode astnode)
   return box;
 }
 
+static dmnsn_light *
+dmnsn_realize_light_source(dmnsn_astnode astnode)
+{
+  if (astnode.type != DMNSN_AST_LIGHT_SOURCE) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a light source.");
+  }
+
+  dmnsn_astnode point, color_node;
+  dmnsn_array_get(astnode.children, 0, &point);
+  dmnsn_array_get(astnode.children, 1, &color_node);
+
+  dmnsn_vector x0 = dmnsn_realize_vector(point);
+  dmnsn_color color = dmnsn_realize_color(color_node);
+
+  dmnsn_light *light = dmnsn_new_point_light(x0, color);
+  if (!light) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate light.");
+  }
+
+  return light;
+}
+
 static dmnsn_object *
 dmnsn_realize_sphere(dmnsn_astnode astnode)
 {
@@ -307,18 +327,6 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
   dmnsn_object *sphere = dmnsn_new_sphere();
   if (!sphere) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate sphere.");
-  }
-
-  sphere->texture = dmnsn_new_texture();
-  if (!sphere->texture) {
-    dmnsn_delete_object(sphere);
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate sphere texture.");
-  }
-
-  sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
-  if (!sphere->texture->pigment) {
-    dmnsn_delete_object(sphere);
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate sphere pigment.");
   }
 
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(r, r, r));
@@ -340,7 +348,7 @@ dmnsn_realize(const dmnsn_array *astree)
   }
 
   /* Default finish */
-  scene->default_texture->finish = dmnsn_new_phong_finish(1.0, 0.5, 50.0);
+  scene->default_texture->finish = dmnsn_new_phong_finish(1.0, 0.0, 1.0);
   if (!scene->default_texture->finish) {
     dmnsn_delete_scene(scene);
     return NULL;
@@ -382,18 +390,6 @@ dmnsn_realize(const dmnsn_array *astree)
   }
   dmnsn_set_perspective_camera_trans(scene->camera, trans);
 
-  /* Make a light */
-
-  dmnsn_light *light = dmnsn_new_point_light(
-    dmnsn_new_vector(-15.0, 20.0, 10.0),
-    dmnsn_white
-  );
-  if (!light) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
-  dmnsn_array_push(scene->lights, &light);
-
   /*
    * Now parse the abstract syntax tree
    */
@@ -404,11 +400,17 @@ dmnsn_realize(const dmnsn_array *astree)
   for (i = 0; i < dmnsn_array_size(astree); ++i) {
     dmnsn_array_get(astree, i, &astnode);
 
+    dmnsn_light  *light;
     dmnsn_object *object;
     switch (astnode.type) {
     case DMNSN_AST_BOX:
       object = dmnsn_realize_box(astnode);
       dmnsn_array_push(scene->objects, &object);
+      break;
+
+    case DMNSN_AST_LIGHT_SOURCE:
+      light = dmnsn_realize_light_source(astnode);
+      dmnsn_array_push(scene->lights, &light);
       break;
 
     case DMNSN_AST_SPHERE:
@@ -417,10 +419,7 @@ dmnsn_realize(const dmnsn_array *astree)
       break;
 
     default:
-      fprintf(stderr, "Unrecognised syntax element '%s'.\n",
-              dmnsn_astnode_string(astnode.type));
-      dmnsn_delete_scene(scene);
-      return NULL;
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Unrecognised syntax element.");
     }
   }
 

@@ -159,6 +159,7 @@ unsigned long wchar;
 "gray"          PUSH_TOKEN(DMNSN_T_GRAY);
 "grey"          PUSH_TOKEN(DMNSN_T_GRAY);
 "green"         PUSH_TOKEN(DMNSN_T_GREEN);
+"light_source"  PUSH_TOKEN(DMNSN_T_LIGHT_SOURCE);
 "pigment"       PUSH_TOKEN(DMNSN_T_PIGMENT);
 "red"           PUSH_TOKEN(DMNSN_T_RED);
 "rgb"           PUSH_TOKEN(DMNSN_T_RGB);

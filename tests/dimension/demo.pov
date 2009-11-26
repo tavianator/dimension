@@ -19,17 +19,21 @@
 
 // Render demo scene
 
+light_source {
+  <-15, 20, 10>, rgb <1, 1, 1>
+}
+
 box {
   <-1, -1, -1>, <1, 1, 1>
   rotate <45, 0, 0>
   pigment {
-    color rgbft <0, 0, 1, 0.25, 0.25>
+    rgbft <0, 0, 1, 0.25, 0.25>
   }
 }
 
 sphere {
   <0, 0, 0>, 1.25
   pigment {
-    color rgb <0, 1, 0>
+    rgb <0, 1, 0>
   }
 }
