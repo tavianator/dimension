@@ -225,10 +225,6 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %token DMNSN_T_NOT_EQUAL     "!="
 
 /* Operators */
-%left "&"
-%left "|"
-%left "==" "!="
-%left "<" "<=" ">" ">="
 %left "+" "-"
 %left "*" "/"
 %left "."
@@ -971,6 +967,10 @@ VECTOR: VECTOR_EXPR {
         $$ = dmnsn_eval_vector($1);
         dmnsn_delete_astnode($1);
       }
+      | FLOAT_EXPR {
+        $$ = dmnsn_eval_vector($1);
+        dmnsn_delete_astnode($1);
+      }
 ;
 
 VECTOR_EXPR: VECTOR_LITERAL
@@ -980,10 +980,13 @@ VECTOR_EXPR: VECTOR_LITERAL
            | VECTOR_EXPR "-" VECTOR_EXPR {
              $$ = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
            }
-           | VECTOR_EXPR "*" VECTOR_EXPR {
+           | VECTOR_EXPR "*" FLOAT_EXPR {
              $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
            }
-           | VECTOR_EXPR "/" VECTOR_EXPR {
+           | FLOAT_EXPR "*" VECTOR_EXPR {
+             $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
+           }
+           | VECTOR_EXPR "/" FLOAT_EXPR {
              $$ = dmnsn_new_astnode2(DMNSN_AST_DIV, @$, $1, $3);
            }
            | "+" VECTOR_EXPR %prec DMNSN_T_NEGATE { $$ = $2; }

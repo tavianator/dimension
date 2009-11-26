@@ -17,9 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-// Render demo scene
+// Test arithmetic expression handling
 
 sphere {
-  <<2.0 - 1.0, 3.0, 4.0>.x, (1.0 + 2)*2 - 5, 1.0 + 2*2 - 4> - -<0, 0, 1>,
+  2*<<2.0 - 1.0, 3.0, 4.0>.x, (1.0 + 2)*2 - 5, 1.0 + 2*2 - 4> - -<0, 0, 1>,
   2.25 - 1*2
 }

@@ -22,6 +22,7 @@
 arithexp=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/arithexp.pov)
 arithexp_exp="$(echo -n \
 '(sphere {
+    (integer "2") *
     < < (float "2.0") - (float "1.0") , (float "3.0") , (float "4.0") > . x ,
       \( (float "1.0") + (integer "2") \) * (integer "2") - (integer "5") ,
       (float "1.0") + (integer "2") * (integer "2") - (integer "4") >
@@ -32,7 +33,7 @@ arithexp_exp="$(echo -n \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 $(echo -n \
 '((sphere
-    (vector (float 1) (float 1) (float 2) (integer 0) (integer 0))
+    (vector (float 2) (float 2) (float 3) (integer 0) (integer 0))
     (float 0.25)
     object-modifiers))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"
