@@ -23,7 +23,7 @@ demo=$(${top_builddir}/dimension/dimension --parse ${srcdir}/demo.pov)
 demo_exp=$(echo -n \
 '((camera
     perspective
-    (location (vector (integer 0) (integer 0) (integer -4)
+    (location (vector (integer 0) (float 0.25) (integer -4)
                       (integer 0) (integer 0)))
     (right (vector (float 1.6) (integer 0) (integer 0) (integer 0) (integer 0)))
     (rotate (vector (integer 0) (integer 53) (integer 0)

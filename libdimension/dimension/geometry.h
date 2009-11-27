@@ -39,6 +39,12 @@ typedef struct {
   dmnsn_vector n;  /* A normal vector; the direction of the line */
 } dmnsn_line;
 
+/* Vector constants */
+static const dmnsn_vector dmnsn_zero = { 0.0, 0.0, 0.0 };
+static const dmnsn_vector dmnsn_x    = { 1.0, 0.0, 0.0 };
+static const dmnsn_vector dmnsn_y    = { 0.0, 1.0, 0.0 };
+static const dmnsn_vector dmnsn_z    = { 0.0, 0.0, 1.0 };
+
 /* Shorthand for vector/matrix construction */
 
 DMNSN_INLINE dmnsn_vector
@@ -133,6 +139,13 @@ dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
   return v;
 }
 
+DMNSN_INLINE dmnsn_vector
+dmnsn_vector_proj(dmnsn_vector u, dmnsn_vector d)
+{
+  /* 1 division, 9 multiplications, 4 additions */
+  return dmnsn_vector_mul(dmnsn_vector_dot(u, d)/dmnsn_vector_dot(d, d), d);
+}
+
 DMNSN_INLINE double
 dmnsn_vector_norm(dmnsn_vector n)
 {
@@ -146,6 +159,9 @@ dmnsn_vector_normalize(dmnsn_vector n)
   /* 1 sqrt, 3 divisions, 3 multiplications, 2 additions */
   return dmnsn_vector_div(n, dmnsn_vector_norm(n));
 }
+
+double dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2,
+                               dmnsn_vector axis);
 
 dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
 dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);

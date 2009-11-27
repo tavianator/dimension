@@ -85,8 +85,8 @@ dmnsn_realize_color(dmnsn_astnode astnode)
   return color;
 }
 
-static dmnsn_object *
-dmnsn_realize_rotation(dmnsn_astnode astnode, dmnsn_object *object)
+static dmnsn_matrix
+dmnsn_realize_rotation(dmnsn_astnode astnode)
 {
   if (astnode.type != DMNSN_AST_ROTATION) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a rotation.");
@@ -102,25 +102,23 @@ dmnsn_realize_rotation(dmnsn_astnode astnode, dmnsn_object *object)
     dmnsn_realize_vector(angle_node)
   );
 
-  /* Rotations in POV-Ray are done about the X-axis first, then Y, then Z */
-  object->trans = dmnsn_matrix_mul(
-    dmnsn_rotation_matrix(dmnsn_new_vector(angle.x, 0.0, 0.0)),
-    object->trans
+  dmnsn_matrix trans = dmnsn_rotation_matrix(
+    dmnsn_new_vector(angle.x, 0.0, 0.0)
   );
-  object->trans = dmnsn_matrix_mul(
+  trans = dmnsn_matrix_mul(
     dmnsn_rotation_matrix(dmnsn_new_vector(0.0, angle.y, 0.0)),
-    object->trans
+    trans
   );
-  object->trans = dmnsn_matrix_mul(
+  trans = dmnsn_matrix_mul(
     dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 0.0, angle.z)),
-    object->trans
+    trans
   );
 
-  return object;
+  return trans;
 }
 
-static dmnsn_object *
-dmnsn_realize_scale(dmnsn_astnode astnode, dmnsn_object *object)
+static dmnsn_matrix
+dmnsn_realize_scale(dmnsn_astnode astnode)
 {
   if (astnode.type != DMNSN_AST_SCALE) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a scale.");
@@ -130,12 +128,11 @@ dmnsn_realize_scale(dmnsn_astnode astnode, dmnsn_object *object)
   dmnsn_array_get(astnode.children, 0, &scale_node);
   dmnsn_vector scale = dmnsn_realize_vector(scale_node);
 
-  object->trans = dmnsn_matrix_mul(dmnsn_scale_matrix(scale), object->trans);
-  return object;
+  return dmnsn_scale_matrix(scale);
 }
 
-static dmnsn_object *
-dmnsn_realize_translation(dmnsn_astnode astnode, dmnsn_object *object)
+static dmnsn_matrix
+dmnsn_realize_translation(dmnsn_astnode astnode)
 {
   if (astnode.type != DMNSN_AST_TRANSLATION) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a translation.");
@@ -145,11 +142,153 @@ dmnsn_realize_translation(dmnsn_astnode astnode, dmnsn_object *object)
   dmnsn_array_get(astnode.children, 0, &trans_node);
   dmnsn_vector trans = dmnsn_realize_vector(trans_node);
 
-  object->trans = dmnsn_matrix_mul(
-    dmnsn_translation_matrix(trans),
-    object->trans
-  );
-  return object;
+  return dmnsn_translation_matrix(trans);
+}
+
+static dmnsn_camera *
+dmnsn_realize_camera(dmnsn_astnode astnode)
+{
+  const double deg2rad = atan(1.0)/45.0;
+
+  dmnsn_astnode_type camera_type = DMNSN_AST_PERSPECTIVE;
+  dmnsn_vector location  = dmnsn_new_vector(0.0, 0.0, 0.0);
+  dmnsn_vector look_at   = dmnsn_new_vector(0.0, 0.0, 1.0);
+  dmnsn_vector right     = dmnsn_new_vector(4.0/3.0, 0.0, 0.0);
+  dmnsn_vector up        = dmnsn_new_vector(0.0, 1.0, 0.0);
+  dmnsn_vector sky       = dmnsn_new_vector(0.0, 1.0, 0.0);
+  dmnsn_vector direction = dmnsn_new_vector(0.0, 0.0, 1.0);
+  double       angle     = 0.0;
+  dmnsn_matrix trans     = dmnsn_identity_matrix();
+
+  dmnsn_camera *camera = NULL;
+
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    dmnsn_astnode item;
+    dmnsn_array_get(astnode.children, i, &item);
+
+    switch (item.type) {
+    /* Camera types */
+    case DMNSN_AST_PERSPECTIVE:
+      camera_type = item.type;
+      break;
+
+    /* Camera vectors */
+    case DMNSN_AST_LOCATION:
+      dmnsn_array_get(item.children, 0, &item);
+      location = dmnsn_realize_vector(item);
+      break;
+    case DMNSN_AST_RIGHT:
+      dmnsn_array_get(item.children, 0, &item);
+      right = dmnsn_realize_vector(item);
+      break;
+    case DMNSN_AST_UP:
+      dmnsn_array_get(item.children, 0, &item);
+      right = dmnsn_realize_vector(item);
+      break;
+    case DMNSN_AST_SKY:
+      dmnsn_array_get(item.children, 0, &item);
+      sky = dmnsn_realize_vector(item);
+      break;
+
+    /* Camera modifiers */
+    case DMNSN_AST_LOOK_AT:
+      dmnsn_array_get(item.children, 0, &item);
+      look_at = dmnsn_realize_vector(item);
+      break;
+    case DMNSN_AST_ANGLE:
+      dmnsn_array_get(item.children, 0, &item);
+      angle = deg2rad*dmnsn_realize_float(item);
+      break;
+
+    /* Transformations */
+    case DMNSN_AST_ROTATION:
+      trans = dmnsn_matrix_mul(dmnsn_realize_rotation(item), trans);
+      break;
+    case DMNSN_AST_SCALE:
+      trans = dmnsn_matrix_mul(dmnsn_realize_scale(item), trans);
+      break;
+    case DMNSN_AST_TRANSLATION:
+      trans = dmnsn_matrix_mul(dmnsn_realize_translation(item), trans);
+      break;
+
+    default:
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid camera item.");
+      break;
+    }
+  }
+
+  switch (camera_type) {
+  case DMNSN_AST_PERSPECTIVE:
+    {
+      /* TODO: this is not quite right, but it handles cameras specified with
+         `look_at' and `angle' correctly.  `right' and `up' are assumed to point
+         in the x and y directions, respectively.  `direction' and `sky' are
+         broken. */
+
+      /* Set the direction vector if we were given an angle */
+      if (angle) {
+        direction = dmnsn_new_vector(
+          0.0,
+          0.0,
+          0.5*dmnsn_vector_norm(right)/tan(angle/2)
+        );
+      }
+
+      /* These multiplications are in right-to-left order */
+
+      trans = dmnsn_matrix_mul(trans, dmnsn_translation_matrix(location));
+
+      /* Pan left-right */
+      trans = dmnsn_matrix_mul(
+        trans,
+        dmnsn_rotation_matrix(
+          dmnsn_vector_mul(
+            dmnsn_vector_axis_angle(
+              direction,
+              dmnsn_vector_sub(look_at, location),
+              sky
+            ),
+            dmnsn_vector_normalize(sky)
+          )
+        )
+      );
+      /* Pan up-down */
+      trans = dmnsn_matrix_mul(
+        trans,
+        dmnsn_rotation_matrix(
+          dmnsn_vector_mul(
+            dmnsn_vector_axis_angle(
+              direction,
+              dmnsn_vector_sub(look_at, location),
+              right
+            ),
+            dmnsn_vector_normalize(right)
+          )
+        )
+      );
+
+      trans = dmnsn_matrix_mul(
+        trans,
+        dmnsn_scale_matrix(
+          dmnsn_new_vector(
+            dmnsn_vector_norm(right),
+            dmnsn_vector_norm(up),
+            dmnsn_vector_norm(direction)
+          )
+        )
+      );
+
+      camera = dmnsn_new_perspective_camera();
+      dmnsn_set_perspective_camera_trans(camera, trans);
+      break;
+    }
+
+  default:
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Unsupported camera type.");
+  }
+
+  return camera;
 }
 
 static dmnsn_object *
@@ -229,13 +368,22 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
 
     switch (modifier.type) {
     case DMNSN_AST_ROTATION:
-      object = dmnsn_realize_rotation(modifier, object);
+      object->trans = dmnsn_matrix_mul(
+        dmnsn_realize_rotation(modifier),
+        object->trans
+      );
       break;
     case DMNSN_AST_SCALE:
-      object = dmnsn_realize_scale(modifier, object);
+      object->trans = dmnsn_matrix_mul(
+        dmnsn_realize_scale(modifier),
+        object->trans
+      );
       break;
     case DMNSN_AST_TRANSLATION:
-      object = dmnsn_realize_translation(modifier, object);
+      object->trans = dmnsn_matrix_mul(
+        dmnsn_realize_translation(modifier),
+        object->trans
+      );
       break;
 
     case DMNSN_AST_TEXTURE:
@@ -365,28 +513,12 @@ dmnsn_realize(const dmnsn_array *astree)
     return NULL;
   }
 
-  /* Set up the transformation matrix for the perspective camera */
-  dmnsn_matrix trans = dmnsn_scale_matrix(
-    dmnsn_new_vector(
-      ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
-    )
-  );
-  trans = dmnsn_matrix_mul(
-    dmnsn_translation_matrix(dmnsn_new_vector(0.0, 0.0, -4.0)),
-    trans
-  );
-  trans = dmnsn_matrix_mul(
-    dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0)),
-    trans
-  );
-
-  /* Create a perspective camera */
+  /* Create the default perspective camera */
   scene->camera = dmnsn_new_perspective_camera();
   if (!scene->camera) {
     dmnsn_delete_scene(scene);
     return NULL;
   }
-  dmnsn_set_perspective_camera_trans(scene->camera, trans);
 
   /*
    * Now parse the abstract syntax tree
@@ -402,6 +534,8 @@ dmnsn_realize(const dmnsn_array *astree)
     dmnsn_object *object;
     switch (astnode.type) {
     case DMNSN_AST_CAMERA:
+      dmnsn_delete_camera(scene->camera);
+      scene->camera = dmnsn_realize_camera(astnode);
       break;
 
     case DMNSN_AST_BACKGROUND:

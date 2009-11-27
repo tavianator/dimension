@@ -21,8 +21,8 @@
 
 camera {
   perspective
-  location <0, 0, -4>
-  right    <768/480, 0, 0>
+  location <0, 0.25, -4>
+  right    <1.6, 0, 0>
   rotate   <0, 53, 0>
   look_at  <0, 0, 0>
 }

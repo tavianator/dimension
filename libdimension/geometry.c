@@ -80,6 +80,23 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
   );
 }
 
+/* Find the angle between two vectors with respect to an axis */
+double
+dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2, dmnsn_vector axis)
+{
+  dmnsn_vector d    = dmnsn_vector_sub(v1, v2);
+  dmnsn_vector proj = dmnsn_vector_add(dmnsn_vector_proj(d, axis), v2);
+
+  double c = dmnsn_vector_dot(dmnsn_vector_normalize(v1),
+                              dmnsn_vector_normalize(proj));
+  double angle = acos(c);
+
+  if (dmnsn_vector_dot(dmnsn_vector_cross(v1, proj), axis) > 0)
+    return angle;
+  else
+    return -angle;
+}
+
 /* Matrix inversion helper functions */
 
 typedef struct { double n[2][2]; } dmnsn_matrix2;
