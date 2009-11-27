@@ -152,12 +152,10 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
 
   dmnsn_astnode_type camera_type = DMNSN_AST_PERSPECTIVE;
   dmnsn_vector location  = dmnsn_new_vector(0.0, 0.0, 0.0);
-  dmnsn_vector look_at   = dmnsn_new_vector(0.0, 0.0, 1.0);
+  dmnsn_vector direction = dmnsn_new_vector(0.0, 0.0, 1.0);
   dmnsn_vector right     = dmnsn_new_vector(4.0/3.0, 0.0, 0.0);
   dmnsn_vector up        = dmnsn_new_vector(0.0, 1.0, 0.0);
   dmnsn_vector sky       = dmnsn_new_vector(0.0, 1.0, 0.0);
-  dmnsn_vector direction = dmnsn_new_vector(0.0, 0.0, 1.0);
-  double       angle     = 0.0;
   dmnsn_matrix trans     = dmnsn_identity_matrix();
 
   dmnsn_camera *camera = NULL;
@@ -192,14 +190,66 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
       break;
 
     /* Camera modifiers */
+
     case DMNSN_AST_LOOK_AT:
-      dmnsn_array_get(item.children, 0, &item);
-      look_at = dmnsn_realize_vector(item);
-      break;
+      {
+        dmnsn_array_get(item.children, 0, &item);
+        dmnsn_vector look_at = dmnsn_realize_vector(item);
+
+        /* Line the camera up with the sky */
+
+        dmnsn_matrix sky1 = dmnsn_rotation_matrix(
+          dmnsn_vector_mul(
+            dmnsn_vector_axis_angle(up, sky, direction),
+            dmnsn_vector_normalize(direction)
+          )
+        );
+        up    = dmnsn_matrix_vector_mul(sky1, up);
+        right = dmnsn_matrix_vector_mul(sky1, right);
+
+        dmnsn_matrix sky2 = dmnsn_rotation_matrix(
+          dmnsn_vector_mul(
+            dmnsn_vector_axis_angle(up, sky, right),
+            dmnsn_vector_normalize(right)
+          )
+        );
+        up        = dmnsn_matrix_vector_mul(sky2, up);
+        direction = dmnsn_matrix_vector_mul(sky2, direction);
+
+        /* Line up the camera with the look_at */
+
+        look_at = dmnsn_vector_sub(look_at, location);
+        dmnsn_matrix look_at1 = dmnsn_rotation_matrix(
+          dmnsn_vector_mul(
+            dmnsn_vector_axis_angle(direction, look_at, up),
+            dmnsn_vector_normalize(up)
+          )
+        );
+        right     = dmnsn_matrix_vector_mul(look_at1, right);
+        direction = dmnsn_matrix_vector_mul(look_at1, direction);
+
+        dmnsn_matrix look_at2 = dmnsn_rotation_matrix(
+          dmnsn_vector_mul(
+            dmnsn_vector_axis_angle(direction, look_at, right),
+            dmnsn_vector_normalize(right)
+          )
+        );
+        up        = dmnsn_matrix_vector_mul(look_at2, up);
+        direction = dmnsn_matrix_vector_mul(look_at2, direction);
+
+        break;
+      }
+
     case DMNSN_AST_ANGLE:
-      dmnsn_array_get(item.children, 0, &item);
-      angle = deg2rad*dmnsn_realize_float(item);
-      break;
+      {
+        dmnsn_array_get(item.children, 0, &item);
+        double angle = deg2rad*dmnsn_realize_float(item);
+        direction = dmnsn_vector_mul(
+          0.5*dmnsn_vector_norm(right)/tan(angle/2.0),
+          dmnsn_vector_normalize(direction)
+        );
+        break;
+      }
 
     /* Transformations */
     case DMNSN_AST_ROTATION:
@@ -221,53 +271,48 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
   switch (camera_type) {
   case DMNSN_AST_PERSPECTIVE:
     {
-      /* TODO: this is not quite right, but it handles cameras specified with
-         `look_at' and `angle' correctly.  `right' and `up' are assumed to point
-         in the x and y directions, respectively.  `direction' and `sky' are
-         broken. */
-
-      /* Set the direction vector if we were given an angle */
-      if (angle) {
-        direction = dmnsn_new_vector(
-          0.0,
-          0.0,
-          0.5*dmnsn_vector_norm(right)/tan(angle/2)
-        );
-      }
-
-      /* These multiplications are in right-to-left order */
+      /* These multiplications are in right-to-left order so that user
+         transformations happen after camera alignment */
 
       trans = dmnsn_matrix_mul(trans, dmnsn_translation_matrix(location));
 
-      /* Pan left-right */
-      trans = dmnsn_matrix_mul(
-        trans,
-        dmnsn_rotation_matrix(
-          dmnsn_vector_mul(
-            dmnsn_vector_axis_angle(
-              direction,
-              dmnsn_vector_sub(look_at, location),
-              sky
-            ),
-            dmnsn_vector_normalize(sky)
-          )
-        )
-      );
-      /* Pan up-down */
-      trans = dmnsn_matrix_mul(
-        trans,
-        dmnsn_rotation_matrix(
-          dmnsn_vector_mul(
-            dmnsn_vector_axis_angle(
-              direction,
-              dmnsn_vector_sub(look_at, location),
-              right
-            ),
-            dmnsn_vector_normalize(right)
-          )
+      /* Align y with `up' */
+
+      dmnsn_matrix align = dmnsn_rotation_matrix(
+        dmnsn_vector_mul(
+          dmnsn_vector_axis_angle(dmnsn_y, up, dmnsn_z),
+          dmnsn_z
         )
       );
 
+      dmnsn_vector x = dmnsn_matrix_vector_mul(align, dmnsn_x);
+      dmnsn_vector y = dmnsn_matrix_vector_mul(align, dmnsn_y);
+
+      align = dmnsn_matrix_mul(
+        dmnsn_rotation_matrix(
+          dmnsn_vector_mul(
+            dmnsn_vector_axis_angle(y, up, x),
+            x
+          )
+        ),
+        align
+      );
+
+      /* Align x with `right' */
+
+      align = dmnsn_matrix_mul(
+        dmnsn_rotation_matrix(
+          dmnsn_vector_mul(
+            dmnsn_vector_axis_angle(x, right, up),
+            dmnsn_vector_normalize(up)
+          )
+        ),
+        align
+      );
+
+      trans = dmnsn_matrix_mul(trans, align);
+
+      /* Scale the camera with `up', `right', and `direction' */
       trans = dmnsn_matrix_mul(
         trans,
         dmnsn_scale_matrix(

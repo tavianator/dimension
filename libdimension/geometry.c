@@ -91,10 +91,11 @@ dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2, dmnsn_vector axis)
                               dmnsn_vector_normalize(proj));
   double angle = acos(c);
 
-  if (dmnsn_vector_dot(dmnsn_vector_cross(v1, proj), axis) > 0)
+  if (dmnsn_vector_dot(dmnsn_vector_cross(v1, proj), axis) > 0) {
     return angle;
-  else
+  } else {
     return -angle;
+  }
 }
 
 /* Matrix inversion helper functions */

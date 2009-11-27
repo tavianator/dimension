@@ -26,10 +26,10 @@ demo_exp=$(echo -n \
     (location (vector (integer 0) (float 0.25) (integer -4)
                       (integer 0) (integer 0)))
     (right (vector (float 1.6) (integer 0) (integer 0) (integer 0) (integer 0)))
-    (rotate (vector (integer 0) (integer 53) (integer 0)
-                    (integer 0) (integer 0)))
     (look_at (vector (integer 0) (integer 0) (integer 0)
-                     (integer 0) (integer 0))))
+                     (integer 0) (integer 0)))
+    (rotate (vector (integer 0) (integer 53) (integer 0)
+                    (integer 0) (integer 0))))
   (background
     (vector (integer 0) (integer 0) (float 0.1) (float 0.1) (integer 0)))
   (light_source
