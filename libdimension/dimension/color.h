@@ -25,12 +25,12 @@
 #ifndef DIMENSION_COLOR_H
 #define DIMENSION_COLOR_H
 
-/* Internally, we use CIE 1931 XYZ color. */
+/* Internally, we use sRGB color. */
 typedef struct {
   double filter, trans; /* Filter transparancy only lets light of this color
                            through; regular transparancy lets all colors
                            through.  filter + trans should be <= 1.0. */
-  double X, Y, Z;
+  double R, G, B;
 } dmnsn_color;
 
 typedef struct {
@@ -44,10 +44,6 @@ typedef struct {
                      model, so x,y in [0, 1] and Y >= 0, with 1 = diffuse
                      white */
 } dmnsn_CIE_xyY;
-
-typedef struct {
-  double R, G, B; /* CIE 1931 RGB, a linear transformation of CIE XYZ */
-} dmnsn_CIE_RGB;
 
 typedef struct {
   double L, a, b; /* L is luminence (100 = diffuse white); a and b are color-
@@ -75,14 +71,12 @@ extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
 
 dmnsn_color dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ);
 dmnsn_color dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY);
-dmnsn_color dmnsn_color_from_RGB(dmnsn_CIE_RGB RGB);
 dmnsn_color dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white);
 dmnsn_color dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white);
 dmnsn_color dmnsn_color_from_sRGB(dmnsn_sRGB sRGB);
 
 dmnsn_CIE_XYZ dmnsn_XYZ_from_color(dmnsn_color color);
 dmnsn_CIE_xyY dmnsn_xyY_from_color(dmnsn_color color);
-dmnsn_CIE_RGB dmnsn_RGB_from_color(dmnsn_color color);
 dmnsn_CIE_Lab dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 dmnsn_sRGB    dmnsn_sRGB_from_color(dmnsn_color color);

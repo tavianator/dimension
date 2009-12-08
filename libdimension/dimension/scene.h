@@ -56,7 +56,7 @@ typedef struct {
   dmnsn_quality quality;
 } dmnsn_scene;
 
-/* Create a scene, initializing only the ->objects field */
+/* Create a scene */
 dmnsn_scene *dmnsn_new_scene();
 void dmnsn_delete_scene(dmnsn_scene *scene);
 

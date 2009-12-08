@@ -29,7 +29,7 @@ camera {
 }
 
 background {
-  color rgbf <0, 0, 0.1, 0.1>
+  color rgbf <0, 0.1, 0.2, 0.1>
 }
 
 light_source {

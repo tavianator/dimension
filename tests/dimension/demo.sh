@@ -31,7 +31,7 @@ demo_exp=$(echo -n \
     (rotate (vector (integer 0) (integer 53) (integer 0)
                     (integer 0) (integer 0))))
   (background
-    (vector (integer 0) (integer 0) (float 0.1) (float 0.1) (integer 0)))
+    (vector (integer 0) (float 0.1) (float 0.2) (float 0.1) (integer 0)))
   (light_source
     (vector (integer -15) (integer 20) (integer 10) (integer 0) (integer 0))
     (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)))

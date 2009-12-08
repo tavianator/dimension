@@ -28,96 +28,105 @@ const dmnsn_CIE_XYZ dmnsn_whitepoint = { .X = 0.9504060171449392,
 
 /* Standard colors */
 const dmnsn_color dmnsn_black = {
-  .X = 0.0,
-  .Y = 0.0,
-  .Z = 0.0,
+  .R = 0.0,
+  .G = 0.0,
+  .B = 0.0,
   .filter = 0.0,
   .trans  = 0.0
 };
 const dmnsn_color dmnsn_white = {
-  .X = 0.9504060171449392,
-  .Y = 0.9999085943425312,
-  .Z = 1.089062231497274,
+  .R = 1.0,
+  .G = 1.0,
+  .B = 1.0,
   .filter = 0.0,
   .trans  = 0.0
 };
 const dmnsn_color dmnsn_red = {
-  .X = 0.4123808838268995,
-  .Y = 0.2126198631048975,
-  .Z = 0.0193434956789248,
+  .R = 1.0,
+  .G = 0.0,
+  .B = 0.0,
   .filter = 0.0,
   .trans  = 0.0
 };
 const dmnsn_color dmnsn_green = {
-  .X = 0.3575728355732478,
-  .Y = 0.7151387878413206,
-  .Z = 0.1192121694056356,
+  .R = 0.0,
+  .G = 1.0,
+  .B = 0.0,
   .filter = 0.0,
   .trans  = 0.0
 };
 const dmnsn_color dmnsn_blue = {
-  .X = 0.1804522977447919,
-  .Y = 0.0721499433963131,
-  .Z = 0.950506566412713,
+  .R = 0.0,
+  .G = 0.0,
+  .B = 1.0,
   .filter = 0.0,
   .trans  = 0.0
 };
 const dmnsn_color dmnsn_magenta = {
-  .X = 0.5928331815716914,
-  .Y = 0.2847698065012106,
-  .Z = 0.9698500620916378,
+  .R = 1.0,
+  .G = 0.0,
+  .B = 1.0,
   .filter = 0.0,
   .trans  = 0.0
 };
 const dmnsn_color dmnsn_yellow = {
-  .X = 0.7699537194001473,
-  .Y = 0.9277586509462181,
-  .Z = 0.1385556650845604,
+  .R = 1.0,
+  .G = 1.0,
+  .B = 0.0,
   .filter = 0.0,
   .trans  = 0.0
 };
 const dmnsn_color dmnsn_cyan = {
-  .X = 0.5380251333180397,
-  .Y = 0.7872887312376337,
-  .Z = 1.069718735818349,
+  .R = 0.0,
+  .G = 1.0,
+  .B = 1.0,
   .filter = 0.0,
   .trans  = 0.0
 };
 
-/* Convert a CIE XYZ color to a dmnsn_color (actually a no-op) */
+/* sRGB's `C' function */
+static double dmnsn_sRGB_C(double Clinear) {
+  /*
+   * If C represents R, G, and B, then the sRGB values are now found as follows:
+   *
+   *         { 12.92*Clinear,                Clinear <= 0.0031308
+   * Csrgb = {                1/2.4
+   *         { (1.055)*Clinear      - 0.055, Clinear >  0.0031308
+   */
+  if (Clinear <= 0.0031308) {
+    return 12.92*Clinear;
+  } else {
+    return 1.055*pow(Clinear, 1.0/2.4) - 0.055;
+  }
+}
+
+/* Convert a CIE XYZ color to a dmnsn_color */
 dmnsn_color
 dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ)
 {
-  dmnsn_color ret = { .X = XYZ.X, .Y = XYZ.Y, .Z = XYZ.Z,
-                      .filter = 0.0, .trans = 0.0 };
-  return ret;
+  dmnsn_color color = {
+    .R =  3.2410*XYZ.X - 1.5374*XYZ.Y - 0.4986*XYZ.Z,
+    .G = -0.9692*XYZ.X + 1.8760*XYZ.Y + 0.0416*XYZ.Z,
+    .B =  0.0556*XYZ.X - 0.2040*XYZ.Y + 1.0570*XYZ.Z,
+    .filter = 0.0,
+    .trans = 0.0
+  };
+  color.R = dmnsn_sRGB_C(color.R);
+  color.G = dmnsn_sRGB_C(color.G);
+  color.B = dmnsn_sRGB_C(color.B);
+  return color;
 }
 
 /* Convert a CIE xyY color to a dmnsn_color */
 dmnsn_color
 dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY)
 {
-  dmnsn_color ret = {
+  dmnsn_CIE_XYZ ret = {
     .X = xyY.Y*xyY.x/xyY.y,
     .Y = xyY.Y,
     .Z = xyY.Y*(1.0 - xyY.x - xyY.y)/xyY.y,
-    .filter = 0.0,
-    .trans = 0.0
   };
-  return ret;
-}
-
-dmnsn_color
-dmnsn_color_from_RGB(dmnsn_CIE_RGB RGB)
-{
-  dmnsn_color ret = {
-    .X = 0.49*RGB.R    + 0.31*RGB.G    + 0.20*RGB.B,
-    .Y = 0.17697*RGB.R + 0.81240*RGB.G + 0.01063*RGB.B,
-    .Z = 0.00*RGB.R    + 0.01*RGB.G    + 0.99*RGB.B,
-    .filter = 0.0,
-    .trans = 0.0
-  };
-  return ret;
+  return dmnsn_color_from_XYZ(ret);
 }
 
 /* Inverse function of CIE L*a*b*'s `f' function, for the reverse conversion */
@@ -135,7 +144,7 @@ dmnsn_color
 dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white)
 {
   double fx, fy, fz;
-  dmnsn_color ret;
+  dmnsn_CIE_XYZ ret;
 
   fy = (Lab.L + 16.0)/116.0;
   fx = fy + Lab.a/500.0;
@@ -144,10 +153,7 @@ dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white)
   ret.X = white.X*dmnsn_Lab_finv(fx);
   ret.Y = white.Y*dmnsn_Lab_finv(fy);
   ret.Z = white.Z*dmnsn_Lab_finv(fz);
-  ret.filter = 0.0;
-  ret.trans  = 0.0;
-
-  return ret;
+  return dmnsn_color_from_XYZ(ret);
 }
 
 /* Convert a CIE L*u*v* color to a dmnsn_color, relative to the given
@@ -157,7 +163,7 @@ dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white)
 {
   double fy;
   double uprime, unprime, vprime, vnprime;
-  dmnsn_color ret;
+  dmnsn_CIE_XYZ ret;
 
   fy = (Luv.L + 16.0)/116.0;
 
@@ -169,9 +175,20 @@ dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white)
   ret.Y = white.Y*dmnsn_Lab_finv(fy);
   ret.X = ret.Y*9.0*uprime/vprime/4.0;
   ret.Z = ret.Y*(12.0 - 3*uprime - 20*vprime)/vprime/4.0;
-  ret.filter = 0.0;
-  ret.trans  = 0.0;
+  return dmnsn_color_from_XYZ(ret);
+}
 
+/* Convert an sRGB color to a dmnsn_color (actually a no-op) */
+dmnsn_color
+dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
+{
+  dmnsn_color ret = {
+    .R = sRGB.R,
+    .G = sRGB.G,
+    .B = sRGB.B,
+    .filter = 0.0,
+    .trans = 0.0
+  };
   return ret;
 }
 
@@ -192,39 +209,22 @@ static double dmnsn_sRGB_Cinv(double CsRGB) {
   }
 }
 
-/* Perform the inverse linear sRGB conversion */
-static dmnsn_color
-dmnsn_linear_color_from_sRGB(dmnsn_sRGB sRGB)
-{
-  dmnsn_color ret = {
-    .X = 0.4123808838268995*sRGB.R + 0.3575728355732478*sRGB.G
-       + 0.1804522977447919*sRGB.B,
-    .Y = 0.2126198631048975*sRGB.R + 0.7151387878413206*sRGB.G
-       + 0.0721499433963131*sRGB.B,
-    .Z = 0.0193434956789248*sRGB.R + 0.1192121694056356*sRGB.G
-       + 0.9505065664127130*sRGB.B,
-    .filter = 0.0,
-    .trans  = 0.0
-  };
-  return ret;
-}
-
-/* Convert an sRGB value to a dmnsn_color */
-dmnsn_color
-dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
-{
-  sRGB.R = dmnsn_sRGB_Cinv(sRGB.R);
-  sRGB.G = dmnsn_sRGB_Cinv(sRGB.G);
-  sRGB.B = dmnsn_sRGB_Cinv(sRGB.B);
-
-  return dmnsn_linear_color_from_sRGB(sRGB);
-}
-
-/* Convert a dmnsn_color to a CIE XYZ color (actually a no-op) */
+/* Convert a dmnsn_color to a CIE XYZ color */
 dmnsn_CIE_XYZ
 dmnsn_XYZ_from_color(dmnsn_color color)
 {
-  dmnsn_CIE_XYZ ret = { .X = color.X, .Y = color.Y, .Z = color.Z };
+  color.R = dmnsn_sRGB_Cinv(color.R);
+  color.G = dmnsn_sRGB_Cinv(color.G);
+  color.B = dmnsn_sRGB_Cinv(color.B);
+
+  dmnsn_CIE_XYZ ret = {
+    .X = 0.4123808838268995*color.R + 0.3575728355732478*color.G
+       + 0.1804522977447919*color.B,
+    .Y = 0.2126198631048975*color.R + 0.7151387878413206*color.G
+       + 0.0721499433963131*color.B,
+    .Z = 0.0193434956789248*color.R + 0.1192121694056356*color.G
+       + 0.9505065664127130*color.B,
+  };
   return ret;
 }
 
@@ -232,24 +232,11 @@ dmnsn_XYZ_from_color(dmnsn_color color)
 dmnsn_CIE_xyY
 dmnsn_xyY_from_color(dmnsn_color color)
 {
+  dmnsn_CIE_XYZ XYZ = dmnsn_XYZ_from_color(color);
   dmnsn_CIE_xyY ret = {
-    .x = color.X/(color.X + color.Y + color.Z),
-    .y = color.Y/(color.X + color.Y + color.Z),
-    .Y = color.Y
-  };
-  return ret;
-}
-
-dmnsn_CIE_RGB
-dmnsn_RGB_from_color(dmnsn_color color)
-{
-  dmnsn_CIE_RGB ret = {
-    .R = 2.36461384653836548*color.X + -0.89654057073966797*color.Y
-      + -0.46807327579869740*color.Z,
-    .G = -0.51516620844788796*color.X + 1.42640810385638872*color.Y
-      + 0.08875810459149917*color.Z,
-    .B = 0.00520369907523119*color.X + -0.01440816266521605*color.Y
-      + 1.00920446358998483*color.Z
+    .x = XYZ.X/(XYZ.X + XYZ.Y + XYZ.Z),
+    .y = XYZ.Y/(XYZ.X + XYZ.Y + XYZ.Z),
+    .Y = XYZ.Y
   };
   return ret;
 }
@@ -268,12 +255,12 @@ static double dmnsn_Lab_f(double t) {
 dmnsn_CIE_Lab
 dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white)
 {
+  dmnsn_CIE_XYZ XYZ = dmnsn_XYZ_from_color(color);
   dmnsn_CIE_Lab ret;
 
-  ret.L = 116.0*dmnsn_Lab_f(color.Y/white.Y) - 16.0;
-  ret.a = 500.0*(dmnsn_Lab_f(color.X/white.X) - dmnsn_Lab_f(color.Y/white.Y));
-  ret.b = 200.0*(dmnsn_Lab_f(color.Y/white.Y) - dmnsn_Lab_f(color.Z/white.Z));
-
+  ret.L = 116.0*dmnsn_Lab_f(XYZ.Y/white.Y) - 16.0;
+  ret.a = 500.0*(dmnsn_Lab_f(XYZ.X/white.X) - dmnsn_Lab_f(XYZ.Y/white.Y));
+  ret.b = 200.0*(dmnsn_Lab_f(XYZ.Y/white.Y) - dmnsn_Lab_f(XYZ.Z/white.Z));
   return ret;
 }
 
@@ -282,80 +269,51 @@ dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white)
 dmnsn_CIE_Luv
 dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white)
 {
+  dmnsn_CIE_XYZ XYZ = dmnsn_XYZ_from_color(color);
   double uprime, unprime, vprime, vnprime;
   dmnsn_CIE_Luv ret;
 
-  uprime  = 4.0*color.X/(color.X + 15.0*color.Y + 3.0*color.Z);
-  unprime = 4.0*white.X/(white.X + 15.0*white.Y + 3.0*white.Z);
-  vprime  = 9.0*color.Y/(color.X + 15.0*color.Y + 3.0*color.Z);
-  vnprime = 9.0*white.Y/(white.X + 15.0*white.Y + 3.0*white.Z);
+  uprime  = 4.0*XYZ.X   / (XYZ.X   + 15.0*XYZ.Y   + 3.0*XYZ.Z);
+  unprime = 4.0*white.X / (white.X + 15.0*white.Y + 3.0*white.Z);
+  vprime  = 9.0*XYZ.Y   / (XYZ.X   + 15.0*XYZ.Y   + 3.0*XYZ.Z);
+  vnprime = 9.0*white.Y / (white.X + 15.0*white.Y + 3.0*white.Z);
 
-  ret.L = 116.0*dmnsn_Lab_f(color.Y/white.Y) - 16.0;
+  ret.L = 116.0*dmnsn_Lab_f(XYZ.Y/white.Y) - 16.0;
   ret.u = 13.0*ret.L*(uprime - unprime);
   ret.v = 13.0*ret.L*(vprime - vnprime);
-
   return ret;
 }
 
-/* sRGB's `C' function */
-static double dmnsn_sRGB_C(double Clinear) {
-  /*
-   * If C represents R, G, and B, then the sRGB values are now found as follows:
-   *
-   *         { 12.92*Clinear,                Clinear <= 0.0031308
-   * Csrgb = {                1/2.4
-   *         { (1.055)*Clinear      - 0.055, Clinear >  0.0031308
-   */
-  if (Clinear <= 0.0031308) {
-    return 12.92*Clinear;
-  } else {
-    return 1.055*pow(Clinear, 1.0/2.4) - 0.055;
-  }
-}
-
-/* Perform the linear sRGB conversion */
-static dmnsn_sRGB
-dmnsn_linear_sRGB_from_color(dmnsn_color color)
-{
-  dmnsn_sRGB ret = {
-    .R =  3.2410*color.X - 1.5374*color.Y - 0.4986*color.Z,
-    .G = -0.9692*color.X + 1.8760*color.Y + 0.0416*color.Z,
-    .B =  0.0556*color.X - 0.2040*color.Y + 1.0570*color.Z
-  };
-  return ret;
-}
-
-/* Convert a dmnsn_color to an sRGB color */
+/* Convert a dmnsn_color to an sRGB color (actually a no-op) */
 dmnsn_sRGB
 dmnsn_sRGB_from_color(dmnsn_color color)
 {
-  dmnsn_sRGB sRGB = dmnsn_linear_sRGB_from_color(color);
-
-  sRGB.R = dmnsn_sRGB_C(sRGB.R);
-  sRGB.G = dmnsn_sRGB_C(sRGB.G);
-  sRGB.B = dmnsn_sRGB_C(sRGB.B);
-
+  dmnsn_sRGB sRGB = { .R = color.R, .G = color.G, .B = color.B };
   return sRGB;
 }
 
 /* Add two colors in a perceptually correct manner, using CIE L*a*b*. */
 dmnsn_color
-dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
+dmnsn_color_add(dmnsn_color c1, dmnsn_color c2)
 {
-  dmnsn_CIE_Lab Lab1 = dmnsn_Lab_from_color(color1, dmnsn_whitepoint);
-  dmnsn_CIE_Lab Lab2 = dmnsn_Lab_from_color(color2, dmnsn_whitepoint);
+  dmnsn_sRGB sRGB1 = dmnsn_sRGB_from_color(c1);
+  dmnsn_sRGB sRGB2 = dmnsn_sRGB_from_color(c2);
 
-  dmnsn_CIE_Lab Lab = { .L = Lab1.L + Lab2.L,
-                        .a = Lab1.a + Lab2.a,
-                        .b = Lab1.b + Lab2.b };
+  dmnsn_sRGB sRGB = {
+    .R = sRGB1.R + sRGB2.R,
+    .G = sRGB1.G + sRGB2.G,
+    .B = sRGB1.B + sRGB2.B
+  };
 
-  dmnsn_color ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
+  dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
+
   /* Weighted average of transparencies by intensity */
-  if (Lab.L) {
-    ret.filter = (Lab1.L*color1.filter + Lab2.L*color2.filter)/Lab.L;
-    ret.trans  = (Lab1.L*color1.trans  + Lab2.L*color2.trans)/Lab.L;
+  dmnsn_CIE_Lab Lab1 = dmnsn_Lab_from_color(ret, dmnsn_whitepoint);
+  dmnsn_CIE_Lab Lab2 = dmnsn_Lab_from_color(ret, dmnsn_whitepoint);
+  if (Lab1.L + Lab2.L) {
+    ret.filter = (Lab1.L*c1.filter + Lab2.L*c2.filter)/(Lab1.L + Lab2.L);
+    ret.trans  = (Lab1.L*c1.trans  + Lab2.L*c2.trans )/(Lab1.L + Lab2.L);
   }
-
   return ret;
 }
 
@@ -363,15 +321,14 @@ dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
 dmnsn_color
 dmnsn_color_mul(double n, dmnsn_color color)
 {
-  dmnsn_CIE_Lab Lab = dmnsn_Lab_from_color(color, dmnsn_whitepoint);
-  Lab.L *= n;
-  Lab.a *= n;
-  Lab.b *= n;
+  dmnsn_sRGB sRGB = dmnsn_sRGB_from_color(color);
+  sRGB.R *= n;
+  sRGB.G *= n;
+  sRGB.B *= n;
 
-  dmnsn_color ret = dmnsn_color_from_Lab(Lab, dmnsn_whitepoint);
+  dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
   ret.filter = color.filter;
   ret.trans  = color.trans;
-
   return ret;
 }
 
@@ -394,26 +351,18 @@ dmnsn_color
 dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color)
 {
   /* We use the sRGB primaries */
-  dmnsn_sRGB sRGB1 = dmnsn_linear_sRGB_from_color(light),
-             sRGB2 = dmnsn_linear_sRGB_from_color(color);
-
-  double R1 = 1.16*dmnsn_Lab_f(sRGB1.R) - 0.16,
-         R2 = 1.16*dmnsn_Lab_f(sRGB2.R) - 0.16,
-         G1 = 1.16*dmnsn_Lab_f(sRGB1.G) - 0.16,
-         G2 = 1.16*dmnsn_Lab_f(sRGB2.G) - 0.16,
-         B1 = 1.16*dmnsn_Lab_f(sRGB1.B) - 0.16,
-         B2 = 1.16*dmnsn_Lab_f(sRGB2.B) - 0.16;
+  dmnsn_sRGB sRGB1 = dmnsn_sRGB_from_color(light);
+  dmnsn_sRGB sRGB2 = dmnsn_sRGB_from_color(color);
 
   dmnsn_sRGB sRGB = {
-    .R = dmnsn_Lab_finv((R1*R2 + 0.16)/1.16),
-    .G = dmnsn_Lab_finv((G1*G2 + 0.16)/1.16),
-    .B = dmnsn_Lab_finv((B1*B2 + 0.16)/1.16)
+    .R = sRGB1.R*sRGB2.R,
+    .G = sRGB1.G*sRGB2.G,
+    .B = sRGB1.B*sRGB2.B
   };
 
-  dmnsn_color ret = dmnsn_linear_color_from_sRGB(sRGB);
+  dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
   ret.filter = color.filter;
   ret.trans  = color.trans;
-
   return ret;
 }
 
