@@ -1323,6 +1323,7 @@ static dmnsn_astnode
 dmnsn_vector_promote(dmnsn_astnode astnode)
 {
   dmnsn_astnode promoted = dmnsn_copy_astnode(astnode), component;
+  promoted.type = DMNSN_AST_VECTOR;
 
   if (astnode.type == DMNSN_AST_VECTOR) {
     unsigned int i;
