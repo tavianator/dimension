@@ -31,8 +31,6 @@ static int tokenize = 0, parse = 0;
 
 int
 main(int argc, char **argv) {
-  FILE *input_file, *output_file;
-
   /*
    * Parse the command-line options
    */
@@ -59,7 +57,8 @@ main(int argc, char **argv) {
 
     case 'o':
       if (output) {
-        dmnsn_error(DMNSN_SEVERITY_HIGH, "--output specified more than once.");
+        fprintf(stderr, "--output specified more than once!\n");
+        return EXIT_FAILURE;
       } else {
         output = optarg;
       }
@@ -67,14 +66,16 @@ main(int argc, char **argv) {
 
     case 'i':
       if (input) {
-        dmnsn_error(DMNSN_SEVERITY_HIGH, "--input specified more than once.");
+        fprintf(stderr, "--input specified more than once!\n");
+        return EXIT_FAILURE;
       } else {
         input = optarg;
       }
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Error parsing command line.");
+      fprintf(stderr, "Invalid command line option!\n");
+      return EXIT_FAILURE;
     };
   }
 
@@ -82,20 +83,23 @@ main(int argc, char **argv) {
 
   if (optind == argc - 1) {
     if (input) {
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Multiple input files specified.");
+      fprintf(stderr, "Multiple input files specified!\n");
+      return EXIT_FAILURE;
     } else {
       input = argv[optind];
     }
   } else if (optind < argc) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH,
-                "Invalid extranious command line options.");
+    fprintf(stderr, "Invalid extranious command line options!\n");
+    return EXIT_FAILURE;
   }
 
   if (!output && !debugging) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "No output file specified.");
+    fprintf(stderr, "No output file specified!\n");
+    return EXIT_FAILURE;
   }
   if (!input) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "No input file specified.");
+    fprintf(stderr, "No input file specified!\n");
+    return EXIT_FAILURE;
   }
 
   /*
@@ -103,9 +107,10 @@ main(int argc, char **argv) {
    */
 
   /* Open the input file */
-  input_file = fopen(input, "r");
+  FILE *input_file = fopen(input, "r");
   if (!input_file) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't open input file.");
+    fprintf(stderr, "Couldn't open input file!\n");
+    return EXIT_FAILURE;
   }
 
   /* Tokenize the input file */
@@ -116,7 +121,8 @@ main(int argc, char **argv) {
   dmnsn_array *tokens = dmnsn_tokenize(input, input_file);
   if (!tokens) {
     fclose(input_file);
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error tokenizing input file.");
+    fprintf(stderr, "Error tokenizing input file!\n");
+    return EXIT_FAILURE;
   }
   fclose(input_file);
 
@@ -138,7 +144,8 @@ main(int argc, char **argv) {
   dmnsn_array *astree = dmnsn_parse(tokens);
   if (!astree) {
     dmnsn_delete_tokens(tokens);
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error parsing input file.");
+    fprintf(stderr, "Error parsing input file!\n");
+    return EXIT_FAILURE;
   }
   dmnsn_delete_tokens(tokens);
 
@@ -154,13 +161,21 @@ main(int argc, char **argv) {
   dmnsn_scene *scene = dmnsn_realize(astree);
   if (!scene) {
     dmnsn_delete_astree(astree);
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error realizing input file.");
+    fprintf(stderr, "Error realizing input file!\n");
+    return EXIT_FAILURE;
   }
   dmnsn_delete_astree(astree);
 
   /*
    * Now we render the scene
    */
+
+  /* Open the output file */
+  FILE *output_file = fopen(output, "wb");
+  if (!output_file) {
+    fprintf(stderr, "Couldn't open output file!");
+    return EXIT_FAILURE;
+  }
 
   if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
     fprintf(stderr, "WARNING: Couldn't optimize canvas for PNG\n");
@@ -169,20 +184,16 @@ main(int argc, char **argv) {
   dmnsn_progress *render_progress = dmnsn_raytrace_scene_async(scene);
   if (!render_progress) {
     dmnsn_delete_scene(scene);
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error starting render.");
+    fprintf(stderr, "Error starting render!\n");
+    return EXIT_FAILURE;
   }
 
   dmnsn_progressbar("Rendering scene: ", render_progress);
 
   if (dmnsn_finish_progress(render_progress) != 0) {
     dmnsn_delete_scene(scene);
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error rendering scene.");
-  }
-
-  /* Open the output file */
-  output_file = fopen(output, "wb");
-  if (!output_file) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't open output file.");
+    fprintf(stderr, "Error rendering scene!\n");
+    return EXIT_FAILURE;
   }
 
   dmnsn_progress *output_progress
@@ -190,7 +201,8 @@ main(int argc, char **argv) {
   if (!output_progress) {
     fclose(output_file);
     dmnsn_delete_scene(scene);
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't initialize PNG export.");
+    fprintf(stderr, "Couldn't initialize PNG export!\n");
+    return EXIT_FAILURE;
   }
 
   dmnsn_progressbar("Writing PNG:     ", output_progress);
@@ -198,7 +210,7 @@ main(int argc, char **argv) {
   if (dmnsn_finish_progress(output_progress) != 0) {
     fclose(output_file);
     dmnsn_delete_scene(scene);
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't write output.");
+    fprintf(stderr, "Couldn't write output!\n");
   }
   fclose(output_file);
 
