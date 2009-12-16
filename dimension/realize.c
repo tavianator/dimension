@@ -188,6 +188,10 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
       dmnsn_array_get(item.children, 0, &item);
       sky = dmnsn_realize_vector(item);
       break;
+    case DMNSN_AST_DIRECTION:
+      dmnsn_array_get(item.children, 0, &item);
+      direction = dmnsn_realize_vector(item);
+      break;
 
     /* Camera modifiers */
 
