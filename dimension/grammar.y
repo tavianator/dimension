@@ -748,6 +748,8 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 %type <astnode> COLOR
 %type <astnode> COLOR_BODY
 %type <astnode> COLOR_VECTOR
+%type <astnode> COLOR_KEYWORD_GROUP
+%type <astnode> COLOR_KEYWORD_GROUP_INIT
 
 %destructor { dmnsn_delete_astnode($$); } <astnode>
 
@@ -1092,6 +1094,7 @@ COLOR: COLOR_BODY
 ;
 
 COLOR_BODY: COLOR_VECTOR
+          | COLOR_KEYWORD_GROUP
 ;
 
 COLOR_VECTOR: "rgb"   VECTOR { $$ = $2; }
@@ -1106,6 +1109,57 @@ COLOR_VECTOR: "rgb"   VECTOR { $$ = $2; }
             }
             | "rgbft" VECTOR { $$ = $2; }
             | VECTOR
+;
+
+COLOR_KEYWORD_GROUP: COLOR_KEYWORD_GROUP_INIT COLOR_KEYWORD_ITEM
+                   | COLOR_KEYWORD_GROUP      COLOR_KEYWORD_ITEM
+;
+
+COLOR_KEYWORD_GROUP_INIT: /* empty */ {
+                          dmnsn_astnode zero =
+                            dmnsn_new_astnode(DMNSN_AST_INTEGER, @$);
+                          zero.ptr = malloc(sizeof(long));
+                          if (!zero.ptr)
+                            dmnsn_error(DMNSN_SEVERITY_HIGH,
+                                        "Failed to allocate room for integer.");
+                          *(long *)zero.ptr = 0;
+
+                          $$ = dmnsn_eval_vector(zero);
+                          dmnsn_delete_astnode(zero);
+                        }
+;
+
+COLOR_KEYWORD_ITEM: "red" FLOAT {
+                    dmnsn_astnode old;
+                    dmnsn_array_get($<astnode>0.children, 0, &old);
+                    dmnsn_array_set($<astnode>0.children, 0, &$2);
+                    dmnsn_delete_astnode(old);
+                  }
+                  | "green" FLOAT {
+                    dmnsn_astnode old;
+                    dmnsn_array_get($<astnode>0.children, 1, &old);
+                    dmnsn_array_set($<astnode>0.children, 1, &$2);
+                    dmnsn_delete_astnode(old);
+                  }
+                  | "blue" FLOAT {
+                    dmnsn_astnode old;
+                    dmnsn_array_get($<astnode>0.children, 2, &old);
+                    dmnsn_array_set($<astnode>0.children, 2, &$2);
+                    dmnsn_delete_astnode(old);
+                  }
+                  | "filter" FLOAT {
+                    dmnsn_astnode old;
+                    dmnsn_array_get($<astnode>0.children, 3, &old);
+                    dmnsn_array_set($<astnode>0.children, 3, &$2);
+                    dmnsn_delete_astnode(old);
+                  }
+                  | "transmit" FLOAT {
+                    dmnsn_astnode old;
+                    dmnsn_array_get($<astnode>0.children, 4, &old);
+                    dmnsn_array_set($<astnode>0.children, 4, &$2);
+                    dmnsn_delete_astnode(old);
+                  }
+;
 
 %%
 
