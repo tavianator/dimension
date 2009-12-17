@@ -17,10 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+#define _GNU_SOURCE /* For fmemopen */
+
 #include "realize.h"
 #include "parse.h"
 #include "utility.h"
 #include <math.h>
+#include <stdio.h>
 
 static double
 dmnsn_realize_float(dmnsn_astnode astnode)
@@ -616,4 +619,14 @@ dmnsn_realize(FILE *file, const char *filename)
     return NULL;
   }
   return dmnsn_realize_astree(astree);
+}
+
+dmnsn_scene *
+dmnsn_realize_string(const char *str)
+{
+  FILE *file = fmemopen((void *)str, strlen(str), "r");
+  if (!file) {
+    return NULL;
+  }
+  return dmnsn_realize(file, "<string>");
 }

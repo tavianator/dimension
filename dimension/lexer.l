@@ -17,7 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-%option reentrant stack yylineno noyywrap prefix="dmnsn_yy" outfile="lex.yy.c"
+%option reentrant
+%option stack
+%option yylineno
+%option noyywrap
+%option never-interactive
+%option prefix="dmnsn_yy"
+%option outfile="lex.yy.c"
 
 %{
 #include "parse.h"

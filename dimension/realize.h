@@ -23,5 +23,6 @@
 #include "../libdimension/dimension.h"
 
 dmnsn_scene *dmnsn_realize(FILE *file, const char *filename);
+dmnsn_scene *dmnsn_realize_string(const char *str);
 
 #endif /* REALIZE_H */
