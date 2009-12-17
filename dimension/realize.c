@@ -555,13 +555,6 @@ dmnsn_realize(const dmnsn_array *astree)
   /* Background color */
   scene->background = dmnsn_black;
 
-  /* Allocate a canvas */
-  scene->canvas = dmnsn_new_canvas(768, 480);
-  if (!scene->canvas) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
-
   /* Create the default perspective camera */
   scene->camera = dmnsn_new_perspective_camera();
   if (!scene->camera) {

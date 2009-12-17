@@ -59,4 +59,4 @@ if [ "$demo" != "$demo_exp" ]; then
   exit 1
 fi
 
-${top_builddir}/dimension/dimension -o demo.png ${srcdir}/demo.pov
+${top_builddir}/dimension/dimension -w768 -h480 -o demo.png ${srcdir}/demo.pov

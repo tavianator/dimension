@@ -27,6 +27,7 @@
 #include <getopt.h>
 
 static const char *output = NULL, *input = NULL;
+static unsigned int width = 640, height = 480;
 static int tokenize = 0, parse = 0;
 
 int
@@ -38,6 +39,8 @@ main(int argc, char **argv) {
   static struct option long_options[] = {
     { "output",   required_argument, NULL,      'o' },
     { "input",    required_argument, NULL,      'i' },
+    { "width",    required_argument, NULL,      'w' },
+    { "height",   required_argument, NULL,      'h' },
     { "tokenize", no_argument,       &tokenize, 1   },
     { "parse",    no_argument,       &parse,    1   },
     { 0,          0,                 0,         0   }
@@ -45,7 +48,7 @@ main(int argc, char **argv) {
   int opt, opt_index;
 
   while (1) {
-    opt = getopt_long(argc, argv, "o:i:", long_options, &opt_index);
+    opt = getopt_long(argc, argv, "o:i:w:h:", long_options, &opt_index);
 
     if (opt == -1)
       break;
@@ -72,6 +75,27 @@ main(int argc, char **argv) {
         input = optarg;
       }
       break;
+
+    case 'w':
+      {
+        char *endptr;
+        width = strtoul(optarg, &endptr, 10);
+        if (*endptr != '\0' || endptr == optarg) {
+          fprintf(stderr, "Invalid argument to --width!\n");
+          return EXIT_FAILURE;
+        }
+        break;
+      }
+    case 'h':
+      {
+        char *endptr;
+        height = strtoul(optarg, &endptr, 10);
+        if (*endptr != '\0' || endptr == optarg) {
+          fprintf(stderr, "Invalid argument to --height!\n");
+          return EXIT_FAILURE;
+        }
+        break;
+      }
 
     default:
       fprintf(stderr, "Invalid command line option!\n");
@@ -165,6 +189,14 @@ main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
   dmnsn_delete_astree(astree);
+
+  /* Allocate a canvas */
+  scene->canvas = dmnsn_new_canvas(width, height);
+  if (!scene->canvas) {
+    dmnsn_delete_scene(scene);
+    fprintf(stderr, "Couldn't allocate canvas!\n");
+    return EXIT_FAILURE;
+  }
 
   /*
    * Now we render the scene
