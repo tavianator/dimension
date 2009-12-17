@@ -22,6 +22,6 @@
 
 #include "../libdimension/dimension.h"
 
-dmnsn_scene *dmnsn_realize(const dmnsn_array *astree);
+dmnsn_scene *dmnsn_realize(FILE *file, const char *filename);
 
 #endif /* REALIZE_H */

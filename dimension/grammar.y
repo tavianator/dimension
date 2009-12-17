@@ -24,23 +24,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef struct dmnsn_token_iterator {
-  const dmnsn_array *tokens;
-  unsigned int i;
-} dmnsn_token_iterator;
+#define YYSTYPE dmnsn_parse_item
+#define YYLTYPE dmnsn_parse_location
 
-typedef struct dmnsn_location {
-  const char *first_filename, *last_filename;
-  int first_line, last_line;
-  int first_column, last_column;
-} dmnsn_location;
+int dmnsn_yylex(YYSTYPE *lvalp, YYLTYPE *llocp, const char *filename,
+                void *yyscanner);
+void dmnsn_yylex_init(void **scannerp);
+void dmnsn_yyset_in(FILE *file, void *scanner);
+void dmnsn_yylex_destroy(void *scanner);
 
-typedef union YYSTYPE {
-  const char *value;
-  dmnsn_astnode astnode;
-} YYSTYPE;
-
-#define YYLTYPE dmnsn_location
 #define YYLLOC_DEFAULT(Current, Rhs, N)                                 \
   do {                                                                  \
     if (N) {                                                            \
@@ -154,29 +146,9 @@ dmnsn_delete_astnode(dmnsn_astnode astnode)
   free(astnode.ptr);
 }
 
-static int
-yylex(YYSTYPE *lvalp, YYLTYPE *llocp, dmnsn_token_iterator *iterator)
-{
-  if (iterator->i >= dmnsn_array_size(iterator->tokens)) {
-    return 0;
-  } else {
-    dmnsn_token token;
-    dmnsn_array_get(iterator->tokens, iterator->i, &token);
-    ++iterator->i;
-
-    lvalp->value = token.value;
-
-    llocp->first_filename = llocp->last_filename = token.filename;
-    llocp->first_line     = llocp->last_line     = token.line;
-    llocp->first_column   = llocp->last_column   = token.col;
-
-    return token.type;
-  }  
-}
-
 void
-yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
-        const char *str)
+yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
+        dmnsn_array *astree, const char *str)
 {
   dmnsn_diagnostic(locp->first_filename, locp->first_line, locp->first_column,
                    "%s", str);
@@ -192,9 +164,11 @@ yyerror(YYLTYPE *locp, dmnsn_array *astree, dmnsn_token_iterator *iterator,
 
 %expect 0
 
+%parse-param {const char *filename}
+%parse-param {void *yyscanner}
 %parse-param {dmnsn_array *astree}
-%parse-param {dmnsn_token_iterator *iterator}
-%lex-param {dmnsn_token_iterator *iterator}
+%lex-param {const char *filename}
+%lex-param {void *yyscanner}
 
 %token END 0 "end-of-file"
 
@@ -1164,16 +1138,20 @@ COLOR_KEYWORD_ITEM: "red" FLOAT {
 %%
 
 dmnsn_array *
-dmnsn_parse(const dmnsn_array *tokens)
+dmnsn_parse(FILE *file, const char *filename)
 {
+  void *scanner;
   dmnsn_array *astree = dmnsn_new_array(sizeof(dmnsn_astnode));
-  dmnsn_token_iterator iterator = { .tokens = tokens, .i = 0 };
 
-  if (yyparse(astree, &iterator) != 0) {
+  dmnsn_yylex_init(&scanner);
+  dmnsn_yyset_in(file, scanner);
+
+  if (yyparse(filename, scanner, astree) != 0) {
     dmnsn_delete_astree(astree);
     return NULL;
   }
 
+  dmnsn_yylex_destroy(scanner);
   return astree;
 }
 

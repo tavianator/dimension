@@ -79,7 +79,7 @@ struct dmnsn_astnode {
 };
 
 /* The workhorse */
-dmnsn_array *dmnsn_parse(const dmnsn_array *tokens);
+dmnsn_array *dmnsn_parse(FILE *file, const char *filename);
 
 /* Free an abstract syntax tree */
 void dmnsn_delete_astree(dmnsn_array *astree);
@@ -93,5 +93,19 @@ void dmnsn_print_astree_sexpr(FILE *file, const dmnsn_array *astree);
 
 /* Returns a readable name for a token type (ex. DMNSN_T_FLOAT -> float) */
 const char *dmnsn_astnode_string(dmnsn_astnode_type astnode_type);
+
+/* Parser internals */
+
+typedef struct dmnsn_parse_location {
+  const char *first_filename, *last_filename;
+  int first_line, last_line;
+  int first_column, last_column;
+} dmnsn_parse_location;
+
+typedef union dmnsn_parse_item {
+  char *value;
+  dmnsn_astnode astnode;
+} dmnsn_parse_item;
+
 
 #endif /* PARSE_H */

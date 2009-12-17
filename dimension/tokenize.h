@@ -36,10 +36,11 @@ struct dmnsn_token {
   unsigned int line, col;
 };
 
-/* The workhorse */
-dmnsn_array *dmnsn_tokenize(const char *filename, FILE *file);
+/* For debugging */
+dmnsn_array *dmnsn_tokenize(FILE *file, const char *filename);
 
-/* Free an array of tokens - use this rather than dmnsn_delete_array() */
+/* Token destruction */
+void dmnsn_delete_token(dmnsn_token token);
 void dmnsn_delete_tokens(dmnsn_array *tokens);
 
 /* Print an S-expression of a list of tokens to `file' */

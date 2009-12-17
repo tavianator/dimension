@@ -137,58 +137,45 @@ main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  /* Tokenize the input file */
-
-  if (!debugging)
-    printf("Tokenizing input ...\n");
-
-  dmnsn_array *tokens = dmnsn_tokenize(input, input_file);
-  if (!tokens) {
-    fclose(input_file);
-    fprintf(stderr, "Error tokenizing input file!\n");
-    return EXIT_FAILURE;
-  }
-  fclose(input_file);
-
   /* Debugging option - output the list of tokens as an S-expression */
   if (tokenize) {
+    dmnsn_array *tokens = dmnsn_tokenize(input_file, input);
+    if (!tokens) {
+      fclose(input_file);
+      fprintf(stderr, "Error tokenizing input file!\n");
+      return EXIT_FAILURE;
+    }
     dmnsn_print_token_sexpr(stdout, tokens);
+    rewind(input_file);
+    dmnsn_delete_tokens(tokens);
 
     if (!parse) {
-      dmnsn_delete_tokens(tokens);
+      fclose(input_file);
       return EXIT_SUCCESS;
     }
   }
 
-  /* Parse the input */
-
-  if (!debugging)
-    printf("Parsing input    ...\n");
-
-  dmnsn_array *astree = dmnsn_parse(tokens);
-  if (!astree) {
-    dmnsn_delete_tokens(tokens);
-    fprintf(stderr, "Error parsing input file!\n");
-    return EXIT_FAILURE;
-  }
-  dmnsn_delete_tokens(tokens);
-
   /* Debugging option - output the abstract syntax tree as an S-expression */
   if (parse) {
+    dmnsn_array *astree = dmnsn_parse(input_file, input);
+    if (!astree) {
+      fprintf(stderr, "Error parsing input file!\n");
+      return EXIT_FAILURE;
+    }
     dmnsn_print_astree_sexpr(stdout, astree);
     dmnsn_delete_astree(astree);
+
+    fclose(input_file);
     return EXIT_SUCCESS;
   }
 
   /* Realize the input */
-  printf("Generating scene ...\n");
-  dmnsn_scene *scene = dmnsn_realize(astree);
+  printf("Parsing scene   ...\n");
+  dmnsn_scene *scene = dmnsn_realize(input_file, input);
   if (!scene) {
-    dmnsn_delete_astree(astree);
     fprintf(stderr, "Error realizing input file!\n");
     return EXIT_FAILURE;
   }
-  dmnsn_delete_astree(astree);
 
   /* Allocate a canvas */
   scene->canvas = dmnsn_new_canvas(width, height);
@@ -220,7 +207,7 @@ main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  dmnsn_progressbar("Rendering scene: ", render_progress);
+  dmnsn_progressbar("Rendering scene ", render_progress);
 
   if (dmnsn_finish_progress(render_progress) != 0) {
     dmnsn_delete_scene(scene);
@@ -237,7 +224,7 @@ main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  dmnsn_progressbar("Writing PNG:     ", output_progress);
+  dmnsn_progressbar("Writing PNG     ", output_progress);
 
   if (dmnsn_finish_progress(output_progress) != 0) {
     fclose(output_file);

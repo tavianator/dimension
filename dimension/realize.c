@@ -536,8 +536,8 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
   return sphere;
 }
 
-dmnsn_scene *
-dmnsn_realize(const dmnsn_array *astree)
+static dmnsn_scene *
+dmnsn_realize_astree(const dmnsn_array *astree)
 {
   dmnsn_scene *scene = dmnsn_new_scene();
   if (!scene) {
@@ -606,4 +606,14 @@ dmnsn_realize(const dmnsn_array *astree)
   }
 
   return scene;
+}
+
+dmnsn_scene *
+dmnsn_realize(FILE *file, const char *filename)
+{
+  dmnsn_array *astree = dmnsn_parse(file, filename);
+  if (!astree) {
+    return NULL;
+  }
+  return dmnsn_realize_astree(astree);
 }
