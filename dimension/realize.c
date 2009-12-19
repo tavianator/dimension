@@ -628,5 +628,9 @@ dmnsn_realize_string(const char *str)
   if (!file) {
     return NULL;
   }
-  return dmnsn_realize(file, "<string>");
+
+  dmnsn_scene *scene = dmnsn_realize(file, "<string>");
+
+  fclose(file);
+  return scene;
 }
