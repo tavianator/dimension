@@ -27,6 +27,7 @@ BUILT_SOURCES = grammar.h
 dimension_SOURCES = grammar.y                                                  \
                     lexer.l                                                    \
                     main.c                                                     \
+                    parse.c                                                    \
                     parse.h                                                    \
                     progressbar.c                                              \
                     progressbar.h                                              \

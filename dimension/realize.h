@@ -21,8 +21,10 @@
 #define REALIZE_H
 
 #include "../libdimension/dimension.h"
+#include "parse.h"
 
-dmnsn_scene *dmnsn_realize(FILE *file, const char *filename);
-dmnsn_scene *dmnsn_realize_string(const char *str);
+dmnsn_scene *dmnsn_realize(FILE *file, dmnsn_symbol_table *symtable);
+dmnsn_scene *dmnsn_realize_string(const char *str,
+                                  dmnsn_symbol_table *symtable);
 
 #endif /* REALIZE_H */

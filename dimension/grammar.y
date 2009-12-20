@@ -55,30 +55,23 @@ void dmnsn_yylex_destroy(void *scanner);
 /* Create a new astnode, populating filename, line, and col */
 
 static dmnsn_astnode
-dmnsn_copy_astnode(dmnsn_astnode astnode)
-{
-  dmnsn_astnode copy = {
-    .type     = astnode.type,
-    .children = dmnsn_new_array(sizeof(dmnsn_astnode)),
-    .ptr      = NULL,
-    .filename = astnode.filename,
-    .line     = astnode.line,
-    .col      = astnode.col
-  };
-  return copy;
-}
-
-static dmnsn_astnode
 dmnsn_new_astnode(dmnsn_astnode_type type, YYLTYPE lloc)
 {
   dmnsn_astnode astnode = {
     .type     = type,
     .children = dmnsn_new_array(sizeof(dmnsn_astnode)),
     .ptr      = NULL,
+    .refcount = malloc(sizeof(unsigned int)),
     .filename = lloc.first_filename,
     .line     = lloc.first_line,
     .col      = lloc.first_column
   };
+
+  if (!astnode.refcount) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate reference count.");
+  }
+  *astnode.refcount = 1;
+
   return astnode;
 }
 
@@ -138,17 +131,9 @@ dmnsn_new_astnode5(dmnsn_astnode_type type, YYLTYPE lloc,
   return astnode;
 }
 
-/* Delete a single, unused astnode */
-static void
-dmnsn_delete_astnode(dmnsn_astnode astnode)
-{
-  dmnsn_delete_astree(astnode.children);
-  free(astnode.ptr);
-}
-
 void
 yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
-        dmnsn_array *astree, const char *str)
+        dmnsn_astree *astree, dmnsn_symbol_table *symtable, const char *str)
 {
   dmnsn_diagnostic(locp->first_filename, locp->first_line, locp->first_column,
                    "%s", str);
@@ -166,7 +151,8 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 
 %parse-param {const char *filename}
 %parse-param {void *yyscanner}
-%parse-param {dmnsn_array *astree}
+%parse-param {dmnsn_astree *astree}
+%parse-param {dmnsn_symbol_table *symtable}
 %lex-param {const char *filename}
 %lex-param {void *yyscanner}
 
@@ -905,7 +891,7 @@ PIGMENT_TYPE: /* empty */ {
 /* Floats */
 
 FLOAT: FLOAT_EXPR {
-       $$ = dmnsn_eval_scalar($1);
+       $$ = dmnsn_eval_scalar($1, symtable);
        dmnsn_delete_astnode($1);
      }
 ;
@@ -999,6 +985,7 @@ FLOAT_LITERAL: "integer" {
                              "Failed to allocate room for integer.");
 
                *(long *)$$.ptr = strtol($1, NULL, 0);
+               free($1);
              }
              | "float" {
                $$ = dmnsn_new_astnode(DMNSN_AST_FLOAT, @$);
@@ -1007,18 +994,19 @@ FLOAT_LITERAL: "integer" {
                  dmnsn_error(DMNSN_SEVERITY_HIGH,
                              "Failed to allocate room for float.");
 
-                 *(double *)$$.ptr = strtod($1, NULL);
+               *(double *)$$.ptr = strtod($1, NULL);
+               free($1);
              }
 ;
 
 /* Vectors */
 
 VECTOR: VECTOR_EXPR {
-        $$ = dmnsn_eval_vector($1);
+        $$ = dmnsn_eval_vector($1, symtable);
         dmnsn_delete_astnode($1);
       }
       | FLOAT_EXPR {
-        $$ = dmnsn_eval_vector($1);
+        $$ = dmnsn_eval_vector($1, symtable);
         dmnsn_delete_astnode($1);
       }
 ;
@@ -1098,7 +1086,7 @@ COLOR_KEYWORD_GROUP_INIT: /* empty */ {
                                         "Failed to allocate room for integer.");
                           *(long *)zero.ptr = 0;
 
-                          $$ = dmnsn_eval_vector(zero);
+                          $$ = dmnsn_eval_vector(zero, symtable);
                           dmnsn_delete_astnode(zero);
                         }
 ;
@@ -1137,399 +1125,31 @@ COLOR_KEYWORD_ITEM: "red" FLOAT {
 
 %%
 
-dmnsn_array *
-dmnsn_parse(FILE *file, const char *filename)
+dmnsn_astree *
+dmnsn_parse(FILE *file, dmnsn_symbol_table *symtable)
 {
+  const char *filename;
+  dmnsn_astnode *fnode = dmnsn_find_symbol(symtable, "__file__");
+  if (fnode && fnode->type == DMNSN_AST_STRING) {
+    filename = fnode->ptr;
+  } else {
+    filename = "<>";
+    dmnsn_push_symbol(symtable, "__file__", dmnsn_new_ast_string(filename));
+  }
+
   void *scanner;
-  dmnsn_array *astree = dmnsn_new_array(sizeof(dmnsn_astnode));
+  dmnsn_astree *astree = dmnsn_new_array(sizeof(dmnsn_astnode));
 
   dmnsn_yylex_init(&scanner);
   dmnsn_yyset_in(file, scanner);
 
-  if (yyparse(filename, scanner, astree) != 0) {
+  if (yyparse(filename, scanner, astree, symtable) != 0) {
     dmnsn_delete_astree(astree);
     return NULL;
   }
 
   dmnsn_yylex_destroy(scanner);
   return astree;
-}
-
-void
-dmnsn_delete_astree(dmnsn_array *astree)
-{
-  unsigned int i;
-  dmnsn_astnode node;
-
-  if (astree) {
-    for (i = 0; i < dmnsn_array_size(astree); ++i) {
-      dmnsn_array_get(astree, i, &node);
-      dmnsn_delete_astree(node.children);
-      free(node.ptr);
-    }
-    dmnsn_delete_array(astree);
-  }
-}
-
-static dmnsn_astnode
-dmnsn_eval_scalar_unary(dmnsn_astnode astnode)
-{
-  dmnsn_astnode ret = dmnsn_copy_astnode(astnode), rhs;
-  dmnsn_array_get(astnode.children, 0, &rhs);
-  rhs = dmnsn_eval_scalar(rhs);
-
-  if (rhs.type == DMNSN_AST_INTEGER) {
-    long n = *(long *)rhs.ptr;
-    long *res = malloc(sizeof(long));
-    if (!res)
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate room for integer.");
-
-    switch(astnode.type) {
-    case DMNSN_AST_NEGATE:
-      *res = -n;
-      break;
-
-    default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Attempt to evaluate wrong unary operator.");
-    }
-
-    ret.type = DMNSN_AST_INTEGER;
-    ret.ptr  = res;
-  } else if (rhs.type == DMNSN_AST_FLOAT) {
-    double n = *(double *)rhs.ptr;
-    double *res = malloc(sizeof(double));
-    if (!res)
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate room for float.");
-
-    switch(astnode.type) {
-    case DMNSN_AST_NEGATE:
-      *res = -n;
-      break;
-
-    default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Attempt to evaluate wrong unary operator.");
-    }
-
-    ret.type = DMNSN_AST_FLOAT;
-    ret.ptr  = res;
-  } else {
-    dmnsn_error(DMNSN_SEVERITY_HIGH,
-                "Invalid right hand side to unary operator.");
-  }
-
-  dmnsn_delete_astnode(rhs);
-  return ret;
-}
-
-static dmnsn_astnode
-dmnsn_eval_scalar_binary(dmnsn_astnode astnode)
-{
-  dmnsn_astnode ret = dmnsn_copy_astnode(astnode), lhs, rhs;
-  dmnsn_array_get(astnode.children, 0, &lhs);
-  dmnsn_array_get(astnode.children, 1, &rhs);
-  lhs = dmnsn_eval_scalar(lhs);
-  rhs = dmnsn_eval_scalar(rhs);
-
-  if (lhs.type == DMNSN_AST_INTEGER && rhs.type == DMNSN_AST_INTEGER
-      && astnode.type != DMNSN_AST_DIV) {
-    long l, r;
-    l = *(long *)lhs.ptr;
-    r = *(long *)rhs.ptr;
-
-    long *res = malloc(sizeof(long));
-    if (!res)
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate room for integer.");
-
-    switch (astnode.type) {
-    case DMNSN_AST_ADD:
-      *res = l + r;
-      break;
-    case DMNSN_AST_SUB:
-      *res = l - r;
-      break;
-    case DMNSN_AST_MUL:
-      *res = l*r;
-      break;
-
-    default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Attempt to evaluate wrong binary operator.");
-    }
-
-    ret.type = DMNSN_AST_INTEGER;
-    ret.ptr  = res;
-  } else {
-    double l = 0.0, r = 0.0;
-
-    if (lhs.type == DMNSN_AST_INTEGER)
-      l = *(long *)lhs.ptr;
-    else if (lhs.type == DMNSN_AST_FLOAT)
-      l = *(double *)lhs.ptr;
-    else
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Invalid left hand side to binary operator.");
-
-    if (rhs.type == DMNSN_AST_INTEGER)
-      r = *(long *)rhs.ptr;
-    else if (rhs.type == DMNSN_AST_FLOAT)
-      r = *(double *)rhs.ptr;
-    else
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Invalid right hand side to binary operator.");
-
-    double *res = malloc(sizeof(double));
-    if (!res)
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate room for float.");
-
-    switch (astnode.type) {
-    case DMNSN_AST_ADD:
-      *res = l + r;
-      break;
-    case DMNSN_AST_SUB:
-      *res = l - r;
-      break;
-    case DMNSN_AST_MUL:
-      *res = l*r;
-      break;
-    case DMNSN_AST_DIV:
-      *res = l/r;
-      break;
-
-    default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Attempt to evaluate wrong binary operator.");
-    }
-
-    ret.type = DMNSN_AST_FLOAT;
-    ret.ptr  = res;
-  }
-  
-  dmnsn_delete_astnode(lhs);
-  dmnsn_delete_astnode(rhs);
-  return ret;
-}
-
-dmnsn_astnode
-dmnsn_eval_scalar(dmnsn_astnode astnode)
-{
-  dmnsn_astnode ret;
-
-  switch (astnode.type) {
-  case DMNSN_AST_INTEGER:
-    ret = dmnsn_copy_astnode(astnode);
-    ret.ptr = malloc(sizeof(long));
-    if (!ret.ptr)
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate room for integer.");
-
-    memcpy(ret.ptr, astnode.ptr, sizeof(long));
-    return ret;
-
-  case DMNSN_AST_FLOAT:
-    ret = dmnsn_copy_astnode(astnode);
-    ret.ptr = malloc(sizeof(double));
-    if (!ret.ptr)
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate room for float.");
-
-    memcpy(ret.ptr, astnode.ptr, sizeof(double));
-    return ret;
-
-  case DMNSN_AST_NEGATE:
-    return dmnsn_eval_scalar_unary(astnode);
-
-  case DMNSN_AST_ADD:
-  case DMNSN_AST_SUB:
-  case DMNSN_AST_MUL:
-  case DMNSN_AST_DIV:
-    return dmnsn_eval_scalar_binary(astnode);
-
-  default:
-    dmnsn_error(DMNSN_SEVERITY_HIGH,
-                "Given non-arithmetic-expression to evaluate.");
-    return astnode; /* Silence warning */
-  }
-}
-
-static dmnsn_astnode
-dmnsn_vector_promote(dmnsn_astnode astnode)
-{
-  dmnsn_astnode promoted = dmnsn_copy_astnode(astnode), component;
-  promoted.type = DMNSN_AST_VECTOR;
-
-  if (astnode.type == DMNSN_AST_VECTOR) {
-    unsigned int i;
-    for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-      dmnsn_array_get(astnode.children, i, &component);
-      component = dmnsn_eval_scalar(component);
-      dmnsn_array_push(promoted.children, &component);
-    }
-
-    while (dmnsn_array_size(promoted.children) < 5) {
-      component = dmnsn_copy_astnode(component);
-      component.type = DMNSN_AST_INTEGER;
-
-      long *val = malloc(sizeof(long));
-      *val      = 0;
-
-      component.ptr = val;
-      dmnsn_array_push(promoted.children, &component);
-    }
-  } else {
-    component = dmnsn_eval_scalar(astnode);
-    dmnsn_array_push(promoted.children, &component);
-
-    while (dmnsn_array_size(promoted.children) < 5) {
-      component = dmnsn_eval_scalar(component);
-      dmnsn_array_push(promoted.children, &component);
-    }
-  }
-
-  return promoted;
-}
-
-static dmnsn_astnode
-dmnsn_eval_vector_unary(dmnsn_astnode astnode)
-{
-  unsigned int i;
-
-  dmnsn_astnode rhs;
-  dmnsn_array_get(astnode.children, 0, &rhs);
-  rhs = dmnsn_eval_vector(rhs);
-
-  dmnsn_astnode ret = dmnsn_copy_astnode(astnode), temp;
-  ret.type = DMNSN_AST_VECTOR;
-
-  dmnsn_astnode op = dmnsn_copy_astnode(astnode);
-  for (i = 0; i < 5; ++i) {
-    dmnsn_array_get(rhs.children, i, dmnsn_array_at(op.children, 0));
-    temp = dmnsn_eval_scalar_unary(op);
-    dmnsn_array_set(ret.children, i, &temp);
-  }
-
-  dmnsn_delete_array(op.children);
-  dmnsn_delete_astnode(rhs);
-  return ret;
-}
-
-static dmnsn_astnode
-dmnsn_eval_vector_binary(dmnsn_astnode astnode)
-{
-  unsigned int i;
-
-  dmnsn_astnode lhs, rhs;
-  dmnsn_array_get(astnode.children, 0, &lhs);
-  dmnsn_array_get(astnode.children, 1, &rhs);
-  lhs = dmnsn_eval_vector(lhs);
-  rhs = dmnsn_eval_vector(rhs);
-
-  dmnsn_astnode ret = dmnsn_copy_astnode(astnode), temp;
-  ret.type = DMNSN_AST_VECTOR;
-
-  dmnsn_astnode op = dmnsn_copy_astnode(astnode);
-  for (i = 0; i < 5; ++i) {
-    dmnsn_array_get(lhs.children, i, dmnsn_array_at(op.children, 0));
-    dmnsn_array_get(rhs.children, i, dmnsn_array_at(op.children, 1));
-    temp = dmnsn_eval_scalar_binary(op);
-    dmnsn_array_set(ret.children, i, &temp);
-  }
-
-  dmnsn_delete_array(op.children);
-  dmnsn_delete_astnode(lhs);
-  dmnsn_delete_astnode(rhs);
-  return ret;
-}
-
-dmnsn_astnode
-dmnsn_eval_vector(dmnsn_astnode astnode)
-{
-  switch (astnode.type) {
-  case DMNSN_AST_INTEGER:
-  case DMNSN_AST_FLOAT:
-  case DMNSN_AST_VECTOR:
-    return dmnsn_vector_promote(astnode);
-
-  case DMNSN_AST_NEGATE:
-    return dmnsn_eval_vector_unary(astnode);
-
-  case DMNSN_AST_ADD:
-  case DMNSN_AST_SUB:
-  case DMNSN_AST_MUL:
-  case DMNSN_AST_DIV:
-    return dmnsn_eval_vector_binary(astnode);
-
-  default:
-    dmnsn_error(DMNSN_SEVERITY_HIGH,
-                "Given non-arithmetic-expression to evaluate.");
-    return astnode; /* Silence warning */
-  }
-}
-
-static void
-dmnsn_print_astnode(FILE *file, dmnsn_astnode astnode)
-{
-  long ivalue;
-  double dvalue;
-
-  switch (astnode.type) {
-  case DMNSN_AST_INTEGER:
-    ivalue = *(long *)astnode.ptr;
-    fprintf(file, "(%s %ld)", dmnsn_astnode_string(astnode.type), ivalue);
-    break;
-
-  case DMNSN_AST_FLOAT:
-    dvalue = *(double *)astnode.ptr;
-    fprintf(file, "(%s %g)", dmnsn_astnode_string(astnode.type), dvalue);
-    break;
-
-  default:
-    fprintf(file, "%s", dmnsn_astnode_string(astnode.type));
-  }
-}
-
-static void
-dmnsn_print_astree(FILE *file, dmnsn_astnode astnode)
-{
-  unsigned int i;
-  dmnsn_astnode child;
-
-  if (astnode.children && dmnsn_array_size(astnode.children) > 0) {
-    fprintf(file, "(");
-    dmnsn_print_astnode(file, astnode);
-    for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-      dmnsn_array_get(astnode.children, i, &child);
-      fprintf(file, " ");
-      dmnsn_print_astree(file, child);
-    }
-    fprintf(file, ")");
-  } else {
-    dmnsn_print_astnode(file, astnode);
-  }
-}
-
-void
-dmnsn_print_astree_sexpr(FILE *file, const dmnsn_array *astree)
-{
-  dmnsn_astnode astnode;
-  unsigned int i;
-
-  if (dmnsn_array_size(astree) == 0) {
-    fprintf(file, "()");
-  } else {
-    fprintf(file, "(");
-    dmnsn_array_get(astree, 0, &astnode);
-    dmnsn_print_astree(file, astnode);
-
-    for (i = 1; i < dmnsn_array_size(astree); ++i) {
-      fprintf(file, " ");
-      dmnsn_array_get(astree, i, &astnode);
-      dmnsn_print_astree(file, astnode);
-    }
-
-    fprintf(file, ")");
-  }
-
-  fprintf(file, "\n");
 }
 
 const char *
@@ -1604,6 +1224,8 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_SUB, "-");
   dmnsn_astnode_map(DMNSN_AST_MUL, "*");
   dmnsn_astnode_map(DMNSN_AST_DIV, "/");
+
+  dmnsn_astnode_map(DMNSN_AST_STRING, "string");
 
   default:
     fprintf(stderr, "Warning: unrecognised astnode type %d.\n",

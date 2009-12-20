@@ -33,14 +33,13 @@ struct dmnsn_token {
 
   /* File name, and line and column numbers from source code */
   const char *filename;
-  unsigned int line, col;
+  int line, col;
 };
 
 /* For debugging */
 dmnsn_array *dmnsn_tokenize(FILE *file, const char *filename);
 
 /* Token destruction */
-void dmnsn_delete_token(dmnsn_token token);
 void dmnsn_delete_tokens(dmnsn_array *tokens);
 
 /* Print an S-expression of a list of tokens to `file' */

@@ -80,8 +80,6 @@
 #define STRING_TOKEN()                          \
   do {                                          \
     NEW_TOKEN(DMNSN_T_STRING);                  \
-    string_length  = 0;                         \
-    string_extent  = 8;                         \
     lvalp->value    = malloc(string_extent);    \
     lvalp->value[0] = '\0';                     \
     CALCULATE_COLUMN();                         \
@@ -100,7 +98,7 @@
   } while(0)
 
 int token;
-size_t string_length, string_extent;
+size_t string_length = 0, string_extent = 8;
 unsigned long wchar;
 %}
 
@@ -283,7 +281,7 @@ dmnsn_tokenize(FILE *file, const char *filename)
   return tokens;
 }
 
-void
+static void
 dmnsn_delete_token(dmnsn_token token)
 {
   free(token.value);

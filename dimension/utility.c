@@ -22,13 +22,17 @@
 #include <stdio.h>
 
 void
-dmnsn_diagnostic(const char *filename, unsigned int line, unsigned int col,
-                 const char *format, ...)
+dmnsn_diagnostic(const char *filename, int line, int col, const char *format,
+                 ...)
 {
   va_list ap;
   va_start(ap, format);
 
-  fprintf(stderr, "%s:%u:%u: ", filename, line, col);
+  if (line >= 0 && col >= 0) {
+    fprintf(stderr, "%s:%d:%d: ", filename, line, col);
+  } else {
+    fprintf(stderr, "%s: ", filename);
+  }
   vfprintf(stderr, format, ap);
   fprintf(stderr, "\n");
 

@@ -540,7 +540,7 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
 }
 
 static dmnsn_scene *
-dmnsn_realize_astree(const dmnsn_array *astree)
+dmnsn_realize_astree(const dmnsn_astree *astree)
 {
   dmnsn_scene *scene = dmnsn_new_scene();
   if (!scene) {
@@ -612,24 +612,39 @@ dmnsn_realize_astree(const dmnsn_array *astree)
 }
 
 dmnsn_scene *
-dmnsn_realize(FILE *file, const char *filename)
+dmnsn_realize(FILE *file, dmnsn_symbol_table *symtable)
 {
-  dmnsn_array *astree = dmnsn_parse(file, filename);
+  if (!symtable) {
+    symtable = dmnsn_new_symbol_table();
+  }
+
+  dmnsn_astree *astree = dmnsn_parse(file, symtable);
   if (!astree) {
     return NULL;
   }
-  return dmnsn_realize_astree(astree);
+
+  dmnsn_scene *scene = dmnsn_realize_astree(astree);
+
+  dmnsn_delete_astree(astree);
+  return scene;
 }
 
 dmnsn_scene *
-dmnsn_realize_string(const char *str)
+dmnsn_realize_string(const char *str, dmnsn_symbol_table *symtable)
 {
+  if (!symtable) {
+    symtable = dmnsn_new_symbol_table();
+  }
+  if (!dmnsn_find_symbol(symtable, "__file__")) {
+    dmnsn_push_symbol(symtable, "__file__", dmnsn_new_ast_string("<string>"));
+  }
+
   FILE *file = fmemopen((void *)str, strlen(str), "r");
   if (!file) {
     return NULL;
   }
 
-  dmnsn_scene *scene = dmnsn_realize(file, "<string>");
+  dmnsn_scene *scene = dmnsn_realize(file, symtable);
 
   fclose(file);
   return scene;

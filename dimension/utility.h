@@ -18,5 +18,5 @@
  *************************************************************************/
 
 /* Print a parsing diagnostic to stderr */
-void dmnsn_diagnostic(const char *filename, unsigned int line, unsigned int col,
+void dmnsn_diagnostic(const char *filename, int line, int col,
                       const char *format, ...);

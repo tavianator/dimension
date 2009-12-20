@@ -22,6 +22,11 @@
 
 #include "../libdimension/dimension.h"
 
+/*
+ * Abstract syntax tree
+ */
+
+/* Abstract syntax tree node types */
 typedef enum {
   DMNSN_AST_NONE,
 
@@ -60,11 +65,12 @@ typedef enum {
   DMNSN_AST_SUB,
   DMNSN_AST_MUL,
   DMNSN_AST_DIV,
+
+  DMNSN_AST_STRING,
 } dmnsn_astnode_type;
 
-typedef struct dmnsn_astnode dmnsn_astnode;
-
-struct dmnsn_astnode {
+/* Abstract syntax tree node (a dmnsn_array* of these is an AST) */
+typedef struct dmnsn_astnode {
   dmnsn_astnode_type type;
 
   /* Child nodes */
@@ -73,28 +79,61 @@ struct dmnsn_astnode {
   /* Generic data pointer */
   void *ptr;
 
+  /* Reference count */
+  unsigned int *refcount;
+
   /* File name, and line and column numbers from source code */
   const char *filename;
-  unsigned int line, col;
-};
+  int line, col;
+} dmnsn_astnode;
 
-/* The workhorse */
-dmnsn_array *dmnsn_parse(FILE *file, const char *filename);
+typedef dmnsn_array dmnsn_astree;
 
-/* Free an abstract syntax tree */
-void dmnsn_delete_astree(dmnsn_array *astree);
+dmnsn_astnode dmnsn_new_ast_integer(long value);
+dmnsn_astnode dmnsn_new_ast_float(double value);
+dmnsn_astnode dmnsn_new_ast_string(const char *value);
 
-/* Evaluate an arithmetic expression */
-dmnsn_astnode dmnsn_eval_scalar(dmnsn_astnode astnode);
-dmnsn_astnode dmnsn_eval_vector(dmnsn_astnode astnode);
+void dmnsn_delete_astnode(dmnsn_astnode astnode);
+void dmnsn_delete_astree(dmnsn_astree *astree);
 
 /* Print an S-expression of the abstract syntax tree to `file' */
-void dmnsn_print_astree_sexpr(FILE *file, const dmnsn_array *astree);
+void dmnsn_print_astree_sexpr(FILE *file, const dmnsn_astree *astree);
 
-/* Returns a readable name for a token type (ex. DMNSN_T_FLOAT -> float) */
+/* Returns a readable name for an astnode type (ex. DMNSN_AST_FLOAT -> float) */
 const char *dmnsn_astnode_string(dmnsn_astnode_type astnode_type);
 
-/* Parser internals */
+/*
+ * Symbol table
+ */
+
+typedef dmnsn_array dmnsn_symbol_table;
+
+dmnsn_symbol_table *dmnsn_new_symbol_table();
+
+void dmnsn_delete_symbol_table(dmnsn_symbol_table *symtable);
+
+void dmnsn_push_scope(dmnsn_symbol_table *symtable);
+void dmnsn_pop_scope(dmnsn_symbol_table *symtable);
+
+void dmnsn_push_symbol(dmnsn_symbol_table *symtable,
+                       const char *id, dmnsn_astnode value);
+dmnsn_astnode *dmnsn_find_symbol(dmnsn_symbol_table *symtable, const char *id);
+
+/* Evaluate an arithmetic expression */
+dmnsn_astnode dmnsn_eval_scalar(dmnsn_astnode astnode,
+                                dmnsn_symbol_table *symtable);
+dmnsn_astnode dmnsn_eval_vector(dmnsn_astnode astnode,
+                                dmnsn_symbol_table *symtable);
+
+
+/*
+ * The workhorse -- parse a file
+ */
+dmnsn_astree *dmnsn_parse(FILE *file, dmnsn_symbol_table *symtable);
+
+/*
+ * Parser internals
+ */
 
 typedef struct dmnsn_parse_location {
   const char *first_filename, *last_filename;
@@ -106,6 +145,5 @@ typedef union dmnsn_parse_item {
   char *value;
   dmnsn_astnode astnode;
 } dmnsn_parse_item;
-
 
 #endif /* PARSE_H */

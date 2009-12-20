@@ -155,27 +155,39 @@ main(int argc, char **argv) {
     }
   }
 
+  /* Construct the symbol table */
+  dmnsn_symbol_table *symtable = dmnsn_new_symbol_table();
+  dmnsn_push_symbol(symtable, "__file__", dmnsn_new_ast_string(input));
+
   /* Debugging option - output the abstract syntax tree as an S-expression */
   if (parse) {
-    dmnsn_array *astree = dmnsn_parse(input_file, input);
+    dmnsn_astree *astree = dmnsn_parse(input_file, symtable);
     if (!astree) {
       fprintf(stderr, "Error parsing input file!\n");
+      dmnsn_delete_symbol_table(symtable);
+      fclose(input_file);
       return EXIT_FAILURE;
     }
     dmnsn_print_astree_sexpr(stdout, astree);
     dmnsn_delete_astree(astree);
 
+    dmnsn_delete_symbol_table(symtable);
     fclose(input_file);
     return EXIT_SUCCESS;
   }
 
   /* Realize the input */
   printf("Parsing scene   ...\n");
-  dmnsn_scene *scene = dmnsn_realize(input_file, input);
+  dmnsn_scene *scene = dmnsn_realize(input_file, symtable);
   if (!scene) {
     fprintf(stderr, "Error realizing input file!\n");
+    dmnsn_delete_symbol_table(symtable);
+    fclose(input_file);
     return EXIT_FAILURE;
   }
+
+  dmnsn_delete_symbol_table(symtable);
+  fclose(input_file);
 
   /* Allocate a canvas */
   scene->canvas = dmnsn_new_canvas(width, height);
