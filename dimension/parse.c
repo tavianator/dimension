@@ -117,14 +117,19 @@ dmnsn_new_symbol_table()
 }
 
 static void
+dmnsn_delete_symbol(dmnsn_symbol symbol)
+{
+  free(symbol.id);
+  dmnsn_delete_astnode(symbol.value);
+}
+
+static void
 dmnsn_delete_scope(dmnsn_array *scope)
 {
   while (dmnsn_array_size(scope) > 0) {
     dmnsn_symbol symbol;
     dmnsn_array_pop(scope, &symbol);
-
-    free(symbol.id);
-    dmnsn_delete_astnode(symbol.value);
+    dmnsn_delete_symbol(symbol);
   }
   dmnsn_delete_array(scope);
 }
@@ -154,16 +159,70 @@ void dmnsn_pop_scope(dmnsn_symbol_table *symtable)
   dmnsn_delete_scope(scope);
 }
 
-void dmnsn_push_symbol(dmnsn_symbol_table *symtable,
-                       const char *id, dmnsn_astnode value)
+void dmnsn_local_symbol(dmnsn_symbol_table *symtable,
+                        const char *id, dmnsn_astnode value)
 {
   ++*value.refcount;
 
   dmnsn_array *scope;
   dmnsn_array_get(symtable, dmnsn_array_size(symtable) - 1, &scope);
 
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(scope); ++i) {
+    dmnsn_symbol *symbol = dmnsn_array_at(scope,
+                                          dmnsn_array_size(scope) - i - 1);
+
+    if (strcmp(id, symbol->id) == 0) {
+      dmnsn_delete_astnode(symbol->value);
+      symbol->value = value;
+      return;
+    }
+  }
+
   dmnsn_symbol symbol = { .id = strdup(id), .value = value };
   dmnsn_array_push(scope, &symbol);
+}
+
+void
+dmnsn_declare_symbol(dmnsn_symbol_table *symtable,
+                     const char *id, dmnsn_astnode value)
+{
+  ++*value.refcount;
+
+  dmnsn_astnode *node = dmnsn_find_symbol(symtable, id);
+  if (node) {
+    /* Always update the most local symbol */
+    dmnsn_delete_astnode(*node);
+    *node = value;
+  } else {
+    /* but create new ones at the least local scope */
+    dmnsn_array *scope;
+    dmnsn_array_get(symtable, 0, &scope);
+
+    dmnsn_symbol symbol = { .id = strdup(id), .value = value };
+    dmnsn_array_push(scope, &symbol);
+  }
+}
+
+void
+dmnsn_undef_symbol(dmnsn_symbol_table *symtable, const char *id)
+{
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(symtable); ++i) {
+    dmnsn_array *scope;
+    dmnsn_array_get(symtable, dmnsn_array_size(symtable) - i - 1, &scope);
+
+    unsigned int j;
+    for (j = 0; j < dmnsn_array_size(scope); ++j) {
+      dmnsn_symbol *symbol = dmnsn_array_at(scope,
+                                            dmnsn_array_size(scope) - j - 1);
+
+      if (strcmp(id, symbol->id) == 0) {
+        dmnsn_array_remove(scope, j);
+        return;
+      }
+    }
+  }
 }
 
 dmnsn_astnode *
@@ -175,7 +234,7 @@ dmnsn_find_symbol(dmnsn_symbol_table *symtable, const char *id)
     dmnsn_array_get(symtable, dmnsn_array_size(symtable) - i - 1, &scope);
 
     unsigned int j;
-    for (j = 0; j < dmnsn_array_size(symtable); ++j) {
+    for (j = 0; j < dmnsn_array_size(scope); ++j) {
       dmnsn_symbol *symbol = dmnsn_array_at(scope,
                                             dmnsn_array_size(scope) - j - 1);
 

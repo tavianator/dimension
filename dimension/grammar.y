@@ -1134,7 +1134,7 @@ dmnsn_parse(FILE *file, dmnsn_symbol_table *symtable)
     filename = fnode->ptr;
   } else {
     filename = "<>";
-    dmnsn_push_symbol(symtable, "__file__", dmnsn_new_ast_string(filename));
+    dmnsn_declare_symbol(symtable, "__file__", dmnsn_new_ast_string(filename));
   }
 
   void *scanner;

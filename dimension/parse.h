@@ -115,8 +115,12 @@ void dmnsn_delete_symbol_table(dmnsn_symbol_table *symtable);
 void dmnsn_push_scope(dmnsn_symbol_table *symtable);
 void dmnsn_pop_scope(dmnsn_symbol_table *symtable);
 
-void dmnsn_push_symbol(dmnsn_symbol_table *symtable,
-                       const char *id, dmnsn_astnode value);
+void dmnsn_local_symbol(dmnsn_symbol_table *symtable,
+                        const char *id, dmnsn_astnode value);
+void dmnsn_declare_symbol(dmnsn_symbol_table *symtable,
+                          const char *id, dmnsn_astnode value);
+void dmnsn_undef_symbol(dmnsn_symbol_table *symtable, const char *id);
+
 dmnsn_astnode *dmnsn_find_symbol(dmnsn_symbol_table *symtable, const char *id);
 
 /* Evaluate an arithmetic expression */

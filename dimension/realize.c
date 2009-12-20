@@ -636,7 +636,8 @@ dmnsn_realize_string(const char *str, dmnsn_symbol_table *symtable)
     symtable = dmnsn_new_symbol_table();
   }
   if (!dmnsn_find_symbol(symtable, "__file__")) {
-    dmnsn_push_symbol(symtable, "__file__", dmnsn_new_ast_string("<string>"));
+    dmnsn_declare_symbol(symtable, "__file__",
+                         dmnsn_new_ast_string("<string>"));
   }
 
   FILE *file = fmemopen((void *)str, strlen(str), "r");
