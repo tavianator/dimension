@@ -29,6 +29,6 @@
 sphere {
   Center, R
   pigment {
-    color Color
+    color Color green 1
   }
 }

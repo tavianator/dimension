@@ -35,5 +35,6 @@ dimension_SOURCES = grammar.y                                                  \
                     realize.h                                                  \
                     tokenize.h                                                 \
                     utility.c                                                  \
-                    utility.h
+                    utility.h                                                  \
+                    y.tab.h
 dimension_LDADD   = $(top_builddir)/libdimension/libdimension.la
