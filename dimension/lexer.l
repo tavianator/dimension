@@ -194,8 +194,10 @@ unsigned long wchar;
 "z"             RETURN_TOKEN(DMNSN_T_Z);
 
 (?# Directives)
-"#include"      RETURN_TOKEN(DMNSN_T_INCLUDE);
 "#declare"      RETURN_TOKEN(DMNSN_T_DECLARE);
+"#include"      RETURN_TOKEN(DMNSN_T_INCLUDE);
+"#local"        RETURN_TOKEN(DMNSN_T_LOCAL);
+"#undef"        RETURN_TOKEN(DMNSN_T_UNDEF);
 
 (?# Identifiers)
 [[:alpha:]][[:alnum:]_]*        RETURN_VALUE_TOKEN(DMNSN_T_IDENTIFIER);

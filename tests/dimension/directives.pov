@@ -19,6 +19,16 @@
 
 // Test the language directives
 
-#include "punctuation.pov"
+#declare Center = 0;
+#declare R = 1;
+#local Color = rgb <1, 0, 1>;
 
-#declare id
+#declare Unused = -1;
+#undef Unused
+
+sphere {
+  Center, R
+  pigment {
+    color Color
+  }
+}

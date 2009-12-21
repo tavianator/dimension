@@ -19,11 +19,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-directives=$(${top_builddir}/dimension/dimension --tokenize ${srcdir}/directives.pov)
-directives_exp='(#include (string "punctuation.pov") #declare (identifier "id"))';
+directives=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/directives.pov)
+directives_exp="$(echo -n \
+'(#declare (identifier "Center") = (integer "0") ;
+  #declare (identifier "R") = (integer "1") ;
+  #local (identifier "Color") = rgb < (integer "1") , (integer "0") , (integer "1") > ;
+  #declare (identifier "Unused") = - (integer "1") ;
+  #undef (identifier "Unused")
+  sphere {
+    (identifier "Center") , (identifier "R")
+    pigment {
+      color (identifier "Color")
+    }
+  })' \
+| tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
+$(echo -n \
+'((sphere
+    (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
+    (integer 1)
+    (object-modifiers
+      (texture
+        (pigment (vector (integer 1) (integer 0) (integer 1)
+                         (integer 0) (integer 0)))))))' \
+| tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"
 
 if [ "$directives" != "$directives_exp" ]; then
-  echo "directives.pov tokenized as \"$directives\"" >&2
-  echo "                -- expected \"$directives_exp\"" >&2
+  echo "directives.pov parsed as \"$directives\"" >&2
+  echo "             -- expected \"$directives_exp\"" >&2
   exit 1
 fi

@@ -60,11 +60,19 @@ typedef enum {
 
   DMNSN_AST_VECTOR,
 
-  DMNSN_AST_NEGATE,
   DMNSN_AST_ADD,
   DMNSN_AST_SUB,
   DMNSN_AST_MUL,
   DMNSN_AST_DIV,
+
+  DMNSN_AST_NEGATE,
+  DMNSN_AST_DOT_X,
+  DMNSN_AST_DOT_Y,
+  DMNSN_AST_DOT_Z,
+  DMNSN_AST_DOT_T,
+  DMNSN_AST_DOT_TRANSMIT,
+
+  DMNSN_AST_IDENTIFIER,
 
   DMNSN_AST_STRING,
 } dmnsn_astnode_type;
@@ -124,6 +132,7 @@ void dmnsn_undef_symbol(dmnsn_symbol_table *symtable, const char *id);
 dmnsn_astnode *dmnsn_find_symbol(dmnsn_symbol_table *symtable, const char *id);
 
 /* Evaluate an arithmetic expression */
+dmnsn_astnode dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable);
 dmnsn_astnode dmnsn_eval_scalar(dmnsn_astnode astnode,
                                 dmnsn_symbol_table *symtable);
 dmnsn_astnode dmnsn_eval_vector(dmnsn_astnode astnode,

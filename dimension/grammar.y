@@ -147,7 +147,7 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 
 %name-prefix "dmnsn_yy"
 
-%expect 0
+%expect 1
 
 %parse-param {const char *filename}
 %parse-param {void *yyscanner}
@@ -638,14 +638,14 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 %token DMNSN_T_IFDEF
 %token DMNSN_T_IFNDEF
 %token DMNSN_T_INCLUDE    "#include"
-%token DMNSN_T_LOCAL
+%token DMNSN_T_LOCAL      "#local"
 %token DMNSN_T_MACRO
 %token DMNSN_T_RANGE
 %token DMNSN_T_READ
 %token DMNSN_T_RENDER
 %token DMNSN_T_STATISTICS
 %token DMNSN_T_SWITCH
-%token DMNSN_T_UNDEF
+%token DMNSN_T_UNDEF      "#undef"
 %token DMNSN_T_VERSION
 %token DMNSN_T_WARNING
 %token DMNSN_T_WHILE
@@ -659,6 +659,10 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 
 /* Top-level items */
 %type <astnode> SCENE_ITEM
+
+/* Language directives */
+%type <astnode> RVALUE
+%type <astnode> IDENTIFIER
 
 /* Transformations */
 %type <astnode> TRANSFORMATION
@@ -696,13 +700,14 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 
 /* Floats */
 %type <astnode> FLOAT
-%type <astnode> FLOAT_EXPR
 %type <astnode> FLOAT_LITERAL
 
 /* Vectors */
 %type <astnode> VECTOR
-%type <astnode> VECTOR_EXPR
 %type <astnode> VECTOR_LITERAL
+
+/* Generalized arithmetic expressions */
+%type <astnode> ARITH_EXPR
 
 /* Colors */
 %type <astnode> COLOR
@@ -711,18 +716,60 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 %type <astnode> COLOR_KEYWORD_GROUP
 %type <astnode> COLOR_KEYWORD_GROUP_INIT
 
+%destructor { free($$); } <value>
 %destructor { dmnsn_delete_astnode($$); } <astnode>
 
 %%
 
 /* Start symbol */
 
-SCENE: /* empty */ { }
+SCENE: /* empty */
+     | SCENE LANGUAGE_DIRECTIVE
      | SCENE SCENE_ITEM {
        dmnsn_array_push(astree, &$2);
      }
 ;
 
+/* Language directives */
+
+LANGUAGE_DIRECTIVE: DECLARATION
+;
+
+DECLARATION: "#declare" "identifier" "=" RVALUE {
+             dmnsn_declare_symbol(symtable, $2, $4);
+             free($2);
+             dmnsn_delete_astnode($4);
+           }
+           | "#local" "identifier" "=" RVALUE {
+             dmnsn_local_symbol(symtable, $2, $4);
+             free($2);
+             dmnsn_delete_astnode($4);
+           }
+           | "#undef" "identifier" {
+             dmnsn_undef_symbol(symtable, $2);
+             free($2);
+           }
+;
+
+RVALUE: ARITH_EXPR ";" {
+        $$ = dmnsn_eval($1, symtable);
+        dmnsn_delete_astnode($1);
+
+        if ($$.type == DMNSN_AST_NONE) {
+          dmnsn_delete_astnode($$);
+          YYERROR;
+        }
+      }
+      | COLOR ";"
+;
+
+IDENTIFIER: "identifier" {
+            $$ = dmnsn_new_astnode(DMNSN_AST_IDENTIFIER, @$);
+            $$.ptr = $1;
+          }
+;
+
+/* Top-level scene item */
 SCENE_ITEM: ATMOSPHERIC_EFFECT
           | CAMERA
           | OBJECT
@@ -758,14 +805,17 @@ CAMERA_ITEMS: /* empty */ {
               $$ = $1;
               dmnsn_array_push($$.children, &$2);
             }
+;
 
 CAMERA_ITEM: CAMERA_TYPE
            | CAMERA_VECTOR
            | CAMERA_MODIFIER
+;
 
 CAMERA_TYPE: "perspective" {
              $$ = dmnsn_new_astnode(DMNSN_AST_PERSPECTIVE, @$);
            }
+;
 
 CAMERA_VECTOR: "location" VECTOR {
                $$ = dmnsn_new_astnode1(DMNSN_AST_LOCATION, @$, $2);
@@ -782,6 +832,7 @@ CAMERA_VECTOR: "location" VECTOR {
              | "direction" VECTOR {
                $$ = dmnsn_new_astnode1(DMNSN_AST_DIRECTION, @$, $2);
              }
+;
 
 CAMERA_MODIFIER: "angle" FLOAT {
                  $$ = dmnsn_new_astnode1(DMNSN_AST_ANGLE, @$, $2);
@@ -790,6 +841,7 @@ CAMERA_MODIFIER: "angle" FLOAT {
                  $$ = dmnsn_new_astnode1(DMNSN_AST_LOOK_AT, @$, $2);
                }
                | TRANSFORMATION
+;
 
 /* Atmospheric effects */
 
@@ -890,91 +942,15 @@ PIGMENT_TYPE: /* empty */ {
 
 /* Floats */
 
-FLOAT: FLOAT_EXPR {
+FLOAT: ARITH_EXPR {
        $$ = dmnsn_eval_scalar($1, symtable);
        dmnsn_delete_astnode($1);
+
+       if ($$.type == DMNSN_AST_NONE) {
+         dmnsn_delete_astnode($$);
+         YYERROR;
+       }
      }
-;
-
-FLOAT_EXPR: FLOAT_LITERAL
-          | FLOAT_EXPR "+" FLOAT_EXPR {
-            $$ = dmnsn_new_astnode2(DMNSN_AST_ADD, @$, $1, $3);
-          }
-          | FLOAT_EXPR "-" FLOAT_EXPR {
-            $$ = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
-          }
-          | FLOAT_EXPR "*" FLOAT_EXPR {
-            $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
-          }
-          | FLOAT_EXPR "/" FLOAT_EXPR {
-            $$ = dmnsn_new_astnode2(DMNSN_AST_DIV, @$, $1, $3);
-          }
-          | "+" FLOAT_EXPR %prec DMNSN_T_NEGATE { $$ = $2; }
-          | "-" FLOAT_EXPR %prec DMNSN_T_NEGATE {
-            $$ = dmnsn_new_astnode1(DMNSN_AST_NEGATE, @$, $2);
-          }
-
-          | VECTOR_EXPR "." "x" {
-            dmnsn_array_get($1.children, 0, &$$);
-            dmnsn_array_remove($1.children, 0);
-            dmnsn_delete_astnode($1);
-          }
-          | VECTOR_EXPR "." "u" {
-            dmnsn_array_get($1.children, 0, &$$);
-            dmnsn_array_remove($1.children, 0);
-            dmnsn_delete_astnode($1);
-          }
-          | VECTOR_EXPR "." "red" {
-            dmnsn_array_get($1.children, 0, &$$);
-            dmnsn_array_remove($1.children, 0);
-            dmnsn_delete_astnode($1);
-          }
-
-          | VECTOR_EXPR "." "y" {
-            dmnsn_array_get($1.children, 1, &$$);
-            dmnsn_array_remove($1.children, 1);
-            dmnsn_delete_astnode($1);
-          }
-          | VECTOR_EXPR "." "v" {
-            dmnsn_array_get($1.children, 1, &$$);
-            dmnsn_array_remove($1.children, 1);
-            dmnsn_delete_astnode($1);
-          }
-          | VECTOR_EXPR "." "green" {
-            dmnsn_array_get($1.children, 1, &$$);
-            dmnsn_array_remove($1.children, 1);
-            dmnsn_delete_astnode($1);
-          }
-
-          | VECTOR_EXPR "." "z" {
-            dmnsn_array_get($1.children, 2, &$$);
-            dmnsn_array_remove($1.children, 2);
-            dmnsn_delete_astnode($1);
-          }
-          | VECTOR_EXPR "." "blue" {
-            dmnsn_array_get($1.children, 2, &$$);
-            dmnsn_array_remove($1.children, 2);
-            dmnsn_delete_astnode($1);
-          }
-
-          | VECTOR_EXPR "." "t" {
-            dmnsn_array_get($1.children, 3, &$$);
-            dmnsn_array_remove($1.children, 3);
-            dmnsn_delete_astnode($1);
-          }
-          | VECTOR_EXPR "." "filter" {
-            dmnsn_array_get($1.children, 3, &$$);
-            dmnsn_array_remove($1.children, 3);
-            dmnsn_delete_astnode($1);
-          }
-
-          | VECTOR_EXPR "." "transmit" {
-            dmnsn_array_get($1.children, 4, &$$);
-            dmnsn_array_remove($1.children, 4);
-            dmnsn_delete_astnode($1);
-          }
-
-          | "(" FLOAT_EXPR ")" { $$ = $2; }
 ;
 
 FLOAT_LITERAL: "integer" {
@@ -1001,55 +977,92 @@ FLOAT_LITERAL: "integer" {
 
 /* Vectors */
 
-VECTOR: VECTOR_EXPR {
+VECTOR: ARITH_EXPR {
         $$ = dmnsn_eval_vector($1, symtable);
         dmnsn_delete_astnode($1);
-      }
-      | FLOAT_EXPR {
-        $$ = dmnsn_eval_vector($1, symtable);
-        dmnsn_delete_astnode($1);
+
+        if ($$.type == DMNSN_AST_NONE) {
+          dmnsn_delete_astnode($$);
+          YYERROR;
+        }
       }
 ;
 
-VECTOR_EXPR: VECTOR_LITERAL
-           | VECTOR_EXPR "+" VECTOR_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_ADD, @$, $1, $3);
-           }
-           | VECTOR_EXPR "-" VECTOR_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
-           }
-           | VECTOR_EXPR "*" FLOAT_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
-           }
-           | FLOAT_EXPR "*" VECTOR_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
-           }
-           | VECTOR_EXPR "/" FLOAT_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_DIV, @$, $1, $3);
-           }
-           | "+" VECTOR_EXPR %prec DMNSN_T_NEGATE { $$ = $2; }
-           | "-" VECTOR_EXPR %prec DMNSN_T_NEGATE {
-             $$ = dmnsn_new_astnode1(DMNSN_AST_NEGATE, @$, $2);
-           }
-           | "(" VECTOR_EXPR ")" { $$ = $2; }
-;
-
-VECTOR_LITERAL: "<" FLOAT_EXPR "," FLOAT_EXPR ">" {
+VECTOR_LITERAL: "<" ARITH_EXPR "," ARITH_EXPR ">" {
                 $$ = dmnsn_new_astnode2(DMNSN_AST_VECTOR, @$, $2, $4);
               }
-              |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ">" {
+              |  "<" ARITH_EXPR "," ARITH_EXPR "," ARITH_EXPR ">" {
                 $$ = dmnsn_new_astnode3(DMNSN_AST_VECTOR, @$, $2, $4, $6);
               }
-              |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ","
-                     FLOAT_EXPR ">" {
+              |  "<" ARITH_EXPR "," ARITH_EXPR "," ARITH_EXPR ","
+                     ARITH_EXPR ">" {
                 $$ = dmnsn_new_astnode4(DMNSN_AST_VECTOR, @$, $2, $4, $6, $8);
               }
-              |  "<" FLOAT_EXPR "," FLOAT_EXPR "," FLOAT_EXPR ","
-                     FLOAT_EXPR "," FLOAT_EXPR ">" {
+              |  "<" ARITH_EXPR "," ARITH_EXPR "," ARITH_EXPR ","
+                     ARITH_EXPR "," ARITH_EXPR ">" {
                 $$ = dmnsn_new_astnode5(DMNSN_AST_VECTOR, @$,
                                         $2, $4, $6, $8, $10);
               }
 ;
+
+/* Generalized arithmetic expressions */
+
+ARITH_EXPR: FLOAT_LITERAL
+          | VECTOR_LITERAL
+          | ARITH_EXPR "+" ARITH_EXPR {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_ADD, @$, $1, $3);
+          }
+          | ARITH_EXPR "-" ARITH_EXPR {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_SUB, @$, $1, $3);
+          }
+          | ARITH_EXPR "*" ARITH_EXPR {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $1, $3);
+          }
+          | ARITH_EXPR "/" ARITH_EXPR {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_DIV, @$, $1, $3);
+          }
+          | "+" ARITH_EXPR %prec DMNSN_T_NEGATE { $$ = $2; }
+          | "-" ARITH_EXPR %prec DMNSN_T_NEGATE {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_NEGATE, @$, $2);
+          }
+          | ARITH_EXPR "." "x" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_X, @$, $1);
+          }
+          | ARITH_EXPR "." "u" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_X, @$, $1);
+          }
+          | ARITH_EXPR "." "red" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_X, @$, $1);
+          }
+          | ARITH_EXPR "." "y" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_Y, @$, $1);
+          }
+          | ARITH_EXPR "." "v" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_Y, @$, $1);
+          }
+          | ARITH_EXPR "." "green" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_Y, @$, $1);
+          }
+          | ARITH_EXPR "." "z" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_Z, @$, $1);
+          }
+          | ARITH_EXPR "." "blue" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_Z, @$, $1);
+          }
+          | ARITH_EXPR "." "t" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_T, @$, $1);
+          }
+          | ARITH_EXPR "." "filter" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_T, @$, $1);
+          }
+          | ARITH_EXPR "." "transmit" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_TRANSMIT, @$, $1);
+          }
+          | "(" ARITH_EXPR ")" { $$ = $2; }
+          | IDENTIFIER
+;
+
+/* Colors */
 
 COLOR: COLOR_BODY
      | "color" COLOR_BODY { $$ = $2; }
@@ -1145,7 +1158,7 @@ dmnsn_parse(FILE *file, dmnsn_symbol_table *symtable)
 
   if (yyparse(filename, scanner, astree, symtable) != 0) {
     dmnsn_delete_astree(astree);
-    return NULL;
+    astree = NULL;
   }
 
   dmnsn_yylex_destroy(scanner);
@@ -1219,11 +1232,19 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
 
   dmnsn_astnode_map(DMNSN_AST_VECTOR, "vector");
 
-  dmnsn_astnode_map(DMNSN_AST_NEGATE, "-");
   dmnsn_astnode_map(DMNSN_AST_ADD, "+");
   dmnsn_astnode_map(DMNSN_AST_SUB, "-");
   dmnsn_astnode_map(DMNSN_AST_MUL, "*");
   dmnsn_astnode_map(DMNSN_AST_DIV, "/");
+
+  dmnsn_astnode_map(DMNSN_AST_NEGATE, "-");
+  dmnsn_astnode_map(DMNSN_AST_DOT_X, ".x");
+  dmnsn_astnode_map(DMNSN_AST_DOT_Y, ".y");
+  dmnsn_astnode_map(DMNSN_AST_DOT_Z, ".z");
+  dmnsn_astnode_map(DMNSN_AST_DOT_T, ".t");
+  dmnsn_astnode_map(DMNSN_AST_DOT_TRANSMIT, ".transmit");
+
+  dmnsn_astnode_map(DMNSN_AST_IDENTIFIER, "identifier");
 
   dmnsn_astnode_map(DMNSN_AST_STRING, "string");
 
