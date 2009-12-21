@@ -39,8 +39,8 @@ $(echo -n \
     (integer 1)
     (object-modifiers
       (texture
-        (pigment (vector (integer 1) (integer 0) (integer 1)
-                         (integer 0) (integer 0)))))))' \
+        (pigment (color (integer 1) (integer 0) (integer 1)
+                        (integer 0) (integer 0)))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"
 
 if [ "$directives" != "$directives_exp" ]; then

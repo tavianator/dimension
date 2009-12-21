@@ -31,10 +31,10 @@ demo_exp=$(echo -n \
     (rotate (vector (integer 0) (integer 53) (integer 0)
                     (integer 0) (integer 0))))
   (background
-    (vector (integer 0) (float 0.1) (float 0.2) (float 0.1) (integer 0)))
+    (color (integer 0) (float 0.1) (float 0.2) (float 0.1) (integer 0)))
   (light_source
     (vector (integer -15) (integer 20) (integer 10) (integer 0) (integer 0))
-    (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)))
+    (color (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)))
   (box
     (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
     (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
@@ -42,15 +42,15 @@ demo_exp=$(echo -n \
       (rotate (vector (integer 45) (integer 0) (integer 0)
                       (integer 0) (integer 0)))
       (texture
-        (pigment (vector (integer 0) (integer 0) (integer 1)
-                         (float 0.25) (float 0.25))))))
+        (pigment (color (integer 0) (integer 0) (integer 1)
+                        (float 0.25) (float 0.25))))))
   (sphere
     (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
     (float 1.25)
     (object-modifiers
       (texture
-        (pigment (vector (integer 0) (integer 1) (integer 0)
-                         (integer 0) (integer 0)))))))' \
+        (pigment (color (integer 0) (integer 1) (integer 0)
+                        (integer 0) (integer 0)))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 
 if [ "$demo" != "$demo_exp" ]; then

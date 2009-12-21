@@ -75,6 +75,55 @@ dmnsn_new_astnode(dmnsn_astnode_type type, YYLTYPE lloc)
   return astnode;
 }
 
+/* Semi-shallow copy */
+static dmnsn_astnode
+dmnsn_copy_astnode(dmnsn_astnode astnode)
+{
+  dmnsn_astnode copy = {
+    .type     = astnode.type,
+    .children = dmnsn_new_array(sizeof(dmnsn_astnode)),
+    .ptr      = NULL,
+    .refcount = malloc(sizeof(unsigned int)),
+    .filename = astnode.filename,
+    .line     = astnode.line,
+    .col      = astnode.col
+  };
+
+  if (!copy.refcount) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate reference count.");
+  }
+  *copy.refcount = 1;
+
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    dmnsn_astnode n;
+    dmnsn_array_get(astnode.children, i, &n);
+    ++*n.refcount;
+    dmnsn_array_push(copy.children, &n);
+  }
+
+  switch (astnode.type) {
+  case DMNSN_AST_INTEGER:
+    copy.ptr = malloc(sizeof(long));
+    memcpy(copy.ptr, astnode.ptr, sizeof(long));
+    break;
+
+  case DMNSN_AST_FLOAT:
+    copy.ptr = malloc(sizeof(double));
+    memcpy(copy.ptr, astnode.ptr, sizeof(double));
+    break;
+
+  case DMNSN_AST_STRING:
+    copy.ptr = strdup(astnode.ptr);
+    break;
+
+  default:
+    break;
+  }
+
+  return copy;
+}
+
 static dmnsn_astnode
 dmnsn_new_astnode1(dmnsn_astnode_type type, YYLTYPE lloc, dmnsn_astnode n1)
 {
@@ -147,7 +196,7 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 
 %name-prefix "dmnsn_yy"
 
-%expect 1
+%expect 18
 
 %parse-param {const char *filename}
 %parse-param {void *yyscanner}
@@ -760,7 +809,7 @@ RVALUE: ARITH_EXPR ";" {
           YYERROR;
         }
       }
-      | COLOR ";"
+      | COLOR ";" 
 ;
 
 IDENTIFIER: "identifier" {
@@ -1064,8 +1113,14 @@ ARITH_EXPR: FLOAT_LITERAL
 
 /* Colors */
 
-COLOR: COLOR_BODY
-     | "color" COLOR_BODY { $$ = $2; }
+COLOR: COLOR_BODY {
+       $$ = $1;
+       $$.type = DMNSN_AST_COLOR;
+     }
+     | "color" COLOR_BODY {
+       $$ = $2;
+       $$.type = DMNSN_AST_COLOR;
+     }
 ;
 
 COLOR_BODY: COLOR_VECTOR
@@ -1083,7 +1138,6 @@ COLOR_VECTOR: "rgb"   VECTOR { $$ = $2; }
               dmnsn_array_set($$.children, 3, &temp);
             }
             | "rgbft" VECTOR { $$ = $2; }
-            | VECTOR
 ;
 
 COLOR_KEYWORD_GROUP: COLOR_KEYWORD_GROUP_INIT COLOR_KEYWORD_ITEM
@@ -1104,7 +1158,43 @@ COLOR_KEYWORD_GROUP_INIT: /* empty */ {
                         }
 ;
 
-COLOR_KEYWORD_ITEM: "red" FLOAT {
+COLOR_KEYWORD_ITEM: ARITH_EXPR {
+                    if ($1.type == DMNSN_AST_IDENTIFIER) {
+                      dmnsn_astnode *symbol = dmnsn_find_symbol(symtable,
+                                                                $1.ptr);
+                      if (!symbol) {
+                        dmnsn_diagnostic(@1.first_filename, @1.first_line,
+                                         @1.first_column,
+                                         "unbound identifier '%s'", $1);
+                        dmnsn_delete_astnode($1);
+                        YYERROR;
+                      } else if (symbol->type != DMNSN_AST_VECTOR
+                                 && symbol->type != DMNSN_AST_COLOR) {
+                        dmnsn_astnode eval = dmnsn_eval_vector(*symbol,
+                                                               symtable);
+                        if (eval.type == DMNSN_AST_NONE) {
+                          dmnsn_diagnostic(@1.first_filename, @1.first_line,
+                                           @1.first_column,
+                                           "expected color; found '%s'",
+                                           dmnsn_astnode_string(symbol->type));
+                          dmnsn_delete_astnode($1);
+                          YYERROR;
+                        }
+
+                        $<astnode>0 = dmnsn_copy_astnode(eval);
+                        dmnsn_delete_astnode(eval);
+                      } else {
+                        $<astnode>0 = dmnsn_copy_astnode(*symbol);
+                      }
+                    } else {
+                      dmnsn_astnode eval = dmnsn_eval_vector($1, symtable);
+                      $<astnode>0 = dmnsn_copy_astnode(eval);
+                      dmnsn_delete_astnode(eval);
+                    }
+
+                    dmnsn_delete_astnode($1);
+                  }
+                  | "red" FLOAT {
                     dmnsn_astnode old;
                     dmnsn_array_get($<astnode>0.children, 0, &old);
                     dmnsn_array_set($<astnode>0.children, 0, &$2);
@@ -1243,6 +1333,8 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_DOT_Z, ".z");
   dmnsn_astnode_map(DMNSN_AST_DOT_T, ".t");
   dmnsn_astnode_map(DMNSN_AST_DOT_TRANSMIT, ".transmit");
+
+  dmnsn_astnode_map(DMNSN_AST_COLOR, "color");
 
   dmnsn_astnode_map(DMNSN_AST_IDENTIFIER, "identifier");
 
