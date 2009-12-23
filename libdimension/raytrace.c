@@ -359,8 +359,8 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
 
   /* The illuminated color */
   dmnsn_color illum = dmnsn_black;
-  if (finish)
-    illum = dmnsn_color_mul(finish->ambient, color);
+  if (finish && finish->ambient_fn)
+    illum = (*finish->ambient_fn)(finish, color);
 
   dmnsn_vector x0 = dmnsn_line_point(intersection->ray, intersection->t);
 
@@ -375,7 +375,9 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
     if (dmnsn_raytrace_light_ray(intersection, scene, kD_splay_tree, light,
                                  &light_color))
     {
-      if (scene->quality >= DMNSN_RENDER_FINISH && finish) {
+      if (scene->quality >= DMNSN_RENDER_FINISH
+          && finish && finish->finish_fn)
+      {
         dmnsn_vector ray = dmnsn_vector_normalize(
           dmnsn_vector_sub(light->x0, x0)
         );

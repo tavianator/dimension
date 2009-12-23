@@ -25,8 +25,13 @@
 #ifndef DIMENSION_FINISHES_H
 #define DIMENSION_FINISHES_H
 
-/* A phong finish */
-dmnsn_finish *dmnsn_new_phong_finish(double diffuse, double specular,
-                                     double exp);
+/* Add two finishes */
+dmnsn_finish *dmnsn_new_finish_combination(dmnsn_finish *f1, dmnsn_finish *f2);
+
+dmnsn_finish *dmnsn_new_ambient_finish(dmnsn_color ambient);
+dmnsn_finish *dmnsn_new_diffuse_finish(double diffuse);
+
+/* A phong specular highlight */
+dmnsn_finish *dmnsn_new_phong_finish(double specular, double exp);
 
 #endif /* DIMENSION_FINISHES_H */
