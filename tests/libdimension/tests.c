@@ -29,36 +29,16 @@ dmnsn_new_default_scene()
   }
 
   /* Default finish */
-  dmnsn_finish *ambient = dmnsn_new_ambient_finish(
-    dmnsn_color_mul(0.1, dmnsn_white)
-  );
-  dmnsn_finish *diffuse = dmnsn_new_diffuse_finish(0.6);
-  dmnsn_finish *phong   = dmnsn_new_phong_finish(0.2, 40.0);
-  if (!ambient || !diffuse || !phong) {
-    dmnsn_delete_finish(diffuse);
-    dmnsn_delete_finish(ambient);
-    dmnsn_delete_finish(phong);
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
-  dmnsn_finish *comb1 = dmnsn_new_finish_combination(
-    ambient,
-    diffuse
-  );
-  if (!comb1) {
-    dmnsn_delete_finish(diffuse);
-    dmnsn_delete_finish(ambient);
-    dmnsn_delete_finish(phong);
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
   scene->default_texture->finish = dmnsn_new_finish_combination(
-    phong,
-    comb1
+    dmnsn_new_finish_combination(
+      dmnsn_new_ambient_finish(
+        dmnsn_color_mul(0.1, dmnsn_white)
+      ),
+      dmnsn_new_diffuse_finish(0.6)
+    ),
+    dmnsn_new_phong_finish(0.2, 40.0)
   );
   if (!scene->default_texture->finish) {
-    dmnsn_delete_finish(comb1);
-    dmnsn_delete_finish(phong);
     dmnsn_delete_scene(scene);
     return NULL;
   }

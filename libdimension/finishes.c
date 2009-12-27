@@ -78,23 +78,37 @@ dmnsn_finish_combination_free_fn(void *ptr)
 dmnsn_finish *
 dmnsn_new_finish_combination(dmnsn_finish *f1, dmnsn_finish *f2)
 {
-  dmnsn_finish *finish = dmnsn_new_finish();
-  if (finish) {
-    dmnsn_finish **params = malloc(2*sizeof(dmnsn_finish *));
-    if (!params) {
-      dmnsn_delete_finish(finish);
-      return NULL;
+  if (f1 && f2) {
+    dmnsn_finish *finish = dmnsn_new_finish();
+    if (finish) {
+      dmnsn_finish **params = malloc(2*sizeof(dmnsn_finish *));
+      if (!params) {
+        dmnsn_delete_finish(finish);
+        dmnsn_delete_finish(f2);
+        dmnsn_delete_finish(f1);
+        return NULL;
+      }
+
+      params[0] = f1;
+      params[1] = f2;
+
+      finish->ptr        = params;
+      finish->finish_fn  = &dmnsn_finish_combination_fn;
+      finish->ambient_fn = &dmnsn_finish_combination_ambient_fn;
+      finish->free_fn    = &dmnsn_finish_combination_free_fn;
+
+      return finish;
+    } else {
+      dmnsn_delete_finish(f2);
+      dmnsn_delete_finish(f1);
     }
-
-    params[0] = f1;
-    params[1] = f2;
-
-    finish->ptr        = params;
-    finish->finish_fn  = &dmnsn_finish_combination_fn;
-    finish->ambient_fn = &dmnsn_finish_combination_ambient_fn;
-    finish->free_fn    = &dmnsn_finish_combination_free_fn;
+  } else if (f1) {
+    dmnsn_delete_finish(f1);
+  } else if (f2) {
+    dmnsn_delete_finish(f2);
   }
-  return finish;
+
+  return NULL;
 }
 
 /*

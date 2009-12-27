@@ -547,23 +547,13 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
   }
 
   /* Default finish */
-  dmnsn_finish *ambient = dmnsn_new_ambient_finish(
-    dmnsn_color_mul(0.1, dmnsn_white)
-  );
-  dmnsn_finish *diffuse = dmnsn_new_diffuse_finish(0.6);
-  if (!ambient || !diffuse) {
-    dmnsn_delete_finish(diffuse);
-    dmnsn_delete_finish(ambient);
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
   scene->default_texture->finish = dmnsn_new_finish_combination(
-    ambient,
-    diffuse
+    dmnsn_new_ambient_finish(
+      dmnsn_color_mul(0.1, dmnsn_white)
+    ),
+    dmnsn_new_diffuse_finish(0.6)
   );
   if (!scene->default_texture->finish) {
-    dmnsn_delete_finish(diffuse);
-    dmnsn_delete_finish(ambient);
     dmnsn_delete_scene(scene);
     return NULL;
   }
