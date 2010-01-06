@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009 Tavian Barnes <tavianator@gmail.com>               *
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -240,7 +240,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
       /* Set the pixel to the background color */
       color = scene->background;
 
-      if (scene->quality >= DMNSN_RENDER_OBJECTS) {
+      if (scene->quality & DMNSN_RENDER_OBJECTS) {
         /* Get the ray corresponding to the (x,y)'th pixel */
         ray = (*scene->camera->ray_fn)(scene->camera,
                                        ((double)x)/(scene->canvas->x - 1),
@@ -375,7 +375,7 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
     if (dmnsn_raytrace_light_ray(intersection, scene, kD_splay_tree, light,
                                  &light_color))
     {
-      if (scene->quality >= DMNSN_RENDER_FINISH
+      if (scene->quality & DMNSN_RENDER_FINISH
           && finish && finish->finish_fn)
       {
         dmnsn_vector ray = dmnsn_vector_normalize(
@@ -410,7 +410,7 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
   if (intersection) {
     /* Get the pigment of the object */
     dmnsn_color pigment = dmnsn_black;
-    if (scene->quality >= DMNSN_RENDER_PIGMENT) {
+    if (scene->quality & DMNSN_RENDER_PIGMENT) {
       pigment = dmnsn_raytrace_pigment(intersection, scene);
     }
     color = pigment;
@@ -419,7 +419,7 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
 
     /* Account for finishes and shadows */
     dmnsn_color illum = pigment;
-    if (scene->quality >= DMNSN_RENDER_LIGHTS) {
+    if (scene->quality & DMNSN_RENDER_LIGHTS) {
       illum = dmnsn_raytrace_lighting(intersection,
                                       scene,
                                       kD_splay_tree,
@@ -431,7 +431,7 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
 
     /* Account for translucency */
     dmnsn_color trans = illum;
-    if (scene->quality >= DMNSN_RENDER_TRANSLUCENCY
+    if (scene->quality & DMNSN_RENDER_TRANSLUCENCY
         && (pigment.filter || pigment.trans))
     {
       trans = dmnsn_color_mul(1.0 - pigment.filter - pigment.trans, illum);

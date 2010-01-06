@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009 Tavian Barnes <tavianator@gmail.com>               *
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -26,13 +26,13 @@
 #define DIMENSION_SCENE_H
 
 typedef enum {
-  DMNSN_RENDER_NONE,
-  DMNSN_RENDER_OBJECTS,
-  DMNSN_RENDER_PIGMENT,
-  DMNSN_RENDER_LIGHTS,
-  DMNSN_RENDER_FINISH,
-  DMNSN_RENDER_TRANSLUCENCY,
-  DMNSN_RENDER_FULL
+  DMNSN_RENDER_NONE         = 0,
+  DMNSN_RENDER_OBJECTS      = 1 << 0,
+  DMNSN_RENDER_PIGMENT      = 1 << 1,
+  DMNSN_RENDER_LIGHTS       = 1 << 2,
+  DMNSN_RENDER_FINISH       = 1 << 3,
+  DMNSN_RENDER_TRANSLUCENCY = 1 << 4,
+  DMNSN_RENDER_FULL         = ~DMNSN_RENDER_NONE
 } dmnsn_quality;
 
 typedef struct {
