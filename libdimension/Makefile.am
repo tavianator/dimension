@@ -41,27 +41,31 @@ nobase_include_HEADERS = dimension.h                                           \
 lib_LTLIBRARIES = libdimension.la
 
 libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
+                          ambient.c                                            \
                           camera.c                                             \
-                          cameras.c                                            \
                           canvas.c                                             \
                           color.c                                              \
+                          cube.c                                               \
+                          diffuse.c                                            \
                           dimension_impl.h                                     \
                           error.c                                              \
-                          finishes.c                                           \
+                          finish_combination.c                                 \
                           geometry.c                                           \
                           gl.c                                                 \
                           inlines.c                                            \
                           kD_splay_tree.c                                      \
                           kD_splay_tree.h                                      \
                           light.c                                              \
-                          lights.c                                             \
                           object.c                                             \
-                          objects.c                                            \
-                          pigments.c                                           \
+                          perspective.c                                        \
+                          phong.c                                              \
                           png.c                                                \
+                          point_light.c                                        \
                           progress.c                                           \
                           raytrace.c                                           \
                           scene.c                                              \
+                          solid_pigment.c                                      \
+                          sphere.c                                             \
                           texture.c
 libdimension_la_LDFLAGS = -version-info 0:0:0
 libdimension_la_LIBADD  = -lm -lpthread -lpng -lGL
