@@ -218,7 +218,7 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
 /* Main helper for dmnsn_raytrace_scene_impl - shoot a ray */
 static dmnsn_color dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
                                         dmnsn_kD_splay_tree *kD_splay_tree,
-                                        dmnsn_color color);
+                                        dmnsn_color color, unsigned int level);
 
 /* Actually raytrace a scene */
 static int
@@ -246,7 +246,8 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
                                        ((double)x)/(scene->canvas->x - 1),
                                        ((double)y)/(scene->canvas->y - 1));
         /* Shoot a ray */
-        color = dmnsn_raytrace_shoot(ray, scene, kD_splay_tree, color);
+        color = dmnsn_raytrace_shoot(ray, scene, kD_splay_tree, color,
+                                     10);
       }
 
       dmnsn_set_pixel(scene->canvas, x, y, color);
@@ -301,7 +302,8 @@ dmnsn_raytrace_pigment(dmnsn_intersection *intersection, dmnsn_scene *scene)
 static bool
 dmnsn_raytrace_light_ray(dmnsn_intersection *intersection, dmnsn_scene *scene,
                          dmnsn_kD_splay_tree *kD_splay_tree,
-                         const dmnsn_light *light, dmnsn_color *color)
+                         const dmnsn_light *light, dmnsn_color *color,
+                         unsigned int level)
 {
   *color = dmnsn_black;
 
@@ -317,7 +319,8 @@ dmnsn_raytrace_light_ray(dmnsn_intersection *intersection, dmnsn_scene *scene,
   *color = (*light->light_fn)(light, x0);
 
   dmnsn_intersection *shadow_caster;
-  while (1) {
+  while (level) {
+    --level;
     shadow_caster = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
 
     if (!shadow_caster || shadow_caster->t > 1.0) {
@@ -345,7 +348,8 @@ dmnsn_raytrace_light_ray(dmnsn_intersection *intersection, dmnsn_scene *scene,
 
 static dmnsn_color
 dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
-                        dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color color)
+                        dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color color,
+                        unsigned int level)
 {
   /* Use the default texture if given a NULL texture */
   const dmnsn_texture *texture = intersection->texture ? intersection->texture
@@ -373,7 +377,7 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
 
     dmnsn_color light_color;
     if (dmnsn_raytrace_light_ray(intersection, scene, kD_splay_tree, light,
-                                 &light_color))
+                                 &light_color, level))
     {
       if (scene->quality & DMNSN_RENDER_FINISH
           && finish && finish->finish_fn)
@@ -402,8 +406,13 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
 /* Shoot a ray, and calculate the color, using `color' as the background */
 static dmnsn_color
 dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
-                     dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color background)
+                     dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color background,
+                     unsigned int level)
 {
+  if (level <= 0)
+    return dmnsn_black;
+  --level;
+
   dmnsn_intersection *intersection = dmnsn_kD_splay_search(kD_splay_tree, ray);
 
   dmnsn_color color = background;
@@ -423,7 +432,8 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
       illum = dmnsn_raytrace_lighting(intersection,
                                       scene,
                                       kD_splay_tree,
-                                      pigment);
+                                      pigment,
+                                      level);
     }
     color = illum;
     color.filter = 0.0;
@@ -447,7 +457,8 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
       dmnsn_color rec = dmnsn_raytrace_shoot(trans_ray,
                                              scene,
                                              kD_splay_tree,
-                                             background);
+                                             background,
+                                             level);
       dmnsn_color filtered = dmnsn_color_filter(rec, pigment);
       trans = dmnsn_color_add(trans, filtered);
     }
