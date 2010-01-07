@@ -215,10 +215,16 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
  * Raytracing algorithm
  */
 
+typedef struct dmnsn_raytrace_state {
+  const dmnsn_scene *scene;
+  const dmnsn_intersection *intersection;
+  dmnsn_kD_splay_tree *kD_splay_tree;
+} dmnsn_raytrace_state;
+
 /* Main helper for dmnsn_raytrace_scene_impl - shoot a ray */
-static dmnsn_color dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
-                                        dmnsn_kD_splay_tree *kD_splay_tree,
-                                        dmnsn_color color, unsigned int level);
+static dmnsn_color dmnsn_raytrace_shoot(dmnsn_raytrace_state *state,
+                                        dmnsn_line ray, dmnsn_color background,
+                                        unsigned int level);
 
 /* Actually raytrace a scene */
 static int
@@ -226,28 +232,31 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
                           dmnsn_kD_splay_tree *kD_splay_tree,
                           unsigned int index, unsigned int threads)
 {
-  unsigned int x, y;
-  unsigned int width, height;
-  dmnsn_line ray;
-  dmnsn_color color;
+  dmnsn_raytrace_state state = {
+    .scene = scene,
+    .kD_splay_tree = kD_splay_tree
+  };
 
-  width  = scene->canvas->x;
-  height = scene->canvas->y;
+  unsigned int width  = scene->canvas->x;
+  unsigned int height = scene->canvas->y;
 
   /* Iterate through each pixel */
+  unsigned int y;
   for (y = index; y < height; y += threads) {
+    unsigned int x;
     for (x = 0; x < width; ++x) {
       /* Set the pixel to the background color */
-      color = scene->background;
+      dmnsn_color color = scene->background;
 
       if (scene->quality & DMNSN_RENDER_OBJECTS) {
         /* Get the ray corresponding to the (x,y)'th pixel */
-        ray = (*scene->camera->ray_fn)(scene->camera,
-                                       ((double)x)/(scene->canvas->x - 1),
-                                       ((double)y)/(scene->canvas->y - 1));
+        dmnsn_line ray = (*scene->camera->ray_fn)(
+          scene->camera,
+          ((double)x)/(scene->canvas->x - 1),
+          ((double)y)/(scene->canvas->y - 1)
+        );
         /* Shoot a ray */
-        color = dmnsn_raytrace_shoot(ray, scene, kD_splay_tree, color,
-                                     10);
+        color = dmnsn_raytrace_shoot(&state, ray, color, 10);
       }
 
       dmnsn_set_pixel(scene->canvas, x, y, color);
@@ -259,6 +268,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   return 0;
 }
 
+/* Add epsilon*l.n to l.x0, to avoid self-intersections */
 static dmnsn_line
 dmnsn_line_add_epsilon(dmnsn_line l)
 {
@@ -272,25 +282,26 @@ dmnsn_line_add_epsilon(dmnsn_line l)
 }
 
 static dmnsn_color
-dmnsn_raytrace_pigment(dmnsn_intersection *intersection, dmnsn_scene *scene)
+dmnsn_raytrace_pigment(const dmnsn_raytrace_state *state)
 {
   /* Default to black if there's no texture/pigment */
   dmnsn_color color = dmnsn_black;
 
   /* Use the default texture if given a NULL texture */
-  const dmnsn_texture *texture = intersection->texture ? intersection->texture
-                                                       : scene->default_texture;
+  const dmnsn_texture *texture
+    = state->intersection->texture ? state->intersection->texture
+                                   : state->scene->default_texture;
 
   if (texture) {
     /* Use the default pigment if given a NULL pigment */
     const dmnsn_pigment *pigment
       = texture->pigment ? texture->pigment
-                         : scene->default_texture->pigment;
+                         : state->scene->default_texture->pigment;
 
     if (pigment) {
       color = (*pigment->pigment_fn)(
         pigment,
-        dmnsn_line_point(intersection->ray, intersection->t)
+        dmnsn_line_point(state->intersection->ray, state->intersection->t)
       );
     }
   }
@@ -300,35 +311,41 @@ dmnsn_raytrace_pigment(dmnsn_intersection *intersection, dmnsn_scene *scene)
 
 /* Get the color of a light ray at an intersection point */
 static bool
-dmnsn_raytrace_light_ray(dmnsn_intersection *intersection, dmnsn_scene *scene,
-                         dmnsn_kD_splay_tree *kD_splay_tree,
+dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
                          const dmnsn_light *light, dmnsn_color *color,
                          unsigned int level)
 {
   *color = dmnsn_black;
 
-  dmnsn_vector x0 = dmnsn_line_point(intersection->ray, intersection->t);
+  dmnsn_vector x0 = dmnsn_line_point(state->intersection->ray,
+                                     state->intersection->t);
   dmnsn_line shadow_ray = dmnsn_new_line(x0, dmnsn_vector_sub(light->x0, x0));
   /* Add epsilon to avoid hitting ourselves with the shadow ray */
   shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
 
   /* Search for an object in the way of the light source */
-  if (dmnsn_vector_dot(shadow_ray.n, intersection->normal) < 0.0)
+  if (dmnsn_vector_dot(shadow_ray.n, state->intersection->normal) < 0.0)
     return false;
 
   *color = (*light->light_fn)(light, x0);
 
-  dmnsn_intersection *shadow_caster;
   while (level) {
     --level;
-    shadow_caster = dmnsn_kD_splay_search(kD_splay_tree, shadow_ray);
+
+    dmnsn_intersection *shadow_caster = dmnsn_kD_splay_search(
+      state->kD_splay_tree,
+      shadow_ray
+    );
 
     if (!shadow_caster || shadow_caster->t > 1.0) {
       dmnsn_delete_intersection(shadow_caster);
       break;
     }
 
-    dmnsn_color pigment = dmnsn_raytrace_pigment(shadow_caster, scene);
+    dmnsn_raytrace_state shadow_state = *state;
+    shadow_state.intersection = shadow_caster;
+
+    dmnsn_color pigment = dmnsn_raytrace_pigment(&shadow_state);
     if (pigment.filter || pigment.trans) {
       *color = dmnsn_color_filter(*color, pigment);
       shadow_ray.x0 = dmnsn_line_point(shadow_ray, shadow_caster->t);
@@ -347,18 +364,19 @@ dmnsn_raytrace_light_ray(dmnsn_intersection *intersection, dmnsn_scene *scene,
 }
 
 static dmnsn_color
-dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
-                        dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color color,
+dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state, dmnsn_color color,
                         unsigned int level)
 {
   /* Use the default texture if given a NULL texture */
-  const dmnsn_texture *texture = intersection->texture ? intersection->texture
-                                                       : scene->default_texture;
+  const dmnsn_texture *texture
+    = state->intersection->texture ? state->intersection->texture
+                                   : state->scene->default_texture;
 
   const dmnsn_finish *finish = NULL;
   if (texture) {
     /* Use the default finish if given a NULL finish */
-    finish = texture->finish ? texture->finish : scene->default_texture->finish;
+    finish = texture->finish ? texture->finish
+                             : state->scene->default_texture->finish;
   }
 
   /* The illuminated color */
@@ -366,28 +384,28 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
   if (finish && finish->ambient_fn)
     illum = (*finish->ambient_fn)(finish, color);
 
-  dmnsn_vector x0 = dmnsn_line_point(intersection->ray, intersection->t);
+  dmnsn_vector x0 = dmnsn_line_point(state->intersection->ray,
+                                     state->intersection->t);
 
   const dmnsn_light *light;
   unsigned int i;
 
   /* Iterate over each light */
-  for (i = 0; i < dmnsn_array_size(scene->lights); ++i) {
-    dmnsn_array_get(scene->lights, i, &light);
+  for (i = 0; i < dmnsn_array_size(state->scene->lights); ++i) {
+    dmnsn_array_get(state->scene->lights, i, &light);
 
     dmnsn_color light_color;
-    if (dmnsn_raytrace_light_ray(intersection, scene, kD_splay_tree, light,
-                                 &light_color, level))
-    {
-      if (scene->quality & DMNSN_RENDER_FINISH
+    if (dmnsn_raytrace_light_ray(state, light, &light_color, level)) {
+      if (state->scene->quality & DMNSN_RENDER_FINISH
           && finish && finish->finish_fn)
       {
         dmnsn_vector ray = dmnsn_vector_normalize(
           dmnsn_vector_sub(light->x0, x0)
         );
-        dmnsn_vector normal = intersection->normal;
-        dmnsn_vector viewer
-          = dmnsn_vector_normalize(dmnsn_vector_negate(intersection->ray.n));
+        dmnsn_vector normal = state->intersection->normal;
+        dmnsn_vector viewer = dmnsn_vector_normalize(
+          dmnsn_vector_negate(state->intersection->ray.n)
+        );
 
         /* Get this light's color contribution to the object */
         dmnsn_color contrib = (*finish->finish_fn)(finish,
@@ -405,22 +423,24 @@ dmnsn_raytrace_lighting(dmnsn_intersection *intersection, dmnsn_scene *scene,
 
 /* Shoot a ray, and calculate the color, using `color' as the background */
 static dmnsn_color
-dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
-                     dmnsn_kD_splay_tree *kD_splay_tree, dmnsn_color background,
-                     unsigned int level)
+dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray,
+                     dmnsn_color background, unsigned int level)
 {
   if (level <= 0)
     return dmnsn_black;
   --level;
 
-  dmnsn_intersection *intersection = dmnsn_kD_splay_search(kD_splay_tree, ray);
+  dmnsn_intersection *intersection
+    = dmnsn_kD_splay_search(state->kD_splay_tree, ray);
 
   dmnsn_color color = background;
   if (intersection) {
+    state->intersection = intersection;
+
     /* Get the pigment of the object */
     dmnsn_color pigment = dmnsn_black;
-    if (scene->quality & DMNSN_RENDER_PIGMENT) {
-      pigment = dmnsn_raytrace_pigment(intersection, scene);
+    if (state->scene->quality & DMNSN_RENDER_PIGMENT) {
+      pigment = dmnsn_raytrace_pigment(state);
     }
     color = pigment;
     color.filter = 0.0;
@@ -428,12 +448,8 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
 
     /* Account for finishes and shadows */
     dmnsn_color illum = pigment;
-    if (scene->quality & DMNSN_RENDER_LIGHTS) {
-      illum = dmnsn_raytrace_lighting(intersection,
-                                      scene,
-                                      kD_splay_tree,
-                                      pigment,
-                                      level);
+    if (state->scene->quality & DMNSN_RENDER_LIGHTS) {
+      illum = dmnsn_raytrace_lighting(state, pigment, level);
     }
     color = illum;
     color.filter = 0.0;
@@ -441,7 +457,7 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
 
     /* Account for translucency */
     dmnsn_color trans = illum;
-    if (scene->quality & DMNSN_RENDER_TRANSLUCENCY
+    if (state->scene->quality & DMNSN_RENDER_TRANSLUCENCY
         && (pigment.filter || pigment.trans))
     {
       trans = dmnsn_color_mul(1.0 - pigment.filter - pigment.trans, illum);
@@ -454,11 +470,9 @@ dmnsn_raytrace_shoot(dmnsn_line ray, dmnsn_scene *scene,
       );
       trans_ray = dmnsn_line_add_epsilon(trans_ray);
 
-      dmnsn_color rec = dmnsn_raytrace_shoot(trans_ray,
-                                             scene,
-                                             kD_splay_tree,
-                                             background,
-                                             level);
+      dmnsn_raytrace_state recursive_state = *state;
+      dmnsn_color rec
+        = dmnsn_raytrace_shoot(&recursive_state, trans_ray, background, level);
       dmnsn_color filtered = dmnsn_color_filter(rec, pigment);
       trans = dmnsn_color_add(trans, filtered);
     }
