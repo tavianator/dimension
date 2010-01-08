@@ -53,6 +53,9 @@ typedef struct {
 
   /* Rendering quality */
   dmnsn_quality quality;
+
+  /* Recursion limit */
+  unsigned int limit;
 } dmnsn_scene;
 
 /* Create a scene */
