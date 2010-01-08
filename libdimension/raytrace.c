@@ -248,7 +248,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
       /* Set the pixel to the background color */
       dmnsn_color color = scene->background;
 
-      if (scene->quality & DMNSN_RENDER_OBJECTS) {
+      if (scene->quality) {
         /* Get the ray corresponding to the (x,y)'th pixel */
         dmnsn_line ray = (*scene->camera->ray_fn)(
           scene->camera,
