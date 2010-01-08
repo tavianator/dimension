@@ -40,7 +40,12 @@ dmnsn_phong_finish_fn(const dmnsn_finish *finish,
   dmnsn_vector proj = dmnsn_vector_mul(2*dmnsn_vector_dot(ray, normal), normal);
   dmnsn_vector reflected = dmnsn_vector_sub(proj, ray);
 
-  double specular_factor = pow(dmnsn_vector_dot(reflected, viewer), exp);
+  double specular_factor = dmnsn_vector_dot(reflected, viewer);
+  if (specular_factor < 0.0) {
+    return dmnsn_black;
+  }
+
+  specular_factor = pow(specular_factor, exp);
   return dmnsn_color_mul(specular*specular_factor, light);
 }
 
