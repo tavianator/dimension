@@ -63,13 +63,17 @@ typedef dmnsn_color dmnsn_finish_fn(const dmnsn_finish *finish,
                                     dmnsn_vector viewer);
 typedef dmnsn_color dmnsn_ambient_fn(const dmnsn_finish *finish,
                                      dmnsn_color pigment);
+typedef dmnsn_color dmnsn_reflection_fn(const dmnsn_finish *finish,
+                                        dmnsn_color reflect, dmnsn_color color,
+                                        dmnsn_vector ray, dmnsn_vector normal);
 
 /* dmnsn_finish definition */
 struct dmnsn_finish {
   /* Callbacks */
-  dmnsn_finish_fn *finish_fn;
-  dmnsn_ambient_fn *ambient_fn;
-  dmnsn_free_fn *free_fn;
+  dmnsn_finish_fn     *finish_fn;
+  dmnsn_ambient_fn    *ambient_fn;
+  dmnsn_reflection_fn *reflection_fn;
+  dmnsn_free_fn       *free_fn;
 
   /* Generic pointer */
   void *ptr;

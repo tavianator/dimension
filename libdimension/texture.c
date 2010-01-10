@@ -50,9 +50,10 @@ dmnsn_new_finish()
 {
   dmnsn_finish *finish = malloc(sizeof(dmnsn_finish));
   if (finish) {
-    finish->finish_fn  = NULL;
-    finish->ambient_fn = NULL;
-    finish->free_fn    = NULL;
+    finish->finish_fn     = NULL;
+    finish->ambient_fn    = NULL;
+    finish->reflection_fn = NULL;
+    finish->free_fn       = NULL;
   }
   return finish;
 }

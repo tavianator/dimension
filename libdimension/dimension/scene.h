@@ -31,6 +31,7 @@ typedef enum {
   DMNSN_RENDER_LIGHTS       = 1 << 1,
   DMNSN_RENDER_FINISH       = 1 << 2,
   DMNSN_RENDER_TRANSLUCENCY = 1 << 3,
+  DMNSN_RENDER_REFLECTION   = 1 << 4,
   DMNSN_RENDER_FULL         = ~DMNSN_RENDER_NONE
 } dmnsn_quality;
 

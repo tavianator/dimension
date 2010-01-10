@@ -18,24 +18,57 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+#include "dimension.h"
+#include <stdlib.h> /* For malloc */
+#include <math.h>
+
 /*
- * Custom finishes.
+ * Reflective finish
  */
 
-#ifndef DIMENSION_FINISHES_H
-#define DIMENSION_FINISHES_H
+typedef struct dmnsn_reflection_params {
+  dmnsn_color min, max;
+  double falloff;
+} dmnsn_reflection_params;
 
-/* Add two finishes */
-dmnsn_finish *dmnsn_new_finish_combination(dmnsn_finish *f1, dmnsn_finish *f2);
+static dmnsn_color
+dmnsn_reflective_finish_fn(const dmnsn_finish *finish,
+                           dmnsn_color reflect, dmnsn_color color,
+                           dmnsn_vector ray, dmnsn_vector normal)
+{
+  dmnsn_reflection_params *params = finish->ptr;
+  double reflection = pow(dmnsn_vector_dot(ray, normal), params->falloff);
 
-dmnsn_finish *dmnsn_new_ambient_finish(dmnsn_color ambient);
-dmnsn_finish *dmnsn_new_diffuse_finish(double diffuse);
+  return dmnsn_color_illuminate(
+    dmnsn_color_add(
+      dmnsn_color_mul(
+        reflection,
+        dmnsn_color_sub(params->max, params->min)
+      ),
+      params->min
+    ),
+    reflect
+  );
+}
 
-/* A phong specular highlight */
-dmnsn_finish *dmnsn_new_phong_finish(double specular, double exp);
+dmnsn_finish *
+dmnsn_new_reflective_finish(dmnsn_color min, dmnsn_color max, double falloff)
+{
+  dmnsn_finish *finish = dmnsn_new_finish();
+  if (finish) {
+    dmnsn_reflection_params *params = malloc(sizeof(dmnsn_reflection_params));
+    if (!params) {
+      dmnsn_delete_finish(finish);
+      return NULL;
+    }
 
-/* Specular reflection */
-dmnsn_finish *dmnsn_new_reflective_finish(dmnsn_color min, dmnsn_color max,
-                                          double falloff);
+    params->min     = min;
+    params->max     = max;
+    params->falloff = falloff;
 
-#endif /* DIMENSION_FINISHES_H */
+    finish->ptr           = params;
+    finish->reflection_fn = &dmnsn_reflective_finish_fn;
+    finish->free_fn       = &free;
+  }
+  return finish;
+}

@@ -83,6 +83,7 @@ dmnsn_sRGB    dmnsn_sRGB_from_color(dmnsn_color color);
 
 /* Perceptual color manipulation */
 dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
+dmnsn_color dmnsn_color_sub(dmnsn_color color1, dmnsn_color color2);
 dmnsn_color dmnsn_color_mul(double n, dmnsn_color color);
 dmnsn_color dmnsn_color_filter(dmnsn_color color, dmnsn_color filter);
 dmnsn_color dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color);

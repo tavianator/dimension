@@ -63,6 +63,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           point_light.c                                        \
                           progress.c                                           \
                           raytrace.c                                           \
+                          reflective.c                                         \
                           scene.c                                              \
                           solid_pigment.c                                      \
                           sphere.c                                             \

@@ -34,10 +34,10 @@ dmnsn_finish_combination_fn(const dmnsn_finish *finish,
 {
   dmnsn_finish **params = finish->ptr;
   if (params[0]->finish_fn && params[1]->finish_fn) {
-    return dmnsn_color_add((*params[0]->finish_fn)(params[0], light, color, ray,
-                                                   normal, viewer),
-                           (*params[1]->finish_fn)(params[1], light, color, ray,
-                                                   normal, viewer));
+    return dmnsn_color_add(
+      (*params[0]->finish_fn)(params[0], light, color, ray, normal, viewer),
+      (*params[1]->finish_fn)(params[1], light, color, ray, normal, viewer)
+    );
   } else if (params[0]->finish_fn) {
     return (*params[0]->finish_fn)(params[0], light, color, ray,
                                    normal, viewer);
@@ -61,6 +61,26 @@ dmnsn_finish_combination_ambient_fn(const dmnsn_finish *finish,
     return (*params[0]->ambient_fn)(params[0], pigment);
   } else if (params[1]->ambient_fn) {
     return (*params[1]->ambient_fn)(params[1], pigment);
+  } else {
+    return dmnsn_black;
+  }
+}
+
+static dmnsn_color
+dmnsn_finish_combination_reflection_fn(const dmnsn_finish *finish,
+                                       dmnsn_color reflect, dmnsn_color color,
+                                       dmnsn_vector ray, dmnsn_vector normal)
+{
+  dmnsn_finish **params = finish->ptr;
+  if (params[0]->reflection_fn && params[1]->reflection_fn) {
+    return dmnsn_color_add(
+      (*params[0]->reflection_fn)(params[0], reflect, color, ray, normal),
+      (*params[1]->reflection_fn)(params[1], reflect, color, ray, normal)
+    );
+  } else if (params[0]->reflection_fn) {
+    return (*params[0]->reflection_fn)(params[0], reflect, color, ray, normal);
+  } else if (params[1]->reflection_fn) {
+    return (*params[1]->reflection_fn)(params[1], reflect, color, ray, normal);
   } else {
     return dmnsn_black;
   }
@@ -93,8 +113,16 @@ dmnsn_new_finish_combination(dmnsn_finish *f1, dmnsn_finish *f2)
       params[1] = f2;
 
       finish->ptr        = params;
-      finish->finish_fn  = &dmnsn_finish_combination_fn;
-      finish->ambient_fn = &dmnsn_finish_combination_ambient_fn;
+
+      if (f1->finish_fn || f2->finish_fn)
+        finish->finish_fn = &dmnsn_finish_combination_fn;
+
+      if (f1->ambient_fn || f2->ambient_fn)
+        finish->ambient_fn = &dmnsn_finish_combination_ambient_fn;
+
+      if (f1->reflection_fn || f2->reflection_fn)
+        finish->reflection_fn = &dmnsn_finish_combination_reflection_fn;
+
       finish->free_fn    = &dmnsn_finish_combination_free_fn;
 
       return finish;

@@ -292,7 +292,7 @@ dmnsn_sRGB_from_color(dmnsn_color color)
   return sRGB;
 }
 
-/* Add two colors in a perceptually correct manner, using CIE L*a*b*. */
+/* Add two colors */
 dmnsn_color
 dmnsn_color_add(dmnsn_color c1, dmnsn_color c2)
 {
@@ -313,6 +313,31 @@ dmnsn_color_add(dmnsn_color c1, dmnsn_color c2)
   if (Lab1.L + Lab2.L) {
     ret.filter = (Lab1.L*c1.filter + Lab2.L*c2.filter)/(Lab1.L + Lab2.L);
     ret.trans  = (Lab1.L*c1.trans  + Lab2.L*c2.trans )/(Lab1.L + Lab2.L);
+  }
+  return ret;
+}
+
+/* Subtract two colors */
+dmnsn_color
+dmnsn_color_sub(dmnsn_color c1, dmnsn_color c2)
+{
+  dmnsn_sRGB sRGB1 = dmnsn_sRGB_from_color(c1);
+  dmnsn_sRGB sRGB2 = dmnsn_sRGB_from_color(c2);
+
+  dmnsn_sRGB sRGB = {
+    .R = sRGB1.R - sRGB2.R,
+    .G = sRGB1.G - sRGB2.G,
+    .B = sRGB1.B - sRGB2.B
+  };
+
+  dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
+
+  /* Weighted average of transparencies by intensity */
+  dmnsn_CIE_Lab Lab1 = dmnsn_Lab_from_color(ret, dmnsn_whitepoint);
+  dmnsn_CIE_Lab Lab2 = dmnsn_Lab_from_color(ret, dmnsn_whitepoint);
+  if (Lab1.L + Lab2.L) {
+    ret.filter = (Lab1.L*c1.filter - Lab2.L*c2.filter)/(Lab1.L + Lab2.L);
+    ret.trans  = (Lab1.L*c1.trans  - Lab2.L*c2.trans )/(Lab1.L + Lab2.L);
   }
   return ret;
 }

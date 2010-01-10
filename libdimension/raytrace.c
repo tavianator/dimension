@@ -220,6 +220,8 @@ typedef struct dmnsn_raytrace_state {
   const dmnsn_intersection *intersection;
   dmnsn_kD_splay_tree *kD_splay_tree;
   unsigned int level;
+
+  dmnsn_color pigment;
 } dmnsn_raytrace_state;
 
 /* Main helper for dmnsn_raytrace_scene_impl - shoot a ray */
@@ -283,12 +285,9 @@ dmnsn_line_add_epsilon(dmnsn_line l)
   );
 }
 
-static dmnsn_color
-dmnsn_raytrace_pigment(const dmnsn_raytrace_state *state)
+static const dmnsn_pigment *
+dmnsn_raytrace_get_pigment(const dmnsn_raytrace_state *state)
 {
-  /* Default to black if there's no texture/pigment */
-  dmnsn_color color = dmnsn_black;
-
   /* Use the default texture if given a NULL texture */
   const dmnsn_texture *texture
     = state->intersection->texture ? state->intersection->texture
@@ -296,16 +295,42 @@ dmnsn_raytrace_pigment(const dmnsn_raytrace_state *state)
 
   if (texture) {
     /* Use the default pigment if given a NULL pigment */
-    const dmnsn_pigment *pigment
-      = texture->pigment ? texture->pigment
-                         : state->scene->default_texture->pigment;
+    return texture->pigment ? texture->pigment
+                            : state->scene->default_texture->pigment;
+  } else {
+    return NULL;
+  }
+}
 
-    if (pigment) {
-      color = (*pigment->pigment_fn)(
-        pigment,
-        dmnsn_line_point(state->intersection->ray, state->intersection->t)
-      );
-    }
+static const dmnsn_finish *
+dmnsn_raytrace_get_finish(const dmnsn_raytrace_state *state)
+{
+  /* Use the default texture if given a NULL texture */
+  const dmnsn_texture *texture
+    = state->intersection->texture ? state->intersection->texture
+                                   : state->scene->default_texture;
+
+  if (texture) {
+    /* Use the default finish if given a NULL finish */
+    return texture->finish ? texture->finish
+                           : state->scene->default_texture->finish;
+  } else {
+    return NULL;
+  }
+}
+
+static dmnsn_color
+dmnsn_raytrace_pigment(const dmnsn_raytrace_state *state)
+{
+  /* Default to black if there's no texture/pigment */
+  dmnsn_color color = dmnsn_black;
+
+  const dmnsn_pigment *pigment = dmnsn_raytrace_get_pigment(state);
+  if (pigment) {
+    color = (*pigment->pigment_fn)(
+      pigment,
+      dmnsn_line_point(state->intersection->ray, state->intersection->t)
+    );
   }
 
   return color;
@@ -366,24 +391,14 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
 }
 
 static dmnsn_color
-dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state, dmnsn_color color)
+dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state)
 {
-  /* Use the default texture if given a NULL texture */
-  const dmnsn_texture *texture
-    = state->intersection->texture ? state->intersection->texture
-                                   : state->scene->default_texture;
-
-  const dmnsn_finish *finish = NULL;
-  if (texture) {
-    /* Use the default finish if given a NULL finish */
-    finish = texture->finish ? texture->finish
-                             : state->scene->default_texture->finish;
-  }
+  const dmnsn_finish *finish = dmnsn_raytrace_get_finish(state);
 
   /* The illuminated color */
   dmnsn_color illum = dmnsn_black;
   if (finish && finish->ambient_fn)
-    illum = (*finish->ambient_fn)(finish, color);
+    illum = (*finish->ambient_fn)(finish, state->pigment);
 
   dmnsn_vector x0 = dmnsn_line_point(state->intersection->ray,
                                      state->intersection->t);
@@ -410,11 +425,11 @@ dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state, dmnsn_color color)
 
         /* Get this light's color contribution to the object */
         dmnsn_color contrib = (*finish->finish_fn)(finish,
-                                                   light_color, color,
+                                                   light_color, state->pigment,
                                                    ray, normal, viewer);
         illum = dmnsn_color_add(contrib, illum);
       } else {
-        illum = color;
+        illum = state->pigment;
       }
     }
   }
@@ -423,12 +438,46 @@ dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state, dmnsn_color color)
 }
 
 static dmnsn_color
+dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state, dmnsn_color color)
+{
+  const dmnsn_finish *finish = dmnsn_raytrace_get_finish(state);
+  dmnsn_color refl = color;
+
+  if (finish && finish->reflection_fn) {
+    dmnsn_vector normal = state->intersection->normal;
+    dmnsn_vector viewer = dmnsn_vector_normalize(
+      dmnsn_vector_negate(state->intersection->ray.n)
+    );
+    dmnsn_vector ray = dmnsn_vector_sub(
+      dmnsn_vector_mul(2*dmnsn_vector_dot(viewer, normal), normal),
+      viewer
+    );
+
+    dmnsn_line refl_ray = dmnsn_new_line(
+      dmnsn_line_point(state->intersection->ray, state->intersection->t),
+      ray
+    );
+    refl_ray = dmnsn_line_add_epsilon(refl_ray);
+
+    dmnsn_raytrace_state recursive_state = *state;
+    dmnsn_color rec = dmnsn_raytrace_shoot(&recursive_state, refl_ray);
+    refl = dmnsn_color_add(
+      (*finish->reflection_fn)(finish, rec, state->pigment, ray, normal),
+      refl
+    );
+  }
+
+  return refl;
+}
+
+static dmnsn_color
 dmnsn_raytrace_translucency(const dmnsn_raytrace_state *state,
-                            dmnsn_color color, dmnsn_color pigment)
+                            dmnsn_color color)
 {
   dmnsn_color trans = color;
-  if (pigment.filter || pigment.trans) {
-    trans = dmnsn_color_mul(1.0 - pigment.filter - pigment.trans, color);
+  if (state->pigment.filter || state->pigment.trans) {
+    trans = dmnsn_color_mul(1.0 - state->pigment.filter - state->pigment.trans,
+                            color);
 
     dmnsn_line trans_ray = dmnsn_new_line(
       dmnsn_line_point(state->intersection->ray, state->intersection->t),
@@ -438,7 +487,7 @@ dmnsn_raytrace_translucency(const dmnsn_raytrace_state *state,
 
     dmnsn_raytrace_state recursive_state = *state;
     dmnsn_color rec = dmnsn_raytrace_shoot(&recursive_state, trans_ray);
-    dmnsn_color filtered = dmnsn_color_filter(rec, pigment);
+    dmnsn_color filtered = dmnsn_color_filter(rec, state->pigment);
     trans = dmnsn_color_add(trans, filtered);
   }
   return trans;
@@ -459,26 +508,33 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
   if (intersection) {
     state->intersection = intersection;
 
-    /* Get the pigment of the object */
-    dmnsn_color pigment = dmnsn_black;
+    /* Pigment */
+    state->pigment = dmnsn_black;
     if (state->scene->quality & DMNSN_RENDER_PIGMENT) {
-      pigment = dmnsn_raytrace_pigment(state);
+      state->pigment = dmnsn_raytrace_pigment(state);
     }
-    color = pigment;
+    color = state->pigment;
 
-    /* Account for finishes and shadows */
-    dmnsn_color illum = pigment;
+    /* Finishes and shadows */
+    dmnsn_color illum = color;
     if (state->scene->quality & DMNSN_RENDER_LIGHTS) {
-      illum = dmnsn_raytrace_lighting(state, illum);
+      illum = dmnsn_raytrace_lighting(state);
     }
     color = illum;
 
-    /* Account for translucency */
-    dmnsn_color trans = illum;
+    /* Reflection */
+    dmnsn_color refl = illum;
+    if (state->scene->quality & DMNSN_RENDER_REFLECTION) {
+      refl = dmnsn_raytrace_reflection(state, refl);
+    }
+    color = refl;
+
+    /* Translucency */
+    dmnsn_color trans = color;
     trans.filter = 0.0;
     trans.trans  = 0.0;
     if (state->scene->quality & DMNSN_RENDER_TRANSLUCENCY) {
-      trans = dmnsn_raytrace_translucency(state, trans, pigment);
+      trans = dmnsn_raytrace_translucency(state, trans);
     }
     color = trans;
 
