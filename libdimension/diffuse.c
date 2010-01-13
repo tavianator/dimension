@@ -29,8 +29,7 @@
 static dmnsn_color
 dmnsn_diffuse_finish_fn(const dmnsn_finish *finish,
                         dmnsn_color light, dmnsn_color color,
-                        dmnsn_vector ray, dmnsn_vector normal,
-                        dmnsn_vector viewer)
+                        dmnsn_vector ray, dmnsn_vector normal)
 {
   double *diffuse = finish->ptr;
   double diffuse_factor = (*diffuse)*dmnsn_vector_dot(ray, normal);
@@ -50,9 +49,9 @@ dmnsn_new_diffuse_finish(double diffuse)
 
     *param = diffuse;
 
-    finish->ptr       = param;
-    finish->finish_fn = &dmnsn_diffuse_finish_fn;
-    finish->free_fn   = &free;
+    finish->ptr        = param;
+    finish->diffuse_fn = &dmnsn_diffuse_finish_fn;
+    finish->free_fn    = &free;
   }
   return finish;
 }

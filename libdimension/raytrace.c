@@ -413,7 +413,7 @@ dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state)
     dmnsn_color light_color;
     if (dmnsn_raytrace_light_ray(state, light, &light_color)) {
       if (state->scene->quality & DMNSN_RENDER_FINISH
-          && finish && finish->finish_fn)
+          && finish && (finish->diffuse_fn || finish->specular_fn))
       {
         dmnsn_vector ray = dmnsn_vector_normalize(
           dmnsn_vector_sub(light->x0, x0)
@@ -424,10 +424,19 @@ dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state)
         );
 
         /* Get this light's color contribution to the object */
-        dmnsn_color contrib = (*finish->finish_fn)(finish,
-                                                   light_color, state->pigment,
-                                                   ray, normal, viewer);
-        illum = dmnsn_color_add(contrib, illum);
+        if (finish->diffuse_fn) {
+          dmnsn_color diffuse = (*finish->diffuse_fn)(finish, light_color,
+                                                      state->pigment,
+                                                      ray, normal);
+          illum = dmnsn_color_add(diffuse, illum);
+        }
+
+        if (finish->specular_fn) {
+          dmnsn_color specular = (*finish->specular_fn)(finish, light_color,
+                                                        state->pigment,
+                                                        ray, normal, viewer);
+          illum = dmnsn_color_add(specular, illum);
+        }
       } else {
         illum = state->pigment;
       }

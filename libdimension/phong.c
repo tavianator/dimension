@@ -27,10 +27,10 @@
  */
 
 static dmnsn_color
-dmnsn_phong_finish_fn(const dmnsn_finish *finish,
-                      dmnsn_color light, dmnsn_color color,
-                      dmnsn_vector ray, dmnsn_vector normal,
-                      dmnsn_vector viewer)
+dmnsn_phong_specular_fn(const dmnsn_finish *finish,
+                        dmnsn_color light, dmnsn_color color,
+                        dmnsn_vector ray, dmnsn_vector normal,
+                        dmnsn_vector viewer)
 {
   double *params = finish->ptr;
 
@@ -64,9 +64,9 @@ dmnsn_new_phong_finish(double specular, double exp)
     params[0] = specular;
     params[1] = exp;
 
-    finish->ptr       = params;
-    finish->finish_fn = &dmnsn_phong_finish_fn;
-    finish->free_fn   = &free;
+    finish->ptr         = params;
+    finish->specular_fn = &dmnsn_phong_specular_fn;
+    finish->free_fn     = &free;
   }
   return finish;
 }
