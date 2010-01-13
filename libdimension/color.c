@@ -84,6 +84,12 @@ const dmnsn_color dmnsn_cyan = {
   .trans  = 0.0
 };
 
+bool
+dmnsn_color_is_black(dmnsn_color color)
+{
+  return color.R == 0.0 && color.G == 0.0 && color.B == 0.0;
+}
+
 /* sRGB's `C' function */
 static double dmnsn_sRGB_C(double Clinear) {
   /*

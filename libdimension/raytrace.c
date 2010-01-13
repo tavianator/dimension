@@ -20,7 +20,6 @@
 
 #include "dimension_impl.h"
 #include <unistd.h> /* For sysconf */
-#include <stdbool.h>
 
 /*
  * Boilerplate for multithreading
@@ -337,12 +336,10 @@ dmnsn_raytrace_pigment(const dmnsn_raytrace_state *state)
 }
 
 /* Get the color of a light ray at an intersection point */
-static bool
+static dmnsn_color
 dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
-                         const dmnsn_light *light, dmnsn_color *color)
+                         const dmnsn_light *light)
 {
-  *color = dmnsn_black;
-
   dmnsn_vector x0 = dmnsn_line_point(state->intersection->ray,
                                      state->intersection->t);
   dmnsn_line shadow_ray = dmnsn_new_line(x0, dmnsn_vector_sub(light->x0, x0));
@@ -351,9 +348,9 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
 
   /* Search for an object in the way of the light source */
   if (dmnsn_vector_dot(shadow_ray.n, state->intersection->normal) < 0.0)
-    return false;
+    return dmnsn_black;
 
-  *color = (*light->light_fn)(light, x0);
+  dmnsn_color color = (*light->light_fn)(light, x0);
 
   unsigned int level = state->level;
   while (level) {
@@ -373,21 +370,20 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
 
     dmnsn_color pigment = dmnsn_raytrace_pigment(&shadow_state);
     if (pigment.filter || pigment.trans) {
-      *color = dmnsn_color_filter(*color, pigment);
+      color = dmnsn_color_filter(color, pigment);
       shadow_ray.x0 = dmnsn_line_point(shadow_ray, shadow_caster->t);
       shadow_ray.n  = dmnsn_vector_sub(light->x0, shadow_ray.x0);
       shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
     } else {
-      *color = dmnsn_black;
       dmnsn_delete_intersection(shadow_caster);
-      return false;
+      return dmnsn_black;
     }
 
     dmnsn_delete_intersection(shadow_caster);
     --level;
   }
 
-  return true;
+  return color;
 }
 
 static dmnsn_color
@@ -410,8 +406,8 @@ dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state)
   for (i = 0; i < dmnsn_array_size(state->scene->lights); ++i) {
     dmnsn_array_get(state->scene->lights, i, &light);
 
-    dmnsn_color light_color;
-    if (dmnsn_raytrace_light_ray(state, light, &light_color)) {
+    dmnsn_color light_color = dmnsn_raytrace_light_ray(state, light);
+    if (!dmnsn_color_is_black(light_color)) {
       if (state->scene->quality & DMNSN_RENDER_FINISH
           && finish && (finish->diffuse_fn || finish->specular_fn))
       {

@@ -25,6 +25,8 @@
 #ifndef DIMENSION_COLOR_H
 #define DIMENSION_COLOR_H
 
+#include <stdbool.h>
+
 /* Internally, we use sRGB color. */
 typedef struct {
   double filter, trans; /* Filter transparancy only lets light of this color
@@ -66,6 +68,9 @@ extern const dmnsn_color dmnsn_black, dmnsn_white, dmnsn_red, dmnsn_green,
 
 /* Standard whitepoint, determined by the conversion of sRGB white to CIE XYZ */
 extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
+
+/* Is this color black? */
+bool dmnsn_color_is_black(dmnsn_color color);
 
 /* Color conversions */
 
