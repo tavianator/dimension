@@ -28,6 +28,7 @@
 
 static const char *output = NULL, *input = NULL;
 static unsigned int width = 640, height = 480;
+static unsigned int nthreads = 0;
 static int tokenize = 0, parse = 0;
 
 int
@@ -36,15 +37,21 @@ main(int argc, char **argv) {
    * Parse the command-line options
    */
 
-  static struct option long_options[] = {
-    { "output",   required_argument, NULL,      'o' },
-    { "input",    required_argument, NULL,      'i' },
-    { "width",    required_argument, NULL,      'w' },
-    { "height",   required_argument, NULL,      'h' },
-    { "tokenize", no_argument,       &tokenize, 1   },
-    { "parse",    no_argument,       &parse,    1   },
-    { 0,          0,                 0,         0   }
+  static enum {
+    DMNSN_NTHREADS = 256
   };
+
+  static struct option long_options[] = {
+    { "output",   required_argument, NULL,      'o'            },
+    { "input",    required_argument, NULL,      'i'            },
+    { "width",    required_argument, NULL,      'w'            },
+    { "height",   required_argument, NULL,      'h'            },
+    { "threads",  required_argument, NULL,      DMNSN_NTHREADS },
+    { "tokenize", no_argument,       &tokenize, 1              },
+    { "parse",    no_argument,       &parse,    1              },
+    { 0,          0,                 0,         0              }
+  };
+
   int opt, opt_index;
 
   while (1) {
@@ -92,6 +99,17 @@ main(int argc, char **argv) {
         height = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
           fprintf(stderr, "Invalid argument to --height!\n");
+          return EXIT_FAILURE;
+        }
+        break;
+      }
+
+    case DMNSN_NTHREADS:
+      {
+        char *endptr;
+        nthreads = strtoul(optarg, &endptr, 10);
+        if (*endptr != '\0' || endptr == optarg) {
+          fprintf(stderr, "Invalid argument to --nthreads!\n");
           return EXIT_FAILURE;
         }
         break;
@@ -196,6 +214,8 @@ main(int argc, char **argv) {
     fprintf(stderr, "Couldn't allocate canvas!\n");
     return EXIT_FAILURE;
   }
+
+  scene->nthreads = nthreads;
 
   /*
    * Now we render the scene
