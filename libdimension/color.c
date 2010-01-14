@@ -323,31 +323,6 @@ dmnsn_color_add(dmnsn_color c1, dmnsn_color c2)
   return ret;
 }
 
-/* Subtract two colors */
-dmnsn_color
-dmnsn_color_sub(dmnsn_color c1, dmnsn_color c2)
-{
-  dmnsn_sRGB sRGB1 = dmnsn_sRGB_from_color(c1);
-  dmnsn_sRGB sRGB2 = dmnsn_sRGB_from_color(c2);
-
-  dmnsn_sRGB sRGB = {
-    .R = sRGB1.R - sRGB2.R,
-    .G = sRGB1.G - sRGB2.G,
-    .B = sRGB1.B - sRGB2.B
-  };
-
-  dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
-
-  /* Weighted average of transparencies by intensity */
-  dmnsn_CIE_Lab Lab1 = dmnsn_Lab_from_color(ret, dmnsn_whitepoint);
-  dmnsn_CIE_Lab Lab2 = dmnsn_Lab_from_color(ret, dmnsn_whitepoint);
-  if (Lab1.L + Lab2.L) {
-    ret.filter = (Lab1.L*c1.filter - Lab2.L*c2.filter)/(Lab1.L + Lab2.L);
-    ret.trans  = (Lab1.L*c1.trans  - Lab2.L*c2.trans )/(Lab1.L + Lab2.L);
-  }
-  return ret;
-}
-
 /* Multiply a color by a scalar */
 dmnsn_color
 dmnsn_color_mul(double n, dmnsn_color color)
@@ -360,6 +335,25 @@ dmnsn_color_mul(double n, dmnsn_color color)
   dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
   ret.filter = color.filter;
   ret.trans  = color.trans;
+  return ret;
+}
+
+/* For n in [0, 1] get the color in a gradient between c1 and c2 */
+dmnsn_color
+dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n)
+{
+  dmnsn_sRGB sRGB1 = dmnsn_sRGB_from_color(c1);
+  dmnsn_sRGB sRGB2 = dmnsn_sRGB_from_color(c2);
+
+  dmnsn_sRGB sRGB = {
+    .R = n*(sRGB2.R - sRGB1.R) + sRGB1.R,
+    .G = n*(sRGB2.G - sRGB1.G) + sRGB1.G,
+    .B = n*(sRGB2.B - sRGB1.B) + sRGB1.B
+  };
+
+  dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
+  ret.filter = n*(c2.filter - c1.filter) + c1.filter;
+  ret.trans  = n*(c2.trans  - c1.trans)  + c1.trans;
   return ret;
 }
 
