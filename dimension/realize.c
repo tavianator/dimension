@@ -342,20 +342,14 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
   return camera;
 }
 
-static dmnsn_object *
-dmnsn_realize_pigment(dmnsn_astnode astnode, dmnsn_object *object)
+static dmnsn_pigment *
+dmnsn_realize_pigment(dmnsn_astnode astnode)
 {
   if (astnode.type != DMNSN_AST_PIGMENT) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a pigment.");
   }
 
-  if (!object->texture) {
-    object->texture = dmnsn_new_texture();
-    if (!object->texture) {
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't create texture.");
-    }
-  }
-  dmnsn_delete_pigment(object->texture->pigment);
+  dmnsn_pigment *pigment = NULL;
 
   dmnsn_astnode color_node;
   dmnsn_array_get(astnode.children, 0, &color_node);
@@ -367,8 +361,8 @@ dmnsn_realize_pigment(dmnsn_astnode astnode, dmnsn_object *object)
 
   case DMNSN_AST_COLOR:
     color = dmnsn_realize_color(color_node);
-    object->texture->pigment = dmnsn_new_solid_pigment(color);
-    if (!object->texture->pigment) {
+    pigment = dmnsn_new_solid_pigment(color);
+    if (!pigment) {
       dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't create pigment.");
     }
     break;
@@ -377,14 +371,19 @@ dmnsn_realize_pigment(dmnsn_astnode astnode, dmnsn_object *object)
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid pigment color.");
   }
 
-  return object;
+  return pigment;
 }
 
-static dmnsn_object *
-dmnsn_realize_texture(dmnsn_astnode astnode, dmnsn_object *object)
+static dmnsn_texture *
+dmnsn_realize_texture(dmnsn_astnode astnode)
 {
   if (astnode.type != DMNSN_AST_TEXTURE) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a texture.");
+  }
+
+  dmnsn_texture *texture = dmnsn_new_texture();
+  if (!texture) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate texture.");
   }
 
   unsigned int i;
@@ -394,7 +393,8 @@ dmnsn_realize_texture(dmnsn_astnode astnode, dmnsn_object *object)
 
     switch (modifier.type) {
     case DMNSN_AST_PIGMENT:
-      object = dmnsn_realize_pigment(modifier, object);
+      dmnsn_delete_pigment(texture->pigment);
+      texture->pigment = dmnsn_realize_pigment(modifier);
       break;
 
     default:
@@ -402,10 +402,10 @@ dmnsn_realize_texture(dmnsn_astnode astnode, dmnsn_object *object)
     }
   }
 
-  return object;
+  return texture;
 }
 
-static dmnsn_object *
+static void
 dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
 {
   if (astnode.type != DMNSN_AST_OBJECT_MODIFIERS) {
@@ -438,15 +438,14 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
       break;
 
     case DMNSN_AST_TEXTURE:
-      object = dmnsn_realize_texture(modifier, object);
+      dmnsn_delete_texture(object->texture);
+      object->texture = dmnsn_realize_texture(modifier);
       break;
 
     default:
       dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid object modifier.");
     }
   }
-
-  return object;
 }
 
 static dmnsn_object *
@@ -482,7 +481,7 @@ dmnsn_realize_box(dmnsn_astnode astnode)
 
   dmnsn_astnode modifiers;
   dmnsn_array_get(astnode.children, 2, &modifiers);
-  box = dmnsn_realize_object_modifiers(modifiers, box);
+  dmnsn_realize_object_modifiers(modifiers, box);
 
   return box;
 }
@@ -533,7 +532,7 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
 
   dmnsn_astnode modifiers;
   dmnsn_array_get(astnode.children, 2, &modifiers);
-  sphere = dmnsn_realize_object_modifiers(modifiers, sphere);
+  dmnsn_realize_object_modifiers(modifiers, sphere);
 
   return sphere;
 }
