@@ -220,6 +220,7 @@ typedef struct dmnsn_raytrace_state {
   dmnsn_kD_splay_tree *kD_splay_tree;
   unsigned int level;
 
+  dmnsn_vector r;
   dmnsn_color pigment;
 } dmnsn_raytrace_state;
 
@@ -309,9 +310,8 @@ dmnsn_line_add_epsilon(dmnsn_line l)
 static dmnsn_color
 dmnsn_raytrace_pigment(const dmnsn_raytrace_state *state)
 {
-  dmnsn_vector r = dmnsn_line_point(state->intersection->ray,
-                                    state->intersection->t);
-  return DMNSN_TEXTURE_CALLBACK(state, pigment, pigment_fn, dmnsn_black, r);
+  return DMNSN_TEXTURE_CALLBACK(state, pigment, pigment_fn, dmnsn_black,
+                                state->r);
 }
 
 /* Get the color of a light ray at an intersection point */
@@ -319,9 +319,8 @@ static dmnsn_color
 dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
                          const dmnsn_light *light)
 {
-  dmnsn_vector x0 = dmnsn_line_point(state->intersection->ray,
-                                     state->intersection->t);
-  dmnsn_line shadow_ray = dmnsn_new_line(x0, dmnsn_vector_sub(light->x0, x0));
+  dmnsn_line shadow_ray = dmnsn_new_line(state->r,
+                                         dmnsn_vector_sub(light->x0, state->r));
   /* Add epsilon to avoid hitting ourselves with the shadow ray */
   shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
 
@@ -329,7 +328,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
   if (dmnsn_vector_dot(shadow_ray.n, state->intersection->normal) < 0.0)
     return dmnsn_black;
 
-  dmnsn_color color = (*light->light_fn)(light, x0);
+  dmnsn_color color = (*light->light_fn)(light, state->r);
 
   unsigned int level = state->level;
   while (level) {
@@ -378,9 +377,6 @@ dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state)
     return illum;
   }
 
-  dmnsn_vector x0 = dmnsn_line_point(state->intersection->ray,
-                                     state->intersection->t);
-
   const dmnsn_light *light;
   unsigned int i;
 
@@ -392,7 +388,7 @@ dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state)
     if (!dmnsn_color_is_black(light_color)) {
       if (state->scene->quality & DMNSN_RENDER_FINISH) {
         dmnsn_vector ray = dmnsn_vector_normalize(
-          dmnsn_vector_sub(light->x0, x0)
+          dmnsn_vector_sub(light->x0, state->r)
         );
         dmnsn_vector normal = state->intersection->normal;
         dmnsn_vector viewer = dmnsn_vector_normalize(
@@ -434,10 +430,7 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state, dmnsn_color color)
       viewer
     );
 
-    dmnsn_line refl_ray = dmnsn_new_line(
-      dmnsn_line_point(state->intersection->ray, state->intersection->t),
-      ray
-    );
+    dmnsn_line refl_ray = dmnsn_new_line(state->r, ray);
     refl_ray = dmnsn_line_add_epsilon(refl_ray);
 
     dmnsn_raytrace_state recursive_state = *state;
@@ -461,10 +454,7 @@ dmnsn_raytrace_translucency(const dmnsn_raytrace_state *state,
     trans = dmnsn_color_mul(1.0 - state->pigment.filter - state->pigment.trans,
                             color);
 
-    dmnsn_line trans_ray = dmnsn_new_line(
-      dmnsn_line_point(state->intersection->ray, state->intersection->t),
-      state->intersection->ray.n
-    );
+    dmnsn_line trans_ray = dmnsn_new_line(state->r, state->intersection->ray.n);
     trans_ray = dmnsn_line_add_epsilon(trans_ray);
 
     dmnsn_raytrace_state recursive_state = *state;
@@ -489,6 +479,8 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
   dmnsn_color color = state->scene->background;
   if (intersection) {
     state->intersection = intersection;
+    state->r = dmnsn_line_point(state->intersection->ray,
+                                state->intersection->t);
 
     /* Pigment */
     state->pigment = dmnsn_black;
