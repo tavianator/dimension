@@ -44,7 +44,12 @@ demo_exp=$(echo -n \
       (texture
         (pigment
           (color (integer 0) (integer 0) (integer 1)
-                 (float 0.25) (float 0.25))))))
+                 (float 0.25) (float 0.25)))
+        (finish
+          (reflection
+            (color (float 1) (float 1) (float 1) (float 1) (float 1))
+            (color (float 1) (float 1) (float 1) (float 1) (float 1))
+            reflection-items)))))
   (sphere
     (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
     (float 1.25)

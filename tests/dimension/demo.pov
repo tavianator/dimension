@@ -38,14 +38,22 @@ light_source {
 
 box {
   <-1, -1, -1>, <1, 1, 1>
+
   rotate <45, 0, 0>
-  pigment {
-    color rgbft <0, 0, 1, 0.25, 0.25>
+
+  texture {
+    pigment {
+      color rgbft <0, 0, 1, 0.25, 0.25>
+    }
+    finish {
+      reflection { 1.0 }
+    }
   }
 }
 
 sphere {
   <0, 0, 0>, 1.25
+
   texture {
     pigment {
       color rgb <0, 1, 0>

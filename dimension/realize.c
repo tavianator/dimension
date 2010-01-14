@@ -375,6 +375,48 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
   return pigment;
 }
 
+static dmnsn_finish *
+dmnsn_realize_reflection(dmnsn_astnode astnode)
+{
+  if (astnode.type != DMNSN_AST_REFLECTION) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a reflection.");
+  }
+
+  dmnsn_astnode min_node, max_node;
+  dmnsn_array_get(astnode.children, 0, &min_node);
+  dmnsn_array_get(astnode.children, 1, &max_node);
+
+  dmnsn_color min = dmnsn_realize_color(min_node);
+  dmnsn_color max = dmnsn_realize_color(max_node);
+
+  double falloff = 1.0;
+
+  dmnsn_astnode items;
+  dmnsn_array_get(astnode.children, 2, &items);
+
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(items.children); ++i) {
+    dmnsn_astnode item, child;
+    dmnsn_array_get(items.children, i, &item);
+
+    switch (item.type) {
+    case DMNSN_AST_FALLOFF:
+      dmnsn_array_get(item.children, 0, &child);
+      falloff = dmnsn_realize_float(child);
+      break;
+
+    default:
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid reflection item.");
+    }
+  }
+
+  dmnsn_finish *reflection = dmnsn_new_reflective_finish(min, max, falloff);
+  if (!reflection) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate a reflection.");
+  }
+
+  return reflection;
+}
 
 static dmnsn_finish *
 dmnsn_realize_finish(dmnsn_astnode astnode)
@@ -394,10 +436,11 @@ dmnsn_realize_finish(dmnsn_astnode astnode)
   double phong = 0.0;
   double phong_size = 40.0;
 
+  dmnsn_finish *reflection = NULL;
+
   unsigned int i;
   for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-    dmnsn_astnode item;
-    dmnsn_astnode child;
+    dmnsn_astnode item, child;
     dmnsn_array_get(astnode.children, i, &item);
 
     switch (item.type) {
@@ -420,6 +463,11 @@ dmnsn_realize_finish(dmnsn_astnode astnode)
     case DMNSN_AST_PHONG_SIZE:
       dmnsn_array_get(item.children, 0, &child);
       phong_size = dmnsn_realize_float(child);
+      break;
+
+    case DMNSN_AST_REFLECTION:
+      dmnsn_delete_finish(reflection);
+      reflection = dmnsn_realize_reflection(item);
       break;
 
     default:
@@ -446,6 +494,10 @@ dmnsn_realize_finish(dmnsn_astnode astnode)
       dmnsn_new_phong_finish(phong, phong_size),
       finish
     );
+  }
+
+  if (reflection) {
+    finish = dmnsn_new_finish_combination(reflection, finish);
   }
 
   if (!finish) {

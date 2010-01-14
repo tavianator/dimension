@@ -167,7 +167,7 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 
 %name-prefix "dmnsn_yy"
 
-%expect 8
+%expect 10
 %glr-parser
 
 %parse-param {const char *filename}
@@ -340,7 +340,7 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 %token DMNSN_T_FADE_COLOR
 %token DMNSN_T_FADE_DISTANCE
 %token DMNSN_T_FADE_POWER
-%token DMNSN_T_FALLOFF
+%token DMNSN_T_FALLOFF                  "falloff"
 %token DMNSN_T_FALLOFF_ANGLE
 %token DMNSN_T_FALSE
 %token DMNSN_T_FILE_EXISTS
@@ -522,7 +522,7 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 %token DMNSN_T_RECIPROCAL
 %token DMNSN_T_RECURSION_LIMIT
 %token DMNSN_T_RED                      "red"
-%token DMNSN_T_REFLECTION
+%token DMNSN_T_REFLECTION               "reflection"
 %token DMNSN_T_REFLECTION_EXPONENT
 %token DMNSN_T_REFRACTION
 %token DMNSN_T_REPEAT
@@ -722,6 +722,8 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 /* Finishes */
 %type <astnode> FINISH
 %type <astnode> FINISH_ITEMS
+%type <astnode> REFLECTION
+%type <astnode> REFLECTION_ITEMS
 
 /* Floats */
 %type <astnode> FLOAT
@@ -1002,6 +1004,38 @@ FINISH_ITEMS: /* empty */ {
               $$ = $1;
               dmnsn_array_push($$.children, &phong_size);
             }
+            | FINISH_ITEMS REFLECTION {
+              $$ = $1;
+              dmnsn_array_push($$.children, &$2);
+            }
+;
+
+REFLECTION: "reflection" "{"
+              COLOR
+              REFLECTION_ITEMS
+            "}"
+          {
+            ++*$3.refcount;
+            $$ = dmnsn_new_astnode3(DMNSN_AST_REFLECTION, @$, $3, $3, $4);
+          }
+          | "reflection" "{"
+              COLOR "," COLOR
+              REFLECTION_ITEMS
+            "}"
+          {
+            $$ = dmnsn_new_astnode3(DMNSN_AST_REFLECTION, @$, $3, $5, $6);
+          }
+;
+
+REFLECTION_ITEMS: /* empty */ {
+                  $$ = dmnsn_new_astnode(DMNSN_AST_REFLECTION_ITEMS, @$);
+                }
+                | REFLECTION_ITEMS "falloff" FLOAT {
+                  dmnsn_astnode falloff
+                    = dmnsn_new_astnode1(DMNSN_AST_FALLOFF, @2, $3);
+                  $$ = $1;
+                  dmnsn_array_push($$.children, &falloff);
+                }
 ;
 
 /* Floats */
@@ -1326,6 +1360,10 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_DIFFUSE, "diffuse");
   dmnsn_astnode_map(DMNSN_AST_PHONG, "phong");
   dmnsn_astnode_map(DMNSN_AST_PHONG_SIZE, "phong_size");
+
+  dmnsn_astnode_map(DMNSN_AST_REFLECTION, "reflection");
+  dmnsn_astnode_map(DMNSN_AST_REFLECTION_ITEMS, "reflection-items");
+  dmnsn_astnode_map(DMNSN_AST_FALLOFF, "falloff");
 
   dmnsn_astnode_map(DMNSN_AST_FLOAT, "float");
   dmnsn_astnode_map(DMNSN_AST_INTEGER, "integer");
