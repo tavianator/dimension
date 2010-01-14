@@ -223,6 +223,9 @@ typedef struct dmnsn_raytrace_state {
   unsigned int level;
 
   dmnsn_vector r;
+  dmnsn_vector viewer;
+  dmnsn_vector reflected;
+
   dmnsn_color pigment;
 } dmnsn_raytrace_state;
 
@@ -326,7 +329,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
   /* Add epsilon to avoid hitting ourselves with the shadow ray */
   shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
 
-  /* Search for an object in the way of the light source */
+  /* Check if we're casting a shadow on ourself */
   if (dmnsn_vector_dot(shadow_ray.n, state->intersection->normal) < 0.0)
     return dmnsn_black;
 
@@ -392,19 +395,16 @@ dmnsn_raytrace_lighting(const dmnsn_raytrace_state *state)
         dmnsn_vector ray = dmnsn_vector_normalize(
           dmnsn_vector_sub(light->x0, state->r)
         );
-        dmnsn_vector normal = state->intersection->normal;
-        dmnsn_vector viewer = dmnsn_vector_normalize(
-          dmnsn_vector_negate(state->intersection->ray.n)
-        );
 
         /* Get this light's color contribution to the object */
         dmnsn_color diffuse = DMNSN_TEXTURE_CALLBACK(
           state, finish, diffuse_fn, dmnsn_black,
-          light_color, state->pigment, ray, normal
+          light_color, state->pigment, ray, state->intersection->normal
         );
         dmnsn_color specular = DMNSN_TEXTURE_CALLBACK(
           state, finish, specular_fn, dmnsn_black,
-          light_color, state->pigment, ray, normal, viewer
+          light_color, state->pigment, ray, state->intersection->normal,
+          state->viewer
         );
         illum = dmnsn_color_add(diffuse, illum);
         illum = dmnsn_color_add(specular, illum);
@@ -423,23 +423,14 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state, dmnsn_color color)
   dmnsn_color refl = color;
 
   if (DMNSN_TEXTURE_HAS_CALLBACK(state, finish, reflection_fn)) {
-    dmnsn_vector normal = state->intersection->normal;
-    dmnsn_vector viewer = dmnsn_vector_normalize(
-      dmnsn_vector_negate(state->intersection->ray.n)
-    );
-    dmnsn_vector ray = dmnsn_vector_sub(
-      dmnsn_vector_mul(2*dmnsn_vector_dot(viewer, normal), normal),
-      viewer
-    );
-
-    dmnsn_line refl_ray = dmnsn_new_line(state->r, ray);
+    dmnsn_line refl_ray = dmnsn_new_line(state->r, state->reflected);
     refl_ray = dmnsn_line_add_epsilon(refl_ray);
 
     dmnsn_raytrace_state recursive_state = *state;
     dmnsn_color rec = dmnsn_raytrace_shoot(&recursive_state, refl_ray);
     dmnsn_color contrib = DMNSN_TEXTURE_CALLBACK(
       state, finish, reflection_fn, dmnsn_black,
-      rec, state->pigment, ray, normal
+      rec, state->pigment, state->reflected, state->intersection->normal
     );
     refl = dmnsn_color_add(contrib, refl);
   }
@@ -482,6 +473,15 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
     state->intersection = intersection;
     state->r = dmnsn_line_point(state->intersection->ray,
                                 state->intersection->t);
+    state->viewer = dmnsn_vector_normalize(
+      dmnsn_vector_negate(state->intersection->ray.n)
+    );
+    state->reflected = dmnsn_vector_sub(
+      dmnsn_vector_mul(
+        2*dmnsn_vector_dot(state->viewer, state->intersection->normal),
+        state->intersection->normal),
+      state->viewer
+    );
 
     /* Pigment */
     state->pigment = dmnsn_black;
