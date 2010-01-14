@@ -124,6 +124,8 @@ dmnsn_new_default_scene()
     return NULL;
   }
 
+  cube->texture->finish = dmnsn_new_reflective_finish(dmnsn_white, dmnsn_white, 1.0);
+
   cube->trans = dmnsn_rotation_matrix(dmnsn_new_vector(0.75, 0.0, 0.0));
 
   /* Now make a light */
