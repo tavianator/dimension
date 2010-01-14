@@ -42,15 +42,19 @@ demo_exp=$(echo -n \
       (rotate (vector (integer 45) (integer 0) (integer 0)
                       (integer 0) (integer 0)))
       (texture
-        (pigment (color (integer 0) (integer 0) (integer 1)
-                        (float 0.25) (float 0.25))))))
+        (pigment
+          (color (integer 0) (integer 0) (integer 1)
+                 (float 0.25) (float 0.25))))))
   (sphere
     (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
     (float 1.25)
     (object-modifiers
       (texture
-        (pigment (color (integer 0) (integer 1) (integer 0)
-                        (integer 0) (integer 0)))))))' \
+        (pigment
+          (color (integer 0) (integer 1) (integer 0) (integer 0) (integer 0)))
+        (finish
+          (phong (float 0.2))
+          (phong_size (float 40)))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 
 if [ "$demo" != "$demo_exp" ]; then

@@ -167,7 +167,7 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 
 %name-prefix "dmnsn_yy"
 
-%expect 7
+%expect 8
 %glr-parser
 
 %parse-param {const char *filename}
@@ -232,7 +232,7 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 %token DMNSN_T_ALPHA
 %token DMNSN_T_ALTITUDE
 %token DMNSN_T_ALWAYS_SAMPLE
-%token DMNSN_T_AMBIENT
+%token DMNSN_T_AMBIENT                  "ambient"
 %token DMNSN_T_AMBIENT_LIGHT
 %token DMNSN_T_ANGLE                    "angle"
 %token DMNSN_T_APERTURE
@@ -315,7 +315,7 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 %token DMNSN_T_DENTS
 %token DMNSN_T_DF3
 %token DMNSN_T_DIFFERENCE
-%token DMNSN_T_DIFFUSE
+%token DMNSN_T_DIFFUSE                  "diffuse"
 %token DMNSN_T_DIMENSION_SIZE
 %token DMNSN_T_DIMENSIONS
 %token DMNSN_T_DIRECTION                "direction"
@@ -347,7 +347,7 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 %token DMNSN_T_FILTER                   "filter"
 %token DMNSN_T_FINAL_CLOCK
 %token DMNSN_T_FINAL_FRAME
-%token DMNSN_T_FINISH
+%token DMNSN_T_FINISH                   "finish"
 %token DMNSN_T_FISHEYE
 %token DMNSN_T_FLATNESS
 %token DMNSN_T_FLIP
@@ -480,8 +480,8 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 %token DMNSN_T_PERSPECTIVE              "perspective"
 %token DMNSN_T_PGM
 %token DMNSN_T_PHASE
-%token DMNSN_T_PHONG
-%token DMNSN_T_PHONG_SIZE
+%token DMNSN_T_PHONG                    "phong"
+%token DMNSN_T_PHONG_SIZE               "phong_size"
 %token DMNSN_T_PHOTONS
 %token DMNSN_T_PI
 %token DMNSN_T_PIGMENT                  "pigment"
@@ -584,7 +584,7 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 %token DMNSN_T_TANH
 %token DMNSN_T_TARGET
 %token DMNSN_T_TEXT
-%token DMNSN_T_TEXTURE
+%token DMNSN_T_TEXTURE                  "texture"
 %token DMNSN_T_TEXTURE_LIST
 %token DMNSN_T_TEXTURE_MAP
 %token DMNSN_T_TGA
@@ -718,6 +718,10 @@ yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
 /* Pigments */
 %type <astnode> PIGMENT
 %type <astnode> PIGMENT_TYPE
+
+/* Finishes */
+%type <astnode> FINISH
+%type <astnode> FINISH_ITEMS
 
 /* Floats */
 %type <astnode> FLOAT
@@ -943,6 +947,10 @@ TEXTURE_ITEMS: /* empty */ {
                $$ = $1;
                dmnsn_array_push($$.children, &$2);
              }
+             | TEXTURE_ITEMS FINISH {
+               $$ = $1;
+               dmnsn_array_push($$.children, &$2);
+             }
 ;
 
 /* Pigments */
@@ -959,6 +967,41 @@ PIGMENT_TYPE: /* empty */ {
               $$ = dmnsn_new_astnode(DMNSN_AST_NONE, @$);
             }
             | COLOR
+;
+
+/* Finishes */
+FINISH: "finish" "{"
+          FINISH_ITEMS
+        "}"
+      { $$ = $3; }
+;
+
+FINISH_ITEMS: /* empty */ {
+               $$ = dmnsn_new_astnode(DMNSN_AST_FINISH, @$);
+            }
+            | FINISH_ITEMS "ambient" COLOR {
+              dmnsn_astnode ambient = dmnsn_new_astnode1(DMNSN_AST_AMBIENT,
+                                                         @2, $3);
+              $$ = $1;
+              dmnsn_array_push($$.children, &ambient);
+            }
+            | FINISH_ITEMS "diffuse" FLOAT {
+              dmnsn_astnode diffuse = dmnsn_new_astnode1(DMNSN_AST_DIFFUSE,
+                                                         @2, $3);
+              $$ = $1;
+              dmnsn_array_push($$.children, &diffuse);
+            }
+            | FINISH_ITEMS "phong" FLOAT {
+              dmnsn_astnode phong = dmnsn_new_astnode1(DMNSN_AST_PHONG, @2, $3);
+              $$ = $1;
+              dmnsn_array_push($$.children, &phong);
+            }
+            | FINISH_ITEMS "phong_size" FLOAT {
+              dmnsn_astnode phong_size
+                = dmnsn_new_astnode1(DMNSN_AST_PHONG_SIZE, @2, $3);
+              $$ = $1;
+              dmnsn_array_push($$.children, &phong_size);
+            }
 ;
 
 /* Floats */
@@ -1275,7 +1318,14 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_OBJECT_MODIFIERS, "object-modifiers");
 
   dmnsn_astnode_map(DMNSN_AST_TEXTURE, "texture");
+
   dmnsn_astnode_map(DMNSN_AST_PIGMENT, "pigment");
+
+  dmnsn_astnode_map(DMNSN_AST_FINISH, "finish");
+  dmnsn_astnode_map(DMNSN_AST_AMBIENT, "ambient");
+  dmnsn_astnode_map(DMNSN_AST_DIFFUSE, "diffuse");
+  dmnsn_astnode_map(DMNSN_AST_PHONG, "phong");
+  dmnsn_astnode_map(DMNSN_AST_PHONG_SIZE, "phong_size");
 
   dmnsn_astnode_map(DMNSN_AST_FLOAT, "float");
   dmnsn_astnode_map(DMNSN_AST_INTEGER, "integer");

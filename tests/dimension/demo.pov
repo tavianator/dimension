@@ -46,7 +46,13 @@ box {
 
 sphere {
   <0, 0, 0>, 1.25
-  pigment {
-    color rgb <0, 1, 0>
+  texture {
+    pigment {
+      color rgb <0, 1, 0>
+    }
+    finish {
+      phong 0.2
+      phong_size 40.0
+    }
   }
 }

@@ -157,6 +157,7 @@ unsigned long wchar;
 }
 
 (?# Keywords)
+"ambient"       RETURN_TOKEN(DMNSN_T_AMBIENT);
 "angle"         RETURN_TOKEN(DMNSN_T_ANGLE);
 "background"    RETURN_TOKEN(DMNSN_T_BACKGROUND);
 "box"           RETURN_TOKEN(DMNSN_T_BOX);
@@ -165,7 +166,9 @@ unsigned long wchar;
 "color"         RETURN_TOKEN(DMNSN_T_COLOR);
 "colour"        RETURN_TOKEN(DMNSN_T_COLOR);
 "direction"     RETURN_TOKEN(DMNSN_T_DIRECTION);
+"diffuse"       RETURN_TOKEN(DMNSN_T_DIFFUSE);
 "filter"        RETURN_TOKEN(DMNSN_T_FILTER);
+"finish"        RETURN_TOKEN(DMNSN_T_FINISH);
 "gray"          RETURN_TOKEN(DMNSN_T_GRAY);
 "grey"          RETURN_TOKEN(DMNSN_T_GRAY);
 "green"         RETURN_TOKEN(DMNSN_T_GREEN);
@@ -173,6 +176,8 @@ unsigned long wchar;
 "look_at"       RETURN_TOKEN(DMNSN_T_LOOK_AT);
 "light_source"  RETURN_TOKEN(DMNSN_T_LIGHT_SOURCE);
 "perspective"   RETURN_TOKEN(DMNSN_T_PERSPECTIVE);
+"phong"         RETURN_TOKEN(DMNSN_T_PHONG);
+"phong_size"    RETURN_TOKEN(DMNSN_T_PHONG_SIZE);
 "pigment"       RETURN_TOKEN(DMNSN_T_PIGMENT);
 "red"           RETURN_TOKEN(DMNSN_T_RED);
 "rgb"           RETURN_TOKEN(DMNSN_T_RGB);

@@ -24,6 +24,7 @@
 #include "utility.h"
 #include <math.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 static double
 dmnsn_realize_float(dmnsn_astnode astnode)
@@ -374,6 +375,86 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
   return pigment;
 }
 
+
+static dmnsn_finish *
+dmnsn_realize_finish(dmnsn_astnode astnode)
+{
+  if (astnode.type != DMNSN_AST_FINISH) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a finish.");
+  }
+
+  dmnsn_finish *finish = dmnsn_new_finish();
+
+  dmnsn_color ambient = dmnsn_black;
+  bool ambient_set = false;
+
+  double diffuse = 0.0;
+  bool diffuse_set = false;
+
+  double phong = 0.0;
+  double phong_size = 40.0;
+
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    dmnsn_astnode item;
+    dmnsn_astnode child;
+    dmnsn_array_get(astnode.children, i, &item);
+
+    switch (item.type) {
+    case DMNSN_AST_AMBIENT:
+      dmnsn_array_get(item.children, 0, &child);
+      ambient = dmnsn_realize_color(child);
+      ambient_set = true;
+      break;
+
+    case DMNSN_AST_DIFFUSE:
+      dmnsn_array_get(item.children, 0, &child);
+      diffuse = dmnsn_realize_float(child);
+      diffuse_set = true;
+      break;
+
+    case DMNSN_AST_PHONG:
+      dmnsn_array_get(item.children, 0, &child);
+      phong = dmnsn_realize_float(child);
+      break;
+    case DMNSN_AST_PHONG_SIZE:
+      dmnsn_array_get(item.children, 0, &child);
+      phong_size = dmnsn_realize_float(child);
+      break;
+
+    default:
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid finish item.");
+    }
+  }
+
+  if (ambient_set) {
+    finish = dmnsn_new_finish_combination(
+      dmnsn_new_ambient_finish(ambient),
+      finish
+    );
+  }
+
+  if (diffuse_set) {
+    finish = dmnsn_new_finish_combination(
+      dmnsn_new_diffuse_finish(diffuse),
+      finish
+    );
+  }
+
+  if (phong) {
+    finish = dmnsn_new_finish_combination(
+      dmnsn_new_phong_finish(phong, phong_size),
+      finish
+    );
+  }
+
+  if (!finish) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate finish.");
+  }
+
+  return finish;
+}
+
 static dmnsn_texture *
 dmnsn_realize_texture(dmnsn_astnode astnode)
 {
@@ -395,6 +476,11 @@ dmnsn_realize_texture(dmnsn_astnode astnode)
     case DMNSN_AST_PIGMENT:
       dmnsn_delete_pigment(texture->pigment);
       texture->pigment = dmnsn_realize_pigment(modifier);
+      break;
+
+    case DMNSN_AST_FINISH:
+      dmnsn_delete_finish(texture->finish);
+      texture->finish = dmnsn_realize_finish(modifier);
       break;
 
     default:
