@@ -38,7 +38,7 @@ dmnsn_new_scene()
     scene->objects  = dmnsn_new_array(sizeof(dmnsn_object *));
     scene->lights   = dmnsn_new_array(sizeof(dmnsn_light *));
     scene->quality  = DMNSN_RENDER_FULL;
-    scene->limit    = 10;
+    scene->limit    = 5;
     scene->nthreads = 0;
   }
   return scene;
