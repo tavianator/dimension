@@ -57,6 +57,9 @@ typedef struct {
 
   /* Recursion limit */
   unsigned int limit;
+
+  /* Number of paralell threads */
+  unsigned int nthreads;
 } dmnsn_scene;
 
 /* Create a scene */

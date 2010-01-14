@@ -109,18 +109,20 @@ static void *dmnsn_raytrace_scene_multithread_thread(void *ptr);
 static int
 dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
 {
-  int i, j, nthreads;
+  int i, j, nthreads = payload->scene->nthreads;
   void *ptr;
   int retval = 0;
   dmnsn_raytrace_payload *payloads;
   pthread_t *threads;
 
-  /* Find the number of processors/cores running (TODO: do this portably) */
-  nthreads = sysconf(_SC_NPROCESSORS_ONLN);
-  if (nthreads < 1) {
-    nthreads = 1;
+  if (!nthreads) {
+    /* Find the number of processors/cores running (TODO: do this portably) */
+    nthreads = sysconf(_SC_NPROCESSORS_ONLN);
+    if (nthreads < 1) {
+      nthreads = 1;
+    }
+    /* End non-portable section */
   }
-  /* End non-portable section */
 
   payloads = malloc(nthreads*sizeof(dmnsn_raytrace_payload));
   if (!payloads) {
