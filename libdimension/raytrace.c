@@ -451,8 +451,7 @@ dmnsn_raytrace_translucency(const dmnsn_raytrace_state *state,
 {
   dmnsn_color trans = color;
   if (state->pigment.filter || state->pigment.trans) {
-    trans = dmnsn_color_mul(1.0 - state->pigment.filter - state->pigment.trans,
-                            color);
+    trans = dmnsn_color_mul(1.0 - state->pigment.trans, color);
 
     dmnsn_line trans_ray = dmnsn_new_line(state->r, state->intersection->ray.n);
     trans_ray = dmnsn_line_add_epsilon(trans_ray);
