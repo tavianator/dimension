@@ -314,11 +314,13 @@ dmnsn_color_add(dmnsn_color c1, dmnsn_color c2)
   dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
 
   /* Weighted average of transparencies by intensity */
-  dmnsn_CIE_Lab Lab1 = dmnsn_Lab_from_color(ret, dmnsn_whitepoint);
-  dmnsn_CIE_Lab Lab2 = dmnsn_Lab_from_color(ret, dmnsn_whitepoint);
-  if (Lab1.L + Lab2.L) {
-    ret.filter = (Lab1.L*c1.filter + Lab2.L*c2.filter)/(Lab1.L + Lab2.L);
-    ret.trans  = (Lab1.L*c1.trans  + Lab2.L*c2.trans )/(Lab1.L + Lab2.L);
+  dmnsn_CIE_Lab Lab1 = dmnsn_Lab_from_color(c1, dmnsn_whitepoint);
+  dmnsn_CIE_Lab Lab2 = dmnsn_Lab_from_color(c2, dmnsn_whitepoint);
+  double L1 = Lab1.L*(1.0 - c1.filter - c1.trans);
+  double L2 = Lab2.L*(1.0 - c2.filter - c2.trans);
+  if (L1 + L2) {
+    ret.filter = (L1*c1.filter + L2*c2.filter)/(L1 + L2);
+    ret.trans  = (L1*c1.trans  + L2*c2.trans) /(L1 + L2);
   }
   return ret;
 }
@@ -366,7 +368,8 @@ dmnsn_color_filter(dmnsn_color color, dmnsn_color filter)
                                          dmnsn_color_illuminate(filter, color));
 
   dmnsn_color ret = dmnsn_color_add(transmitted, filtered);
-  ret.filter = filter.filter*color.filter;
+  ret.filter = filter.filter*(color.filter + color.trans)/2
+               + color.filter*(filter.filter + filter.trans)/2;
   ret.trans  = filter.trans*color.trans;
   return ret;
 }
