@@ -432,6 +432,8 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
       state, finish, reflection_fn, dmnsn_black,
       rec, state->pigment, state->reflected, state->intersection->normal
     );
+    reflected.filter = 0.0;
+    reflected.trans  = 0.0;
   }
 
   return reflected;
