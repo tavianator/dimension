@@ -33,7 +33,11 @@ dmnsn_diffuse_finish_fn(const dmnsn_finish *finish,
 {
   double *diffuse = finish->ptr;
   double diffuse_factor = (*diffuse)*dmnsn_vector_dot(ray, normal);
-  return dmnsn_color_mul(diffuse_factor, dmnsn_color_illuminate(light, color));
+  dmnsn_color ret
+    = dmnsn_color_mul(diffuse_factor, dmnsn_color_illuminate(light, color));
+  ret.filter = 0.0;
+  ret.trans  = 0.0;
+  return ret;
 }
 
 dmnsn_finish *

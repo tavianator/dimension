@@ -30,7 +30,10 @@ static dmnsn_color
 dmnsn_ambient_finish_fn(const dmnsn_finish *finish, dmnsn_color pigment)
 {
   dmnsn_color *ambient = finish->ptr;
-  return dmnsn_color_illuminate(*ambient, pigment);
+  dmnsn_color ret = dmnsn_color_illuminate(*ambient, pigment);
+  ret.filter = 0.0;
+  ret.trans  = 0.0;
+  return ret;
 }
 
 dmnsn_finish *
