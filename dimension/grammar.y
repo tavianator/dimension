@@ -1176,11 +1176,40 @@ COLOR_BODY: COLOR_VECTOR        %dprec 1
           | COLOR_KEYWORD_GROUP %dprec 2
 ;
 
-COLOR_VECTOR: "rgb"   VECTOR { $$ = $2; }
-            | "rgbf"  VECTOR { $$ = $2; }
-            | "rgbt"  VECTOR {
+COLOR_VECTOR: "rgb" VECTOR {
+              dmnsn_astnode f, t;
+              dmnsn_array_get($2.children, 3, &f);
+              dmnsn_array_get($2.children, 4, &t);
+              dmnsn_delete_astnode(f);
+              dmnsn_delete_astnode(t);
+
+              dmnsn_array_resize($2.children, 3);
+
+              $$ = dmnsn_eval_vector($2, symtable);
+              dmnsn_delete_astnode($2);
+            }
+            | "rgbf" VECTOR {
+              dmnsn_astnode t;
+              dmnsn_array_get($2.children, 4, &t);
+              dmnsn_delete_astnode(t);
+
+              dmnsn_array_resize($2.children, 4);
+
+              $$ = dmnsn_eval_vector($2, symtable);
+              dmnsn_delete_astnode($2);
+            }
+            | "rgbt" VECTOR {
+              /* Chop off the fifth component */
+              dmnsn_astnode t;
+              dmnsn_array_get($2.children, 4, &t);
+              dmnsn_delete_astnode(t);
+
+              dmnsn_array_resize($2.children, 4);
+
+              $$ = dmnsn_eval_vector($2, symtable);
+              dmnsn_delete_astnode($2);
+
               /* Swap the transmit and filter components */
-              $$ = $2;
               dmnsn_astnode temp;
               dmnsn_array_get($$.children, 4, &temp);
               dmnsn_array_set($$.children, 4, dmnsn_array_at($$.children, 3));
