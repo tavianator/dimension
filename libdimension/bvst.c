@@ -21,14 +21,14 @@
 #include "dimension_impl.h"
 #include <stdlib.h>
 
-static dmnsn_kD_splay_node *dmnsn_new_kD_splay_node();
-static void dmnsn_delete_kD_splay_node(dmnsn_kD_splay_node *node);
+static dmnsn_bvst_node *dmnsn_new_bvst_node();
+static void dmnsn_delete_bvst_node(dmnsn_bvst_node *node);
 
 /* Return an empty tree */
-dmnsn_kD_splay_tree *
-dmnsn_new_kD_splay_tree()
+dmnsn_bvst *
+dmnsn_new_bvst()
 {
-  dmnsn_kD_splay_tree *tree = malloc(sizeof(dmnsn_kD_splay_tree));
+  dmnsn_bvst *tree = malloc(sizeof(dmnsn_bvst));
   if (tree) {
     tree->root = NULL;
   } else {
@@ -38,29 +38,29 @@ dmnsn_new_kD_splay_tree()
 }
 
 /* Recursively copy the nodes of a kD splay tree */
-static dmnsn_kD_splay_node *
-dmnsn_kD_splay_copy_recursive(dmnsn_kD_splay_node *root)
+static dmnsn_bvst_node *
+dmnsn_bvst_copy_recursive(dmnsn_bvst_node *root)
 {
-  dmnsn_kD_splay_node *node = dmnsn_new_kD_splay_node();
+  dmnsn_bvst_node *node = dmnsn_new_bvst_node();
   *node = *root;
   if (node->contains) {
-    node->contains = dmnsn_kD_splay_copy_recursive(node->contains);
+    node->contains = dmnsn_bvst_copy_recursive(node->contains);
     node->contains->parent = node;
   }
   if (node->container) {
-    node->container = dmnsn_kD_splay_copy_recursive(node->container);
+    node->container = dmnsn_bvst_copy_recursive(node->container);
     node->container->parent = node;
   }
   return node;
 }
 
 /* Copy a kD splay tree */
-dmnsn_kD_splay_tree *
-dmnsn_kD_splay_copy(dmnsn_kD_splay_tree *tree)
+dmnsn_bvst *
+dmnsn_bvst_copy(dmnsn_bvst *tree)
 {
-  dmnsn_kD_splay_tree *copy = dmnsn_new_kD_splay_tree();
+  dmnsn_bvst *copy = dmnsn_new_bvst();
   if (tree->root)
-    copy->root = dmnsn_kD_splay_copy_recursive(tree->root);
+    copy->root = dmnsn_bvst_copy_recursive(tree->root);
   else
     copy->root = NULL;
   return copy;
@@ -68,21 +68,21 @@ dmnsn_kD_splay_copy(dmnsn_kD_splay_tree *tree)
 
 /* Recursively free a kD splay tree */
 void
-dmnsn_delete_kD_splay_tree_recursive(dmnsn_kD_splay_node *node)
+dmnsn_delete_bvst_recursive(dmnsn_bvst_node *node)
 {
   if (node) {
-    dmnsn_delete_kD_splay_tree_recursive(node->contains);
-    dmnsn_delete_kD_splay_tree_recursive(node->container);
-    dmnsn_delete_kD_splay_node(node);
+    dmnsn_delete_bvst_recursive(node->contains);
+    dmnsn_delete_bvst_recursive(node->container);
+    dmnsn_delete_bvst_node(node);
   }
 }
 
 /* Free a kD splay tree */
 void
-dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_tree *tree)
+dmnsn_delete_bvst(dmnsn_bvst *tree)
 {
   if (tree) {
-    dmnsn_delete_kD_splay_tree_recursive(tree->root);
+    dmnsn_delete_bvst_recursive(tree->root);
     free(tree);
   }
 }
@@ -91,14 +91,14 @@ dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_tree *tree)
 static int dmnsn_box_contains(dmnsn_vector p,
                               dmnsn_vector min, dmnsn_vector max);
 /* Expand node to contain the bounding box from min to max */
-static void dmnsn_kD_splay_node_swallow(dmnsn_kD_splay_node *node,
-                                        dmnsn_vector min, dmnsn_vector max);
+static void dmnsn_bvst_node_swallow(dmnsn_bvst_node *node,
+                                    dmnsn_vector min, dmnsn_vector max);
 
 /* Insert an object into the tree */
 void
-dmnsn_kD_splay_insert(dmnsn_kD_splay_tree *tree, dmnsn_object *object)
+dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object)
 {
-  dmnsn_kD_splay_node *node = dmnsn_new_kD_splay_node(), *parent = tree->root;
+  dmnsn_bvst_node *node = dmnsn_new_bvst_node(), *parent = tree->root;
 
   /* Store the inverse of the transformation matrix */
   object->trans_inv = dmnsn_matrix_inverse(object->trans);
@@ -117,31 +117,31 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_tree *tree, dmnsn_object *object)
   dmnsn_vector corner;
   corner = dmnsn_new_vector(object->min.x, object->min.y, object->max.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_node_swallow(node, corner, corner);
+  dmnsn_bvst_node_swallow(node, corner, corner);
 
   corner = dmnsn_new_vector(object->min.x, object->max.y, object->min.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_node_swallow(node, corner, corner);
+  dmnsn_bvst_node_swallow(node, corner, corner);
 
   corner = dmnsn_new_vector(object->min.x, object->max.y, object->max.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_node_swallow(node, corner, corner);
+  dmnsn_bvst_node_swallow(node, corner, corner);
 
   corner = dmnsn_new_vector(object->max.x, object->min.y, object->min.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_node_swallow(node, corner, corner);
+  dmnsn_bvst_node_swallow(node, corner, corner);
 
   corner = dmnsn_new_vector(object->max.x, object->min.y, object->max.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_node_swallow(node, corner, corner);
+  dmnsn_bvst_node_swallow(node, corner, corner);
 
   corner = dmnsn_new_vector(object->max.x, object->max.y, object->min.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_node_swallow(node, corner, corner);
+  dmnsn_bvst_node_swallow(node, corner, corner);
 
   corner = dmnsn_new_vector(object->max.x, object->max.y, object->max.z);
   corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_kD_splay_node_swallow(node, corner, corner);
+  dmnsn_bvst_node_swallow(node, corner, corner);
 
   /* Now insert the node */
 
@@ -160,7 +160,7 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_tree *tree, dmnsn_object *object)
     } else {
       /* Expand node's bounding box to fully contain parent's if it doesn't
          already */
-      dmnsn_kD_splay_node_swallow(node, parent->min, parent->max);
+      dmnsn_bvst_node_swallow(node, parent->min, parent->max);
       /* node now fully contains parent */
       if (parent->container)
         parent = parent->container;
@@ -173,7 +173,7 @@ dmnsn_kD_splay_insert(dmnsn_kD_splay_tree *tree, dmnsn_object *object)
     }
   }
 
-  dmnsn_kD_splay(tree, node);
+  dmnsn_bvst_splay(tree, node);
 }
 
 /* Return whether p is within the axis-aligned box with corners min and max */
@@ -186,8 +186,8 @@ dmnsn_box_contains(dmnsn_vector p, dmnsn_vector min, dmnsn_vector max)
 
 /* Expand node to contain the bounding box from min to max */
 static void
-dmnsn_kD_splay_node_swallow(dmnsn_kD_splay_node *node,
-                            dmnsn_vector min, dmnsn_vector max)
+dmnsn_bvst_node_swallow(dmnsn_bvst_node *node,
+                        dmnsn_vector min, dmnsn_vector max)
 {
   if (node->min.x > min.x) node->min.x = min.x;
   if (node->min.y > min.y) node->min.y = min.y;
@@ -199,28 +199,28 @@ dmnsn_kD_splay_node_swallow(dmnsn_kD_splay_node *node,
 }
 
 /* Tree rotations */
-static void dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node);
+static void dmnsn_bvst_rotate(dmnsn_bvst_node *node);
 
 /* Splay a node: move it to the root via tree rotations */
 void
-dmnsn_kD_splay(dmnsn_kD_splay_tree *tree, dmnsn_kD_splay_node *node)
+dmnsn_bvst_splay(dmnsn_bvst *tree, dmnsn_bvst_node *node)
 {
   while (node->parent) {
     if (!node->parent->parent) {
       /* Zig step - we are a child of the root node */
-      dmnsn_kD_splay_rotate(node);
+      dmnsn_bvst_rotate(node);
       break;
     } else if ((node == node->parent->contains
                 && node->parent == node->parent->parent->contains)
                || (node == node->parent->container
                    && node->parent == node->parent->parent->container)) {
       /* Zig-zig step - we are a child on the same side as our parent */
-      dmnsn_kD_splay_rotate(node->parent);
-      dmnsn_kD_splay_rotate(node);
+      dmnsn_bvst_rotate(node->parent);
+      dmnsn_bvst_rotate(node);
     } else {
       /* Zig-zag step - we are a child on a different side than our parent is */
-      dmnsn_kD_splay_rotate(node);
-      dmnsn_kD_splay_rotate(node);
+      dmnsn_bvst_rotate(node);
+      dmnsn_bvst_rotate(node);
     }
   }
   tree->root = node;
@@ -228,9 +228,9 @@ dmnsn_kD_splay(dmnsn_kD_splay_tree *tree, dmnsn_kD_splay_node *node)
 
 /* Rotate a tree on the edge connecting node and node->parent */
 static void
-dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node)
+dmnsn_bvst_rotate(dmnsn_bvst_node *node)
 {
-  dmnsn_kD_splay_node *P, *Q, *B;
+  dmnsn_bvst_node *P, *Q, *B;
   if (node == node->parent->contains) {
     /* We are a left child; perform a right rotation:
      *
@@ -293,22 +293,21 @@ dmnsn_kD_splay_rotate(dmnsn_kD_splay_node *node)
 }
 
 typedef struct {
-  dmnsn_kD_splay_node *node;
+  dmnsn_bvst_node *node;
   dmnsn_intersection  *intersection;
-} dmnsn_kD_splay_search_result;
+} dmnsn_bvst_search_result;
 
-static dmnsn_kD_splay_search_result
-dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
-                                double t);
+static dmnsn_bvst_search_result
+dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t);
 
 dmnsn_intersection *
-dmnsn_kD_splay_search(dmnsn_kD_splay_tree *tree, dmnsn_line ray)
+dmnsn_bvst_search(dmnsn_bvst *tree, dmnsn_line ray)
 {
-  dmnsn_kD_splay_search_result result
-    = dmnsn_kD_splay_search_recursive(tree->root, ray, -1.0);
+  dmnsn_bvst_search_result result
+    = dmnsn_bvst_search_recursive(tree->root, ray, -1.0);
 
   if (result.node)
-    dmnsn_kD_splay(tree, result.node);
+    dmnsn_bvst_splay(tree, result.node);
 
   return result.intersection;
 }
@@ -316,19 +315,18 @@ dmnsn_kD_splay_search(dmnsn_kD_splay_tree *tree, dmnsn_line ray)
 static int dmnsn_ray_box_intersection(dmnsn_line ray, dmnsn_vector min,
                                       dmnsn_vector max, double t);
 
-static dmnsn_kD_splay_search_result
-dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
-                                double t)
+static dmnsn_bvst_search_result
+dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
 {
   dmnsn_line ray_trans;
-  dmnsn_kD_splay_search_result result = { NULL, NULL }, result_temp;
+  dmnsn_bvst_search_result result = { NULL, NULL }, result_temp;
 
   if (!node)
     return result;
 
   /* Go down the right subtree first because the closest object is more likely
      to lie in the larger bounding boxes */
-  result_temp = dmnsn_kD_splay_search_recursive(node->container, ray, t);
+  result_temp = dmnsn_bvst_search_recursive(node->container, ray, t);
   if (result_temp.node && (t < 0.0 || result_temp.intersection->t < t)) {
     result = result_temp;
     t = result.intersection->t;
@@ -376,7 +374,7 @@ dmnsn_kD_splay_search_recursive(dmnsn_kD_splay_node *node, dmnsn_line ray,
     }
 
     /* Go down the left subtree */
-    result_temp = dmnsn_kD_splay_search_recursive(node->contains, ray, t);
+    result_temp = dmnsn_bvst_search_recursive(node->contains, ray, t);
     if (result_temp.node && (t < 0.0 || result_temp.intersection->t < t)) {
       dmnsn_delete_intersection(result.intersection);
       result = result_temp;
@@ -447,10 +445,10 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max,
   return 0;
 }
 
-static dmnsn_kD_splay_node *
-dmnsn_new_kD_splay_node()
+static dmnsn_bvst_node *
+dmnsn_new_bvst_node()
 {
-  dmnsn_kD_splay_node *node = malloc(sizeof(dmnsn_kD_splay_node));
+  dmnsn_bvst_node *node = malloc(sizeof(dmnsn_bvst_node));
   if (!node) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "kD splay tree node allocation failed.");
   }
@@ -458,7 +456,7 @@ dmnsn_new_kD_splay_node()
 }
 
 static void
-dmnsn_delete_kD_splay_node(dmnsn_kD_splay_node *node)
+dmnsn_delete_bvst_node(dmnsn_bvst_node *node)
 {
   free(node);
 }

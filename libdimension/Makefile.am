@@ -42,6 +42,8 @@ lib_LTLIBRARIES = libdimension.la
 
 libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           ambient.c                                            \
+                          bvst.c                                               \
+                          bvst.h                                               \
                           camera.c                                             \
                           canvas.c                                             \
                           color.c                                              \
@@ -53,8 +55,6 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           geometry.c                                           \
                           gl.c                                                 \
                           inlines.c                                            \
-                          kD_splay_tree.c                                      \
-                          kD_splay_tree.h                                      \
                           light.c                                              \
                           object.c                                             \
                           perspective.c                                        \

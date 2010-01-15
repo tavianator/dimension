@@ -19,7 +19,7 @@
  *************************************************************************/
 
 /*
- * k-dimensional (in this case, k == 3) trees for storing object bounding boxes.
+ * Bounding Volume Splay Trees for storing object bounding boxes.
  * Each node's bounding box entirely contains the bounding boxes of the nodes
  * to its left, and is entirely contained by the bounding boxes of the nodes to
  * its right.  Splay trees are used for the implementation, to bring commonly-
@@ -29,22 +29,22 @@
  * are expanded to contain it.
  */
 
-#ifndef DIMENSION_IMPL_KD_SPLAY_TREE_H
-#define DIMENSION_IMPL_KD_SPLAY_TREE_H
+#ifndef DIMENSION_IMPL_BVST_H
+#define DIMENSION_IMPL_BVST_H
 
-typedef struct dmnsn_kD_splay_tree dmnsn_kD_splay_tree;
-typedef struct dmnsn_kD_splay_node dmnsn_kD_splay_node;
+typedef struct dmnsn_bvst dmnsn_bvst;
+typedef struct dmnsn_bvst_node dmnsn_bvst_node;
 
-struct dmnsn_kD_splay_tree {
-  dmnsn_kD_splay_node *root;
+struct dmnsn_bvst {
+  dmnsn_bvst_node *root;
 };
 
-struct dmnsn_kD_splay_node {
+struct dmnsn_bvst_node {
   /* Tree children */
-  dmnsn_kD_splay_node *contains, *container;
+  dmnsn_bvst_node *contains, *container;
 
   /* Parent node for easy backtracking */
-  dmnsn_kD_splay_node *parent;
+  dmnsn_bvst_node *parent;
 
   /* Bounding box corners */
   dmnsn_vector min, max;
@@ -53,14 +53,13 @@ struct dmnsn_kD_splay_node {
   dmnsn_object *object;
 };
 
-dmnsn_kD_splay_tree *dmnsn_new_kD_splay_tree();
-dmnsn_kD_splay_tree *dmnsn_kD_splay_copy(dmnsn_kD_splay_tree *tree);
-void dmnsn_delete_kD_splay_tree(dmnsn_kD_splay_tree *tree);
+dmnsn_bvst *dmnsn_new_bvst();
+dmnsn_bvst *dmnsn_bvst_copy(dmnsn_bvst *tree);
+void dmnsn_delete_bvst(dmnsn_bvst *tree);
 
-void dmnsn_kD_splay_insert(dmnsn_kD_splay_tree *tree, dmnsn_object *object);
-void dmnsn_kD_splay(dmnsn_kD_splay_tree *tree, dmnsn_kD_splay_node *node);
+void dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object);
+void dmnsn_bvst_splay(dmnsn_bvst *tree, dmnsn_bvst_node *node);
 
-dmnsn_intersection *dmnsn_kD_splay_search(dmnsn_kD_splay_tree *tree,
-                                          dmnsn_line ray);
+dmnsn_intersection *dmnsn_bvst_search(dmnsn_bvst *tree, dmnsn_line ray);
 
-#endif /* DIMENSION_IMPL_KD_SPLAY_TREE_H */
+#endif /* DIMENSION_IMPL_BVST_H */

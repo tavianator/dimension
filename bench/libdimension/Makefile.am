@@ -19,7 +19,7 @@
 
 INCLUDES = -I$(top_srcdir)/libdimension
 
-EXTRA_PROGRAMS = bench-array bench-geometry bench-kD_splay_tree
+EXTRA_PROGRAMS = bench-array bench-geometry bench-bvst
 
 bench_array_SOURCES = array.c
 bench_array_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
@@ -27,12 +27,12 @@ bench_array_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
 bench_geometry_SOURCES = geometry.c
 bench_geometry_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
 
-bench_kD_splay_tree_SOURCES = kD_splay_tree.c
-bench_kD_splay_tree_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
+bench_bvst_SOURCES = bvst.c
+bench_bvst_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
 
-bench: bench-array$(EXEEXT) bench-geometry$(EXEEXT) bench-kD_splay_tree$(EXEEXT)
+bench: bench-array$(EXEEXT) bench-geometry$(EXEEXT) bench-bvst$(EXEEXT)
 	./bench-array$(EXEEXT)
 	./bench-geometry$(EXEEXT)
-	./bench-kD_splay_tree$(EXEEXT)
+	./bench-bvst$(EXEEXT)
 
 .PHONY: bench

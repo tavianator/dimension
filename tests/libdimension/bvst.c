@@ -18,7 +18,7 @@
  *************************************************************************/
 
 /*
- * Basic tests of our fancy k-D splay tree framework
+ * Basic tests of our Bounding Volume Splay Tree framework
  */
 
 #include "../../libdimension/dimension_impl.h"
@@ -27,7 +27,7 @@
 int
 main()
 {
-  dmnsn_kD_splay_tree *tree;
+  dmnsn_bvst *tree;
   dmnsn_object *obj1, *obj2, *obj3;
 
   obj1 = dmnsn_new_object();
@@ -43,28 +43,28 @@ main()
   obj3->min = dmnsn_new_vector(-1.0, -1.0, -1.0);
   obj3->max = dmnsn_new_vector(0.0, 0.0, 0.0);
 
-  tree = dmnsn_new_kD_splay_tree();
+  tree = dmnsn_new_bvst();
 
-  dmnsn_kD_splay_insert(tree, obj1);
+  dmnsn_bvst_insert(tree, obj1);
   if (tree->root->object != obj1) {
-    fprintf(stderr, "Wrong kD splay tree built.\n");
+    fprintf(stderr, "Wrong BVST built.\n");
     return EXIT_FAILURE;
   }
 
-  dmnsn_kD_splay_insert(tree, obj2);
+  dmnsn_bvst_insert(tree, obj2);
   if (tree->root->object != obj2 || tree->root->contains->object != obj1) {
-    fprintf(stderr, "Wrong kD splay tree built.\n");
+    fprintf(stderr, "Wrong BVST built.\n");
     return EXIT_FAILURE;
   }
 
-  dmnsn_kD_splay_insert(tree, obj3);
+  dmnsn_bvst_insert(tree, obj3);
   if (tree->root->object != obj3 || tree->root->contains->object != obj1
       || tree->root->container->object != obj2) {
-    fprintf(stderr, "Wrong kD splay tree built.\n");
+    fprintf(stderr, "Wrong BVST built.\n");
     return EXIT_FAILURE;
   }
 
-  dmnsn_delete_kD_splay_tree(tree);
+  dmnsn_delete_bvst(tree);
   dmnsn_delete_object(obj3);
   dmnsn_delete_object(obj2);
   dmnsn_delete_object(obj1);

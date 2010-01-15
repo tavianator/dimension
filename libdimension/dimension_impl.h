@@ -22,6 +22,6 @@
 #define DIMENSION_IMPL_H
 
 #include "dimension.h"
-#include "kD_splay_tree.h"
+#include "bvst.h"
 
 #endif /* DIMENSION_IMPL_H */

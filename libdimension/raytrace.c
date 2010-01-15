@@ -30,7 +30,7 @@
 typedef struct {
   dmnsn_progress *progress;
   dmnsn_scene *scene;
-  dmnsn_kD_splay_tree *kD_splay_tree;
+  dmnsn_bvst *bvst;
 
   /* For multithreading */
   unsigned int index, threads;
@@ -63,19 +63,19 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
       return NULL;
     }
 
-    payload->progress      = progress;
-    payload->scene         = scene;
-    payload->kD_splay_tree = dmnsn_new_kD_splay_tree();
+    payload->progress = progress;
+    payload->scene    = scene;
+    payload->bvst     = dmnsn_new_bvst();
 
     for (i = 0; i < dmnsn_array_size(payload->scene->objects); ++i) {
       dmnsn_array_get(payload->scene->objects, i, &object);
-      dmnsn_kD_splay_insert(payload->kD_splay_tree, object);
+      dmnsn_bvst_insert(payload->bvst, object);
     }
 
     if (pthread_create(&progress->thread, NULL, &dmnsn_raytrace_scene_thread,
                        payload) != 0)
     {
-      dmnsn_delete_kD_splay_tree(payload->kD_splay_tree);
+      dmnsn_delete_bvst(payload->bvst);
       free(payload);
       dmnsn_delete_progress(progress);
       return NULL;
@@ -145,8 +145,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
     payloads[i].index = i;
     payloads[i].threads = nthreads;
     if (i > 0) {
-      payloads[i].kD_splay_tree =
-        dmnsn_kD_splay_copy(payloads[0].kD_splay_tree);
+      payloads[i].bvst = dmnsn_bvst_copy(payloads[0].bvst);
     }
   }
 
@@ -164,7 +163,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
         } else {
           /* Only free on a successful join - otherwise we might free a pointer
              out from under a running thread */
-          dmnsn_delete_kD_splay_tree(payloads[j].kD_splay_tree);
+          dmnsn_delete_bvst(payloads[j].bvst);
           free(ptr);
         }
       }
@@ -182,7 +181,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
       if (retval == 0) {
         retval = *(int *)ptr;
       }
-      dmnsn_delete_kD_splay_tree(payloads[i].kD_splay_tree);
+      dmnsn_delete_bvst(payloads[i].bvst);
       free(ptr);
     }
   }
@@ -195,7 +194,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
 /* Actual raytracing implementation */
 static int dmnsn_raytrace_scene_impl(dmnsn_progress *progress,
                                      dmnsn_scene *scene,
-                                     dmnsn_kD_splay_tree *kD_splay_tree,
+                                     dmnsn_bvst *bvst,
                                      unsigned int index, unsigned int threads);
 
 /* Multi-threading thread callback */
@@ -206,7 +205,7 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
   int *retval = malloc(sizeof(int));
   if (retval) {
     *retval = dmnsn_raytrace_scene_impl(payload->progress, payload->scene,
-                                        payload->kD_splay_tree,
+                                        payload->bvst,
                                         payload->index, payload->threads);
   }
   return retval;
@@ -219,7 +218,7 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
 typedef struct dmnsn_raytrace_state {
   const dmnsn_scene *scene;
   const dmnsn_intersection *intersection;
-  dmnsn_kD_splay_tree *kD_splay_tree;
+  dmnsn_bvst *bvst;
   unsigned int level;
 
   dmnsn_vector r;
@@ -238,12 +237,12 @@ static dmnsn_color dmnsn_raytrace_shoot(dmnsn_raytrace_state *state,
 /* Actually raytrace a scene */
 static int
 dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
-                          dmnsn_kD_splay_tree *kD_splay_tree,
+                          dmnsn_bvst *bvst,
                           unsigned int index, unsigned int threads)
 {
   dmnsn_raytrace_state state = {
     .scene = scene,
-    .kD_splay_tree = kD_splay_tree
+    .bvst = bvst
   };
 
   unsigned int width  = scene->canvas->x;
@@ -339,10 +338,8 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
 
   unsigned int level = state->level;
   while (level) {
-    dmnsn_intersection *shadow_caster = dmnsn_kD_splay_search(
-      state->kD_splay_tree,
-      shadow_ray
-    );
+    dmnsn_intersection *shadow_caster
+      = dmnsn_bvst_search(state->bvst, shadow_ray);
 
     if (!shadow_caster || shadow_caster->t > 1.0) {
       dmnsn_delete_intersection(shadow_caster);
@@ -468,7 +465,7 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
   --state->level;
 
   dmnsn_intersection *intersection
-    = dmnsn_kD_splay_search(state->kD_splay_tree, ray);
+    = dmnsn_bvst_search(state->bvst, ray);
 
   dmnsn_color color = state->scene->background;
   if (intersection) {

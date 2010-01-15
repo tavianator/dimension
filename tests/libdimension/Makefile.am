@@ -22,7 +22,7 @@ INCLUDES = -I$(top_srcdir)/libdimension
 check_LTLIBRARIES = libdimension-tests.la
 check_PROGRAMS    = error-test                                                 \
                     warning-test                                               \
-                    kD_splay_tree-test                                         \
+                    bvst-test                                                  \
                     png-test                                                   \
                     gl-test
 TESTS             = $(check_PROGRAMS)
@@ -45,8 +45,8 @@ error_test_LDADD   = libdimension-tests.la
 warning_test_SOURCES = warning.c
 warning_test_LDADD   = libdimension-tests.la
 
-kD_splay_tree_test_SOURCES = kD_splay_tree.c
-kD_splay_tree_test_LDADD   = libdimension-tests.la
+bvst_test_SOURCES = bvst.c
+bvst_test_LDADD   = libdimension-tests.la
 
 png_test_SOURCES = png.c
 png_test_LDADD   = libdimension-tests.la
