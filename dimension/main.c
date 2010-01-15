@@ -37,7 +37,8 @@ main(int argc, char **argv) {
    * Parse the command-line options
    */
 
-  static enum {
+  /* Long-only option codes */
+  enum {
     DMNSN_NTHREADS = 256
   };
 
