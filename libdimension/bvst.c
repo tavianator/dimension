@@ -32,12 +32,12 @@ dmnsn_new_bvst()
   if (tree) {
     tree->root = NULL;
   } else {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "kD splay tree allocation failed.");
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "BVST allocation failed.");
   }
   return tree;
 }
 
-/* Recursively copy the nodes of a kD splay tree */
+/* Recursively copy the nodes of a BVST */
 static dmnsn_bvst_node *
 dmnsn_bvst_copy_recursive(dmnsn_bvst_node *root)
 {
@@ -54,7 +54,7 @@ dmnsn_bvst_copy_recursive(dmnsn_bvst_node *root)
   return node;
 }
 
-/* Copy a kD splay tree */
+/* Copy a BVST */
 dmnsn_bvst *
 dmnsn_bvst_copy(dmnsn_bvst *tree)
 {
@@ -66,7 +66,7 @@ dmnsn_bvst_copy(dmnsn_bvst *tree)
   return copy;
 }
 
-/* Recursively free a kD splay tree */
+/* Recursively free a BVST */
 void
 dmnsn_delete_bvst_recursive(dmnsn_bvst_node *node)
 {
@@ -77,7 +77,7 @@ dmnsn_delete_bvst_recursive(dmnsn_bvst_node *node)
   }
 }
 
-/* Free a kD splay tree */
+/* Free a BVST */
 void
 dmnsn_delete_bvst(dmnsn_bvst *tree)
 {
@@ -450,7 +450,7 @@ dmnsn_new_bvst_node()
 {
   dmnsn_bvst_node *node = malloc(sizeof(dmnsn_bvst_node));
   if (!node) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "kD splay tree node allocation failed.");
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "BVST node allocation failed.");
   }
   return node;
 }
