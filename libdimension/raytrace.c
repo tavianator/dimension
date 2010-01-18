@@ -291,33 +291,30 @@ dmnsn_line_add_epsilon(dmnsn_line l)
   );
 }
 
+#define ITEXTURE(state) (state->intersection->texture)
+#define DTEXTURE(state) (state->scene->default_texture)
+
+#define CAN_CALL(texture, telem, fn)                            \
+  ((texture) && (texture)->telem && (texture)->telem->fn)
+
 /* Determine whether a callback may be called */
-#define DMNSN_TEXTURE_HAS_CALLBACK(state, telem, fn)                           \
-  ({                                                                           \
-     const dmnsn_texture *_itexture = state->intersection->texture;            \
-     const dmnsn_texture *_dtexture = state->scene->default_texture;           \
-     (_itexture && _itexture->telem && _itexture->telem->fn)                   \
-       ? 1                                                                     \
-       : ((_dtexture && _dtexture->telem && _dtexture->telem->fn) ? 1 : 0);    \
-   })
+#define TEXTURE_HAS_CALLBACK(state, telem, fn)  \
+  (CAN_CALL(ITEXTURE(state), telem, fn)         \
+   || CAN_CALL(DTEXTURE(state), telem, fn))
 
 /* Call the appropriate overloaded texture callback */
-#define DMNSN_TEXTURE_CALLBACK(state, telem, fn, def, ...)                     \
-  ({                                                                           \
-     const dmnsn_texture *_itexture = state->intersection->texture;            \
-     const dmnsn_texture *_dtexture = state->scene->default_texture;           \
-     (_itexture && _itexture->telem && _itexture->telem->fn)                   \
-       ? (*_itexture->telem->fn)(_itexture->telem, ## __VA_ARGS__)             \
-       : ((_dtexture && _dtexture->telem && _dtexture->telem->fn)              \
-            ? (*_dtexture->telem->fn)(_dtexture->telem, ## __VA_ARGS__)        \
-            : def);                                                            \
-   })
+#define TEXTURE_CALLBACK(state, telem, fn, def, ...)                       \
+  (CAN_CALL(ITEXTURE(state), telem, fn)                                    \
+   ? (*ITEXTURE(state)->telem->fn)(ITEXTURE(state)->telem, __VA_ARGS__)    \
+   : (CAN_CALL(DTEXTURE(state), telem, fn)                                 \
+      ? (*DTEXTURE(state)->telem->fn)(DTEXTURE(state)->telem, __VA_ARGS__) \
+      : def));                                                             \
 
 static void
 dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
 {
-  state->pigment = DMNSN_TEXTURE_CALLBACK(state, pigment, pigment_fn,
-                                          dmnsn_black, state->r);
+  state->pigment = TEXTURE_CALLBACK(state, pigment, pigment_fn, dmnsn_black,
+                                    state->r);
 }
 
 /* Get the color of a light ray at an intersection point */
@@ -372,11 +369,11 @@ static void
 dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
 {
   /* The illuminated color */
-  state->diffuse = DMNSN_TEXTURE_CALLBACK(state, finish, ambient_fn,
-                                          dmnsn_black, state->pigment);
+  state->diffuse = TEXTURE_CALLBACK(state, finish, ambient_fn, dmnsn_black,
+                                    state->pigment);
 
-  if (!DMNSN_TEXTURE_HAS_CALLBACK(state, finish, diffuse_fn)
-      && !DMNSN_TEXTURE_HAS_CALLBACK(state, finish, specular_fn))
+  if (!TEXTURE_HAS_CALLBACK(state, finish, diffuse_fn)
+      && !TEXTURE_HAS_CALLBACK(state, finish, specular_fn))
   {
     return;
   }
@@ -396,11 +393,11 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
         );
 
         /* Get this light's color contribution to the object */
-        dmnsn_color diffuse = DMNSN_TEXTURE_CALLBACK(
+        dmnsn_color diffuse = TEXTURE_CALLBACK(
           state, finish, diffuse_fn, dmnsn_black,
           light_color, state->pigment, ray, state->intersection->normal
         );
-        dmnsn_color specular = DMNSN_TEXTURE_CALLBACK(
+        dmnsn_color specular = TEXTURE_CALLBACK(
           state, finish, specular_fn, dmnsn_black,
           light_color, state->pigment, ray, state->intersection->normal,
           state->viewer
@@ -419,13 +416,13 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
 {
   dmnsn_color reflected = dmnsn_black;
 
-  if (DMNSN_TEXTURE_HAS_CALLBACK(state, finish, reflection_fn)) {
+  if (TEXTURE_HAS_CALLBACK(state, finish, reflection_fn)) {
     dmnsn_line refl_ray = dmnsn_new_line(state->r, state->reflected);
     refl_ray = dmnsn_line_add_epsilon(refl_ray);
 
     dmnsn_raytrace_state recursive_state = *state;
     dmnsn_color rec = dmnsn_raytrace_shoot(&recursive_state, refl_ray);
-    reflected = DMNSN_TEXTURE_CALLBACK(
+    reflected = TEXTURE_CALLBACK(
       state, finish, reflection_fn, dmnsn_black,
       rec, state->pigment, state->reflected, state->intersection->normal
     );
