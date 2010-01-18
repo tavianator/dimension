@@ -24,7 +24,8 @@ check_PROGRAMS    = error-test                                                 \
                     warning-test                                               \
                     bvst-test                                                  \
                     png-test                                                   \
-                    gl-test
+                    gl-test                                                    \
+                    cxx-test
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
 
@@ -55,3 +56,6 @@ clean-local-png-test:
 
 gl_test_SOURCES = gl.c
 gl_test_LDADD   = libdimension-tests.la
+
+cxx_test_SOURCES = cxx.cpp
+cxx_test_LDADD   = libdimension-tests.la
