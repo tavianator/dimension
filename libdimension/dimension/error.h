@@ -39,7 +39,7 @@ typedef enum {
 #elif __STDC_VERSION__ >= 199901L
   #define DMNSN_FUNC __func__
 #else
-  #define DMNSN_FUNC __FILE__
+  #define DMNSN_FUNC "<unknown function>"
 #endif
 
 /* Use this macro to report an error */
