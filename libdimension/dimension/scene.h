@@ -25,7 +25,7 @@
 #ifndef DIMENSION_SCENE_H
 #define DIMENSION_SCENE_H
 
-typedef enum {
+enum {
   DMNSN_RENDER_NONE         = 0,
   DMNSN_RENDER_PIGMENT      = 1 << 0,
   DMNSN_RENDER_LIGHTS       = 1 << 1,
@@ -33,7 +33,9 @@ typedef enum {
   DMNSN_RENDER_TRANSLUCENCY = 1 << 3,
   DMNSN_RENDER_REFLECTION   = 1 << 4,
   DMNSN_RENDER_FULL         = ~DMNSN_RENDER_NONE
-} dmnsn_quality;
+};
+
+typedef unsigned int dmnsn_quality;
 
 typedef struct {
   /* World attributes */
