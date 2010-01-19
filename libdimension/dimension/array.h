@@ -147,13 +147,15 @@ dmnsn_array_pop(dmnsn_array *array, void *obj)
 DMNSN_INLINE void
 dmnsn_array_insert(dmnsn_array *array, size_t i, const void *obj)
 {
-  size_t size = dmnsn_array_size(array);
-  /* Increase the size by 1 */
-  dmnsn_array_resize(array, size + 1);
+  size_t size = dmnsn_array_size(array) + 1;
+  if (i >= size)
+    size = i + 1;
+  dmnsn_array_resize(array, size);
+
   /* Move the elements at and after `i' 1 to the right */
   memmove((char *)array->ptr + array->obj_size*(i + 1),
           (char *)array->ptr + array->obj_size*i,
-          array->obj_size*(size - i));
+          array->obj_size*(size - i - 1));
   /* Insert `obj' at `i' */
   memcpy((char *)array->ptr + array->obj_size*i, obj, array->obj_size);
 }
@@ -163,6 +165,11 @@ DMNSN_INLINE void
 dmnsn_array_remove(dmnsn_array *array, size_t i)
 {
   size_t size = dmnsn_array_size(array);
+  if (i >= size) {
+    /* Range check failed */
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
+  }
+
   /* Move the array elements after `i' 1 to the left */
   memmove((char *)array->ptr + array->obj_size*i,
           (char *)array->ptr + array->obj_size*(i + 1),
