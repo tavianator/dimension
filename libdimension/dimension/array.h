@@ -139,6 +139,11 @@ DMNSN_INLINE void
 dmnsn_array_pop(dmnsn_array *array, void *obj)
 {
   size_t size = dmnsn_array_size(array);
+  if (size <= 0) {
+    /* Range check failed */
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array is empty.");
+  }
+
   dmnsn_array_get(array, size - 1, obj); /* Copy the object */
   dmnsn_array_resize(array, size - 1);   /* Shrink the array */
 }
