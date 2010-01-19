@@ -100,6 +100,11 @@
 int token;
 size_t string_length = 0, string_extent = 8;
 unsigned long wchar;
+
+/* Silence some warnings */
+(void)yyunput;
+(void)input;
+(void)yy_top_state;
 %}
 
 (?# Comments)
