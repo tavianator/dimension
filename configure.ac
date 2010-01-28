@@ -1,4 +1,4 @@
-dnl Copyright (C) 2009 Tavian Barnes <tavianator@gmail.com>
+dnl Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>
 dnl
 dnl This file is part of The Dimension Build Suite.
 dnl

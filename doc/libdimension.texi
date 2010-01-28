@@ -10,7 +10,7 @@
 @c Wrap code examples at 72 chars, please
 
 @copying
-Copyright @copyright{} 2009 Tavian Barnes
+Copyright @copyright{} 2010 Tavian Barnes
 @end copying
 
 @titlepage

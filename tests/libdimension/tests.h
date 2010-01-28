@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009 Tavian Barnes <tavianator@gmail.com>               *
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
