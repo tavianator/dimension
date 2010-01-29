@@ -1,0 +1,83 @@
+/*************************************************************************
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
+ *                                                                       *
+ * This file is part of Dimension.                                       *
+ *                                                                       *
+ * Dimension is free software; you can redistribute it and/or modify it  *
+ * under the terms of the GNU General Public License as published by the *
+ * Free Software Foundation; either version 3 of the License, or (at     *
+ * your option) any later version.                                       *
+ *                                                                       *
+ * Dimension is distributed in the hope that it will be useful, but      *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of            *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
+ * General Public License for more details.                              *
+ *                                                                       *
+ * You should have received a copy of the GNU General Public License     *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *************************************************************************/
+
+/* Top-level items */
+%type <astnode> SCENE_ITEM
+
+/* Language directives */
+%type <astnode> RVALUE
+%type <astnode> IDENTIFIER
+
+/* Transformations */
+%type <astnode> TRANSFORMATION
+
+/* The camera */
+%type <astnode> CAMERA
+%type <astnode> CAMERA_ITEMS
+%type <astnode> CAMERA_ITEM
+%type <astnode> CAMERA_TYPE
+%type <astnode> CAMERA_VECTOR
+%type <astnode> CAMERA_MODIFIER
+
+/* Atmospheric effects */
+%type <astnode> ATMOSPHERIC_EFFECT
+%type <astnode> BACKGROUND
+
+/* Objects */
+%type <astnode> OBJECT
+%type <astnode> FINITE_SOLID_OBJECT
+%type <astnode> BOX
+%type <astnode> LIGHT_SOURCE
+%type <astnode> SPHERE
+
+/* Object modifiers */
+%type <astnode> OBJECT_MODIFIERS
+%type <astnode> OBJECT_MODIFIER
+
+/* Textures */
+%type <astnode> TEXTURE
+%type <astnode> TEXTURE_ITEMS
+
+/* Pigments */
+%type <astnode> PIGMENT
+%type <astnode> PIGMENT_TYPE
+
+/* Finishes */
+%type <astnode> FINISH
+%type <astnode> FINISH_ITEMS
+%type <astnode> REFLECTION
+%type <astnode> REFLECTION_ITEMS
+
+/* Floats */
+%type <astnode> FLOAT
+%type <astnode> FLOAT_LITERAL
+
+/* Vectors */
+%type <astnode> VECTOR
+%type <astnode> VECTOR_LITERAL
+
+/* Generalized arithmetic expressions */
+%type <astnode> ARITH_EXPR
+
+/* Colors */
+%type <astnode> COLOR
+%type <astnode> COLOR_BODY
+%type <astnode> COLOR_VECTOR
+%type <astnode> COLOR_KEYWORD_GROUP
+%type <astnode> COLOR_KEYWORD_GROUP_INIT

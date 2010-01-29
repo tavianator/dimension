@@ -23,6 +23,22 @@ bin_PROGRAMS = dimension
 
 AM_YFLAGS = -d
 BUILT_SOURCES = grammar.h
+EXTRA_DIST = grammar.prologue                                                  \
+             grammar.declarations                                              \
+             grammar.terminals                                                 \
+             grammar.nonterminals                                              \
+             grammar.rules                                                     \
+             grammar.epilogue
+
+grammar.y: grammar.prologue grammar.declarations grammar.terminals grammar.nonterminals grammar.rules grammar.epilogue
+	echo "%{" >$@
+	cat grammar.prologue >>$@
+	echo "%}" >>$@
+	cat grammar.{declarations,terminals,nonterminals} >>$@
+	echo "%%" >>$@
+	cat grammar.rules >>$@
+	echo "%%" >>$@
+	cat grammar.epilogue >>$@
 
 dimension_SOURCES = grammar.y                                                  \
                     lexer.l                                                    \

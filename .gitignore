@@ -42,6 +42,7 @@ Makefile.in
 /dimension/dimension
 /dimension/grammar.c
 /dimension/grammar.h
+/dimension/grammar.y
 /dimension/lexer.c
 
 # Files created by `make check'

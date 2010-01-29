@@ -1,0 +1,148 @@
+/*************************************************************************
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
+ *                                                                       *
+ * This file is part of Dimension.                                       *
+ *                                                                       *
+ * Dimension is free software; you can redistribute it and/or modify it  *
+ * under the terms of the GNU General Public License as published by the *
+ * Free Software Foundation; either version 3 of the License, or (at     *
+ * your option) any later version.                                       *
+ *                                                                       *
+ * Dimension is distributed in the hope that it will be useful, but      *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of            *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
+ * General Public License for more details.                              *
+ *                                                                       *
+ * You should have received a copy of the GNU General Public License     *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *************************************************************************/
+
+dmnsn_astree *
+dmnsn_parse(FILE *file, dmnsn_symbol_table *symtable)
+{
+  const char *filename;
+  dmnsn_astnode *fnode = dmnsn_find_symbol(symtable, "__file__");
+  if (fnode && fnode->type == DMNSN_AST_STRING) {
+    filename = fnode->ptr;
+  } else {
+    filename = "<>";
+    dmnsn_declare_symbol(symtable, "__file__", dmnsn_new_ast_string(filename));
+  }
+
+  void *scanner;
+  dmnsn_astree *astree = dmnsn_new_array(sizeof(dmnsn_astnode));
+
+  dmnsn_yylex_init(&scanner);
+  dmnsn_yyset_in(file, scanner);
+
+  if (yyparse(filename, scanner, astree, symtable) != 0) {
+    dmnsn_delete_astree(astree);
+    astree = NULL;
+  }
+
+  dmnsn_yylex_destroy(scanner);
+  return astree;
+}
+
+const char *
+dmnsn_token_string(dmnsn_token_type token_type)
+{
+#define TOKEN_SIZE 255
+  static char token[TOKEN_SIZE + 1];
+
+  unsigned int i = YYTRANSLATE(token_type);
+  if (i > YYNTOKENS) {
+    fprintf(stderr, "Warning: unrecognised token %d.\n", (int)token_type);
+    return "unrecognized-token";
+  }
+
+  /* Trim the quotation marks */
+
+  if (strlen(yytname[i]) - 1 >= TOKEN_SIZE) {
+    fprintf(stderr, "Warning: name of token %d too long.\n", (int)token_type);
+    return "unrepresentable-token";
+  }
+
+  strcpy(token, yytname[i] + 1);
+  token[strlen(token) - 1] = '\0';
+
+  return token;
+#undef TOKEN_SIZE
+}
+
+const char *
+dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
+{
+  switch (astnode_type) {
+  /* Macro to shorten this switch */
+#define dmnsn_astnode_map(type, str)                                           \
+  case type:                                                                   \
+    return str;
+
+  dmnsn_astnode_map(DMNSN_AST_NONE, "none");
+
+  dmnsn_astnode_map(DMNSN_AST_ROTATION, "rotate");
+  dmnsn_astnode_map(DMNSN_AST_SCALE, "scale");
+  dmnsn_astnode_map(DMNSN_AST_TRANSLATION, "translate");
+
+  dmnsn_astnode_map(DMNSN_AST_CAMERA, "camera");
+  dmnsn_astnode_map(DMNSN_AST_PERSPECTIVE, "perspective");
+  dmnsn_astnode_map(DMNSN_AST_LOCATION, "location");
+  dmnsn_astnode_map(DMNSN_AST_RIGHT, "right");
+  dmnsn_astnode_map(DMNSN_AST_UP, "up");
+  dmnsn_astnode_map(DMNSN_AST_SKY, "sky");
+  dmnsn_astnode_map(DMNSN_AST_ANGLE, "angle");
+  dmnsn_astnode_map(DMNSN_AST_LOOK_AT, "look_at");
+  dmnsn_astnode_map(DMNSN_AST_DIRECTION, "direction");
+
+  dmnsn_astnode_map(DMNSN_AST_BACKGROUND, "background");
+
+  dmnsn_astnode_map(DMNSN_AST_BOX, "box");
+  dmnsn_astnode_map(DMNSN_AST_SPHERE, "sphere");
+  dmnsn_astnode_map(DMNSN_AST_LIGHT_SOURCE, "light_source");
+
+  dmnsn_astnode_map(DMNSN_AST_OBJECT_MODIFIERS, "object-modifiers");
+
+  dmnsn_astnode_map(DMNSN_AST_TEXTURE, "texture");
+
+  dmnsn_astnode_map(DMNSN_AST_PIGMENT, "pigment");
+
+  dmnsn_astnode_map(DMNSN_AST_FINISH, "finish");
+  dmnsn_astnode_map(DMNSN_AST_AMBIENT, "ambient");
+  dmnsn_astnode_map(DMNSN_AST_DIFFUSE, "diffuse");
+  dmnsn_astnode_map(DMNSN_AST_PHONG, "phong");
+  dmnsn_astnode_map(DMNSN_AST_PHONG_SIZE, "phong_size");
+
+  dmnsn_astnode_map(DMNSN_AST_REFLECTION, "reflection");
+  dmnsn_astnode_map(DMNSN_AST_REFLECTION_ITEMS, "reflection-items");
+  dmnsn_astnode_map(DMNSN_AST_FALLOFF, "falloff");
+
+  dmnsn_astnode_map(DMNSN_AST_FLOAT, "float");
+  dmnsn_astnode_map(DMNSN_AST_INTEGER, "integer");
+
+  dmnsn_astnode_map(DMNSN_AST_VECTOR, "vector");
+
+  dmnsn_astnode_map(DMNSN_AST_ADD, "+");
+  dmnsn_astnode_map(DMNSN_AST_SUB, "-");
+  dmnsn_astnode_map(DMNSN_AST_MUL, "*");
+  dmnsn_astnode_map(DMNSN_AST_DIV, "/");
+
+  dmnsn_astnode_map(DMNSN_AST_NEGATE, "-");
+  dmnsn_astnode_map(DMNSN_AST_DOT_X, ".x");
+  dmnsn_astnode_map(DMNSN_AST_DOT_Y, ".y");
+  dmnsn_astnode_map(DMNSN_AST_DOT_Z, ".z");
+  dmnsn_astnode_map(DMNSN_AST_DOT_T, ".t");
+  dmnsn_astnode_map(DMNSN_AST_DOT_TRANSMIT, ".transmit");
+
+  dmnsn_astnode_map(DMNSN_AST_COLOR, "color");
+
+  dmnsn_astnode_map(DMNSN_AST_IDENTIFIER, "identifier");
+
+  dmnsn_astnode_map(DMNSN_AST_STRING, "string");
+
+  default:
+    fprintf(stderr, "Warning: unrecognised astnode type %d.\n",
+            (int)astnode_type);
+    return "unrecognized-astnode";
+  }
+}
