@@ -21,9 +21,18 @@
 #define TOKENIZE_H
 
 #include "../libdimension/dimension.h"
+
+#define yytokentype dmnsn_yytokentype
+#define YYSTYPE
+#define YYLTYPE
+
 #include "grammar.h"
 
-typedef enum yytokentype dmnsn_token_type;
+#undef YYLTYPE
+#undef YYSTYPE
+#undef yytokentype
+
+typedef enum dmnsn_yytokentype dmnsn_token_type;
 
 typedef struct dmnsn_token dmnsn_token;
 
