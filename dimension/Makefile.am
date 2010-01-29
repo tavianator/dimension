@@ -33,6 +33,7 @@ dimension_SOURCES = grammar.y                                                  \
                     progressbar.h                                              \
                     realize.c                                                  \
                     realize.h                                                  \
+                    tokenize.c                                                 \
                     tokenize.h                                                 \
                     utility.c                                                  \
                     utility.h                                                  \

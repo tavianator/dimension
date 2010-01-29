@@ -32,9 +32,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define YY_DECL int yylex(dmnsn_parse_item *lvalp,                      \
-                          dmnsn_parse_location *llocp,                  \
-                          const char *filename, yyscan_t yyscanner)
+#define YY_DECL int dmnsn_yylex_impl(dmnsn_parse_item *lvalp,           \
+                                     dmnsn_parse_location *llocp,       \
+                                     const char *filename,              \
+                                     yyscan_t yyscanner)
 %}
 
 %x DMNSN_BLOCK_COMMENT
@@ -278,7 +279,8 @@ dmnsn_tokenize(FILE *file, const char *filename)
   yylex_init(&scanner);
   yyset_in(file, scanner);
 
-  while ((token.type = yylex(&item, &location, filename, scanner)) != 0) {
+  while ((token.type = dmnsn_yylex_impl(&item, &location, filename, scanner))
+         != 0) {
     if (token.type == 1 || token.type == 2) {
       dmnsn_delete_tokens(tokens);
       tokens = NULL;

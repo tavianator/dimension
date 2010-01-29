@@ -27,12 +27,6 @@
 #define YYSTYPE dmnsn_parse_item
 #define YYLTYPE dmnsn_parse_location
 
-int dmnsn_yylex(YYSTYPE *lvalp, YYLTYPE *llocp, const char *filename,
-                void *yyscanner);
-void dmnsn_yylex_init(void **scannerp);
-void dmnsn_yyset_in(FILE *file, void *scanner);
-void dmnsn_yylex_destroy(void *scanner);
-
 #define YYLLOC_DEFAULT(Current, Rhs, N)                                 \
   do {                                                                  \
     if (N) {                                                            \

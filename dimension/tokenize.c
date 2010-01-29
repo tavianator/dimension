@@ -17,54 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#ifndef TOKENIZE_H
-#define TOKENIZE_H
+#include "tokenize.h"
 
-#include "../libdimension/dimension.h"
-#include "parse.h"
+int dmnsn_yylex_impl(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                     const char *filename, void *yyscanner);
 
-#define yytokentype dmnsn_yytokentype
-#define YYSTYPE
-#define YYLTYPE
-
-#include "grammar.h"
-
-#undef YYLTYPE
-#undef YYSTYPE
-#undef yytokentype
-
-typedef enum dmnsn_yytokentype dmnsn_token_type;
-
-typedef struct dmnsn_token dmnsn_token;
-
-struct dmnsn_token {
-  dmnsn_token_type type;
-  char *value;
-
-  /* File name, and line and column numbers from source code */
-  const char *filename;
-  int line, col;
-};
-
-/* Set up the scanner */
-int  dmnsn_yylex_init(void **scannerp);
-void dmnsn_yyset_in(FILE *file, void *scanner);
-int  dmnsn_yylex_destroy(void *scanner);
-
-/* Actual lexer */
-int dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
-                const char *filename, void *yyscanner);
-
-/* For debugging - returns an array of raw tokens */
-dmnsn_array *dmnsn_tokenize(FILE *file, const char *filename);
-
-/* Token destruction */
-void dmnsn_delete_tokens(dmnsn_array *tokens);
-
-/* Print an S-expression of a list of tokens to `file' */
-void dmnsn_print_token_sexpr(FILE *file, const dmnsn_array *tokens);
-
-/* Returns a readable name for a token type (ex. DMNSN_T_FLOAT -> float) */
-const char *dmnsn_token_string(dmnsn_token_type token_type);
-
-#endif /* TOKENIZE_H */
+int
+dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+            const char *filename, void *yyscanner)
+{
+  return dmnsn_yylex_impl(lvalp, llocp, filename, yyscanner);
+}
