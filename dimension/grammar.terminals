@@ -17,7 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-%token END 0 "end-of-file"
+%token DMNSN_T_EOF 0 "end-of-file"
+%token DMNSN_T_LEX_ERROR "error"
 
 /* Punctuation */
 %token DMNSN_T_LBRACE        "{"

@@ -261,7 +261,7 @@ unsigned long wchar;
   dmnsn_diagnostic(filename, yylineno, yycolumn,
                    "Unrecognized character '%c' (0x%X)",
                    (int)*yytext, (unsigned int)*yytext);
-  return 1;
+  return DMNSN_T_LEX_ERROR;
 }
 
 %%
@@ -281,9 +281,10 @@ dmnsn_tokenize(FILE *file, const char *filename)
 
   while ((token.type = dmnsn_yylex_impl(&item, &location, filename, scanner))
          != 0) {
-    if (token.type == 1 || token.type == 2) {
+    if (token.type == DMNSN_T_LEX_ERROR) {
       dmnsn_delete_tokens(tokens);
       tokens = NULL;
+      break;
     } else {
       token.value    = item.value;
       token.filename = location.first_filename;
