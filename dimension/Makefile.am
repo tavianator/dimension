@@ -17,6 +17,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
+# Make dmnsn_error() backtraces useful
+AM_LDFLAGS = -rdynamic
+
 INCLUDES = -I$(top_srcdir)/libdimension
 
 bin_PROGRAMS = dimension
@@ -72,3 +75,4 @@ dimension_SOURCES = directives.y                                               \
                     utility.h                                                  \
                     y.tab.h
 dimension_LDADD   = $(top_builddir)/libdimension/libdimension.la
+dimension_LDFLAGS = $(AM_LDFLAGS)

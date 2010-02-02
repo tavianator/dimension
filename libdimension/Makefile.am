@@ -17,6 +17,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
+# Make dmnsn_error() backtraces useful
+AM_LDFLAGS = -rdynamic
+
 nobase_include_HEADERS = dimension.h                                           \
                          dimension/array.h                                     \
                          dimension/camera.h                                    \
@@ -68,7 +71,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           solid_pigment.c                                      \
                           sphere.c                                             \
                           texture.c
-libdimension_la_LDFLAGS = -version-info 0:0:0
+libdimension_la_LDFLAGS = -version-info 0:0:0 $(AM_LDFLAGS)
 libdimension_la_LIBADD  = -lm -lpthread -lpng -lGL
 
 if PGO
