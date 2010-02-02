@@ -1,0 +1,145 @@
+/*************************************************************************
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
+ *                                                                       *
+ * This file is part of Dimension.                                       *
+ *                                                                       *
+ * Dimension is free software; you can redistribute it and/or modify it  *
+ * under the terms of the GNU General Public License as published by the *
+ * Free Software Foundation; either version 3 of the License, or (at     *
+ * your option) any later version.                                       *
+ *                                                                       *
+ * Dimension is distributed in the hope that it will be useful, but      *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of            *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
+ * General Public License for more details.                              *
+ *                                                                       *
+ * You should have received a copy of the GNU General Public License     *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *************************************************************************/
+
+#include "parse.h"
+#include "tokenize.h"
+#include "utility.h"
+#include <stdlib.h>
+#include <stdio.h>
+
+#define YYSTYPE dmnsn_parse_item
+#define YYLTYPE dmnsn_parse_location
+
+#define YYLLOC_DEFAULT(Current, Rhs, N)                                 \
+  do {                                                                  \
+    if (N) {                                                            \
+      (Current).first_filename = YYRHSLOC(Rhs, 1).first_filename;       \
+      (Current).first_line     = YYRHSLOC(Rhs, 1).first_line;           \
+      (Current).first_column   = YYRHSLOC(Rhs, 1).first_column;         \
+      (Current).last_filename  = YYRHSLOC(Rhs, N).last_filename;        \
+      (Current).last_line      = YYRHSLOC(Rhs, N).last_line;            \
+      (Current).last_column    = YYRHSLOC(Rhs, N).last_column;          \
+    } else {                                                            \
+      (Current).first_filename = (Current).last_filename =              \
+        YYRHSLOC(Rhs, 0).last_filename;                                 \
+      (Current).first_line     = (Current).last_line     =              \
+        YYRHSLOC(Rhs, 0).last_line;                                     \
+      (Current).first_column   = (Current).last_column   =              \
+        YYRHSLOC(Rhs, 0).last_column;                                   \
+    }                                                                   \
+  } while (0)
+
+/* Create a new astnode, populating filename, line, and col */
+
+static dmnsn_astnode
+dmnsn_new_astnode(dmnsn_astnode_type type, YYLTYPE lloc)
+{
+  dmnsn_astnode astnode = {
+    .type     = type,
+    .children = dmnsn_new_array(sizeof(dmnsn_astnode)),
+    .ptr      = NULL,
+    .refcount = malloc(sizeof(unsigned int)),
+    .filename = lloc.first_filename,
+    .line     = lloc.first_line,
+    .col      = lloc.first_column
+  };
+
+  if (!astnode.refcount) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate reference count.");
+  }
+  *astnode.refcount = 1;
+
+  return astnode;
+}
+
+/* Semi-shallow copy */
+static void
+dmnsn_copy_children(dmnsn_astnode dest, dmnsn_astnode src)
+{
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(src.children); ++i) {
+    dmnsn_astnode node;
+    dmnsn_array_get(src.children, i, &node);
+    ++*node.refcount;
+
+    if (i < dmnsn_array_size(dest.children)) {
+      dmnsn_astnode clobbered;
+      dmnsn_array_get(dest.children, i, &clobbered);
+      dmnsn_delete_astnode(clobbered);
+    }
+
+    dmnsn_array_set(dest.children, i, &node);
+  }
+}
+
+static dmnsn_astnode
+dmnsn_new_astnode1(dmnsn_astnode_type type, YYLTYPE lloc, dmnsn_astnode n1)
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(type, lloc);
+  dmnsn_array_push(astnode.children, &n1);
+  return astnode;
+}
+
+static dmnsn_astnode
+dmnsn_new_astnode2(dmnsn_astnode_type type, YYLTYPE lloc,
+                   dmnsn_astnode n1, dmnsn_astnode n2)
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(type, lloc);
+  dmnsn_array_push(astnode.children, &n1);
+  dmnsn_array_push(astnode.children, &n2);
+  return astnode;
+}
+
+static dmnsn_astnode
+dmnsn_new_astnode3(dmnsn_astnode_type type, YYLTYPE lloc,
+                   dmnsn_astnode n1, dmnsn_astnode n2, dmnsn_astnode n3)
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(type, lloc);
+  dmnsn_array_push(astnode.children, &n1);
+  dmnsn_array_push(astnode.children, &n2);
+  dmnsn_array_push(astnode.children, &n3);
+  return astnode;
+}
+
+static dmnsn_astnode
+dmnsn_new_astnode4(dmnsn_astnode_type type, YYLTYPE lloc,
+                   dmnsn_astnode n1, dmnsn_astnode n2, dmnsn_astnode n3,
+                   dmnsn_astnode n4)
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(type, lloc);
+  dmnsn_array_push(astnode.children, &n1);
+  dmnsn_array_push(astnode.children, &n2);
+  dmnsn_array_push(astnode.children, &n3);
+  dmnsn_array_push(astnode.children, &n4);
+  return astnode;
+}
+
+static dmnsn_astnode
+dmnsn_new_astnode5(dmnsn_astnode_type type, YYLTYPE lloc,
+                   dmnsn_astnode n1, dmnsn_astnode n2, dmnsn_astnode n3,
+                   dmnsn_astnode n4, dmnsn_astnode n5)
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(type, lloc);
+  dmnsn_array_push(astnode.children, &n1);
+  dmnsn_array_push(astnode.children, &n2);
+  dmnsn_array_push(astnode.children, &n3);
+  dmnsn_array_push(astnode.children, &n4);
+  dmnsn_array_push(astnode.children, &n5);
+  return astnode;
+}

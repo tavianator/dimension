@@ -17,13 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-%token-table
+%define api.pure
+%locations
+%error-verbose
 
-%name-prefix "dmnsn_yy"
+%glr-parser
 
-%expect 7
+%lex-param {const char *filename}
+%lex-param {dmnsn_symbol_table *symtable}
+%lex-param {void *yyscanner}
 
-%parse-param {const char *filename}
-%parse-param {void *yyscanner}
-%parse-param {dmnsn_astree *astree}
-%parse-param {dmnsn_symbol_table *symtable}
+%destructor { free($$); } <value>
+%destructor { dmnsn_delete_astnode($$); } <astnode>

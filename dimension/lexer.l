@@ -278,6 +278,7 @@ dmnsn_tokenize(FILE *file, const char *filename)
 
   yylex_init(&scanner);
   yyset_in(file, scanner);
+  yyset_extra(NULL, scanner);
 
   while ((token.type = dmnsn_yylex_impl(&item, &location, filename, scanner))
          != 0) {

@@ -17,13 +17,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-%token-table
-
-%name-prefix "dmnsn_yy"
-
-%expect 7
-
-%parse-param {const char *filename}
-%parse-param {void *yyscanner}
-%parse-param {dmnsn_astree *astree}
-%parse-param {dmnsn_symbol_table *symtable}
+%type <astnode> RVALUE

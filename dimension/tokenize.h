@@ -46,14 +46,17 @@ struct dmnsn_token {
   int line, col;
 };
 
-/* Set up the scanner */
-int  dmnsn_yylex_init(void **scannerp);
-void dmnsn_yyset_in(FILE *file, void *scanner);
-int  dmnsn_yylex_destroy(void *scanner);
+/* Scanner manipulation */
+int   dmnsn_yylex_init(void **scannerp);
+void  dmnsn_yyset_in(FILE *file, void *scanner);
+int   dmnsn_yylex_destroy(void *scanner);
+void *dmnsn_yyget_extra(void *scanner);
+void  dmnsn_yyset_extra(void *arbitrary_data, void *scanner);
 
 /* Actual lexer */
 int dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
-                const char *filename, void *yyscanner);
+                const char *filename, dmnsn_symbol_table *symtable,
+                void *yyscanner);
 
 /* For debugging - returns an array of raw tokens */
 dmnsn_array *dmnsn_tokenize(FILE *file, const char *filename);

@@ -22,25 +22,42 @@ INCLUDES = -I$(top_srcdir)/libdimension
 bin_PROGRAMS = dimension
 
 AM_YFLAGS = -d
-BUILT_SOURCES = grammar.h
-EXTRA_DIST = grammar.prologue                                                  \
+BUILT_SOURCES = directives.h grammar.h
+EXTRA_DIST = common.prologue                                                   \
+             common.declarations                                               \
+             common.terminals                                                  \
+             common.nonterminals                                               \
+             common.rules                                                      \
+             directives.prologue                                               \
+             directives.declarations                                           \
+             directives.nonterminals                                           \
+             directives.rules                                                  \
+             grammar.prologue                                                  \
              grammar.declarations                                              \
-             grammar.terminals                                                 \
              grammar.nonterminals                                              \
              grammar.rules                                                     \
              grammar.epilogue
 
-grammar.y: grammar.prologue grammar.declarations grammar.terminals grammar.nonterminals grammar.rules grammar.epilogue
+grammar.y: grammar.prologue grammar.declarations grammar.nonterminals grammar.rules grammar.epilogue common.prologue common.declarations common.terminals common.nonterminals common.rules
 	echo "%{" >$@
-	cat grammar.prologue >>$@
+	cat {common,grammar}.prologue >>$@
 	echo "%}" >>$@
-	cat grammar.{declarations,terminals,nonterminals} >>$@
+	cat common.terminals {grammar,common}.{declarations,nonterminals} >>$@
 	echo "%%" >>$@
-	cat grammar.rules >>$@
+	cat grammar.rules common.rules >>$@
 	echo "%%" >>$@
 	cat grammar.epilogue >>$@
 
-dimension_SOURCES = grammar.y                                                  \
+directives.y: directives.prologue directives.declarations directives.nonterminals directives.rules common.prologue common.declarations common.terminals common.nonterminals common.rules
+	echo "%{" >$@
+	cat {common,directives}.prologue >>$@
+	echo "%}" >>$@
+	cat common.terminals {directives,common}.{declarations,nonterminals} >>$@
+	echo "%%" >>$@
+	cat directives.rules common.rules >>$@
+
+dimension_SOURCES = directives.y                                               \
+                    grammar.y                                                  \
                     lexer.l                                                    \
                     main.c                                                     \
                     parse.c                                                    \

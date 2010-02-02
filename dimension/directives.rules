@@ -1,0 +1,35 @@
+/*
+ * Start symbol
+ */
+
+LANGUAGE_DIRECTIVE: "#declare" "identifier" "=" RVALUE {
+                    dmnsn_declare_symbol(symtable, $2, $4);
+                    free($2);
+                    dmnsn_delete_astnode($4);
+                  }
+                  | "#local" "identifier" "=" RVALUE {
+                    dmnsn_local_symbol(symtable, $2, $4);
+                    free($2);
+                    dmnsn_delete_astnode($4);
+                  }
+                  | "#undef" "identifier" {
+                    dmnsn_undef_symbol(symtable, $2);
+                    free($2);
+                  }
+
+RVALUE: ARITH_EXPR ";" %dprec 2 {
+        $$ = dmnsn_eval($1, symtable);
+        dmnsn_delete_astnode($1);
+
+        if ($$.type == DMNSN_AST_NONE) {
+          dmnsn_delete_astnode($$);
+          YYERROR;
+        }
+      }
+      | COLOR ";" %dprec 1
+      | OBJECT
+      | TEXTURE
+      | PIGMENT
+      | FINISH
+      | CAMERA
+      | TRANSFORMATION

@@ -40,6 +40,9 @@ Makefile.in
 
 # Files created by `make'
 /dimension/dimension
+/dimension/directives.c
+/dimension/directives.h
+/dimension/directives.y
 /dimension/grammar.c
 /dimension/grammar.h
 /dimension/grammar.y

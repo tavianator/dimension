@@ -17,13 +17,59 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-%token-table
+/* Identifiers */
+%type <astnode> IDENTIFIER
 
-%name-prefix "dmnsn_yy"
+/* Transformations */
+%type <astnode> TRANSFORMATION
 
-%expect 7
+/* The camera */
+%type <astnode> CAMERA
+%type <astnode> CAMERA_ITEMS
+%type <astnode> CAMERA_ITEM
+%type <astnode> CAMERA_TYPE
+%type <astnode> CAMERA_VECTOR
+%type <astnode> CAMERA_MODIFIER
 
-%parse-param {const char *filename}
-%parse-param {void *yyscanner}
-%parse-param {dmnsn_astree *astree}
-%parse-param {dmnsn_symbol_table *symtable}
+/* Objects */
+%type <astnode> OBJECT
+%type <astnode> FINITE_SOLID_OBJECT
+%type <astnode> BOX
+%type <astnode> LIGHT_SOURCE
+%type <astnode> SPHERE
+
+/* Object modifiers */
+%type <astnode> OBJECT_MODIFIERS
+%type <astnode> OBJECT_MODIFIER
+
+/* Textures */
+%type <astnode> TEXTURE
+%type <astnode> TEXTURE_ITEMS
+
+/* Pigments */
+%type <astnode> PIGMENT
+%type <astnode> PIGMENT_TYPE
+
+/* Finishes */
+%type <astnode> FINISH
+%type <astnode> FINISH_ITEMS
+%type <astnode> REFLECTION
+%type <astnode> REFLECTION_ITEMS
+
+/* Floats */
+%type <astnode> FLOAT
+%type <astnode> FLOAT_LITERAL
+
+/* Vectors */
+%type <astnode> VECTOR
+%type <astnode> VECTOR_LITERAL
+
+/* Generalized arithmetic expressions */
+%type <astnode> ARITH_EXPR
+
+/* Colors */
+%type <astnode> COLOR
+%type <astnode> COLOR_BODY
+%type <astnode> COLOR_VECTOR
+%type <astnode> COLOR_KEYWORD_GROUP
+%type <astnode> COLOR_KEYWORD_GROUP_INIT
