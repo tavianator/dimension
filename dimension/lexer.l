@@ -208,6 +208,9 @@ unsigned long wchar;
 
 (?# Directives)
 "#declare"      RETURN_TOKEN(DMNSN_T_DECLARE);
+"#else"         RETURN_TOKEN(DMNSN_T_ELSE);
+"#end"          RETURN_TOKEN(DMNSN_T_END);
+"#if"           RETURN_TOKEN(DMNSN_T_IF);
 "#include"      RETURN_TOKEN(DMNSN_T_INCLUDE);
 "#local"        RETURN_TOKEN(DMNSN_T_LOCAL);
 "#undef"        RETURN_TOKEN(DMNSN_T_UNDEF);

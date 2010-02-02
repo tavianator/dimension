@@ -83,11 +83,20 @@ typedef enum {
   DMNSN_AST_DOT_T,
   DMNSN_AST_DOT_TRANSMIT,
 
+  DMNSN_AST_EQUAL,
+  DMNSN_AST_NOT_EQUAL,
+  DMNSN_AST_LESS,
+  DMNSN_AST_LESS_EQUAL,
+  DMNSN_AST_GREATER,
+  DMNSN_AST_GREATER_EQUAL,
+  DMNSN_AST_AND,
+  DMNSN_AST_OR,
+
   DMNSN_AST_COLOR,
 
   DMNSN_AST_IDENTIFIER,
 
-  DMNSN_AST_STRING,
+  DMNSN_AST_STRING
 } dmnsn_astnode_type;
 
 /* Abstract syntax tree node (a dmnsn_array* of these is an AST) */

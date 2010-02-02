@@ -26,12 +26,16 @@ directives_exp="$(echo -n \
   #local (identifier "Color") = rgb < (integer "1") , (integer "0") , (integer "1") > ;
   #declare (identifier "Unused") = - (integer "1") ;
   #undef (identifier "Unused")
-  sphere {
-    (identifier "Center") , (identifier "R")
-    pigment {
-      color (identifier "Color") green (integer "1")
+  #if \( #if \( (integer "1") = (integer "1") \) (integer "0") #end = (integer "0") & (integer "0") \)
+    (identifier "Illegal")
+  #else
+    sphere {
+      (identifier "Center") , (identifier "R")
+      pigment {
+        color (identifier "Color") green (integer "1")
+      }
     }
-  })' \
+  #end)' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 $(echo -n \
 '((sphere

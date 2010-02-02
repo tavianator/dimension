@@ -20,6 +20,7 @@
 #include "tokenize.h"
 #include "directives.h"
 #include "utility.h"
+#include <stdbool.h>
 
 typedef struct dmnsn_buffered_token {
   int type;
@@ -39,7 +40,7 @@ typedef struct dmnsn_token_buffer {
 } dmnsn_token_buffer;
 
 static dmnsn_token_buffer *
-dmnsn_new_token_buffer(int type)
+dmnsn_new_token_buffer(int type, dmnsn_token_buffer *prev)
 {
   dmnsn_token_buffer *tbuffer = malloc(sizeof(dmnsn_token_buffer));
   if (!tbuffer) {
@@ -49,7 +50,7 @@ dmnsn_new_token_buffer(int type)
   tbuffer->type = type;
   tbuffer->buffered = dmnsn_new_array(sizeof(dmnsn_buffered_token));
   tbuffer->i = 0;
-  tbuffer->prev = NULL;
+  tbuffer->prev = prev;
   return tbuffer;
 }
 
@@ -73,8 +74,8 @@ dmnsn_declaration_buffer(int token, dmnsn_token_buffer *prev,
                          const char *filename, dmnsn_symbol_table *symtable,
                          void *yyscanner)
 {
-  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM);
-  tbuffer->prev = prev;
+  dmnsn_token_buffer *tbuffer
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -133,8 +134,8 @@ dmnsn_undef_buffer(int token, dmnsn_token_buffer *prev,
                    const char *filename, dmnsn_symbol_table *symtable,
                    void *yyscanner)
 {
-  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM);
-  tbuffer->prev = prev;
+  dmnsn_token_buffer *tbuffer
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -164,6 +165,140 @@ dmnsn_undef_buffer(int token, dmnsn_token_buffer *prev,
   /* Fake EOF */
   buffered.type = DMNSN_T_EOF;
   dmnsn_array_push(tbuffer->buffered, &buffered);
+
+  return tbuffer;
+}
+
+static dmnsn_token_buffer *
+dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
+                dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                const char *filename, dmnsn_symbol_table *symtable,
+                void *yyscanner)
+{
+  dmnsn_token_buffer *cond_buffer
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev);
+
+  /* Buffer the current token */
+  dmnsn_buffered_token buffered = {
+    .type = token,
+    .lval = *lvalp,
+    .lloc = *llocp
+  };
+  dmnsn_array_push(cond_buffer->buffered, &buffered);
+
+  /* Grab all the tokens belonging to the #if (...)  */
+  int parenlevel = -1;
+  while (1) {
+    /* Recursive call - permit other directives inside the condition */
+    buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
+                                filename, symtable, yyscanner);
+
+    if (buffered.type == DMNSN_T_EOF) {
+      dmnsn_diagnostic(filename, buffered.lloc.first_line,
+                       buffered.lloc.first_column,
+                       "syntax error, unexpected end-of-file");
+      dmnsn_delete_token_buffer(cond_buffer);
+      return NULL;
+    } else if (buffered.type == DMNSN_T_LEX_ERROR) {
+      dmnsn_delete_token_buffer(cond_buffer);
+      return NULL;
+    }
+
+    dmnsn_array_push(cond_buffer->buffered, &buffered);
+
+    if (buffered.type == DMNSN_T_LPAREN) {
+      if (parenlevel < 0)
+        parenlevel = 1;
+      else
+        ++parenlevel;
+    } else if (buffered.type == DMNSN_T_RPAREN) {
+      --parenlevel;
+      if (parenlevel == 0) {
+        break;
+      }
+    }
+  }
+
+  /* Fake EOF */
+  buffered.type = DMNSN_T_EOF;
+  dmnsn_array_push(cond_buffer->buffered, &buffered);
+
+  dmnsn_yyset_extra(cond_buffer, yyscanner);
+  if (dmnsn_ld_yyparse(filename, yyscanner, symtable) != 0) {
+    dmnsn_yyset_extra(cond_buffer->prev, yyscanner);
+    dmnsn_delete_token_buffer(cond_buffer);
+    return NULL;
+  }
+
+  dmnsn_yyset_extra(cond_buffer->prev, yyscanner);
+  dmnsn_delete_token_buffer(cond_buffer);
+
+  dmnsn_token_buffer *tbuffer= dmnsn_new_token_buffer(DMNSN_T_IF, prev);
+
+  dmnsn_astnode *cnode = dmnsn_find_symbol(symtable, "__cond__");
+  if (!cnode) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "__cond__ unset.");
+  }
+
+  bool cond = false;
+  if (cnode->type == DMNSN_AST_INTEGER) {
+    cond = (*(long *)cnode->ptr) ? true : false;
+  } else if (cnode->type == DMNSN_AST_FLOAT) {
+    cond = (*(double *)cnode->ptr) ? true : false;
+  } else {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "__cond__ has wrong type.");
+  }
+
+  dmnsn_undef_symbol(symtable, "__cond__");
+
+  int nesting = 1;
+  while (1) {
+    /* Non-recursive call */
+    buffered.type = dmnsn_yylex_impl(&buffered.lval, &buffered.lloc,
+                                     filename, yyscanner);
+
+    if (buffered.type == DMNSN_T_EOF) {
+      dmnsn_diagnostic(filename, buffered.lloc.first_line,
+                       buffered.lloc.first_column,
+                       "syntax error, unexpected end-of-file");
+      dmnsn_delete_token_buffer(tbuffer);
+      return NULL;
+    } else if (buffered.type == DMNSN_T_LEX_ERROR) {
+      dmnsn_delete_token_buffer(tbuffer);
+      return NULL;
+    }
+
+    switch (buffered.type) {
+    case DMNSN_T_IF:
+    case DMNSN_T_IFDEF:
+    case DMNSN_T_IFNDEF:
+    case DMNSN_T_MACRO:
+    case DMNSN_T_SWITCH:
+    case DMNSN_T_WHILE:
+      ++nesting;
+      break;
+
+    case DMNSN_T_END:
+      --nesting;
+      break;
+
+    default:
+      break;
+    }
+
+    if (nesting == 0) {
+      break;
+    } else if (nesting == 1 && buffered.type == DMNSN_T_ELSE) {
+      cond = !cond;
+      continue;
+    }
+
+    if (cond) {
+      dmnsn_array_push(tbuffer->buffered, &buffered);
+    } else {
+      free(buffered.lval.value);
+    }
+  }
 
   return tbuffer;
 }
@@ -258,6 +393,20 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
         dmnsn_yyset_extra(tb->prev, yyscanner);
         dmnsn_delete_token_buffer(tb);
         break;
+      }
+
+    case DMNSN_T_IF:
+      {
+        dmnsn_token_buffer *tb = dmnsn_if_buffer(
+          token, tbuffer, lvalp, llocp, filename, symtable, yyscanner
+        );
+        if (!tb) {
+          return DMNSN_T_LEX_ERROR;
+        }
+
+        dmnsn_yyset_extra(tb, yyscanner);
+        tbuffer = tb;
+        continue;
       }
 
     default:

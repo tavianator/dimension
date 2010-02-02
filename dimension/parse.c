@@ -268,6 +268,7 @@ dmnsn_copy_astnode(dmnsn_astnode astnode)
   return copy;
 }
 
+/* 5-element vectors */
 #define DMNSN_VECTOR_NELEM 5
 
 static dmnsn_astnode
@@ -455,32 +456,189 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   lhs = dmnsn_eval(lhs, symtable);
   rhs = dmnsn_eval(rhs, symtable);
 
-  dmnsn_astnode ret = dmnsn_copy_astnode(astnode);
+  dmnsn_astnode ret;
 
   if (lhs.type == DMNSN_AST_NONE || rhs.type == DMNSN_AST_NONE) {
+    ret = dmnsn_copy_astnode(astnode);
     ret.type = DMNSN_AST_NONE;
   } else if (lhs.type == DMNSN_AST_VECTOR || rhs.type == DMNSN_AST_VECTOR) {
-    ret.type = DMNSN_AST_VECTOR;
-
     dmnsn_astnode oldlhs = lhs, oldrhs = rhs;
     lhs = dmnsn_vector_promote(lhs, symtable);
     rhs = dmnsn_vector_promote(rhs, symtable);
     dmnsn_delete_astnode(oldlhs);
     dmnsn_delete_astnode(oldrhs);
 
-    dmnsn_astnode op = dmnsn_copy_astnode(astnode);
-    for (i = 0; i < DMNSN_VECTOR_NELEM; ++i) {
-      dmnsn_array_get(lhs.children, i, dmnsn_array_at(op.children, 0));
-      dmnsn_array_get(rhs.children, i, dmnsn_array_at(op.children, 1));
-      dmnsn_astnode temp = dmnsn_eval_binary(op, symtable);
-      dmnsn_array_set(ret.children, i, &temp);
-    }
+    switch (astnode.type) {
+    case DMNSN_AST_EQUAL:
+      {
+        dmnsn_astnode rewrite = dmnsn_copy_astnode(astnode);
 
-    dmnsn_delete_array(op.children);
-    op.children = NULL;
-    dmnsn_delete_astnode(op);
+        dmnsn_astnode l, r;
+        dmnsn_array_get(lhs.children, 0, &l);
+        dmnsn_array_get(rhs.children, 0, &r);
+        ++*l.refcount;
+        ++*r.refcount;
+        dmnsn_array_push(rewrite.children, &l);
+        dmnsn_array_push(rewrite.children, &r);
+
+        for (i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
+          dmnsn_astnode temp = dmnsn_copy_astnode(astnode);
+          dmnsn_array_get(lhs.children, i, &l);
+          dmnsn_array_get(rhs.children, i, &r);
+          ++*l.refcount;
+          ++*r.refcount;
+          dmnsn_array_push(temp.children, &l);
+          dmnsn_array_push(temp.children, &r);
+
+          dmnsn_astnode next = dmnsn_copy_astnode(astnode);
+          next.type = DMNSN_AST_AND;
+          dmnsn_array_push(next.children, &rewrite);
+          dmnsn_array_push(next.children, &temp);
+          rewrite = next;
+        }
+
+        ret = dmnsn_eval_binary(rewrite, symtable);
+        dmnsn_delete_astnode(rewrite);
+        break;
+      }
+
+    case DMNSN_AST_NOT_EQUAL:
+      {
+        dmnsn_astnode rewrite = dmnsn_copy_astnode(astnode);
+
+        dmnsn_astnode l, r;
+        dmnsn_array_get(lhs.children, 0, &l);
+        dmnsn_array_get(rhs.children, 0, &r);
+        ++*l.refcount;
+        ++*r.refcount;
+        dmnsn_array_push(rewrite.children, &l);
+        dmnsn_array_push(rewrite.children, &r);
+
+        for (i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
+          dmnsn_astnode temp = dmnsn_copy_astnode(astnode);
+          dmnsn_array_get(lhs.children, i, &l);
+          dmnsn_array_get(rhs.children, i, &r);
+          ++*l.refcount;
+          ++*r.refcount;
+          dmnsn_array_push(temp.children, &l);
+          dmnsn_array_push(temp.children, &r);
+
+          dmnsn_astnode next = dmnsn_copy_astnode(astnode);
+          next.type = DMNSN_AST_OR;
+          dmnsn_array_push(next.children, &rewrite);
+          dmnsn_array_push(next.children, &temp);
+          rewrite = next;
+        }
+
+        ret = dmnsn_eval_binary(rewrite, symtable);
+        dmnsn_delete_astnode(rewrite);
+        break;
+      }
+
+    case DMNSN_AST_AND:
+      {
+        dmnsn_astnode rewrite = dmnsn_copy_astnode(astnode);
+        rewrite.type = DMNSN_AST_OR;
+
+        dmnsn_astnode l, r;
+        dmnsn_array_get(lhs.children, 0, &l);
+        dmnsn_array_get(rhs.children, 0, &r);
+        ++*l.refcount;
+        ++*r.refcount;
+        dmnsn_array_push(rewrite.children, &l);
+        dmnsn_array_push(rewrite.children, &r);
+
+        for (i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
+          dmnsn_astnode temp = dmnsn_copy_astnode(astnode);
+          temp.type = DMNSN_AST_OR;
+          dmnsn_array_get(lhs.children, i, &l);
+          dmnsn_array_get(rhs.children, i, &r);
+          ++*l.refcount;
+          ++*r.refcount;
+          dmnsn_array_push(temp.children, &l);
+          dmnsn_array_push(temp.children, &r);
+
+          dmnsn_astnode next = dmnsn_copy_astnode(astnode);
+          next.type = DMNSN_AST_AND;
+          dmnsn_array_push(next.children, &rewrite);
+          dmnsn_array_push(next.children, &temp);
+          rewrite = next;
+        }
+
+        ret = dmnsn_eval_binary(rewrite, symtable);
+        dmnsn_delete_astnode(rewrite);
+        break;
+      }
+
+    case DMNSN_AST_OR:
+      {
+        dmnsn_astnode rewrite = dmnsn_copy_astnode(astnode);
+        rewrite.type = DMNSN_AST_OR;
+
+        dmnsn_astnode l, r;
+        dmnsn_array_get(lhs.children, 0, &l);
+        dmnsn_array_get(rhs.children, 0, &r);
+        ++*l.refcount;
+        ++*r.refcount;
+        dmnsn_array_push(rewrite.children, &l);
+        dmnsn_array_push(rewrite.children, &r);
+
+        for (i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
+          dmnsn_astnode temp = dmnsn_copy_astnode(astnode);
+          temp.type = DMNSN_AST_OR;
+          dmnsn_array_get(lhs.children, i, &l);
+          dmnsn_array_get(rhs.children, i, &r);
+          ++*l.refcount;
+          ++*r.refcount;
+          dmnsn_array_push(temp.children, &l);
+          dmnsn_array_push(temp.children, &r);
+
+          dmnsn_astnode next = dmnsn_copy_astnode(astnode);
+          next.type = DMNSN_AST_OR;
+          dmnsn_array_push(next.children, &rewrite);
+          dmnsn_array_push(next.children, &temp);
+          rewrite = next;
+        }
+
+        ret = dmnsn_eval_binary(rewrite, symtable);
+        dmnsn_delete_astnode(rewrite);
+        break;
+      }
+
+    case DMNSN_AST_LESS:
+    case DMNSN_AST_LESS_EQUAL:
+    case DMNSN_AST_GREATER:
+    case DMNSN_AST_GREATER_EQUAL:
+      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                       "invalid comparison operator '%s' between vectors",
+                       dmnsn_astnode_string(astnode.type));
+      ret = dmnsn_copy_astnode(astnode);
+      ret.type = DMNSN_AST_NONE;
+      break;
+
+    default:
+      {
+        ret = dmnsn_copy_astnode(astnode);
+        ret.type = DMNSN_AST_VECTOR;
+
+        dmnsn_astnode op = dmnsn_copy_astnode(astnode);
+        for (i = 0; i < DMNSN_VECTOR_NELEM; ++i) {
+          dmnsn_array_get(lhs.children, i, dmnsn_array_at(op.children, 0));
+          dmnsn_array_get(rhs.children, i, dmnsn_array_at(op.children, 1));
+          dmnsn_astnode temp = dmnsn_eval_binary(op, symtable);
+          dmnsn_array_set(ret.children, i, &temp);
+        }
+
+        dmnsn_delete_array(op.children);
+        op.children = NULL;
+        dmnsn_delete_astnode(op);
+        break;
+      }
+    }
   } else if (lhs.type == DMNSN_AST_INTEGER && rhs.type == DMNSN_AST_INTEGER
              && astnode.type != DMNSN_AST_DIV) {
+    ret = dmnsn_copy_astnode(astnode);
+
     long l, r;
     l = *(long *)lhs.ptr;
     r = *(long *)rhs.ptr;
@@ -532,6 +690,8 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     ret.type = DMNSN_AST_INTEGER;
     ret.ptr  = res;
   } else {
+    ret = dmnsn_copy_astnode(astnode);
+
     double l = 0.0, r = 0.0;
 
     if (lhs.type == DMNSN_AST_INTEGER) {
@@ -543,7 +703,8 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
                        "expected %s, %s, or %s; found %s",
                        dmnsn_astnode_string(DMNSN_AST_INTEGER),
                        dmnsn_astnode_string(DMNSN_AST_FLOAT),
-                       dmnsn_astnode_string(DMNSN_AST_VECTOR));
+                       dmnsn_astnode_string(DMNSN_AST_VECTOR),
+                       dmnsn_astnode_string(lhs.type));
       ret.type = DMNSN_AST_NONE;
       dmnsn_delete_astnode(lhs);
       dmnsn_delete_astnode(rhs);
@@ -559,7 +720,8 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
                        "expected %s, %s, or %s; found %s",
                        dmnsn_astnode_string(DMNSN_AST_INTEGER),
                        dmnsn_astnode_string(DMNSN_AST_FLOAT),
-                       dmnsn_astnode_string(DMNSN_AST_VECTOR));
+                       dmnsn_astnode_string(DMNSN_AST_VECTOR),
+                       dmnsn_astnode_string(rhs.type));
       ret.type = DMNSN_AST_NONE;
       dmnsn_delete_astnode(lhs);
       dmnsn_delete_astnode(rhs);

@@ -26,9 +26,13 @@
 #declare Unused = -1;
 #undef Unused
 
-sphere {
-  Center, R
-  pigment {
-    color Color green 1
+#if (#if (1 = 1) 0 #end = 0 & 0)
+  Illegal
+#else
+  sphere {
+    Center, R
+    pigment {
+      color Color green 1
+    }
   }
-}
+#end

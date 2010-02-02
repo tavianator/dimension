@@ -47,6 +47,9 @@
 %token DMNSN_T_NOT_EQUAL     "!="
 
 /* Operators */
+%left "|"
+%left "&"
+%left "=" "!=" "<" "<=" ">" ">="
 %left "+" "-"
 %left "*" "/"
 %left "."
@@ -491,12 +494,12 @@
 %token DMNSN_T_DEBUG
 %token DMNSN_T_DECLARE    "#declare"
 %token DMNSN_T_DEFAULT
-%token DMNSN_T_ELSE
-%token DMNSN_T_END
+%token DMNSN_T_ELSE       "#else"
+%token DMNSN_T_END        "#end"
 %token DMNSN_T_ERROR
 %token DMNSN_T_FCLOSE
 %token DMNSN_T_FOPEN
-%token DMNSN_T_IF
+%token DMNSN_T_IF         "#if"
 %token DMNSN_T_IFDEF
 %token DMNSN_T_IFNDEF
 %token DMNSN_T_INCLUDE    "#include"
