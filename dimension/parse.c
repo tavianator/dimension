@@ -328,9 +328,10 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   dmnsn_array_get(astnode.children, 0, &rhs);
   rhs = dmnsn_eval(rhs, symtable);
 
-  dmnsn_astnode ret = dmnsn_copy_astnode(astnode);
+  dmnsn_astnode ret;
 
   if (rhs.type == DMNSN_AST_NONE) {
+    ret = dmnsn_copy_astnode(astnode);
     ret.type = DMNSN_AST_NONE;
   } else if (rhs.type == DMNSN_AST_VECTOR) {
     switch (astnode.type) {
@@ -361,6 +362,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
     default:
       {
+        ret = dmnsn_copy_astnode(astnode);
         ret.type = DMNSN_AST_VECTOR;
 
         dmnsn_astnode op = dmnsn_copy_astnode(astnode);
@@ -399,6 +401,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
                   "Attempt to evaluate wrong unary operator.");
     }
 
+    ret = dmnsn_copy_astnode(astnode);
     ret.type = DMNSN_AST_INTEGER;
     ret.ptr  = res;
   } else if (rhs.type == DMNSN_AST_FLOAT) {
@@ -424,6 +427,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
                   "Attempt to evaluate wrong unary operator.");
     }
 
+    ret = dmnsn_copy_astnode(astnode);
     ret.type = DMNSN_AST_FLOAT;
     ret.ptr  = res;
   } else {
@@ -432,6 +436,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
                      dmnsn_astnode_string(DMNSN_AST_INTEGER),
                      dmnsn_astnode_string(DMNSN_AST_FLOAT),
                      dmnsn_astnode_string(DMNSN_AST_VECTOR));
+    ret = dmnsn_copy_astnode(astnode);
     ret.type = DMNSN_AST_NONE;
   }
 
@@ -494,6 +499,30 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_MUL:
       *res = l*r;
       break;
+    case DMNSN_AST_EQUAL:
+      *res = l == r;
+      break;
+    case DMNSN_AST_NOT_EQUAL:
+      *res = l != r;
+      break;
+    case DMNSN_AST_LESS:
+      *res = l < r;
+      break;
+    case DMNSN_AST_LESS_EQUAL:
+      *res = l <= r;
+      break;
+    case DMNSN_AST_GREATER:
+      *res = l > r;
+      break;
+    case DMNSN_AST_GREATER_EQUAL:
+      *res = l >= r;
+      break;
+    case DMNSN_AST_AND:
+      *res = l && r;
+      break;
+    case DMNSN_AST_OR:
+      *res = l || r;
+      break;
 
     default:
       dmnsn_error(DMNSN_SEVERITY_HIGH,
@@ -554,6 +583,30 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_DIV:
       *res = l/r;
       break;
+    case DMNSN_AST_EQUAL:
+      *res = l == r;
+      break;
+    case DMNSN_AST_NOT_EQUAL:
+      *res = l != r;
+      break;
+    case DMNSN_AST_LESS:
+      *res = l < r;
+      break;
+    case DMNSN_AST_LESS_EQUAL:
+      *res = l <= r;
+      break;
+    case DMNSN_AST_GREATER:
+      *res = l > r;
+      break;
+    case DMNSN_AST_GREATER_EQUAL:
+      *res = l >= r;
+      break;
+    case DMNSN_AST_AND:
+      *res = l && r;
+      break;
+    case DMNSN_AST_OR:
+      *res = l || r;
+      break;
 
     default:
       dmnsn_error(DMNSN_SEVERITY_HIGH,
@@ -608,6 +661,14 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_SUB:
   case DMNSN_AST_MUL:
   case DMNSN_AST_DIV:
+  case DMNSN_AST_EQUAL:
+  case DMNSN_AST_NOT_EQUAL:
+  case DMNSN_AST_LESS:
+  case DMNSN_AST_LESS_EQUAL:
+  case DMNSN_AST_GREATER:
+  case DMNSN_AST_GREATER_EQUAL:
+  case DMNSN_AST_AND:
+  case DMNSN_AST_OR:
     return dmnsn_eval_binary(astnode, symtable);
 
   default:
