@@ -30,13 +30,18 @@
   Illegal
 #end
 
-#if (#if (1 = 1) 0 #end = 0 & 0)
-  `Illegal
-#else
-  sphere {
-    Center, R
-    pigment {
-      color Color green 1
+#declare Counter = 0;
+#while (Counter < 2)
+  #if (#if (1 = 1) 0 #end = 0 & 0)
+    `Illegal
+  #else
+    sphere {
+      Center + <0, Counter, 0>, R
+      pigment {
+        color Color green 1
+      }
     }
-  }
+  #end
+
+  #declare Counter = Counter + 1;
 #end

@@ -58,13 +58,21 @@ static void
 dmnsn_delete_token_buffer(dmnsn_token_buffer *tbuffer)
 {
   if (tbuffer) {
+    unsigned int i;
+    for (i = 0; i < dmnsn_array_size(tbuffer->buffered); ++i) {
+      dmnsn_buffered_token buffered;
+      dmnsn_array_get(tbuffer->buffered, i, &buffered);
+      free(buffered.lval.value);
+    }
+
     dmnsn_delete_array(tbuffer->buffered);
     free(tbuffer);
   }
 }
 
-int dmnsn_yylex_impl(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
-                     const char *filename, void *yyscanner);
+static int
+dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                    const char *filename, void *yyscanner);
 int dmnsn_ld_yyparse(const char *filename, void *yyscanner,
                      dmnsn_symbol_table *symtable);
 
@@ -123,6 +131,7 @@ dmnsn_declaration_buffer(int token, dmnsn_token_buffer *prev,
 
   /* Fake EOF */
   buffered.type = DMNSN_T_EOF;
+  buffered.lval.value = NULL;
   dmnsn_array_push(tbuffer->buffered, &buffered);
 
   return tbuffer;
@@ -164,6 +173,7 @@ dmnsn_undef_buffer(int token, dmnsn_token_buffer *prev,
 
   /* Fake EOF */
   buffered.type = DMNSN_T_EOF;
+  buffered.lval.value = NULL;
   dmnsn_array_push(tbuffer->buffered, &buffered);
 
   return tbuffer;
@@ -221,6 +231,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
 
   /* Fake EOF */
   buffered.type = DMNSN_T_EOF;
+  buffered.lval.value = NULL;
   dmnsn_array_push(cond_buffer->buffered, &buffered);
 
   dmnsn_yyset_extra(cond_buffer, yyscanner);
@@ -254,8 +265,8 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
   int nesting = 1;
   while (1) {
     /* Non-recursive call */
-    buffered.type = dmnsn_yylex_impl(&buffered.lval, &buffered.lloc,
-                                     filename, yyscanner);
+    buffered.type = dmnsn_yylex_wrapper(&buffered.lval, &buffered.lloc,
+                                        filename, yyscanner);
 
     if (buffered.type == DMNSN_T_EOF) {
       dmnsn_diagnostic(filename, buffered.lloc.first_line,
@@ -291,12 +302,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
     }
 
     if (cond) {
-      if (buffered.type == DMNSN_T_LEX_ERROR) {
-        dmnsn_delete_token_buffer(tbuffer);
-        return NULL;
-      } else {
-        dmnsn_array_push(tbuffer->buffered, &buffered);
-      }
+      dmnsn_array_push(tbuffer->buffered, &buffered);
     } else {
       free(buffered.lval.value);
     }
@@ -305,50 +311,141 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
   return tbuffer;
 }
 
+static dmnsn_token_buffer *
+dmnsn_while_buffer(int token, dmnsn_token_buffer *prev,
+                   dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                   const char *filename, dmnsn_symbol_table *symtable,
+                   void *yyscanner)
+{
+  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev);
+
+  /* Pretend to be an if */
+  dmnsn_buffered_token buffered = {
+    .type = DMNSN_T_IF,
+    .lval = *lvalp,
+    .lloc = *llocp
+  };
+  dmnsn_array_push(tbuffer->buffered, &buffered);
+
+  /* Grab all the tokens belonging to the #while ... #end */
+  int nesting = 1;
+  while (1) {
+    /* Non-recursive call */
+    buffered.type = dmnsn_yylex_wrapper(&buffered.lval, &buffered.lloc,
+                                        filename, yyscanner);
+
+    if (buffered.type == DMNSN_T_EOF) {
+      dmnsn_diagnostic(filename, buffered.lloc.first_line,
+                       buffered.lloc.first_column,
+                       "syntax error, unexpected end-of-file");
+      dmnsn_delete_token_buffer(tbuffer);
+      return NULL;
+    }
+
+    dmnsn_array_push(tbuffer->buffered, &buffered);
+
+    switch (buffered.type) {
+    case DMNSN_T_IF:
+    case DMNSN_T_IFDEF:
+    case DMNSN_T_IFNDEF:
+    case DMNSN_T_MACRO:
+    case DMNSN_T_SWITCH:
+    case DMNSN_T_WHILE:
+      ++nesting;
+      break;
+
+    case DMNSN_T_END:
+      --nesting;
+      break;
+
+    default:
+      break;
+    }
+
+    if (nesting == 0) {
+      break;
+    }
+  }
+
+  return tbuffer;
+}
+
+int dmnsn_yylex_impl(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                     const char *filename, void *yyscanner);
+
+static int
+dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                    const char *filename, void *yyscanner)
+{
+  dmnsn_token_buffer *tbuffer = dmnsn_yyget_extra(yyscanner);
+
+  if (tbuffer) {
+    while (tbuffer && tbuffer->i >= dmnsn_array_size(tbuffer->buffered)) {
+      if (tbuffer->type == DMNSN_T_WHILE) {
+        tbuffer->i = 0;
+      } else {
+        if (dmnsn_array_size(tbuffer->buffered) == 0
+            && tbuffer->prev && tbuffer->prev->type == DMNSN_T_WHILE)
+        {
+          dmnsn_yyset_extra(tbuffer->prev, yyscanner);
+          dmnsn_delete_token_buffer(tbuffer);
+          tbuffer = dmnsn_yyget_extra(yyscanner);
+        }
+
+        dmnsn_yyset_extra(tbuffer->prev, yyscanner);
+        dmnsn_delete_token_buffer(tbuffer);
+        tbuffer = dmnsn_yyget_extra(yyscanner);
+      }
+    }
+  }
+
+  int token;
+
+  if (tbuffer) {
+    /* Return buffered tokens */
+    dmnsn_buffered_token buffered;
+
+    dmnsn_array_get(tbuffer->buffered, tbuffer->i, &buffered);
+    token = buffered.type;
+
+    if (buffered.lval.value) {
+      lvalp->value = strdup(buffered.lval.value);
+    } else {
+      lvalp->value = NULL;
+    }
+
+    *llocp = buffered.lloc;
+    ++tbuffer->i;
+  } else {
+    token = dmnsn_yylex_impl(lvalp, llocp, filename, yyscanner);
+  }
+
+  return token;
+}
+
 int
 dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
             const char *filename, dmnsn_symbol_table *symtable, void *yyscanner)
 {
   /*
    * So... this is kind of ugly.  POV-Ray's language directives are not parsable
-   * by reasonable bison grammar, since some require skipping arbitrary amounts
-   * of tokens, or repeatedly parsing tokens.  Instead, they are implemented
-   * transparently by the lexer.  The lexing function calls a separate parser
-   * to handle language directives as they arrise, and returns only non-
-   * directive tokens.
+   * by any reasonable bison grammar, since some require skipping arbitrary
+   * amounts of tokens, or repeatedly parsing tokens.  Instead, they are
+   * implemented transparently by the lexer.  The lexing function calls a
+   * separate parser to handle language directives as they arrise, and returns
+   * only non-directive tokens.
    *
    * Ideally we'd use a push parser for the language directives, but bison
    * doesn't support GLR push parsers.  Instead, we buffer all the appropriate
    * tokens and call a pull parser, then discard the buffer and continue.
    */
 
-  dmnsn_token_buffer *tbuffer = dmnsn_yyget_extra(yyscanner);
-
-  int token;
   while (1) {
-    if (tbuffer) {
-      /* Return buffered tokens */
-      dmnsn_buffered_token buffered;
+    int token = dmnsn_yylex_wrapper(lvalp, llocp, filename, yyscanner);
+    dmnsn_token_buffer *tbuffer = dmnsn_yyget_extra(yyscanner);
 
-      if (tbuffer->i < dmnsn_array_size(tbuffer->buffered)) {
-        dmnsn_array_get(tbuffer->buffered, tbuffer->i, &buffered);
-        token = buffered.type;
-        *lvalp = buffered.lval;
-        *llocp = buffered.lloc;
-        ++tbuffer->i;
-
-        if (tbuffer->type == DMNSN_T_LEX_VERBATIM && tbuffer->i == 1) {
-          /* Don't double-process the first token */
-          return token;
-        }
-      } else {
-        dmnsn_yyset_extra(tbuffer->prev, yyscanner);
-        dmnsn_delete_token_buffer(tbuffer);
-        tbuffer = dmnsn_yyget_extra(yyscanner);
-        continue;
-      }
-    } else {
-      token = dmnsn_yylex_impl(lvalp, llocp, filename, yyscanner);
+    if (tbuffer && tbuffer->type == DMNSN_T_LEX_VERBATIM && tbuffer->i == 1) {
+      return token;
     }
 
     switch (token) {
@@ -409,7 +506,19 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
         }
 
         dmnsn_yyset_extra(tb, yyscanner);
-        tbuffer = tb;
+        continue;
+      }
+
+    case DMNSN_T_WHILE:
+      {
+        dmnsn_token_buffer *tb = dmnsn_while_buffer(
+          token, tbuffer, lvalp, llocp, filename, symtable, yyscanner
+        );
+        if (!tb) {
+          return DMNSN_T_LEX_ERROR;
+        }
+
+        dmnsn_yyset_extra(tb, yyscanner);
         continue;
       }
 

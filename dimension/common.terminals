@@ -515,7 +515,7 @@
 %token DMNSN_T_UNDEF      "#undef"
 %token DMNSN_T_VERSION
 %token DMNSN_T_WARNING
-%token DMNSN_T_WHILE
+%token DMNSN_T_WHILE      "#while"
 %token DMNSN_T_WRITE
 
 /* Identifiers */

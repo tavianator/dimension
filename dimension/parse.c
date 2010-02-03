@@ -806,7 +806,7 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         return dmnsn_eval(*symbol, symtable);
       } else {
         dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                         "unbound identifier '%s'", astnode.ptr);
+                         "Unbound identifier '%s'", astnode.ptr);
         dmnsn_astnode error = dmnsn_new_astnode(DMNSN_AST_NONE);
         ++*error.refcount;
         return error;

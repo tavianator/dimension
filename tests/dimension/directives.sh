@@ -29,20 +29,31 @@ directives_exp="$(echo -n \
   #ifdef \( (identifier "Unused") \)
     (identifier "Illegal")
   #end
-  #if \( #if \( (integer "1") = (integer "1") \) (integer "0") #end = (integer "0") & (integer "0") \)
-    error (identifier "Illegal")
-  #else
-    sphere {
-      (identifier "Center") , (identifier "R")
-      pigment {
-        color (identifier "Color") green (integer "1")
+  #declare (identifier "Counter") = (integer "0") ;
+  #while \( (identifier "Counter") < (integer "2") \)
+    #if \( #if \( (integer "1") = (integer "1") \) (integer "0") #end = (integer "0") & (integer "0") \)
+      error (identifier "Illegal")
+    #else
+      sphere {
+        (identifier "Center") + < (integer "0") , (identifier "Counter") , (integer "0") > , (identifier "R")
+        pigment {
+          color (identifier "Color") green (integer "1")
+        }
       }
-    }
+    #end
+    #declare (identifier "Counter") = (identifier "Counter") + (integer "1") ;
   #end)' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 $(echo -n \
 '((sphere
     (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
+    (integer 1)
+    (object-modifiers
+      (texture
+        (pigment (color (integer 1) (integer 1) (integer 1)
+                        (integer 0) (integer 0))))))
+  (sphere
+    (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0))
     (integer 1)
     (object-modifiers
       (texture
