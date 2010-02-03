@@ -48,13 +48,7 @@ RVALUE: ARITH_EXPR ";" %dprec 2 {
 
 CONDITIONAL: ARITH_EXPR {
              /* Force the expression to be evaluated logically */
-             dmnsn_astnode zero = dmnsn_new_astnode(DMNSN_AST_INTEGER, @$);
-             zero.ptr = malloc(sizeof(long));
-             if (!zero.ptr)
-               dmnsn_error(DMNSN_SEVERITY_HIGH,
-                           "Failed to allocate room for integer.");
-             *(long *)zero.ptr = 0;
-
+             dmnsn_astnode zero = dmnsn_new_ast_integer(0);
              $$ = dmnsn_new_astnode2(DMNSN_AST_OR, @$, zero, $1);
            }
            | ARITH_EXPR "="  ARITH_EXPR {

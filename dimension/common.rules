@@ -437,14 +437,7 @@ COLOR_KEYWORD_GROUP: COLOR_KEYWORD_GROUP_INIT COLOR_KEYWORD_ITEM
 ;
 
 COLOR_KEYWORD_GROUP_INIT: /* empty */ {
-                          dmnsn_astnode zero =
-                            dmnsn_new_astnode(DMNSN_AST_INTEGER, @$);
-                          zero.ptr = malloc(sizeof(long));
-                          if (!zero.ptr)
-                            dmnsn_error(DMNSN_SEVERITY_HIGH,
-                                        "Failed to allocate room for integer.");
-                          *(long *)zero.ptr = 0;
-
+                          dmnsn_astnode zero = dmnsn_new_ast_integer(0);
                           $$ = dmnsn_eval_vector(zero, symtable);
                           dmnsn_delete_astnode(zero);
                         }

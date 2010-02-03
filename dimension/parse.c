@@ -791,7 +791,9 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_NONE:
   case DMNSN_AST_INTEGER:
   case DMNSN_AST_FLOAT:
-    ++*astnode.refcount;
+    do {
+      ++*astnode.refcount;
+    } while (*astnode.refcount <= 1);
     return astnode;
 
   case DMNSN_AST_VECTOR:
