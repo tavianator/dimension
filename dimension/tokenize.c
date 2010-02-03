@@ -262,7 +262,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
 
   dmnsn_undef_symbol(symtable, "__cond__");
 
-  int nesting = 1;
+  int nesting = 1, else_seen = 0;
   while (1) {
     /* Non-recursive call */
     buffered.type = dmnsn_yylex_wrapper(&buffered.lval, &buffered.lloc,
@@ -297,8 +297,17 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
     if (nesting == 0) {
       break;
     } else if (nesting == 1 && buffered.type == DMNSN_T_ELSE) {
-      cond = !cond;
-      continue;
+      if (else_seen || tbuffer->prev && tbuffer->prev->type == DMNSN_T_WHILE) {
+        dmnsn_diagnostic(filename, buffered.lloc.first_line,
+                         buffered.lloc.first_column,
+                         "syntax error, unexpected #else");
+        dmnsn_delete_token_buffer(tbuffer);
+        return NULL;
+      } else {
+        cond = !cond;
+        else_seen = 1;
+        continue;
+      }
     }
 
     if (cond) {
