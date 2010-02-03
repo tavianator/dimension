@@ -297,7 +297,9 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
     if (nesting == 0) {
       break;
     } else if (nesting == 1 && buffered.type == DMNSN_T_ELSE) {
-      if (else_seen || tbuffer->prev && tbuffer->prev->type == DMNSN_T_WHILE) {
+      if (else_seen
+          || (tbuffer->prev && tbuffer->prev->type == DMNSN_T_WHILE))
+      {
         dmnsn_diagnostic(filename, buffered.lloc.first_line,
                          buffered.lloc.first_column,
                          "syntax error, unexpected #else");
