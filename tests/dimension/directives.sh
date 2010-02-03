@@ -27,7 +27,7 @@ directives_exp="$(echo -n \
   #declare (identifier "Unused") = - (integer "1") ;
   #undef (identifier "Unused")
   #if \( #if \( (integer "1") = (integer "1") \) (integer "0") #end = (integer "0") & (integer "0") \)
-    (identifier "Illegal")
+    error (identifier "Illegal")
   #else
     sphere {
       (identifier "Center") , (identifier "R")

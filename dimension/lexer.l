@@ -285,17 +285,11 @@ dmnsn_tokenize(FILE *file, const char *filename)
 
   while ((token.type = dmnsn_yylex_impl(&item, &location, filename, scanner))
          != 0) {
-    if (token.type == DMNSN_T_LEX_ERROR) {
-      dmnsn_delete_tokens(tokens);
-      tokens = NULL;
-      break;
-    } else {
-      token.value    = item.value;
-      token.filename = location.first_filename;
-      token.line     = location.first_line;
-      token.col      = location.first_column;
-      dmnsn_array_push(tokens, &token);
-    }
+    token.value    = item.value;
+    token.filename = location.first_filename;
+    token.line     = location.first_line;
+    token.col      = location.first_column;
+    dmnsn_array_push(tokens, &token);
   }
 
   yylex_destroy(scanner);

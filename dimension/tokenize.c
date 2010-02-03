@@ -263,9 +263,6 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
                        "syntax error, unexpected end-of-file");
       dmnsn_delete_token_buffer(tbuffer);
       return NULL;
-    } else if (buffered.type == DMNSN_T_LEX_ERROR) {
-      dmnsn_delete_token_buffer(tbuffer);
-      return NULL;
     }
 
     switch (buffered.type) {
@@ -294,7 +291,12 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
     }
 
     if (cond) {
-      dmnsn_array_push(tbuffer->buffered, &buffered);
+      if (buffered.type == DMNSN_T_LEX_ERROR) {
+        dmnsn_delete_token_buffer(tbuffer);
+        return NULL;
+      } else {
+        dmnsn_array_push(tbuffer->buffered, &buffered);
+      }
     } else {
       free(buffered.lval.value);
     }

@@ -27,7 +27,7 @@
 #undef Unused
 
 #if (#if (1 = 1) 0 #end = 0 & 0)
-  Illegal
+  `Illegal
 #else
   sphere {
     Center, R
