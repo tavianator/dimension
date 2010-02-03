@@ -211,6 +211,8 @@ unsigned long wchar;
 "#else"         RETURN_TOKEN(DMNSN_T_ELSE);
 "#end"          RETURN_TOKEN(DMNSN_T_END);
 "#if"           RETURN_TOKEN(DMNSN_T_IF);
+"#ifdef"        RETURN_TOKEN(DMNSN_T_IFDEF);
+"#ifndef"       RETURN_TOKEN(DMNSN_T_IFNDEF);
 "#include"      RETURN_TOKEN(DMNSN_T_INCLUDE);
 "#local"        RETURN_TOKEN(DMNSN_T_LOCAL);
 "#undef"        RETURN_TOKEN(DMNSN_T_UNDEF);

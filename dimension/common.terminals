@@ -502,8 +502,8 @@
 %token DMNSN_T_FCLOSE
 %token DMNSN_T_FOPEN
 %token DMNSN_T_IF         "#if"
-%token DMNSN_T_IFDEF
-%token DMNSN_T_IFNDEF
+%token DMNSN_T_IFDEF      "#ifdef"
+%token DMNSN_T_IFNDEF     "#ifndef"
 %token DMNSN_T_INCLUDE    "#include"
 %token DMNSN_T_LOCAL      "#local"
 %token DMNSN_T_MACRO

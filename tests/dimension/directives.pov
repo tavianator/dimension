@@ -26,6 +26,10 @@
 #declare Unused = -1;
 #undef Unused
 
+#ifdef (Unused)
+  Illegal
+#end
+
 #if (#if (1 = 1) 0 #end = 0 & 0)
   `Illegal
 #else

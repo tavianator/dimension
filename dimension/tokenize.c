@@ -233,7 +233,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
   dmnsn_yyset_extra(cond_buffer->prev, yyscanner);
   dmnsn_delete_token_buffer(cond_buffer);
 
-  dmnsn_token_buffer *tbuffer= dmnsn_new_token_buffer(DMNSN_T_IF, prev);
+  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev);
 
   dmnsn_astnode *cnode = dmnsn_find_symbol(symtable, "__cond__");
   if (!cnode) {
@@ -398,6 +398,8 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
       }
 
     case DMNSN_T_IF:
+    case DMNSN_T_IFDEF:
+    case DMNSN_T_IFNDEF:
       {
         dmnsn_token_buffer *tb = dmnsn_if_buffer(
           token, tbuffer, lvalp, llocp, filename, symtable, yyscanner

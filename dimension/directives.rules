@@ -30,6 +30,18 @@ LANGUAGE_DIRECTIVE: "#declare" "identifier" "=" RVALUE {
                     dmnsn_local_symbol(symtable, "__cond__", cond);
                     dmnsn_delete_astnode(cond);
                   }
+                  | "#ifdef" "(" "identifier" ")" {
+                    dmnsn_astnode *node = dmnsn_find_symbol(symtable, $3);
+                    dmnsn_local_symbol(symtable, "__cond__",
+                                       dmnsn_new_ast_integer(node ? 1 : 0));
+                    free($3);
+                  }
+                  | "#ifndef" "(" "identifier" ")" {
+                    dmnsn_astnode *node = dmnsn_find_symbol(symtable, $3);
+                    dmnsn_local_symbol(symtable, "__cond__",
+                                       dmnsn_new_ast_integer(node ? 0 : 1));
+                    free($3);
+                  }
 
 RVALUE: ARITH_EXPR ";" %dprec 2 {
         $$ = dmnsn_eval($1, symtable);
