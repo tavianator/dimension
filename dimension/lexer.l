@@ -267,7 +267,7 @@ unsigned long wchar;
   dmnsn_diagnostic(filename, yylineno, yycolumn,
                    "Unrecognized character '%c' (0x%X)",
                    (int)*yytext, (unsigned int)*yytext);
-  return DMNSN_T_LEX_ERROR;
+  RETURN_TOKEN(DMNSN_T_LEX_ERROR);
 }
 
 %%
