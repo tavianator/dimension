@@ -381,6 +381,50 @@ dmnsn_while_buffer(int token, dmnsn_token_buffer *prev,
   return tbuffer;
 }
 
+static dmnsn_token_buffer *
+dmnsn_version_buffer(int token, dmnsn_token_buffer *prev,
+                     dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                     const char *filename, dmnsn_symbol_table *symtable,
+                     void *yyscanner)
+{
+  dmnsn_token_buffer *tbuffer
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev);
+
+  /* Buffer the current token */
+  dmnsn_buffered_token buffered = {
+    .type = token,
+    .lval = *lvalp,
+    .lloc = *llocp
+  };
+  dmnsn_array_push(tbuffer->buffered, &buffered);
+
+  while (buffered.type != DMNSN_T_SEMICOLON) {
+    /* Recursive call */
+    buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
+                                filename, symtable, yyscanner);
+
+    if (buffered.type == DMNSN_T_EOF) {
+      dmnsn_diagnostic(filename, buffered.lloc.first_line,
+                       buffered.lloc.first_column,
+                       "syntax error, unexpected end-of-file");
+      dmnsn_delete_token_buffer(tbuffer);
+      return NULL;
+    } else if (buffered.type == DMNSN_T_LEX_ERROR) {
+      dmnsn_delete_token_buffer(tbuffer);
+      return NULL;
+    }
+
+    dmnsn_array_push(tbuffer->buffered, &buffered);
+  }
+
+  /* Fake EOF */
+  buffered.type = DMNSN_T_EOF;
+  buffered.lval.value = NULL;
+  dmnsn_array_push(tbuffer->buffered, &buffered);
+
+  return tbuffer;
+}
+
 int dmnsn_yylex_impl(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
                      const char *filename, void *yyscanner);
 
@@ -531,6 +575,28 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
 
         dmnsn_yyset_extra(tb, yyscanner);
         continue;
+      }
+
+    case DMNSN_T_VERSION:
+      {
+        dmnsn_token_buffer *tb = dmnsn_version_buffer(
+          token, tbuffer, lvalp, llocp, filename, symtable, yyscanner
+        );
+        if (!tb) {
+          return DMNSN_T_LEX_ERROR;
+        }
+
+        dmnsn_yyset_extra(tb, yyscanner);
+        if (dmnsn_ld_yyparse(filename, yyscanner, symtable) != 0) {
+          dmnsn_yyset_extra(tb->prev, yyscanner);
+          dmnsn_delete_token_buffer(tb);
+          return DMNSN_T_LEX_ERROR;
+        }
+
+        /* Restore the previous extra pointer */
+        dmnsn_yyset_extra(tb->prev, yyscanner);
+        dmnsn_delete_token_buffer(tb);
+        break;
       }
 
     default:

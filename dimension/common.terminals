@@ -513,7 +513,7 @@
 %token DMNSN_T_STATISTICS
 %token DMNSN_T_SWITCH
 %token DMNSN_T_UNDEF      "#undef"
-%token DMNSN_T_VERSION
+%token DMNSN_T_VERSION    "#version"
 %token DMNSN_T_WARNING
 %token DMNSN_T_WHILE      "#while"
 %token DMNSN_T_WRITE

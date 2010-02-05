@@ -450,7 +450,7 @@ COLOR_KEYWORD_ITEM: "identifier" {
                     if (!symbol) {
                       dmnsn_diagnostic(@1.first_filename, @1.first_line,
                                        @1.first_column,
-                                       "unbound identifier '%s'", $1);
+                                       "Unbound identifier '%s'", $1);
                       free($1);
                       YYERROR;
                     } else if (symbol->type != DMNSN_AST_COLOR) {

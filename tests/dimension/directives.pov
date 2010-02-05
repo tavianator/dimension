@@ -19,6 +19,8 @@
 
 // Test the language directives
 
+#version 3.6;
+
 #declare Center = 0;
 #declare R = 1;
 #local Color = rgb <1, 0, 1>;

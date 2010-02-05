@@ -21,7 +21,8 @@
 
 directives=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/directives.pov)
 directives_exp="$(echo -n \
-'(#declare (identifier "Center") = (integer "0") ;
+'(#version (float "3.6") ;
+  #declare (identifier "Center") = (integer "0") ;
   #declare (identifier "R") = (integer "1") ;
   #local (identifier "Color") = rgb < (integer "1") , (integer "0") , (integer "1") > ;
   #declare (identifier "Unused") = - (integer "1") ;

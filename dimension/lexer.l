@@ -216,6 +216,7 @@ unsigned long wchar;
 "#include"      RETURN_TOKEN(DMNSN_T_INCLUDE);
 "#local"        RETURN_TOKEN(DMNSN_T_LOCAL);
 "#undef"        RETURN_TOKEN(DMNSN_T_UNDEF);
+"#version"      RETURN_TOKEN(DMNSN_T_VERSION);
 "#while"        RETURN_TOKEN(DMNSN_T_WHILE);
 
 (?# Identifiers)

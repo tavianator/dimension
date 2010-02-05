@@ -42,6 +42,13 @@ LANGUAGE_DIRECTIVE: "#declare" "identifier" "=" RVALUE {
                                        dmnsn_new_ast_integer(node ? 0 : 1));
                     free($3);
                   }
+                  | "#version" FLOAT ";" {
+                    dmnsn_diagnostic(@$.first_filename, @$.first_line,
+                                     @$.first_column,
+                                     "WARNING: POV-Ray #version"
+                                     " backwards-compatibility not supported");
+                    dmnsn_delete_astnode($2);
+                  }
 
 RVALUE: ARITH_EXPR ";" %dprec 2 {
         $$ = dmnsn_eval($1, symtable);
