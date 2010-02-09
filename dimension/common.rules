@@ -19,12 +19,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-/* Identifiers */
+/* Fundamental language elements */
 
 IDENTIFIER: "identifier" {
             $$ = dmnsn_new_astnode(DMNSN_AST_IDENTIFIER, @$);
             $$.ptr = $1;
           }
+;
+
+STRING: "string" {
+        $$ = dmnsn_new_astnode(DMNSN_AST_STRING, @$);
+        $$.ptr = $1;
+      }
 ;
 
 /* Transformations */

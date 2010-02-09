@@ -47,11 +47,17 @@ struct dmnsn_token {
 };
 
 /* Scanner manipulation */
+
 int   dmnsn_yylex_init(void **scannerp);
 void  dmnsn_yyset_in(FILE *file, void *scanner);
 int   dmnsn_yylex_destroy(void *scanner);
 void *dmnsn_yyget_extra(void *scanner);
 void  dmnsn_yyset_extra(void *arbitrary_data, void *scanner);
+
+void *dmnsn_yy_make_buffer(FILE *file, void *scanner);
+void *dmnsn_yy_make_string_buffer(const char *str, void *scanner);
+void  dmnsn_yy_push_buffer(void *buffer, void *scanner);
+void  dmnsn_yy_pop_buffer(void *scanner);
 
 /* Actual lexer */
 int dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,

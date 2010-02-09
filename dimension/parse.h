@@ -96,7 +96,9 @@ typedef enum {
 
   DMNSN_AST_IDENTIFIER,
 
-  DMNSN_AST_STRING
+  DMNSN_AST_STRING,
+
+  DMNSN_AST_ARRAY
 } dmnsn_astnode_type;
 
 /* Abstract syntax tree node (a dmnsn_array* of these is an AST) */
@@ -119,6 +121,7 @@ typedef struct dmnsn_astnode {
 
 typedef dmnsn_array dmnsn_astree;
 
+dmnsn_astnode dmnsn_new_ast_array();
 dmnsn_astnode dmnsn_new_ast_integer(long value);
 dmnsn_astnode dmnsn_new_ast_float(double value);
 dmnsn_astnode dmnsn_new_ast_string(const char *value);

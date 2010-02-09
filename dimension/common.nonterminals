@@ -19,8 +19,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-/* Identifiers */
+/* Fundamental language elements */
 %type <astnode> IDENTIFIER
+%type <astnode> STRING
 
 /* Transformations */
 %type <astnode> TRANSFORMATION

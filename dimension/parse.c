@@ -42,6 +42,14 @@ dmnsn_new_astnode(dmnsn_astnode_type type)
 }
 
 dmnsn_astnode
+dmnsn_new_ast_array()
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_ARRAY);
+  astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
+  return astnode;
+}
+
+dmnsn_astnode
 dmnsn_new_ast_integer(long value)
 {
   dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_INTEGER);

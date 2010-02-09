@@ -273,6 +273,30 @@ unsigned long wchar;
 
 %%
 
+void *
+dmnsn_yy_make_buffer(FILE *file, void *scanner)
+{
+  return dmnsn_yy_create_buffer(file, YY_BUF_SIZE, scanner);
+}
+
+void *
+dmnsn_yy_make_string_buffer(const char *str, void *scanner)
+{
+  return dmnsn_yy_scan_string(str, scanner);
+}
+
+void
+dmnsn_yy_push_buffer(void *buffer, void *scanner)
+{
+  dmnsn_yypush_buffer_state(buffer, scanner);
+}
+
+void
+dmnsn_yy_pop_buffer(void *scanner)
+{
+  dmnsn_yypop_buffer_state(scanner);
+}
+
 dmnsn_array *
 dmnsn_tokenize(FILE *file, const char *filename)
 {

@@ -20,7 +20,9 @@
 #include "tokenize.h"
 #include "directives.h"
 #include "utility.h"
+#include <libgen.h>
 #include <stdbool.h>
+#include <string.h>
 
 typedef struct dmnsn_buffered_token {
   int type;
@@ -37,10 +39,13 @@ typedef struct dmnsn_token_buffer {
   unsigned int i;
 
   struct dmnsn_token_buffer *prev;
+
+  const char *filename;
+  void *ptr;
 } dmnsn_token_buffer;
 
 static dmnsn_token_buffer *
-dmnsn_new_token_buffer(int type, dmnsn_token_buffer *prev)
+dmnsn_new_token_buffer(int type, dmnsn_token_buffer *prev, const char *filename)
 {
   dmnsn_token_buffer *tbuffer = malloc(sizeof(dmnsn_token_buffer));
   if (!tbuffer) {
@@ -51,6 +56,8 @@ dmnsn_new_token_buffer(int type, dmnsn_token_buffer *prev)
   tbuffer->buffered = dmnsn_new_array(sizeof(dmnsn_buffered_token));
   tbuffer->i = 0;
   tbuffer->prev = prev;
+  tbuffer->filename = filename;
+  tbuffer->ptr = NULL;
   return tbuffer;
 }
 
@@ -72,9 +79,168 @@ dmnsn_delete_token_buffer(dmnsn_token_buffer *tbuffer)
 
 static int
 dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
-                    const char *filename, void *yyscanner);
+                    const char *filename, dmnsn_symbol_table *symtable,
+                    void *yyscanner);
 int dmnsn_ld_yyparse(const char *filename, void *yyscanner,
                      dmnsn_symbol_table *symtable);
+
+static dmnsn_token_buffer *
+dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
+                     dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                     const char *filename, dmnsn_symbol_table *symtable,
+                     void *yyscanner)
+{
+  dmnsn_token_buffer *include_buffer
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+
+  /* Buffer the current token */
+  dmnsn_buffered_token buffered = {
+    .type = token,
+    .lval = *lvalp,
+    .lloc = *llocp
+  };
+  dmnsn_array_push(include_buffer->buffered, &buffered);
+
+  /* Recursive call */
+  buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
+                              filename, symtable, yyscanner);
+
+  if (buffered.type == DMNSN_T_EOF) {
+    dmnsn_diagnostic(buffered.lloc.first_filename, buffered.lloc.first_line,
+                     buffered.lloc.first_column,
+                     "syntax error, unexpected end-of-file");
+    dmnsn_delete_token_buffer(include_buffer);
+    return NULL;
+  } else if (buffered.type == DMNSN_T_LEX_ERROR) {
+    dmnsn_delete_token_buffer(include_buffer);
+    return NULL;
+  }
+  /* Buffer the next token */
+  dmnsn_array_push(include_buffer->buffered, &buffered);
+
+  bool is_strexp = buffered.type != DMNSN_T_STRING;
+  if (is_strexp && buffered.type == DMNSN_T_IDENTIFIER) {
+    /* Check if it's a string identifier or a macro */
+    dmnsn_astnode *inode = dmnsn_find_symbol(symtable, buffered.lval.value);
+    if (!inode || inode->type == DMNSN_AST_STRING) {
+      is_strexp = false;
+    }
+  }
+
+  if (is_strexp) {
+    /* Grab all the tokens belonging to the string expression  */
+    int parenlevel = -1;
+    while (1) {
+      /* Recursive call - permit other directives inside the condition */
+      buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
+                                  filename, symtable, yyscanner);
+
+      if (buffered.type == DMNSN_T_EOF) {
+        dmnsn_diagnostic(buffered.lloc.first_filename, buffered.lloc.first_line,
+                         buffered.lloc.first_column,
+                         "syntax error, unexpected end-of-file");
+        dmnsn_delete_token_buffer(include_buffer);
+        return NULL;
+      } else if (buffered.type == DMNSN_T_LEX_ERROR) {
+        dmnsn_delete_token_buffer(include_buffer);
+        return NULL;
+      }
+
+      dmnsn_array_push(include_buffer->buffered, &buffered);
+
+      if (buffered.type == DMNSN_T_LPAREN) {
+        if (parenlevel < 0)
+          parenlevel = 1;
+        else
+          ++parenlevel;
+      } else if (buffered.type == DMNSN_T_RPAREN) {
+        --parenlevel;
+        if (parenlevel == 0) {
+          break;
+        }
+      }
+    }
+  }
+
+  /* Fake EOF */
+  buffered.type = DMNSN_T_EOF;
+  buffered.lval.value = NULL;
+  dmnsn_array_push(include_buffer->buffered, &buffered);
+
+  dmnsn_yyset_extra(include_buffer, yyscanner);
+  if (dmnsn_ld_yyparse(filename, yyscanner, symtable) != 0) {
+    dmnsn_yyset_extra(include_buffer->prev, yyscanner);
+    dmnsn_delete_token_buffer(include_buffer);
+    return NULL;
+  }
+
+  dmnsn_yyset_extra(include_buffer->prev, yyscanner);
+  dmnsn_delete_token_buffer(include_buffer);
+
+  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev, filename);
+
+  dmnsn_astnode *inode = dmnsn_find_symbol(symtable, "__include__");
+  if (!inode) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "__include__ unset.");
+  }
+
+  const char *include = inode->ptr;
+  if (inode->type != DMNSN_AST_STRING) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "__include__ has wrong type.");
+  }
+
+  char *filename_copy = strdup(filename);
+  char *localdir = dirname(filename_copy);
+  char *local_include = malloc(strlen(localdir) + strlen(include) + 2);
+  strcpy(local_include, localdir);
+  strcat(local_include, "/");
+  strcat(local_include, include);
+  free(filename_copy);
+  dmnsn_undef_symbol(symtable, "__include__");
+
+  FILE *file = fopen(local_include, "r");
+  if (!file) {
+    dmnsn_diagnostic(llocp->first_filename, llocp->first_line,
+                     llocp->first_column,
+                     "Couldn't open include file '%s'", local_include);
+    free(local_include);
+    dmnsn_delete_token_buffer(tbuffer);
+    return NULL;
+  }
+  tbuffer->ptr = file;
+
+  void *buffer = dmnsn_yy_make_buffer(file, yyscanner);
+  if (!buffer) {
+    dmnsn_diagnostic(llocp->first_filename, llocp->first_line,
+                     llocp->first_column,
+                     "Couldn't allocate buffer for include file '%s'",
+                     local_include);
+    fclose(file);
+    free(local_include);
+    dmnsn_delete_token_buffer(tbuffer);
+    return NULL;
+  }
+  dmnsn_yy_push_buffer(buffer, yyscanner);
+
+  /* Stuff the filename in the symbol table to persist it */
+  dmnsn_astnode *includes = dmnsn_find_symbol(symtable, "__includes__");
+  if (!includes) {
+    dmnsn_declare_symbol(symtable, "__includes__", dmnsn_new_ast_array());
+    includes = dmnsn_find_symbol(symtable, "__includes__");
+  }
+  if (includes->type != DMNSN_AST_ARRAY) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "__includes__ has wrong type.");
+  }
+
+  dmnsn_astnode fnode = dmnsn_new_ast_string(local_include);
+  free(local_include);
+  tbuffer->filename = fnode.ptr;
+  dmnsn_array_push(includes->children, &fnode);
+
+  dmnsn_push_scope(symtable);
+
+  return tbuffer;
+}
 
 static dmnsn_token_buffer *
 dmnsn_declaration_buffer(int token, dmnsn_token_buffer *prev,
@@ -83,7 +249,7 @@ dmnsn_declaration_buffer(int token, dmnsn_token_buffer *prev,
                          void *yyscanner)
 {
   dmnsn_token_buffer *tbuffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev);
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -144,7 +310,7 @@ dmnsn_undef_buffer(int token, dmnsn_token_buffer *prev,
                    void *yyscanner)
 {
   dmnsn_token_buffer *tbuffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev);
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -186,7 +352,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
                 void *yyscanner)
 {
   dmnsn_token_buffer *cond_buffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev);
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -204,7 +370,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
                                 filename, symtable, yyscanner);
 
     if (buffered.type == DMNSN_T_EOF) {
-      dmnsn_diagnostic(filename, buffered.lloc.first_line,
+      dmnsn_diagnostic(buffered.lloc.first_filename, buffered.lloc.first_line,
                        buffered.lloc.first_column,
                        "syntax error, unexpected end-of-file");
       dmnsn_delete_token_buffer(cond_buffer);
@@ -244,7 +410,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
   dmnsn_yyset_extra(cond_buffer->prev, yyscanner);
   dmnsn_delete_token_buffer(cond_buffer);
 
-  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev);
+  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev, filename);
 
   dmnsn_astnode *cnode = dmnsn_find_symbol(symtable, "__cond__");
   if (!cnode) {
@@ -266,7 +432,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
   while (1) {
     /* Non-recursive call */
     buffered.type = dmnsn_yylex_wrapper(&buffered.lval, &buffered.lloc,
-                                        filename, yyscanner);
+                                        filename, symtable, yyscanner);
 
     if (buffered.type == DMNSN_T_EOF) {
       dmnsn_diagnostic(filename, buffered.lloc.first_line,
@@ -328,7 +494,7 @@ dmnsn_while_buffer(int token, dmnsn_token_buffer *prev,
                    const char *filename, dmnsn_symbol_table *symtable,
                    void *yyscanner)
 {
-  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev);
+  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev, filename);
 
   /* Pretend to be an if */
   dmnsn_buffered_token buffered = {
@@ -343,7 +509,7 @@ dmnsn_while_buffer(int token, dmnsn_token_buffer *prev,
   while (1) {
     /* Non-recursive call */
     buffered.type = dmnsn_yylex_wrapper(&buffered.lval, &buffered.lloc,
-                                        filename, yyscanner);
+                                        filename, symtable, yyscanner);
 
     if (buffered.type == DMNSN_T_EOF) {
       dmnsn_diagnostic(filename, buffered.lloc.first_line,
@@ -388,7 +554,7 @@ dmnsn_version_buffer(int token, dmnsn_token_buffer *prev,
                      void *yyscanner)
 {
   dmnsn_token_buffer *tbuffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev);
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -430,11 +596,12 @@ int dmnsn_yylex_impl(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
 
 static int
 dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
-                    const char *filename, void *yyscanner)
+                    const char *filename, dmnsn_symbol_table *symtable,
+                    void *yyscanner)
 {
   dmnsn_token_buffer *tbuffer = dmnsn_yyget_extra(yyscanner);
 
-  if (tbuffer) {
+  if (tbuffer && tbuffer->type != DMNSN_T_INCLUDE) {
     while (tbuffer && tbuffer->i >= dmnsn_array_size(tbuffer->buffered)) {
       if (tbuffer->type == DMNSN_T_WHILE) {
         tbuffer->i = 0;
@@ -456,7 +623,7 @@ dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
 
   int token;
 
-  if (tbuffer) {
+  if (tbuffer && tbuffer->type != DMNSN_T_INCLUDE) {
     /* Return buffered tokens */
     dmnsn_buffered_token buffered;
 
@@ -472,7 +639,16 @@ dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
     *llocp = buffered.lloc;
     ++tbuffer->i;
   } else {
-    token = dmnsn_yylex_impl(lvalp, llocp, filename, yyscanner);
+    const char *real_filename = tbuffer ? tbuffer->filename : filename;
+    token = dmnsn_yylex_impl(lvalp, llocp, real_filename, yyscanner);
+    if (token == DMNSN_T_EOF && tbuffer && tbuffer->type == DMNSN_T_INCLUDE) {
+      dmnsn_yy_pop_buffer(yyscanner);
+      fclose(tbuffer->ptr);
+      dmnsn_pop_scope(symtable);
+      dmnsn_yyset_extra(tbuffer->prev, yyscanner);
+      dmnsn_delete_token_buffer(tbuffer);
+      return dmnsn_yylex_wrapper(lvalp, llocp, filename, symtable, yyscanner);
+    }
   }
 
   return token;
@@ -496,7 +672,9 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
    */
 
   while (1) {
-    int token = dmnsn_yylex_wrapper(lvalp, llocp, filename, yyscanner);
+    int token = dmnsn_yylex_wrapper(
+      lvalp, llocp, filename, symtable, yyscanner
+    );
     dmnsn_token_buffer *tbuffer = dmnsn_yyget_extra(yyscanner);
 
     if (tbuffer && tbuffer->type == DMNSN_T_LEX_VERBATIM && tbuffer->i == 1) {
@@ -504,6 +682,19 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
     }
 
     switch (token) {
+    case DMNSN_T_INCLUDE:
+      {
+        dmnsn_token_buffer *tb = dmnsn_include_buffer(
+          token, tbuffer, lvalp, llocp, filename, symtable, yyscanner
+        );
+        if (!tb) {
+          return DMNSN_T_LEX_ERROR;
+        }
+
+        dmnsn_yyset_extra(tb, yyscanner);
+        break;
+      }
+
     case DMNSN_T_DECLARE:
     case DMNSN_T_LOCAL:
       {
@@ -561,7 +752,7 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
         }
 
         dmnsn_yyset_extra(tb, yyscanner);
-        continue;
+        break;
       }
 
     case DMNSN_T_WHILE:
@@ -574,7 +765,7 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
         }
 
         dmnsn_yyset_extra(tb, yyscanner);
-        continue;
+        break;
       }
 
     case DMNSN_T_VERSION:

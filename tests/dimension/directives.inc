@@ -17,38 +17,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-// Test the language directives
-
-#version 3.6;
-
-#include "directives.inc"
-
-#declare R = 1;
-#local Color = rgb <1, 0, 1>;
-
-#declare Unused = -1;
-#undef Unused
-
-#ifdef (Local)
-  Illegal
-#end
-
-#ifdef (Unused)
-  Illegal
-#end
-
-#declare Counter = 0;
-#while (Counter < 2)
-  #if (#if (1 = 1) 0 #end = 0 & 0)
-    `Illegal
-  #else
-    sphere {
-      Center + <0, Counter, 0>, R
-      pigment {
-        color Color green 1
-      }
-    }
-  #end
-
-  #declare Counter = Counter + 1;
-#end
+#declare Center = 0;
+#local Local = -1;

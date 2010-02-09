@@ -4,7 +4,11 @@
  * Start symbol
  */
 
-LANGUAGE_DIRECTIVE: "#declare" "identifier" "=" RVALUE {
+LANGUAGE_DIRECTIVE: "#include" STRING {
+                    dmnsn_declare_symbol(symtable, "__include__", $2);
+                    dmnsn_delete_astnode($2);
+                  }
+                  | "#declare" "identifier" "=" RVALUE {
                     dmnsn_declare_symbol(symtable, $2, $4);
                     free($2);
                     dmnsn_delete_astnode($4);
