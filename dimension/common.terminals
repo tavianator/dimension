@@ -20,7 +20,7 @@
  *************************************************************************/
 
 %token DMNSN_T_EOF 0 "end-of-file"
-%token DMNSN_T_LEX_ERROR "error"
+%token DMNSN_T_LEX_ERROR "parse error"
 
 /* Punctuation */
 %token DMNSN_T_LBRACE        "{"
