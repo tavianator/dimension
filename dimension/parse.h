@@ -168,6 +168,7 @@ dmnsn_astnode dmnsn_eval_vector(dmnsn_astnode astnode,
  * The workhorse -- parse a file
  */
 dmnsn_astree *dmnsn_parse(FILE *file, dmnsn_symbol_table *symtable);
+dmnsn_astree *dmnsn_parse_string(const char *str, dmnsn_symbol_table *symtable);
 
 /*
  * Parser internals
