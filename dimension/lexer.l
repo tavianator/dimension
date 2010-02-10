@@ -355,6 +355,8 @@ dmnsn_print_token(FILE *file, dmnsn_token token)
     tname = "\\(";
   } else if (token.type == DMNSN_T_RPAREN) {
     tname = "\\)";
+  } else if (token.type == DMNSN_T_LEX_ERROR) {
+    tname = "(error)";
   } else {
     tname = dmnsn_token_string(token.type);
   }

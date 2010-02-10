@@ -36,7 +36,7 @@ directives_exp="$(echo -n \
   #declare (identifier "Counter") = (integer "0") ;
   #while \( (identifier "Counter") < (integer "2") \)
     #if \( #if \( (integer "1") = (integer "1") \) (integer "0") #end = (integer "0") & (integer "0") \)
-      error (identifier "Illegal")
+      (error) (identifier "Illegal")
     #else
       sphere {
         (identifier "Center") + < (integer "0") , (identifier "Counter") , (integer "0") > , (identifier "R")
