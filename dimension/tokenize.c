@@ -180,15 +180,10 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
   dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev, filename);
 
   dmnsn_astnode *inode = dmnsn_find_symbol(symtable, "__include__");
-  if (!inode) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "__include__ unset.");
-  }
+  dmnsn_assert(inode, "__include__ unset.");
+  dmnsn_assert(inode->type == DMNSN_AST_STRING, "__include__ has wrong type.");
 
   const char *include = inode->ptr;
-  if (inode->type != DMNSN_AST_STRING) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "__include__ has wrong type.");
-  }
-
   char *filename_copy = strdup(filename);
   char *localdir = dirname(filename_copy);
   char *local_include = malloc(strlen(localdir) + strlen(include) + 2);
@@ -228,9 +223,9 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
     dmnsn_declare_symbol(symtable, "__includes__", dmnsn_new_ast_array());
     includes = dmnsn_find_symbol(symtable, "__includes__");
   }
-  if (includes->type != DMNSN_AST_ARRAY) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "__includes__ has wrong type.");
-  }
+  dmnsn_assert(includes, "__includes__ unset.");
+  dmnsn_assert(includes->type == DMNSN_AST_ARRAY,
+               "__includes__ has wrong type.");
 
   dmnsn_astnode fnode = dmnsn_new_ast_string(local_include);
   free(local_include);
@@ -413,9 +408,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
   dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev, filename);
 
   dmnsn_astnode *cnode = dmnsn_find_symbol(symtable, "__cond__");
-  if (!cnode) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "__cond__ unset.");
-  }
+  dmnsn_assert(cnode, "__cond__ unset.");
 
   bool cond = false;
   if (cnode->type == DMNSN_AST_INTEGER) {
@@ -423,7 +416,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
   } else if (cnode->type == DMNSN_AST_FLOAT) {
     cond = (*(double *)cnode->ptr) ? true : false;
   } else {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "__cond__ has wrong type.");
+    dmnsn_assert(false, "__cond__ has wrong type.");
   }
 
   dmnsn_undef_symbol(symtable, "__cond__");

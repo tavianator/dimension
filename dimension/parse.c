@@ -406,8 +406,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Attempt to evaluate wrong unary operator.");
+      dmnsn_assert(false, "Attempt to evaluate wrong unary operator.");
     }
 
     ret = dmnsn_copy_astnode(astnode);
@@ -691,8 +690,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Attempt to evaluate wrong binary operator.");
+      dmnsn_assert(false, "Attempt to evaluate wrong binary operator.");
     }
 
     ret.type = DMNSN_AST_INTEGER;
@@ -779,8 +777,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Attempt to evaluate wrong binary operator.");
+      dmnsn_assert(false, "Attempt to evaluate wrong binary operator.");
     }
 
     ret.type = DMNSN_AST_FLOAT;

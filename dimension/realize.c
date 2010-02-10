@@ -36,7 +36,7 @@ dmnsn_realize_float(dmnsn_astnode astnode)
     return *(long *)astnode.ptr;
 
   default:
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid float.");
+    dmnsn_assert(false, "Invalid float.");
     return 0; /* Silence compiler warning */
   }
 }
@@ -44,9 +44,7 @@ dmnsn_realize_float(dmnsn_astnode astnode)
 static dmnsn_vector
 dmnsn_realize_vector(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_VECTOR) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a vector.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_VECTOR, "Expected a vector.");
 
   dmnsn_astnode xnode, ynode, znode;
   dmnsn_array_get(astnode.children, 0, &xnode);
@@ -63,9 +61,7 @@ dmnsn_realize_vector(dmnsn_astnode astnode)
 static dmnsn_color
 dmnsn_realize_color(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_COLOR) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a color.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_COLOR, "Expected a color.");
 
   dmnsn_astnode rnode, gnode, bnode, fnode, tnode;
   dmnsn_array_get(astnode.children, 0, &rnode);
@@ -91,9 +87,7 @@ dmnsn_realize_color(dmnsn_astnode astnode)
 static dmnsn_matrix
 dmnsn_realize_rotation(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_ROTATION) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a rotation.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_ROTATION, "Expected a rotation.");
 
   const double deg2rad = atan(1.0)/45.0;
 
@@ -123,9 +117,7 @@ dmnsn_realize_rotation(dmnsn_astnode astnode)
 static dmnsn_matrix
 dmnsn_realize_scale(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_SCALE) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a scale.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_SCALE, "Expected a scale.");
 
   dmnsn_astnode scale_node;
   dmnsn_array_get(astnode.children, 0, &scale_node);
@@ -137,9 +129,8 @@ dmnsn_realize_scale(dmnsn_astnode astnode)
 static dmnsn_matrix
 dmnsn_realize_translation(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_TRANSLATION) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a translation.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_TRANSLATION,
+               "Expected a translation.");
 
   dmnsn_astnode trans_node;
   dmnsn_array_get(astnode.children, 0, &trans_node);
@@ -151,6 +142,8 @@ dmnsn_realize_translation(dmnsn_astnode astnode)
 static dmnsn_camera *
 dmnsn_realize_camera(dmnsn_astnode astnode)
 {
+  dmnsn_assert(astnode.type == DMNSN_AST_CAMERA, "Expected a camera.");
+
   const double deg2rad = atan(1.0)/45.0;
 
   dmnsn_astnode_type camera_type = DMNSN_AST_PERSPECTIVE;
@@ -270,7 +263,7 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid camera item.");
+      dmnsn_assert(false, "Invalid camera item.");
       break;
     }
   }
@@ -337,7 +330,7 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
     }
 
   default:
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Unsupported camera type.");
+    dmnsn_assert(false, "Unsupported camera type.");
   }
 
   return camera;
@@ -346,9 +339,7 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
 static dmnsn_pigment *
 dmnsn_realize_pigment(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_PIGMENT) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a pigment.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_PIGMENT, "Expected a pigment.");
 
   dmnsn_pigment *pigment = NULL;
 
@@ -369,7 +360,7 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
     break;
 
   default:
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid pigment color.");
+    dmnsn_assert(false, "Invalid pigment color.");
   }
 
   return pigment;
@@ -378,9 +369,7 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
 static dmnsn_finish *
 dmnsn_realize_reflection(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_REFLECTION) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a reflection.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_REFLECTION, "Expected a reflection.");
 
   dmnsn_astnode min_node, max_node;
   dmnsn_array_get(astnode.children, 0, &min_node);
@@ -406,7 +395,7 @@ dmnsn_realize_reflection(dmnsn_astnode astnode)
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid reflection item.");
+      dmnsn_assert(false, "Invalid reflection item.");
     }
   }
 
@@ -421,9 +410,7 @@ dmnsn_realize_reflection(dmnsn_astnode astnode)
 static dmnsn_finish *
 dmnsn_realize_finish(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_FINISH) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a finish.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_FINISH, "Expected a finish.");
 
   dmnsn_finish *finish = dmnsn_new_finish();
 
@@ -471,7 +458,7 @@ dmnsn_realize_finish(dmnsn_astnode astnode)
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid finish item.");
+      dmnsn_assert(false, "Invalid finish item.");
     }
   }
 
@@ -510,9 +497,7 @@ dmnsn_realize_finish(dmnsn_astnode astnode)
 static dmnsn_texture *
 dmnsn_realize_texture(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_TEXTURE) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a texture.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_TEXTURE, "Expected a texture.");
 
   dmnsn_texture *texture = dmnsn_new_texture();
   if (!texture) {
@@ -536,7 +521,7 @@ dmnsn_realize_texture(dmnsn_astnode astnode)
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid texture item.");
+      dmnsn_assert(false, "Invalid texture item.");
     }
   }
 
@@ -546,9 +531,8 @@ dmnsn_realize_texture(dmnsn_astnode astnode)
 static void
 dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
 {
-  if (astnode.type != DMNSN_AST_OBJECT_MODIFIERS) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected object modifiers.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_OBJECT_MODIFIERS,
+               "Expected object modifiers.");
 
   unsigned int i;
   for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
@@ -581,7 +565,7 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Invalid object modifier.");
+      dmnsn_assert(false, "Invalid object modifier.");
     }
   }
 }
@@ -589,9 +573,7 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
 static dmnsn_object *
 dmnsn_realize_box(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_BOX) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a box.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_BOX, "Expected a box.");
 
   dmnsn_astnode corner1, corner2;
   dmnsn_array_get(astnode.children, 0, &corner1);
@@ -627,9 +609,8 @@ dmnsn_realize_box(dmnsn_astnode astnode)
 static dmnsn_light *
 dmnsn_realize_light_source(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_LIGHT_SOURCE) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a light source.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_LIGHT_SOURCE,
+               "Expected a light source.");
 
   dmnsn_astnode point, color_node;
   dmnsn_array_get(astnode.children, 0, &point);
@@ -649,9 +630,7 @@ dmnsn_realize_light_source(dmnsn_astnode astnode)
 static dmnsn_object *
 dmnsn_realize_sphere(dmnsn_astnode astnode)
 {
-  if (astnode.type != DMNSN_AST_SPHERE) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Expected a sphere.");
-  }
+  dmnsn_assert(astnode.type == DMNSN_AST_SPHERE, "Expected a sphere.");
 
   dmnsn_astnode center, radius;
   dmnsn_array_get(astnode.children, 0, &center);
@@ -744,7 +723,7 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Unrecognised syntax element.");
+      dmnsn_assert(false, "Unrecognised syntax element.");
     }
   }
 

@@ -48,6 +48,16 @@ typedef enum {
                      DMNSN_FUNC, __FILE__, __LINE__,                           \
                      str)
 
+/* Make an assertion */
+#ifdef NDEBUG
+  #define dmnsn_assert(expr, str) ((void)0)
+#else
+  #define dmnsn_assert(expr, str)               \
+    if (!(expr)) {                              \
+      dmnsn_error(DMNSN_SEVERITY_HIGH, (str));  \
+    }
+#endif
+
 /* Called by dmnsn_error() - don't call directly */
 void dmnsn_report_error(dmnsn_severity severity,
                         const char *func, const char *file, unsigned int line,
