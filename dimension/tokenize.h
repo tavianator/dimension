@@ -63,6 +63,7 @@ void  dmnsn_yy_pop_buffer(void *scanner);
 int dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
                 const char *filename, dmnsn_symbol_table *symtable,
                 void *yyscanner);
+void dmnsn_yylex_cleanup(void *yyscanner);
 
 /* For debugging - returns an array of raw tokens */
 dmnsn_array *dmnsn_tokenize(FILE *file, const char *filename);

@@ -43,6 +43,7 @@ dmnsn_parse(FILE *file, dmnsn_symbol_table *symtable)
     astree = NULL;
   }
 
+  dmnsn_yylex_cleanup(scanner);
   dmnsn_yylex_destroy(scanner);
   return astree;
 }
@@ -73,6 +74,7 @@ dmnsn_parse_string(const char *str, dmnsn_symbol_table *symtable)
     astree = NULL;
   }
 
+  dmnsn_yylex_cleanup(scanner);
   dmnsn_yylex_destroy(scanner);
   return astree;
 }

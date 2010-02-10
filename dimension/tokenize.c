@@ -788,3 +788,15 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
     }
   }
 }
+
+void
+dmnsn_yylex_cleanup(void *yyscanner)
+{
+  dmnsn_token_buffer *tbuffer = dmnsn_yyget_extra(yyscanner);
+  while (tbuffer) {
+    dmnsn_token_buffer *prev = tbuffer->prev;
+    dmnsn_delete_token_buffer(tbuffer);
+    tbuffer = prev;
+  }
+  dmnsn_yyset_extra(NULL, yyscanner);
+}
