@@ -218,6 +218,11 @@ unsigned long wchar;
 "#undef"        RETURN_TOKEN(DMNSN_T_UNDEF);
 "#version"      RETURN_TOKEN(DMNSN_T_VERSION);
 "#while"        RETURN_TOKEN(DMNSN_T_WHILE);
+"#"[[:alnum:]_]*        {
+  dmnsn_diagnostic(filename, yylineno, yycolumn,
+                   "Unrecognized language directive '%s'", yytext);
+  RETURN_TOKEN(DMNSN_T_LEX_ERROR);
+}
 
 (?# Identifiers)
 [[:alpha:]][[:alnum:]_]*        RETURN_VALUE_TOKEN(DMNSN_T_IDENTIFIER);
