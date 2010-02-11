@@ -97,7 +97,10 @@ dmnsn_array_resize(dmnsn_array *array, size_t length)
 DMNSN_INLINE void
 dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
 {
-  dmnsn_assert(i < dmnsn_array_size(array), "Array index out of bounds.");
+  if (i >= dmnsn_array_size(array)) {
+    /* Range check failed */
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
+  }
   memcpy(obj, (char *)array->ptr + array->obj_size*i, array->obj_size);
 }
 
@@ -136,7 +139,11 @@ DMNSN_INLINE void
 dmnsn_array_pop(dmnsn_array *array, void *obj)
 {
   size_t size = dmnsn_array_size(array);
-  dmnsn_assert(size > 0, "Array is empty.");
+  if (size <= 0) {
+    /* Range check failed */
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array is empty.");
+  }
+
   dmnsn_array_get(array, size - 1, obj); /* Copy the object */
   dmnsn_array_resize(array, size - 1);   /* Shrink the array */
 }
@@ -163,7 +170,11 @@ DMNSN_INLINE void
 dmnsn_array_remove(dmnsn_array *array, size_t i)
 {
   size_t size = dmnsn_array_size(array);
-  dmnsn_assert(i < size, "Array index out of bounds.");
+  if (i >= size) {
+    /* Range check failed */
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
+  }
+
   /* Move the array elements after `i' 1 to the left */
   memmove((char *)array->ptr + array->obj_size*i,
           (char *)array->ptr + array->obj_size*(i + 1),
