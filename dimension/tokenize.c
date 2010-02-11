@@ -191,13 +191,13 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
   strcat(local_include, "/");
   strcat(local_include, include);
   free(filename_copy);
-  dmnsn_undef_symbol(symtable, "__include__");
 
   FILE *file = fopen(local_include, "r");
   if (!file) {
     dmnsn_diagnostic(llocp->first_filename, llocp->first_line,
                      llocp->first_column,
-                     "Couldn't open include file '%s'", local_include);
+                     "Couldn't open include file '%s'", include);
+    dmnsn_undef_symbol(symtable, "__include__");
     free(local_include);
     dmnsn_delete_token_buffer(tbuffer);
     return NULL;
@@ -209,7 +209,8 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
     dmnsn_diagnostic(llocp->first_filename, llocp->first_line,
                      llocp->first_column,
                      "Couldn't allocate buffer for include file '%s'",
-                     local_include);
+                     include);
+    dmnsn_undef_symbol(symtable, "__include__");
     fclose(file);
     free(local_include);
     dmnsn_delete_token_buffer(tbuffer);
@@ -234,6 +235,7 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
 
   dmnsn_push_scope(symtable);
 
+  dmnsn_undef_symbol(symtable, "__include__");
   return tbuffer;
 }
 
