@@ -207,18 +207,18 @@ unsigned long wchar;
 "z"             RETURN_TOKEN(DMNSN_T_Z);
 
 (?# Directives)
-"#declare"      RETURN_TOKEN(DMNSN_T_DECLARE);
-"#else"         RETURN_TOKEN(DMNSN_T_ELSE);
-"#end"          RETURN_TOKEN(DMNSN_T_END);
-"#if"           RETURN_TOKEN(DMNSN_T_IF);
-"#ifdef"        RETURN_TOKEN(DMNSN_T_IFDEF);
-"#ifndef"       RETURN_TOKEN(DMNSN_T_IFNDEF);
-"#include"      RETURN_TOKEN(DMNSN_T_INCLUDE);
-"#local"        RETURN_TOKEN(DMNSN_T_LOCAL);
-"#undef"        RETURN_TOKEN(DMNSN_T_UNDEF);
-"#version"      RETURN_TOKEN(DMNSN_T_VERSION);
-"#while"        RETURN_TOKEN(DMNSN_T_WHILE);
-"#"[[:alnum:]_]*        {
+#[\b\r\t\v ]*declare            RETURN_TOKEN(DMNSN_T_DECLARE);
+#[\b\r\t\v ]*else               RETURN_TOKEN(DMNSN_T_ELSE);
+#[\b\r\t\v ]*end                RETURN_TOKEN(DMNSN_T_END);
+#[\b\r\t\v ]*if                 RETURN_TOKEN(DMNSN_T_IF);
+#[\b\r\t\v ]*ifdef              RETURN_TOKEN(DMNSN_T_IFDEF);
+#[\b\r\t\v ]*ifndef             RETURN_TOKEN(DMNSN_T_IFNDEF);
+#[\b\r\t\v ]*include            RETURN_TOKEN(DMNSN_T_INCLUDE);
+#[\b\r\t\v ]*local              RETURN_TOKEN(DMNSN_T_LOCAL);
+#[\b\r\t\v ]*undef              RETURN_TOKEN(DMNSN_T_UNDEF);
+#[\b\r\t\v ]*version            RETURN_TOKEN(DMNSN_T_VERSION);
+#[\b\r\t\v ]*while              RETURN_TOKEN(DMNSN_T_WHILE);
+#[\b\r\t\v ]*[[:alnum:]_]*      {
   dmnsn_diagnostic(filename, yylineno, yycolumn,
                    "Unrecognized language directive '%s'", yytext);
   RETURN_TOKEN(DMNSN_T_LEX_ERROR);
