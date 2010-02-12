@@ -84,6 +84,96 @@ dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
 int dmnsn_ld_yyparse(const char *filename, void *yyscanner,
                      dmnsn_symbol_table *symtable);
 
+static int
+dmnsn_buffer_balanced(dmnsn_token_buffer *tbuffer, bool recursive,
+                      dmnsn_token_type left, dmnsn_token_type right,
+                      const char *filename, dmnsn_symbol_table *symtable,
+                      void *yyscanner)
+{
+  dmnsn_buffered_token buffered;
+
+  int nesting = -1;
+  while (1) {
+    if (recursive) {
+      buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
+                                  filename, symtable, yyscanner);
+    } else {
+      buffered.type = dmnsn_yylex_wrapper(&buffered.lval, &buffered.lloc,
+                                          filename, symtable, yyscanner);
+    }
+
+    if (buffered.type == DMNSN_T_EOF) {
+      dmnsn_diagnostic(buffered.lloc.first_filename, buffered.lloc.first_line,
+                       buffered.lloc.first_column,
+                       "syntax error, unexpected end-of-file");
+      return 1;
+    } else if (buffered.type == DMNSN_T_LEX_ERROR) {
+      return 1;
+    }
+
+    dmnsn_array_push(tbuffer->buffered, &buffered);
+
+    if (buffered.type == left) {
+      if (nesting < 0)
+        nesting = 1;
+      else
+        ++nesting;
+    } else if (buffered.type == right) {
+      --nesting;
+      if (nesting == 0) {
+        break;
+      }
+    }
+  }
+
+  return 0;
+}
+
+static int
+dmnsn_buffer_strexp(dmnsn_token_buffer *tbuffer, bool recursive,
+                    const char *filename, dmnsn_symbol_table *symtable,
+                    void *yyscanner)
+{
+  dmnsn_buffered_token buffered;
+
+  if (recursive) {
+    buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
+                                filename, symtable, yyscanner);
+  } else {
+    buffered.type = dmnsn_yylex_wrapper(&buffered.lval, &buffered.lloc,
+                                        filename, symtable, yyscanner);
+  }
+
+  if (buffered.type == DMNSN_T_EOF) {
+    dmnsn_diagnostic(buffered.lloc.first_filename, buffered.lloc.first_line,
+                     buffered.lloc.first_column,
+                     "syntax error, unexpected end-of-file");
+    return 1;
+  } else if (buffered.type == DMNSN_T_LEX_ERROR) {
+    return 1;
+  }
+  /* Buffer the first token */
+  dmnsn_array_push(tbuffer->buffered, &buffered);
+
+  bool is_strexp = buffered.type != DMNSN_T_STRING;
+  if (buffered.type == DMNSN_T_IDENTIFIER) {
+    /* Check if it's a string identifier or a macro */
+    dmnsn_astnode *inode = dmnsn_find_symbol(symtable, buffered.lval.value);
+    if (!inode || inode->type == DMNSN_AST_STRING) {
+      is_strexp = false;
+    }
+  }
+
+  if (is_strexp) {
+    /* Grab all the tokens belonging to the string expression  */
+    return dmnsn_buffer_balanced(tbuffer, recursive,
+                                 DMNSN_T_LPAREN, DMNSN_T_RPAREN,
+                                 filename, symtable, yyscanner);
+  }
+
+  return 0;
+}
+
 static dmnsn_token_buffer *
 dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
                      dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
@@ -101,65 +191,12 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
   };
   dmnsn_array_push(include_buffer->buffered, &buffered);
 
-  /* Recursive call */
-  buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
-                              filename, symtable, yyscanner);
-
-  if (buffered.type == DMNSN_T_EOF) {
-    dmnsn_diagnostic(buffered.lloc.first_filename, buffered.lloc.first_line,
-                     buffered.lloc.first_column,
-                     "syntax error, unexpected end-of-file");
+  /* Buffer the following string expression */
+  if (dmnsn_buffer_strexp(include_buffer, true, filename, symtable, yyscanner)
+      != 0)
+  {
     dmnsn_delete_token_buffer(include_buffer);
     return NULL;
-  } else if (buffered.type == DMNSN_T_LEX_ERROR) {
-    dmnsn_delete_token_buffer(include_buffer);
-    return NULL;
-  }
-  /* Buffer the next token */
-  dmnsn_array_push(include_buffer->buffered, &buffered);
-
-  bool is_strexp = buffered.type != DMNSN_T_STRING;
-  if (is_strexp && buffered.type == DMNSN_T_IDENTIFIER) {
-    /* Check if it's a string identifier or a macro */
-    dmnsn_astnode *inode = dmnsn_find_symbol(symtable, buffered.lval.value);
-    if (!inode || inode->type == DMNSN_AST_STRING) {
-      is_strexp = false;
-    }
-  }
-
-  if (is_strexp) {
-    /* Grab all the tokens belonging to the string expression  */
-    int parenlevel = -1;
-    while (1) {
-      /* Recursive call - permit other directives inside the condition */
-      buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
-                                  filename, symtable, yyscanner);
-
-      if (buffered.type == DMNSN_T_EOF) {
-        dmnsn_diagnostic(buffered.lloc.first_filename, buffered.lloc.first_line,
-                         buffered.lloc.first_column,
-                         "syntax error, unexpected end-of-file");
-        dmnsn_delete_token_buffer(include_buffer);
-        return NULL;
-      } else if (buffered.type == DMNSN_T_LEX_ERROR) {
-        dmnsn_delete_token_buffer(include_buffer);
-        return NULL;
-      }
-
-      dmnsn_array_push(include_buffer->buffered, &buffered);
-
-      if (buffered.type == DMNSN_T_LPAREN) {
-        if (parenlevel < 0)
-          parenlevel = 1;
-        else
-          ++parenlevel;
-      } else if (buffered.type == DMNSN_T_RPAREN) {
-        --parenlevel;
-        if (parenlevel == 0) {
-          break;
-        }
-      }
-    }
   }
 
   /* Fake EOF */
@@ -360,36 +397,12 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
   dmnsn_array_push(cond_buffer->buffered, &buffered);
 
   /* Grab all the tokens belonging to the #if (...)  */
-  int parenlevel = -1;
-  while (1) {
-    /* Recursive call - permit other directives inside the condition */
-    buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
-                                filename, symtable, yyscanner);
-
-    if (buffered.type == DMNSN_T_EOF) {
-      dmnsn_diagnostic(buffered.lloc.first_filename, buffered.lloc.first_line,
-                       buffered.lloc.first_column,
-                       "syntax error, unexpected end-of-file");
-      dmnsn_delete_token_buffer(cond_buffer);
-      return NULL;
-    } else if (buffered.type == DMNSN_T_LEX_ERROR) {
-      dmnsn_delete_token_buffer(cond_buffer);
-      return NULL;
-    }
-
-    dmnsn_array_push(cond_buffer->buffered, &buffered);
-
-    if (buffered.type == DMNSN_T_LPAREN) {
-      if (parenlevel < 0)
-        parenlevel = 1;
-      else
-        ++parenlevel;
-    } else if (buffered.type == DMNSN_T_RPAREN) {
-      --parenlevel;
-      if (parenlevel == 0) {
-        break;
-      }
-    }
+  if (dmnsn_buffer_balanced(cond_buffer, true, DMNSN_T_LPAREN, DMNSN_T_RPAREN,
+                            filename, symtable, yyscanner)
+      != 0)
+  {
+    dmnsn_delete_token_buffer(cond_buffer);
+    return NULL;
   }
 
   /* Fake EOF */
@@ -586,6 +599,39 @@ dmnsn_version_buffer(int token, dmnsn_token_buffer *prev,
   return tbuffer;
 }
 
+static dmnsn_token_buffer *
+dmnsn_stream_buffer(int token, dmnsn_token_buffer *prev,
+                    dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                    const char *filename, dmnsn_symbol_table *symtable,
+                    void *yyscanner)
+{
+  dmnsn_token_buffer *tbuffer
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+
+  /* Buffer the current token */
+  dmnsn_buffered_token buffered = {
+    .type = token,
+    .lval = *lvalp,
+    .lloc = *llocp
+  };
+  dmnsn_array_push(tbuffer->buffered, &buffered);
+
+  /* Buffer the following string expression */
+  if (dmnsn_buffer_strexp(tbuffer, true, filename, symtable, yyscanner)
+      != 0)
+  {
+    dmnsn_delete_token_buffer(tbuffer);
+    return NULL;
+  }
+
+  /* Fake EOF */
+  buffered.type = DMNSN_T_EOF;
+  buffered.lval.value = NULL;
+  dmnsn_array_push(tbuffer->buffered, &buffered);
+
+  return tbuffer;
+}
+
 int dmnsn_yylex_impl(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
                      const char *filename, void *yyscanner);
 
@@ -766,6 +812,30 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
     case DMNSN_T_VERSION:
       {
         dmnsn_token_buffer *tb = dmnsn_version_buffer(
+          token, tbuffer, lvalp, llocp, filename, symtable, yyscanner
+        );
+        if (!tb) {
+          return DMNSN_T_LEX_ERROR;
+        }
+
+        dmnsn_yyset_extra(tb, yyscanner);
+        if (dmnsn_ld_yyparse(filename, yyscanner, symtable) != 0) {
+          dmnsn_yyset_extra(tb->prev, yyscanner);
+          dmnsn_delete_token_buffer(tb);
+          return DMNSN_T_LEX_ERROR;
+        }
+
+        /* Restore the previous extra pointer */
+        dmnsn_yyset_extra(tb->prev, yyscanner);
+        dmnsn_delete_token_buffer(tb);
+        break;
+      }
+
+    case DMNSN_T_DEBUG:
+    case DMNSN_T_ERROR:
+    case DMNSN_T_WARNING:
+      {
+        dmnsn_token_buffer *tb = dmnsn_stream_buffer(
           token, tbuffer, lvalp, llocp, filename, symtable, yyscanner
         );
         if (!tb) {

@@ -53,6 +53,23 @@ LANGUAGE_DIRECTIVE: "#include" STRING {
                                      " backwards-compatibility not supported");
                     dmnsn_delete_astnode($2);
                   }
+                  | "#debug" STRING {
+                    fprintf(stderr, "%s\n", (const char *)$2.ptr);
+                    dmnsn_delete_astnode($2);
+                  }
+                  | "#warning" STRING {
+                    dmnsn_diagnostic(@$.first_filename, @$.first_line,
+                                     @$.first_column,
+                                     "WARNING: %s", (const char *)$2.ptr);
+                    dmnsn_delete_astnode($2);
+                  }
+                  | "#error" STRING {
+                    dmnsn_diagnostic(@$.first_filename, @$.first_line,
+                                     @$.first_column,
+                                     "%s", (const char *)$2.ptr);
+                    dmnsn_delete_astnode($2);
+                    YYERROR;
+                  }
 
 RVALUE: ARITH_EXPR ";" %dprec 2 {
         $$ = dmnsn_eval($1, symtable);

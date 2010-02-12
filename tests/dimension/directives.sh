@@ -22,21 +22,23 @@
 directives=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/directives.pov)
 directives_exp="$(echo -n \
 '(#version (float "3.6") ;
+  #debug (string "debug")
+  #warning (string "warning")
   #include (string "directives.inc")
   #declare (identifier "R") = (integer "1") ;
   #local (identifier "Color") = rgb < (integer "1") , (integer "0") , (integer "1") > ;
   #declare (identifier "Unused") = - (integer "1") ;
   #undef (identifier "Unused")
   #ifdef \( (identifier "Local") \)
-    (identifier "Illegal")
+    #error (string "Local escaped from include file")
   #end
   #ifdef \( (identifier "Unused") \)
-    (identifier "Illegal")
+    #error (string "#undef failed")
   #end
   #declare (identifier "Counter") = (integer "0") ;
   #while \( (identifier "Counter") < (integer "2") \)
     #if \( #if \( (integer "1") = (integer "1") \) (integer "0") #end = (integer "0") & (integer "0") \)
-      (error) (identifier "Illegal")
+      #error (string "Nested #if parsing failed")
     #else
       sphere {
         (identifier "Center") + < (integer "0") , (identifier "Counter") , (integer "0") > , (identifier "R")

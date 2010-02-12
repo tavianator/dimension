@@ -21,6 +21,9 @@
 
 #version 3.6;
 
+#debug "debug"
+#warning "warning"
+
 #include "directives.inc"
 
 #declare R = 1;
@@ -30,17 +33,17 @@
 #undef Unused
 
 #ifdef (Local)
-  Illegal
+  #error "Local escaped from include file"
 #end
 
 #ifdef (Unused)
-  Illegal
+  #error "#undef failed"
 #end
 
 #declare Counter = 0;
 #while (Counter < 2)
   #if (#if (1 = 1) 0 #end = 0 & 0)
-    `Illegal
+    #error "Nested #if parsing failed"
   #else
     sphere {
       Center + <0, Counter, 0>, R
