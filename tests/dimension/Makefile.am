@@ -30,6 +30,7 @@ EXTRA_DIST = $(TESTS)                                                          \
              numeric.pov                                                       \
              strings.pov                                                       \
              labels.pov                                                        \
+             directives.inc                                                    \
              directives.pov                                                    \
              arithexp.pov                                                      \
              demo.pov
