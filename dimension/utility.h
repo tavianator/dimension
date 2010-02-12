@@ -17,6 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+#ifndef __GNUC__
+  #define __attribute__(x)
+#endif
+
 /* Print a parsing diagnostic to stderr */
 void dmnsn_diagnostic(const char *filename, int line, int col,
-                      const char *format, ...);
+                      const char *format, ...)
+  __attribute__ ((format (printf, 4, 5)));

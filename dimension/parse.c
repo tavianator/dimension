@@ -443,7 +443,8 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
                      "expected %s, %s, or %s; found %s",
                      dmnsn_astnode_string(DMNSN_AST_INTEGER),
                      dmnsn_astnode_string(DMNSN_AST_FLOAT),
-                     dmnsn_astnode_string(DMNSN_AST_VECTOR));
+                     dmnsn_astnode_string(DMNSN_AST_VECTOR),
+                     dmnsn_astnode_string(rhs.type));
     ret = dmnsn_copy_astnode(astnode);
     ret.type = DMNSN_AST_NONE;
   }
@@ -811,7 +812,7 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         return dmnsn_eval(*symbol, symtable);
       } else {
         dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                         "Unbound identifier '%s'", astnode.ptr);
+                         "Unbound identifier '%s'", (const char *)astnode.ptr);
         dmnsn_astnode error = dmnsn_new_astnode(DMNSN_AST_NONE);
         ++*error.refcount;
         return error;
