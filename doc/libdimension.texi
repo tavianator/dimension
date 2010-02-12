@@ -413,8 +413,8 @@ typedef struct @{
 @vindex dmnsn_magenta
 @vindex dmnsn_yellow
 @vindex dmnsn_cyan
-extern const dmnsn_color dmnsn_black, dmnsn_white, dmnsn_red, dmnsn_green,
-  dmnsn_blue, dmnsn_magenta, dmnsn_yellow, dmnsn_cyan;
+extern const dmnsn_color dmnsn_black, dmnsn_white, dmnsn_red,
+  dmnsn_green, dmnsn_blue, dmnsn_magenta, dmnsn_yellow, dmnsn_cyan;
 
 /* Standard whitepoint, determined by the conversion of sRGB white to
    CIE XYZ */
@@ -459,11 +459,13 @@ dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
 @findex dmnsn_color_mul()
 dmnsn_color dmnsn_color_mul(double n, dmnsn_color color);
 @findex dmnsn_color_gradient()
-dmnsn_color dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n);
+dmnsn_color dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2,
+                                 double n);
 @findex dmnsn_color_filter()
 dmnsn_color dmnsn_color_filter(dmnsn_color color, dmnsn_color filter);
 @findex dmnsn_color_illuminate()
-dmnsn_color dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color);
+dmnsn_color dmnsn_color_illuminate(dmnsn_color light,
+                                   dmnsn_color color);
 
 /* Perceptual color difference */
 @findex dmnsn_color_difference()
@@ -772,8 +774,10 @@ A camera provides the Dimension Library the camera ray corresponding to each pix
 dmnsn_camera *dmnsn_new_perspective_camera();
 
 /* Get or set the transformation matrix */
-dmnsn_matrix dmnsn_get_perspective_camera_trans(const dmnsn_camera *camera);
-void dmnsn_set_perspective_camera_trans(dmnsn_camera *camera, dmnsn_matrix T);
+dmnsn_matrix
+dmnsn_get_perspective_camera_trans(const dmnsn_camera *camera);
+void dmnsn_set_perspective_camera_trans(dmnsn_camera *camera,
+                                        dmnsn_matrix T);
 @end example
 
 @cindex perspective
