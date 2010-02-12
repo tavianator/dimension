@@ -866,6 +866,11 @@ dmnsn_yylex_cleanup(void *yyscanner)
 {
   dmnsn_token_buffer *tbuffer = dmnsn_yyget_extra(yyscanner);
   while (tbuffer) {
+    if (tbuffer->type == DMNSN_T_INCLUDE) {
+      dmnsn_yy_pop_buffer(yyscanner);
+      fclose(tbuffer->ptr);
+    }
+
     dmnsn_token_buffer *prev = tbuffer->prev;
     dmnsn_delete_token_buffer(tbuffer);
     tbuffer = prev;
