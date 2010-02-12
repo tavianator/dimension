@@ -207,17 +207,32 @@ unsigned long wchar;
 "z"             RETURN_TOKEN(DMNSN_T_Z);
 
 (?# Directives)
+#[\b\r\t\v ]*break              RETURN_TOKEN(DMNSN_T_BREAK);
+#[\b\r\t\v ]*case               RETURN_TOKEN(DMNSN_T_CASE);
+#[\b\r\t\v ]*debug              RETURN_TOKEN(DMNSN_T_DEBUG);
 #[\b\r\t\v ]*declare            RETURN_TOKEN(DMNSN_T_DECLARE);
+#[\b\r\t\v ]*default            RETURN_TOKEN(DMNSN_T_DEFAULT);
 #[\b\r\t\v ]*else               RETURN_TOKEN(DMNSN_T_ELSE);
 #[\b\r\t\v ]*end                RETURN_TOKEN(DMNSN_T_END);
+#[\b\r\t\v ]*error              RETURN_TOKEN(DMNSN_T_ERROR);
+#[\b\r\t\v ]*fclose             RETURN_TOKEN(DMNSN_T_FCLOSE);
+#[\b\r\t\v ]*fopen              RETURN_TOKEN(DMNSN_T_FOPEN);
 #[\b\r\t\v ]*if                 RETURN_TOKEN(DMNSN_T_IF);
 #[\b\r\t\v ]*ifdef              RETURN_TOKEN(DMNSN_T_IFDEF);
 #[\b\r\t\v ]*ifndef             RETURN_TOKEN(DMNSN_T_IFNDEF);
 #[\b\r\t\v ]*include            RETURN_TOKEN(DMNSN_T_INCLUDE);
 #[\b\r\t\v ]*local              RETURN_TOKEN(DMNSN_T_LOCAL);
+#[\b\r\t\v ]*macro              RETURN_TOKEN(DMNSN_T_MACRO);
+#[\b\r\t\v ]*range              RETURN_TOKEN(DMNSN_T_RANGE);
+#[\b\r\t\v ]*read               RETURN_TOKEN(DMNSN_T_READ);
+#[\b\r\t\v ]*render             RETURN_TOKEN(DMNSN_T_RENDER);
+#[\b\r\t\v ]*statistics         RETURN_TOKEN(DMNSN_T_STATISTICS);
+#[\b\r\t\v ]*switch             RETURN_TOKEN(DMNSN_T_SWITCH);
 #[\b\r\t\v ]*undef              RETURN_TOKEN(DMNSN_T_UNDEF);
 #[\b\r\t\v ]*version            RETURN_TOKEN(DMNSN_T_VERSION);
+#[\b\r\t\v ]*warning            RETURN_TOKEN(DMNSN_T_WARNING);
 #[\b\r\t\v ]*while              RETURN_TOKEN(DMNSN_T_WHILE);
+#[\b\r\t\v ]*write              RETURN_TOKEN(DMNSN_T_WRITE);
 #[\b\r\t\v ]*[[:alnum:]_]*      {
   dmnsn_diagnostic(filename, yylineno, yycolumn,
                    "Unrecognized language directive '%s'", yytext);

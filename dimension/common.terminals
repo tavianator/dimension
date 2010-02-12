@@ -491,32 +491,32 @@
 %token DMNSN_T_Z                        "z"
 
 /* Directives (#declare etc.) */
-%token DMNSN_T_BREAK
-%token DMNSN_T_CASE
-%token DMNSN_T_DEBUG
+%token DMNSN_T_BREAK      "#break"
+%token DMNSN_T_CASE       "#case"
+%token DMNSN_T_DEBUG      "#debug"
 %token DMNSN_T_DECLARE    "#declare"
-%token DMNSN_T_DEFAULT
+%token DMNSN_T_DEFAULT    "#default"
 %token DMNSN_T_ELSE       "#else"
 %token DMNSN_T_END        "#end"
-%token DMNSN_T_ERROR
-%token DMNSN_T_FCLOSE
-%token DMNSN_T_FOPEN
+%token DMNSN_T_ERROR      "#error"
+%token DMNSN_T_FCLOSE     "#fclose"
+%token DMNSN_T_FOPEN      "#fopen"
 %token DMNSN_T_IF         "#if"
 %token DMNSN_T_IFDEF      "#ifdef"
 %token DMNSN_T_IFNDEF     "#ifndef"
 %token DMNSN_T_INCLUDE    "#include"
 %token DMNSN_T_LOCAL      "#local"
-%token DMNSN_T_MACRO
-%token DMNSN_T_RANGE
-%token DMNSN_T_READ
-%token DMNSN_T_RENDER
-%token DMNSN_T_STATISTICS
-%token DMNSN_T_SWITCH
+%token DMNSN_T_MACRO      "#macro"
+%token DMNSN_T_RANGE      "#range"
+%token DMNSN_T_READ       "#read"
+%token DMNSN_T_RENDER     "#render"
+%token DMNSN_T_STATISTICS "#statistics"
+%token DMNSN_T_SWITCH     "#switch"
 %token DMNSN_T_UNDEF      "#undef"
 %token DMNSN_T_VERSION    "#version"
-%token DMNSN_T_WARNING
+%token DMNSN_T_WARNING    "#warning"
 %token DMNSN_T_WHILE      "#while"
-%token DMNSN_T_WRITE
+%token DMNSN_T_WRITE      "#write"
 
 /* Identifiers */
 %token <value> DMNSN_T_IDENTIFIER "identifier"
