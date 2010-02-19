@@ -44,6 +44,9 @@ AC_CHECK_LIB([sandglass], [sandglass_create],
              [],
              [AC_MSG_WARN([libsandglass not found - benchmarking suite will not work])])
 
+dnl Ensure compilation in C99 mode
+AC_DEFINE([_XOPEN_SOURCE], [600])
+
 dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile
