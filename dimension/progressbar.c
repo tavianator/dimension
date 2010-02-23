@@ -18,16 +18,35 @@
  *************************************************************************/
 
 #include "progressbar.h"
+#include <sys/ioctl.h>
+#include <stdarg.h>
 #include <stdio.h>
+#include <unistd.h>
 
 void
-dmnsn_progressbar(const char *str, const dmnsn_progress *progress)
+dmnsn_progressbar(const char *format, const dmnsn_progress *progress, ...)
 {
-  const unsigned int increments = 32;
-  unsigned int i;
+  va_list ap;
+  va_start(ap, progress);
 
-  printf("%s", str);
+  int len = vprintf(format, ap) + 1;
+  if (len < 1)
+    len = 1;
+  printf(" ");
+
+  va_end(ap);
+
+  unsigned int increments = 48;
+
+  /* Try to fill the terminal with the progress bar; this is non-portable */
+  struct winsize ws;
+  if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0) {
+    increments = ws.ws_col - (len % ws.ws_col);
+  }
+
   fflush(stdout);
+
+  unsigned int i;
   for (i = 0; i < increments; ++i) {
     dmnsn_wait_progress(progress, ((double)(i + 1))/increments);
 

@@ -21,8 +21,11 @@
 #define PROGRESSBAR_H
 
 #include "../libdimension/dimension.h"
+#include "utility.h" /* For DMNSN_PRINTF_WARN */
 
 /* Print a progress bar of the progress of `progress' */
-void dmnsn_progressbar(const char *str, const dmnsn_progress *progress);
+void dmnsn_progressbar(const char *format, const dmnsn_progress *progress,
+                       ...)
+  DMNSN_PRINTF_WARN(1, 3);
 
 #endif /* PROGRESSBAR_H */

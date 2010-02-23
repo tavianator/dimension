@@ -196,7 +196,7 @@ main(int argc, char **argv) {
   }
 
   /* Realize the input */
-  printf("Parsing scene   ...\n");
+  printf("Parsing scene ...\n");
   dmnsn_scene *scene = dmnsn_realize(input_file, symtable);
   if (!scene) {
     fprintf(stderr, "Error realizing input file!\n");
@@ -242,7 +242,8 @@ main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  dmnsn_progressbar("Rendering scene ", render_progress);
+  dmnsn_progressbar("Rendering scene with %u threads", render_progress,
+                    scene->nthreads);
 
   if (dmnsn_finish_progress(render_progress) != 0) {
     dmnsn_delete_scene(scene);
@@ -259,7 +260,7 @@ main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  dmnsn_progressbar("Writing PNG     ", output_progress);
+  dmnsn_progressbar("Writing PNG", output_progress);
 
   if (dmnsn_finish_progress(output_progress) != 0) {
     fclose(output_file);

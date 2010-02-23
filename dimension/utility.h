@@ -17,11 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#ifndef __GNUC__
-  #define __attribute__(x)
+#if defined(__GNUC__) || defined(__attribute__)
+  #define DMNSN_PRINTF_WARN(f, a) __attribute__((format (printf, f, a)))
+#else
+  #define DMNSN_PRINTF_WARN(f, a)
 #endif
 
 /* Print a parsing diagnostic to stderr */
 void dmnsn_diagnostic(const char *filename, int line, int col,
                       const char *format, ...)
-  __attribute__ ((format (printf, 4, 5)));
+  DMNSN_PRINTF_WARN(4, 5);
