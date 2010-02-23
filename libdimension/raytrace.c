@@ -219,7 +219,7 @@ typedef struct dmnsn_raytrace_state {
   const dmnsn_scene *scene;
   const dmnsn_intersection *intersection;
   dmnsn_bvst *bvst;
-  unsigned int level;
+  unsigned int reclevel;
 
   dmnsn_vector r;
   dmnsn_vector viewer;
@@ -265,7 +265,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
         );
 
         /* Shoot a ray */
-        state.level = scene->limit;
+        state.reclevel = scene->reclimit;
         color = dmnsn_raytrace_shoot(&state, ray);
       }
 
@@ -333,8 +333,8 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
 
   dmnsn_color color = (*light->light_fn)(light, state->r);
 
-  unsigned int level = state->level;
-  while (level) {
+  unsigned int reclevel = state->reclevel;
+  while (reclevel) {
     dmnsn_intersection *shadow_caster
       = dmnsn_bvst_search(state->bvst, shadow_ray);
 
@@ -345,7 +345,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
 
     dmnsn_raytrace_state shadow_state = *state;
     shadow_state.intersection = shadow_caster;
-    shadow_state.level        = level;
+    shadow_state.reclevel     = reclevel;
 
     dmnsn_raytrace_pigment(&shadow_state);
     if (shadow_state.pigment.filter || shadow_state.pigment.trans) {
@@ -359,7 +359,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
     }
 
     dmnsn_delete_intersection(shadow_caster);
-    --level;
+    --reclevel;
   }
 
   return color;
@@ -457,9 +457,9 @@ dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
 static dmnsn_color
 dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
 {
-  if (state->level <= 0)
+  if (state->reclevel <= 0)
     return dmnsn_black;
-  --state->level;
+  --state->reclevel;
 
   dmnsn_intersection *intersection
     = dmnsn_bvst_search(state->bvst, ray);

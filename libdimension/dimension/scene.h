@@ -58,9 +58,9 @@ typedef struct {
   dmnsn_quality quality;
 
   /* Recursion limit */
-  unsigned int limit;
+  unsigned int reclimit;
 
-  /* Number of paralell threads */
+  /* Number of parallel threads */
   unsigned int nthreads;
 } dmnsn_scene;
 
