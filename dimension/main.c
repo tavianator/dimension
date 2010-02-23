@@ -39,18 +39,18 @@ main(int argc, char **argv) {
 
   /* Long-only option codes */
   enum {
-    DMNSN_NTHREADS = 256
+    DMNSN_OPT_THREADS = 256
   };
 
   static struct option long_options[] = {
-    { "output",   required_argument, NULL,      'o'            },
-    { "input",    required_argument, NULL,      'i'            },
-    { "width",    required_argument, NULL,      'w'            },
-    { "height",   required_argument, NULL,      'h'            },
-    { "threads",  required_argument, NULL,      DMNSN_NTHREADS },
-    { "tokenize", no_argument,       &tokenize, 1              },
-    { "parse",    no_argument,       &parse,    1              },
-    { 0,          0,                 0,         0              }
+    { "output",   required_argument, NULL,      'o'               },
+    { "input",    required_argument, NULL,      'i'               },
+    { "width",    required_argument, NULL,      'w'               },
+    { "height",   required_argument, NULL,      'h'               },
+    { "threads",  required_argument, NULL,      DMNSN_OPT_THREADS },
+    { "tokenize", no_argument,       &tokenize, 1                 },
+    { "parse",    no_argument,       &parse,    1                 },
+    { 0,          0,                 0,         0                 }
   };
 
   int opt, opt_index;
@@ -105,12 +105,12 @@ main(int argc, char **argv) {
         break;
       }
 
-    case DMNSN_NTHREADS:
+    case DMNSN_OPT_THREADS:
       {
         char *endptr;
         nthreads = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
-          fprintf(stderr, "Invalid argument to --nthreads!\n");
+          fprintf(stderr, "Invalid argument to --threads!\n");
           return EXIT_FAILURE;
         }
         break;
@@ -216,7 +216,9 @@ main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  scene->nthreads = nthreads;
+  /* Set the new number of threads if --threads changed it */
+  if (nthreads)
+    scene->nthreads = nthreads;
 
   /*
    * Now we render the scene

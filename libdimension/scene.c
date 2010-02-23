@@ -20,6 +20,7 @@
 
 #include "dimension.h"
 #include <stdlib.h> /* For malloc */
+#include <unistd.h> /* For sysconf */
 
 /* Allocate an empty scene */
 dmnsn_scene *
@@ -39,7 +40,12 @@ dmnsn_new_scene()
     scene->lights   = dmnsn_new_array(sizeof(dmnsn_light *));
     scene->quality  = DMNSN_RENDER_FULL;
     scene->reclimit = 5;
-    scene->nthreads = 0;
+
+    /* Find the number of processors/cores running (TODO: do this portably) */
+    int nprocs = sysconf(_SC_NPROCESSORS_ONLN);
+    if (nprocs < 1)
+      nprocs = 1;
+    scene->nthreads = nprocs;
   }
   return scene;
 }
