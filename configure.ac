@@ -15,7 +15,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_PREREQ(2.64)
+AC_PREREQ(2.65)
 AC_INIT(Dimension, 0.0.0, tavianator@gmail.com, dimension)
 AM_INIT_AUTOMAKE([parallel-tests])
 
@@ -40,9 +40,11 @@ AC_ARG_ENABLE([pgo],
 AM_CONDITIONAL([PGO], [test "$enable_pgo" != "no"])
 
 dnl Timing library for benchmarks
-AC_CHECK_LIB([sandglass], [sandglass_create],
-             [],
-             [AC_MSG_WARN([libsandglass not found - benchmarking suite will not work])])
+PKG_CHECK_MODULES([SANDGLASS], [libsandglass],
+                  [],
+                  [AC_MSG_WARN([libsandglass not found - benchmarking suite will not work])])
+AC_SUBST(SANDGLASS_CFLAGS)
+AC_SUBST(SANDGLASS_LIBS)
 
 dnl Ensure compilation in C99 mode
 AC_DEFINE([_XOPEN_SOURCE], [600])

@@ -21,14 +21,12 @@ INCLUDES = -I$(top_srcdir)/libdimension
 
 EXTRA_PROGRAMS = bench-array bench-geometry bench-bvst
 
-bench_array_SOURCES = array.c
-bench_array_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
+AM_CFLAGS = $(SANDGLASS_CFLAGS)
+AM_LDFLAGS = $(SANDGLASS_LIBS) $(top_builddir)/libdimension/libdimension.la
 
+bench_array_SOURCES    = array.c
 bench_geometry_SOURCES = geometry.c
-bench_geometry_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
-
-bench_bvst_SOURCES = bvst.c
-bench_bvst_LDADD   = -lsandglass $(top_builddir)/libdimension/libdimension.la
+bench_bvst_SOURCES     = bvst.c
 
 bench: bench-array$(EXEEXT) bench-geometry$(EXEEXT) bench-bvst$(EXEEXT)
 	./bench-array$(EXEEXT)
