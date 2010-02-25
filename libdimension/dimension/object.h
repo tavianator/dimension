@@ -26,7 +26,7 @@
 #define DIMENSION_OBJECT_H
 
 /* A type to represent a ray-object intersection */
-typedef struct {
+typedef struct dmnsn_intersection {
   /* The ray and point which intersected */
   dmnsn_line ray;
   double t;
@@ -34,8 +34,9 @@ typedef struct {
   /* The surface normal at the intersection point */
   dmnsn_vector normal;
 
-  /* The texture at the intersection point */
-  const dmnsn_texture *texture;
+  /* The object properties at the intersection point */
+  const dmnsn_texture  *texture;
+  const dmnsn_interior *interior;
 } dmnsn_intersection;
 
 /* Intersection allocation cannot fail */
