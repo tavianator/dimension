@@ -179,6 +179,8 @@ unsigned long wchar;
 "gray"          RETURN_TOKEN(DMNSN_T_GRAY);
 "grey"          RETURN_TOKEN(DMNSN_T_GRAY);
 "green"         RETURN_TOKEN(DMNSN_T_GREEN);
+"interior"      RETURN_TOKEN(DMNSN_T_INTERIOR);
+"ior"           RETURN_TOKEN(DMNSN_T_IOR);
 "location"      RETURN_TOKEN(DMNSN_T_LOCATION);
 "look_at"       RETURN_TOKEN(DMNSN_T_LOOK_AT);
 "light_source"  RETURN_TOKEN(DMNSN_T_LIGHT_SOURCE);

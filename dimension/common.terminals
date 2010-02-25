@@ -233,14 +233,14 @@
 %token DMNSN_T_INSIDE
 %token DMNSN_T_INSIDE_VECTOR
 %token DMNSN_T_INT
-%token DMNSN_T_INTERIOR
+%token DMNSN_T_INTERIOR                 "interior"
 %token DMNSN_T_INTERIOR_TEXTURE
 %token DMNSN_T_INTERNAL
 %token DMNSN_T_INTERPOLATE
 %token DMNSN_T_INTERSECTION
 %token DMNSN_T_INTERVALS
 %token DMNSN_T_INVERSE
-%token DMNSN_T_IOR
+%token DMNSN_T_IOR                      "ior"
 %token DMNSN_T_IRID
 %token DMNSN_T_IRID_WAVELENGTH
 %token DMNSN_T_ISOSURFACE

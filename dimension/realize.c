@@ -504,18 +504,18 @@ dmnsn_realize_texture(dmnsn_astnode astnode)
 
   unsigned int i;
   for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-    dmnsn_astnode modifier;
-    dmnsn_array_get(astnode.children, i, &modifier);
+    dmnsn_astnode item;
+    dmnsn_array_get(astnode.children, i, &item);
 
-    switch (modifier.type) {
+    switch (item.type) {
     case DMNSN_AST_PIGMENT:
       dmnsn_delete_pigment(texture->pigment);
-      texture->pigment = dmnsn_realize_pigment(modifier);
+      texture->pigment = dmnsn_realize_pigment(item);
       break;
 
     case DMNSN_AST_FINISH:
       dmnsn_delete_finish(texture->finish);
-      texture->finish = dmnsn_realize_finish(modifier);
+      texture->finish = dmnsn_realize_finish(item);
       break;
 
     default:
@@ -524,6 +524,35 @@ dmnsn_realize_texture(dmnsn_astnode astnode)
   }
 
   return texture;
+}
+
+static dmnsn_interior *
+dmnsn_realize_interior(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_INTERIOR, "Expected a texture.");
+
+  dmnsn_interior *interior = dmnsn_new_interior();
+  if (!interior) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate interior.");
+  }
+
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    dmnsn_astnode item, child;
+    dmnsn_array_get(astnode.children, i, &item);
+
+    switch (item.type) {
+    case DMNSN_AST_IOR:
+      dmnsn_array_get(item.children, 0, &child);
+      interior->ior = dmnsn_realize_float(child);
+      break;
+
+    default:
+      dmnsn_assert(false, "Invalid interior item.");
+    }
+  }
+
+  return interior;
 }
 
 static void
@@ -560,6 +589,11 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
     case DMNSN_AST_TEXTURE:
       dmnsn_delete_texture(object->texture);
       object->texture = dmnsn_realize_texture(modifier);
+      break;
+
+    case DMNSN_AST_INTERIOR:
+      dmnsn_delete_interior(object->interior);
+      object->interior = dmnsn_realize_interior(modifier);
       break;
 
     default:

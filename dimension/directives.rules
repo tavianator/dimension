@@ -85,6 +85,7 @@ RVALUE: ARITH_EXPR ";" %dprec 2 {
       | TEXTURE
       | PIGMENT
       | FINISH
+      | INTERIOR
       | CAMERA
       | TRANSFORMATION
 

@@ -59,6 +59,10 @@
 %type <astnode> REFLECTION
 %type <astnode> REFLECTION_ITEMS
 
+/* Interiors */
+%type <astnode> INTERIOR
+%type <astnode> INTERIOR_ITEMS
+
 /* Floats */
 %type <astnode> FLOAT
 %type <astnode> FLOAT_LITERAL

@@ -59,7 +59,9 @@ demo_exp=$(echo -n \
           (color (integer 0) (integer 1) (integer 0) (integer 0) (integer 0)))
         (finish
           (phong (float 0.2))
-          (phong_size (float 40)))))))' \
+          (phong_size (float 40))))
+      (interior
+        (ior (float 1.3))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 
 if [ "$demo" != "$demo_exp" ]; then

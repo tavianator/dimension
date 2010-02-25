@@ -153,6 +153,7 @@ OBJECT_MODIFIER: TRANSFORMATION
                | PIGMENT {
                  $$ = dmnsn_new_astnode1(DMNSN_AST_TEXTURE, @$, $1);
                }
+               | INTERIOR
 ;
 
 /* Textures */
@@ -257,6 +258,24 @@ REFLECTION_ITEMS: /* empty */ {
                   $$ = $1;
                   dmnsn_array_push($$.children, &falloff);
                 }
+;
+
+/* Interiores */
+INTERIOR: "interior" "{"
+            INTERIOR_ITEMS
+          "}"
+        { $$ = $3; }
+;
+
+INTERIOR_ITEMS: /* empty */ {
+                $$ = dmnsn_new_astnode(DMNSN_AST_INTERIOR, @$);
+              }
+              | INTERIOR_ITEMS "ior" FLOAT {
+                dmnsn_astnode diffuse = dmnsn_new_astnode1(DMNSN_AST_IOR,
+                                                           @2, $3);
+                $$ = $1;
+                dmnsn_array_push($$.children, &diffuse);
+              }
 ;
 
 /* Floats */

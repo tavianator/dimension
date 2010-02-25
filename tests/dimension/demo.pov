@@ -63,4 +63,8 @@ sphere {
       phong_size 40.0
     }
   }
+
+  interior {
+    ior 1.3
+  }
 }
