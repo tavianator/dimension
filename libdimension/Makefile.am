@@ -30,6 +30,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/finishes.h                                  \
                          dimension/geometry.h                                  \
                          dimension/gl.h                                        \
+                         dimension/interior.h                                  \
                          dimension/light.h                                     \
                          dimension/lights.h                                    \
                          dimension/object.h                                    \
@@ -58,6 +59,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           geometry.c                                           \
                           gl.c                                                 \
                           inlines.c                                            \
+                          interior.c                                           \
                           light.c                                              \
                           object.c                                             \
                           perspective.c                                        \

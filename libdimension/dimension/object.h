@@ -58,6 +58,9 @@ struct dmnsn_object {
   /* Surface properties */
   dmnsn_texture *texture;
 
+  /* Interior properties */
+  dmnsn_interior *interior;
+
   /* Transformation matrix */
   dmnsn_matrix trans, trans_inv;
 

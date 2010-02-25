@@ -21,75 +21,26 @@
 #include "dimension.h"
 #include <stdlib.h> /* For malloc */
 
-/* Allocate a dummy pigment */
-dmnsn_pigment *
-dmnsn_new_pigment()
+/* Allocate an interior */
+dmnsn_interior *
+dmnsn_new_interior()
 {
-  dmnsn_pigment *pigment = malloc(sizeof(dmnsn_pigment));
-  if (pigment) {
-    pigment->free_fn = NULL;
+  dmnsn_interior *interior = malloc(sizeof(dmnsn_interior));
+  if (interior) {
+    interior->ior     = 1.0;
+    interior->free_fn = NULL;
   }
-  return pigment;
+  return interior;
 }
 
-/* Free a pigment */
+/* Free a interior */
 void
-dmnsn_delete_pigment(dmnsn_pigment *pigment)
+dmnsn_delete_interior(dmnsn_interior *interior)
 {
-  if (pigment) {
-    if (pigment->free_fn) {
-      (*pigment->free_fn)(pigment->ptr);
+  if (interior) {
+    if (interior->free_fn) {
+      (*interior->free_fn)(interior->ptr);
     }
-    free(pigment);
-  }
-}
-
-/* Allocate a dummy finish */
-dmnsn_finish *
-dmnsn_new_finish()
-{
-  dmnsn_finish *finish = malloc(sizeof(dmnsn_finish));
-  if (finish) {
-    finish->diffuse_fn    = NULL;
-    finish->specular_fn   = NULL;
-    finish->ambient_fn    = NULL;
-    finish->reflection_fn = NULL;
-    finish->free_fn       = NULL;
-  }
-  return finish;
-}
-
-/* Free a finish */
-void
-dmnsn_delete_finish(dmnsn_finish *finish)
-{
-  if (finish) {
-    if (finish->free_fn) {
-      (*finish->free_fn)(finish->ptr);
-    }
-    free(finish);
-  }
-}
-
-/* Allocate a dummy texture */
-dmnsn_texture *
-dmnsn_new_texture()
-{
-  dmnsn_texture *texture = malloc(sizeof(dmnsn_texture));
-  if (texture) {
-    texture->pigment = NULL;
-    texture->finish  = NULL;
-  }
-  return texture;
-}
-
-/* Free a texture */
-void
-dmnsn_delete_texture(dmnsn_texture *texture)
-{
-  if (texture) {
-    dmnsn_delete_finish(texture->finish);
-    dmnsn_delete_pigment(texture->pigment);
-    free(texture);
+    free(interior);
   }
 }

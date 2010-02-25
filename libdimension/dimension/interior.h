@@ -18,78 +18,25 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
-#include <stdlib.h> /* For malloc */
+/*
+ * Object interiors.
+ */
 
-/* Allocate a dummy pigment */
-dmnsn_pigment *
-dmnsn_new_pigment()
-{
-  dmnsn_pigment *pigment = malloc(sizeof(dmnsn_pigment));
-  if (pigment) {
-    pigment->free_fn = NULL;
-  }
-  return pigment;
-}
+#ifndef DIMENSION_INTERIOR_H
+#define DIMENSION_INTERIOR_H
 
-/* Free a pigment */
-void
-dmnsn_delete_pigment(dmnsn_pigment *pigment)
-{
-  if (pigment) {
-    if (pigment->free_fn) {
-      (*pigment->free_fn)(pigment->ptr);
-    }
-    free(pigment);
-  }
-}
+typedef struct dmnsn_interior {
+  /* Refractive index */
+  double ior;
 
-/* Allocate a dummy finish */
-dmnsn_finish *
-dmnsn_new_finish()
-{
-  dmnsn_finish *finish = malloc(sizeof(dmnsn_finish));
-  if (finish) {
-    finish->diffuse_fn    = NULL;
-    finish->specular_fn   = NULL;
-    finish->ambient_fn    = NULL;
-    finish->reflection_fn = NULL;
-    finish->free_fn       = NULL;
-  }
-  return finish;
-}
+  /* Callbacks */
+  dmnsn_free_fn *free_fn;
 
-/* Free a finish */
-void
-dmnsn_delete_finish(dmnsn_finish *finish)
-{
-  if (finish) {
-    if (finish->free_fn) {
-      (*finish->free_fn)(finish->ptr);
-    }
-    free(finish);
-  }
-}
+  /* Generic pointer */
+  void *ptr;
+} dmnsn_interior;
 
-/* Allocate a dummy texture */
-dmnsn_texture *
-dmnsn_new_texture()
-{
-  dmnsn_texture *texture = malloc(sizeof(dmnsn_texture));
-  if (texture) {
-    texture->pigment = NULL;
-    texture->finish  = NULL;
-  }
-  return texture;
-}
+dmnsn_interior *dmnsn_new_interior();
+void dmnsn_delete_interior(dmnsn_interior *interior);
 
-/* Free a texture */
-void
-dmnsn_delete_texture(dmnsn_texture *texture)
-{
-  if (texture) {
-    dmnsn_delete_finish(texture->finish);
-    dmnsn_delete_pigment(texture->pigment);
-    free(texture);
-  }
-}
+#endif /* DIMENSION_INTERIOR_H */

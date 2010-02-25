@@ -45,9 +45,10 @@ dmnsn_new_object()
 {
   dmnsn_object *object = malloc(sizeof(dmnsn_object));
   if (object) {
-    object->texture = NULL;
-    object->trans   = dmnsn_identity_matrix();
-    object->free_fn = NULL;
+    object->texture  = NULL;
+    object->interior = NULL;
+    object->trans    = dmnsn_identity_matrix();
+    object->free_fn  = NULL;
   }
   return object;
 }
