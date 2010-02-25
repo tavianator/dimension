@@ -117,15 +117,15 @@ dmnsn_new_default_scene()
 
   dmnsn_color cube_color = dmnsn_magenta;
   cube_color.filter = 0.25;
-  cube_color.trans  = 0.25;
+  cube_color.trans  = 0.5;
   cube->texture->pigment = dmnsn_new_solid_pigment(cube_color);
   if (!cube->texture->pigment) {
     dmnsn_delete_scene(scene);
     return NULL;
   }
 
-  cube->texture->finish = dmnsn_new_reflective_finish(dmnsn_white, dmnsn_white,
-                                                      1.0);
+  dmnsn_color reflect = dmnsn_color_mul(0.5, dmnsn_white);
+  cube->texture->finish = dmnsn_new_reflective_finish(reflect, reflect, 1.0);
   if (!cube->texture->finish) {
     dmnsn_delete_scene(scene);
     return NULL;
@@ -136,7 +136,7 @@ dmnsn_new_default_scene()
     dmnsn_delete_scene(scene);
     return NULL;
   }
-  cube->interior->ior = 1.3;
+  cube->interior->ior = 1.1;
 
   cube->trans = dmnsn_rotation_matrix(dmnsn_new_vector(0.75, 0.0, 0.0));
 

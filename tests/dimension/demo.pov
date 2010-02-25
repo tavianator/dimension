@@ -43,11 +43,15 @@ box {
 
   texture {
     pigment {
-      color rgbft <0, 0, 1, 0.25, 0.25>
+      color rgbft <0, 0, 1, 0.25, 0.5>
     }
     finish {
-      reflection { 1.0 }
+      reflection { 0.5 }
     }
+  }
+
+  interior {
+    ior 1.1
   }
 }
 
@@ -62,9 +66,5 @@ sphere {
       phong 0.2
       phong_size 40.0
     }
-  }
-
-  interior {
-    ior 1.3
   }
 }

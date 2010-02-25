@@ -44,12 +44,14 @@ demo_exp=$(echo -n \
       (texture
         (pigment
           (color (integer 0) (integer 0) (integer 1)
-                 (float 0.25) (float 0.25)))
+                 (float 0.25) (float 0.5)))
         (finish
           (reflection
-            (color (float 1) (float 1) (float 1) (float 1) (float 1))
-            (color (float 1) (float 1) (float 1) (float 1) (float 1))
-            reflection-items)))))
+            (color (float 0.5) (float 0.5) (float 0.5) (float 0.5) (float 0.5))
+            (color (float 0.5) (float 0.5) (float 0.5) (float 0.5) (float 0.5))
+            reflection-items)))
+      (interior
+        (ior (float 1.1)))))
   (sphere
     (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
     (float 1.25)
@@ -59,9 +61,7 @@ demo_exp=$(echo -n \
           (color (integer 0) (integer 1) (integer 0) (integer 0) (integer 0)))
         (finish
           (phong (float 0.2))
-          (phong_size (float 40))))
-      (interior
-        (ior (float 1.3))))))' \
+          (phong_size (float 40)))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 
 if [ "$demo" != "$demo_exp" ]; then
