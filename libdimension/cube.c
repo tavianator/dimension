@@ -64,7 +64,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_new_vector(-copysign(1.0, line.n.x), 0.0, 0.0);
+      normal = dmnsn_new_vector(-1.0, 0.0, 0.0);
     }
 
     /* x = 1.0 */
@@ -74,7 +74,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_new_vector(-copysign(1.0, line.n.x), 0.0, 0.0);
+      normal = dmnsn_new_vector(1.0, 0.0, 0.0);
     }
   }
 
@@ -86,7 +86,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_new_vector(0.0, -copysign(1.0, line.n.y), 0.0);
+      normal = dmnsn_new_vector(0.0, -1.0, 0.0);
     }
 
     /* y = 1.0 */
@@ -96,7 +96,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_new_vector(0.0, -copysign(1.0, line.n.y), 0.0);
+      normal = dmnsn_new_vector(0.0, 1.0, 0.0);
     }
   }
 
@@ -108,7 +108,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_new_vector(0.0, 0.0, -copysign(1.0, line.n.z));
+      normal = dmnsn_new_vector(0.0, 0.0, -1.0);
     }
 
     /* z = 1.0 */
@@ -118,7 +118,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
       t = t_temp;
-      normal = dmnsn_new_vector(0.0, 0.0, -copysign(1.0, line.n.z));
+      normal = dmnsn_new_vector(0.0, 0.0, 1.0);
     }
   }
 

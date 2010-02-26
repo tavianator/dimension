@@ -323,7 +323,8 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
   shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
 
   /* Check if we're casting a shadow on ourself */
-  if (dmnsn_vector_dot(shadow_ray.n, state->intersection->normal) < 0.0)
+  if (dmnsn_vector_dot(shadow_ray.n, state->intersection->normal)
+      * dmnsn_vector_dot(state->viewer, state->intersection->normal) < 0.0)
     return dmnsn_black;
 
   dmnsn_color color = (*light->light_fn)(light, state->r);

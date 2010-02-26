@@ -37,7 +37,7 @@ dmnsn_reflective_finish_fn(const dmnsn_finish *finish,
                            dmnsn_vector ray, dmnsn_vector normal)
 {
   dmnsn_reflection_params *params = finish->ptr;
-  double reflection = pow(dmnsn_vector_dot(ray, normal), params->falloff);
+  double reflection = pow(fabs(dmnsn_vector_dot(ray, normal)), params->falloff);
 
   return dmnsn_color_illuminate(
     dmnsn_color_gradient(params->min, params->max, reflection),

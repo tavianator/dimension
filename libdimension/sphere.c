@@ -74,10 +74,6 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line)
       intersection->normal   = dmnsn_line_point(line, t);
       intersection->texture  = sphere->texture;
       intersection->interior = sphere->interior;
-
-      /* Flip the normal if we're inside the sphere */
-      if (dmnsn_vector_dot(line.n, intersection->normal) > 0.0)
-        intersection->normal = dmnsn_vector_negate(intersection->normal);
     }
   }
 
