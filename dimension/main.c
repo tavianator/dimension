@@ -22,11 +22,14 @@
 #include "realize.h"
 #include "progressbar.h"
 #include "../libdimension/dimension.h"
+#include <libgen.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
 
-static const char *output = NULL, *input = NULL;
+static char *output = NULL, *input = NULL;
+static bool free_output = false;
 static unsigned int width = 640, height = 480;
 static unsigned int nthreads = 0;
 static int tokenize = 0, parse = 0;
@@ -122,8 +125,6 @@ main(int argc, char **argv) {
     };
   }
 
-  bool debugging = tokenize || parse;
-
   if (optind == argc - 1) {
     if (input) {
       fprintf(stderr, "Multiple input files specified!\n");
@@ -136,10 +137,6 @@ main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  if (!output && !debugging) {
-    fprintf(stderr, "No output file specified!\n");
-    return EXIT_FAILURE;
-  }
   if (!input) {
     fprintf(stderr, "No input file specified!\n");
     return EXIT_FAILURE;
@@ -182,9 +179,9 @@ main(int argc, char **argv) {
   if (parse) {
     dmnsn_astree *astree = dmnsn_parse(input_file, symtable);
     if (!astree) {
-      fprintf(stderr, "Error parsing input file!\n");
       dmnsn_delete_symbol_table(symtable);
       fclose(input_file);
+      fprintf(stderr, "Error parsing input file!\n");
       return EXIT_FAILURE;
     }
     dmnsn_print_astree_sexpr(stdout, astree);
@@ -224,8 +221,45 @@ main(int argc, char **argv) {
    * Now we render the scene
    */
 
+  /* Generate a default output filename by replacing the extension of the
+     basename of the input file with ".png" */
+  if (!output) {
+    char *input_copy = strdup(input);
+    if (!input_copy) {
+      fprintf(stderr, "Couldn't allocate space for output filename!\n");
+      return EXIT_FAILURE;
+    }
+
+    char *base = basename(input_copy);
+    char *ext = strrchr(base, '.');
+    if (ext) {
+      output = malloc(ext - base + 5);
+      if (!output) {
+        fprintf(stderr, "Couldn't allocate space for output filename!\n");
+        return EXIT_FAILURE;
+      }
+
+      strncpy(output, base, ext - base + 5);
+      ext = output + (ext - base);
+    } else {
+      size_t len = strlen(base);
+      output = malloc(len + 5);
+      if (!output) {
+        fprintf(stderr, "Couldn't allocate space for output filename!\n");
+        return EXIT_FAILURE;
+      }
+      strcpy(output, base);
+      ext = output + len;
+    }
+    free(input_copy);
+    strcpy(ext, ".png");
+    free_output = true;
+  }
+
   /* Open the output file */
   FILE *output_file = fopen(output, "wb");
+  if (free_output)
+    free(output);
   if (!output_file) {
     fprintf(stderr, "Couldn't open output file!");
     return EXIT_FAILURE;
