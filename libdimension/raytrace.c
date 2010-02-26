@@ -223,6 +223,8 @@ typedef struct dmnsn_raytrace_state {
   dmnsn_color pigment;
   dmnsn_color diffuse;
   dmnsn_color additional;
+
+  double ior;
 } dmnsn_raytrace_state;
 
 /* Main helper for dmnsn_raytrace_scene_impl - shoot a ray */
@@ -237,7 +239,8 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 {
   dmnsn_raytrace_state state = {
     .scene = scene,
-    .bvst = bvst
+    .bvst  = bvst,
+    .ior   = 1.0
   };
 
   unsigned int width  = scene->canvas->x;
@@ -434,15 +437,46 @@ static void
 dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
 {
   if (state->pigment.filter || state->pigment.trans) {
+    dmnsn_line trans_ray = dmnsn_new_line(state->r, state->intersection->ray.n);
+    trans_ray = dmnsn_line_add_epsilon(trans_ray);
+
+    dmnsn_raytrace_state recursive_state = *state;
+
+    double iorr = state->ior; /* ior ratio */
+
+    dmnsn_vector r = dmnsn_vector_normalize(trans_ray.n);
+    dmnsn_vector n = state->intersection->normal;
+
+    if (state->intersection->interior && dmnsn_vector_dot(r, n) < 0.0) {
+      iorr /= state->intersection->interior->ior;
+      recursive_state.ior = state->intersection->interior->ior;
+    }
+
+    double c1 = -dmnsn_vector_dot(r, n);
+    double c2 = 1.0 - iorr*iorr*(1.0 - c1*c1);
+    if (c2 <= 0.0) {
+      /* Total internal reflection */
+      return;
+    }
+    c2 = sqrt(c2);
+
+    if (c1 >= 0.0) {
+      trans_ray.n = dmnsn_vector_add(
+        dmnsn_vector_mul(iorr, r),
+        dmnsn_vector_mul(iorr*c1 - c2, n)
+      );
+    } else {
+      trans_ray.n = dmnsn_vector_add(
+        dmnsn_vector_mul(iorr, r),
+        dmnsn_vector_mul(iorr*c1 + c2, n)
+      );
+    }
+
     state->diffuse = dmnsn_color_mul(
       1.0 - state->pigment.filter - state->pigment.trans,
       state->diffuse
     );
 
-    dmnsn_line trans_ray = dmnsn_new_line(state->r, state->intersection->ray.n);
-    trans_ray = dmnsn_line_add_epsilon(trans_ray);
-
-    dmnsn_raytrace_state recursive_state = *state;
     dmnsn_color rec = dmnsn_raytrace_shoot(&recursive_state, trans_ray);
     dmnsn_color filtered = dmnsn_color_filter(rec, state->pigment);
     state->additional = dmnsn_color_add(filtered, state->additional);
