@@ -36,17 +36,16 @@ dmnsn_progressbar(const char *format, const dmnsn_progress *progress, ...)
 
   va_end(ap);
 
-  unsigned int increments = 48;
+  fflush(stdout);
 
   /* Try to fill the terminal with the progress bar; this is non-portable */
   struct winsize ws;
+  unsigned int width = 80;
   if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0) {
-    increments = ws.ws_col - (len % ws.ws_col);
+    width = ws.ws_col;
   }
 
-  fflush(stdout);
-
-  unsigned int i;
+  unsigned int i, increments = width - (len % width);
   for (i = 0; i < increments; ++i) {
     dmnsn_wait_progress(progress, ((double)(i + 1))/increments);
 
