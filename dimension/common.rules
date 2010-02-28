@@ -150,9 +150,8 @@ OBJECT_MODIFIERS: /* empty */ {
 
 OBJECT_MODIFIER: TRANSFORMATION
                | TEXTURE
-               | PIGMENT {
-                 $$ = dmnsn_new_astnode1(DMNSN_AST_TEXTURE, @$, $1);
-               }
+               | PIGMENT
+               | FINISH
                | INTERIOR
 ;
 

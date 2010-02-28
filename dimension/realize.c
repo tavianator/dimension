@@ -590,6 +590,18 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
       dmnsn_delete_texture(object->texture);
       object->texture = dmnsn_realize_texture(modifier);
       break;
+    case DMNSN_AST_PIGMENT:
+      if (!object->texture)
+        object->texture = dmnsn_new_texture();
+      dmnsn_delete_pigment(object->texture->pigment);
+      object->texture->pigment = dmnsn_realize_pigment(modifier);
+      break;
+    case DMNSN_AST_FINISH:
+      if (!object->texture)
+        object->texture = dmnsn_new_texture();
+      dmnsn_delete_finish(object->texture->finish);
+      object->texture->finish = dmnsn_realize_finish(modifier);
+      break;
 
     case DMNSN_AST_INTERIOR:
       dmnsn_delete_interior(object->interior);
