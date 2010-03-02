@@ -211,6 +211,8 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
  */
 
 typedef struct dmnsn_raytrace_state {
+  const struct dmnsn_raytrace_state *parent;
+
   const dmnsn_scene *scene;
   const dmnsn_intersection *intersection;
   dmnsn_bvst *bvst;
@@ -238,9 +240,10 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
                           unsigned int index, unsigned int threads)
 {
   dmnsn_raytrace_state state = {
-    .scene = scene,
-    .bvst  = bvst,
-    .ior   = 1.0
+    .parent = NULL,
+    .scene  = scene,
+    .bvst   = bvst,
+    .ior    = 1.0
   };
 
   unsigned int width  = scene->canvas->x;
@@ -306,7 +309,12 @@ dmnsn_line_add_epsilon(dmnsn_line l)
    ? (*ITEXTURE(state)->telem->fn)(ITEXTURE(state)->telem, __VA_ARGS__)    \
    : (CAN_CALL(DTEXTURE(state), telem, fn)                                 \
       ? (*DTEXTURE(state)->telem->fn)(DTEXTURE(state)->telem, __VA_ARGS__) \
-      : def));                                                             \
+      : def));
+
+#define IOR(state)                              \
+  ((state)->intersection->interior              \
+   ? (state)->intersection->interior->ior       \
+   : 1.0)
 
 static void
 dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
@@ -440,17 +448,22 @@ dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
     dmnsn_line trans_ray = dmnsn_new_line(state->r, state->intersection->ray.n);
     trans_ray = dmnsn_line_add_epsilon(trans_ray);
 
-    dmnsn_raytrace_state recursive_state = *state;
-
-    double iorr = state->ior; /* ior ratio */
-
     dmnsn_vector r = dmnsn_vector_normalize(trans_ray.n);
     dmnsn_vector n = state->intersection->normal;
 
-    if (state->intersection->interior && dmnsn_vector_dot(r, n) < 0.0) {
-      iorr /= state->intersection->interior->ior;
-      recursive_state.ior = state->intersection->interior->ior;
+    dmnsn_raytrace_state recursive_state = *state;
+
+    if (dmnsn_vector_dot(r, n) < 0.0) {
+      /* We are entering an object */
+      recursive_state.ior = IOR(state);
+      recursive_state.parent = state;
+    } else {
+      /* We are leaving an object */
+      recursive_state.ior = state->parent ? state->parent->ior : 1.0;
+      recursive_state.parent = state->parent ? state->parent->parent : NULL;
     }
+
+    double iorr = state->ior/recursive_state.ior; /* ior ratio */
 
     double c1 = -dmnsn_vector_dot(r, n);
     double c2 = 1.0 - iorr*iorr*(1.0 - c1*c1);
