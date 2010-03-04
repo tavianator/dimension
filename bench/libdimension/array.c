@@ -33,9 +33,8 @@ main()
   const unsigned int count = 32;
 
   sandglass_t sandglass;
-  sandglass_attributes_t attr = { SANDGLASS_MONOTONIC, SANDGLASS_CPUTIME };
 
-  if (sandglass_create(&sandglass, &attr, &attr) != 0) {
+  if (sandglass_init_monotonic(&sandglass, SANDGLASS_CPUTIME) != 0) {
     perror("sandglass_create()");
     return EXIT_FAILURE;
   }

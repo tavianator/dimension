@@ -40,11 +40,11 @@ AC_ARG_ENABLE([pgo],
 AM_CONDITIONAL([PGO], [test "$enable_pgo" != "no"])
 
 dnl Timing library for benchmarks
-PKG_CHECK_MODULES([SANDGLASS], [libsandglass],
+PKG_CHECK_MODULES([libsandglass], [libsandglass >= 0.2],
                   [],
                   [AC_MSG_WARN([libsandglass not found - benchmarking suite will not work])])
-AC_SUBST(SANDGLASS_CFLAGS)
-AC_SUBST(SANDGLASS_LIBS)
+AC_SUBST(libsandglass_CFLAGS)
+AC_SUBST(libsandglass_LIBS)
 
 dnl Ensure compilation in C99 mode
 AC_DEFINE([_XOPEN_SOURCE], [600])
