@@ -116,24 +116,24 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
 
   dmnsn_astnode_map(DMNSN_AST_NONE, "none");
 
-  dmnsn_astnode_map(DMNSN_AST_ROTATION, "rotate");
-  dmnsn_astnode_map(DMNSN_AST_SCALE, "scale");
-  dmnsn_astnode_map(DMNSN_AST_TRANSLATION, "translate");
-
-  dmnsn_astnode_map(DMNSN_AST_CAMERA, "camera");
-  dmnsn_astnode_map(DMNSN_AST_PERSPECTIVE, "perspective");
-  dmnsn_astnode_map(DMNSN_AST_LOCATION, "location");
-  dmnsn_astnode_map(DMNSN_AST_RIGHT, "right");
-  dmnsn_astnode_map(DMNSN_AST_UP, "up");
-  dmnsn_astnode_map(DMNSN_AST_SKY, "sky");
-  dmnsn_astnode_map(DMNSN_AST_ANGLE, "angle");
-  dmnsn_astnode_map(DMNSN_AST_LOOK_AT, "look_at");
-  dmnsn_astnode_map(DMNSN_AST_DIRECTION, "direction");
+  dmnsn_astnode_map(DMNSN_AST_GLOBAL_SETTINGS, "global_settings");
+  dmnsn_astnode_map(DMNSN_AST_ASSUMED_GAMMA,   "assumed_gamma");
+  dmnsn_astnode_map(DMNSN_AST_MAX_TRACE_LEVEL, "max_trace_level");
 
   dmnsn_astnode_map(DMNSN_AST_BACKGROUND, "background");
 
-  dmnsn_astnode_map(DMNSN_AST_BOX, "box");
-  dmnsn_astnode_map(DMNSN_AST_SPHERE, "sphere");
+  dmnsn_astnode_map(DMNSN_AST_CAMERA,      "camera");
+  dmnsn_astnode_map(DMNSN_AST_PERSPECTIVE, "perspective");
+  dmnsn_astnode_map(DMNSN_AST_LOCATION,    "location");
+  dmnsn_astnode_map(DMNSN_AST_RIGHT,       "right");
+  dmnsn_astnode_map(DMNSN_AST_UP,          "up");
+  dmnsn_astnode_map(DMNSN_AST_SKY,         "sky");
+  dmnsn_astnode_map(DMNSN_AST_ANGLE,       "angle");
+  dmnsn_astnode_map(DMNSN_AST_LOOK_AT,     "look_at");
+  dmnsn_astnode_map(DMNSN_AST_DIRECTION,   "direction");
+
+  dmnsn_astnode_map(DMNSN_AST_BOX,          "box");
+  dmnsn_astnode_map(DMNSN_AST_SPHERE,       "sphere");
   dmnsn_astnode_map(DMNSN_AST_LIGHT_SOURCE, "light_source");
 
   dmnsn_astnode_map(DMNSN_AST_OBJECT_MODIFIERS, "object-modifiers");
@@ -142,18 +142,22 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
 
   dmnsn_astnode_map(DMNSN_AST_PIGMENT, "pigment");
 
-  dmnsn_astnode_map(DMNSN_AST_FINISH, "finish");
-  dmnsn_astnode_map(DMNSN_AST_AMBIENT, "ambient");
-  dmnsn_astnode_map(DMNSN_AST_DIFFUSE, "diffuse");
-  dmnsn_astnode_map(DMNSN_AST_PHONG, "phong");
+  dmnsn_astnode_map(DMNSN_AST_FINISH,     "finish");
+  dmnsn_astnode_map(DMNSN_AST_AMBIENT,    "ambient");
+  dmnsn_astnode_map(DMNSN_AST_DIFFUSE,    "diffuse");
+  dmnsn_astnode_map(DMNSN_AST_PHONG,      "phong");
   dmnsn_astnode_map(DMNSN_AST_PHONG_SIZE, "phong_size");
 
-  dmnsn_astnode_map(DMNSN_AST_REFLECTION, "reflection");
+  dmnsn_astnode_map(DMNSN_AST_REFLECTION,       "reflection");
   dmnsn_astnode_map(DMNSN_AST_REFLECTION_ITEMS, "reflection-items");
-  dmnsn_astnode_map(DMNSN_AST_FALLOFF, "falloff");
+  dmnsn_astnode_map(DMNSN_AST_FALLOFF,          "falloff");
 
   dmnsn_astnode_map(DMNSN_AST_INTERIOR, "interior");
-  dmnsn_astnode_map(DMNSN_AST_IOR, "ior");
+  dmnsn_astnode_map(DMNSN_AST_IOR,      "ior");
+
+  dmnsn_astnode_map(DMNSN_AST_ROTATION,    "rotate");
+  dmnsn_astnode_map(DMNSN_AST_SCALE,       "scale");
+  dmnsn_astnode_map(DMNSN_AST_TRANSLATION, "translate");
 
   dmnsn_astnode_map(DMNSN_AST_FLOAT, "float");
   dmnsn_astnode_map(DMNSN_AST_INTEGER, "integer");
@@ -174,11 +178,11 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_AND,           "&" );
   dmnsn_astnode_map(DMNSN_AST_OR,            "|" );
 
-  dmnsn_astnode_map(DMNSN_AST_NEGATE, "-");
-  dmnsn_astnode_map(DMNSN_AST_DOT_X, ".x");
-  dmnsn_astnode_map(DMNSN_AST_DOT_Y, ".y");
-  dmnsn_astnode_map(DMNSN_AST_DOT_Z, ".z");
-  dmnsn_astnode_map(DMNSN_AST_DOT_T, ".t");
+  dmnsn_astnode_map(DMNSN_AST_NEGATE,       "-");
+  dmnsn_astnode_map(DMNSN_AST_DOT_X,        ".x");
+  dmnsn_astnode_map(DMNSN_AST_DOT_Y,        ".y");
+  dmnsn_astnode_map(DMNSN_AST_DOT_Z,        ".z");
+  dmnsn_astnode_map(DMNSN_AST_DOT_T,        ".t");
   dmnsn_astnode_map(DMNSN_AST_DOT_TRANSMIT, ".transmit");
 
   dmnsn_astnode_map(DMNSN_AST_IDENTIFIER, "identifier");

@@ -30,9 +30,38 @@ SCENE: /* empty */
 ;
 
 /* Top-level scene item */
-SCENE_ITEM: ATMOSPHERIC_EFFECT
+SCENE_ITEM: GLOBAL_SETTINGS
+          | ATMOSPHERIC_EFFECT
           | CAMERA
           | OBJECT
+;
+
+/* Global settings */
+
+GLOBAL_SETTINGS: "global_settings" "{"
+                   GLOBAL_SETTINGS_ITEMS
+                 "}"
+               {
+                 $$ = $3;
+               }
+;
+
+GLOBAL_SETTINGS_ITEMS: /* empty */ {
+                       $$ = dmnsn_new_astnode(DMNSN_AST_GLOBAL_SETTINGS, @$);
+                     }
+                     | GLOBAL_SETTINGS_ITEMS GLOBAL_SETTINGS_ITEM {
+                       $$ = $1;
+                       dmnsn_array_push($$.children, &$2);
+                     }
+;
+
+GLOBAL_SETTINGS_ITEM: "assumed_gamma" FLOAT {
+                      $$ = dmnsn_new_astnode1(DMNSN_AST_ASSUMED_GAMMA, @$, $2);
+                    }
+                    | "max_trace_level" FLOAT {
+                      $$ = dmnsn_new_astnode1(DMNSN_AST_MAX_TRACE_LEVEL,
+                                              @$, $2);
+                    }
 ;
 
 /* Atmospheric effects */

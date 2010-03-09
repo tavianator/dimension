@@ -24,6 +24,23 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+static long
+dmnsn_realize_integer(dmnsn_astnode astnode)
+{
+  switch (astnode.type) {
+  case DMNSN_AST_INTEGER:
+    return *(long *)astnode.ptr;
+  case DMNSN_AST_FLOAT:
+    dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                     "WARNING: float cast to integer");
+    return *(double *)astnode.ptr;
+
+  default:
+    dmnsn_assert(false, "Invalid integer.");
+    return 0; /* Silence compiler warning */
+  }
+}
+
 static double
 dmnsn_realize_float(dmnsn_astnode astnode)
 {
@@ -135,6 +152,34 @@ dmnsn_realize_translation(dmnsn_astnode astnode)
   dmnsn_vector trans = dmnsn_realize_vector(trans_node);
 
   return dmnsn_translation_matrix(trans);
+}
+
+static void
+dmnsn_realize_global_settings(dmnsn_astnode astnode, dmnsn_scene *scene)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_GLOBAL_SETTINGS,
+               "Expected global settings.");
+
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    dmnsn_astnode item, child;
+    dmnsn_array_get(astnode.children, i, &item);
+
+    switch (item.type) {
+    case DMNSN_AST_ASSUMED_GAMMA:
+      dmnsn_diagnostic(item.filename, item.line, item.col,
+                       "WARNING: assumed_gamma not supported");
+      break;
+
+    case DMNSN_AST_MAX_TRACE_LEVEL:
+      dmnsn_array_get(item.children, 0, &child);
+      scene->reclimit = dmnsn_realize_integer(child);
+      break;
+
+    default:
+      dmnsn_assert(false, "Invalid global settings item.");
+    }
+  }
 }
 
 static dmnsn_camera *
@@ -741,14 +786,18 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
     dmnsn_light  *light;
     dmnsn_object *object;
     switch (astnode.type) {
-    case DMNSN_AST_CAMERA:
-      dmnsn_delete_camera(scene->camera);
-      scene->camera = dmnsn_realize_camera(astnode);
+    case DMNSN_AST_GLOBAL_SETTINGS:
+      dmnsn_realize_global_settings(astnode, scene);
       break;
 
     case DMNSN_AST_BACKGROUND:
       dmnsn_array_get(astnode.children, 0, &astnode);
       scene->background = dmnsn_realize_color(astnode);
+      break;
+
+    case DMNSN_AST_CAMERA:
+      dmnsn_delete_camera(scene->camera);
+      scene->camera = dmnsn_realize_camera(astnode);
       break;
 
     case DMNSN_AST_BOX:

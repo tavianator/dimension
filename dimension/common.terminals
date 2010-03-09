@@ -90,7 +90,7 @@
 %token DMNSN_T_ASCII
 %token DMNSN_T_ASIN
 %token DMNSN_T_ASINH
-%token DMNSN_T_ASSUMED_GAMMA
+%token DMNSN_T_ASSUMED_GAMMA            "assumed_gamma"
 %token DMNSN_T_ATAN
 %token DMNSN_T_ATAN2
 %token DMNSN_T_ATANH
@@ -211,7 +211,7 @@
 %token DMNSN_T_GATHER
 %token DMNSN_T_GIF
 %token DMNSN_T_GLOBAL_LIGHTS
-%token DMNSN_T_GLOBAL_SETTINGS
+%token DMNSN_T_GLOBAL_SETTINGS          "global_settings"
 %token DMNSN_T_GRADIENT
 %token DMNSN_T_GRANITE
 %token DMNSN_T_GRAY                     "gray"
@@ -277,7 +277,7 @@
 %token DMNSN_T_MAX_ITERATION
 %token DMNSN_T_MAX_SAMPLE
 %token DMNSN_T_MAX_TRACE
-%token DMNSN_T_MAX_TRACE_LEVEL
+%token DMNSN_T_MAX_TRACE_LEVEL          "max_trace_level"
 %token DMNSN_T_MEDIA
 %token DMNSN_T_MEDIA_ATTENUATION
 %token DMNSN_T_MEDIA_INTERACTION

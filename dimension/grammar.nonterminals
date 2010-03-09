@@ -22,6 +22,11 @@
 /* Top-level items */
 %type <astnode> SCENE_ITEM
 
+/* Global settings */
+%type <astnode> GLOBAL_SETTINGS
+%type <astnode> GLOBAL_SETTINGS_ITEMS
+%type <astnode> GLOBAL_SETTINGS_ITEM
+
 /* Atmospheric effects */
 %type <astnode> ATMOSPHERIC_EFFECT
 %type <astnode> BACKGROUND
