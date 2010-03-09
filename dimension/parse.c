@@ -809,7 +809,11 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     {
       dmnsn_astnode *symbol = dmnsn_find_symbol(symtable, astnode.ptr);
       if (symbol) {
-        return dmnsn_eval(*symbol, symtable);
+        dmnsn_astnode id = *symbol;
+        id.filename = astnode.filename;
+        id.line     = astnode.line;
+        id.col      = astnode.col;
+        return dmnsn_eval(id, symtable);
       } else {
         dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
                          "Unbound identifier '%s'", (const char *)astnode.ptr);
