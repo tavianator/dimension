@@ -59,7 +59,7 @@ dmnsn_realize_vector(dmnsn_astnode astnode)
 static dmnsn_color
 dmnsn_realize_color(dmnsn_astnode astnode)
 {
-  dmnsn_assert(astnode.type == DMNSN_AST_COLOR, "Expected a color.");
+  dmnsn_assert(astnode.type == DMNSN_AST_VECTOR, "Expected a vector.");
 
   dmnsn_astnode rnode, gnode, bnode, fnode, tnode;
   dmnsn_array_get(astnode.children, 0, &rnode);
@@ -349,7 +349,7 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
   case DMNSN_AST_NONE:
     break;
 
-  case DMNSN_AST_COLOR:
+  case DMNSN_AST_VECTOR:
     color = dmnsn_realize_color(color_node);
     pigment = dmnsn_new_solid_pigment(color);
     if (!pigment) {

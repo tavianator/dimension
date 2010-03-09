@@ -31,10 +31,10 @@ demo_exp=$(echo -n \
     (rotate (vector (integer 0) (integer 53) (integer 0)
                     (integer 0) (integer 0))))
   (background
-    (color (integer 0) (float 0.1) (float 0.2) (float 0.1) (integer 0)))
+    (vector (integer 0) (float 0.1) (float 0.2) (float 0.1) (integer 0)))
   (light_source
     (vector (integer -15) (integer 20) (integer 10) (integer 0) (integer 0))
-    (color (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)))
+    (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)))
   (box
     (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
     (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
@@ -43,12 +43,12 @@ demo_exp=$(echo -n \
                       (integer 0) (integer 0)))
       (texture
         (pigment
-          (color (integer 0) (integer 0) (integer 1)
-                 (float 0.25) (float 0.5)))
+          (vector (integer 0) (integer 0) (integer 1)
+                  (float 0.25) (float 0.5)))
         (finish
           (reflection
-            (color (float 0.5) (float 0.5) (float 0.5) (float 0.5) (float 0.5))
-            (color (float 0.5) (float 0.5) (float 0.5) (float 0.5) (float 0.5))
+            (vector (float 0.5) (float 0.5) (float 0.5) (float 0.5) (float 0.5))
+            (vector (float 0.5) (float 0.5) (float 0.5) (float 0.5) (float 0.5))
             reflection-items)))
       (interior
         (ior (float 1.1)))))
@@ -58,7 +58,7 @@ demo_exp=$(echo -n \
     (object-modifiers
       (texture
         (pigment
-          (color (integer 0) (integer 1) (integer 0) (integer 0) (integer 0)))
+          (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0)))
         (finish
           (phong (float 0.2))
           (phong_size (float 40)))))))' \

@@ -181,8 +181,6 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_DOT_T, ".t");
   dmnsn_astnode_map(DMNSN_AST_DOT_TRANSMIT, ".transmit");
 
-  dmnsn_astnode_map(DMNSN_AST_COLOR, "color");
-
   dmnsn_astnode_map(DMNSN_AST_IDENTIFIER, "identifier");
 
   dmnsn_astnode_map(DMNSN_AST_STRING, "string");

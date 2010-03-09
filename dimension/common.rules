@@ -403,11 +403,9 @@ ARITH_EXPR: FLOAT_LITERAL
 
 COLOR: COLOR_BODY {
        $$ = $1;
-       $$.type = DMNSN_AST_COLOR;
      }
      | "color" COLOR_BODY {
        $$ = $2;
-       $$.type = DMNSN_AST_COLOR;
      }
 ;
 
@@ -477,7 +475,7 @@ COLOR_KEYWORD_ITEM: "identifier" {
                                        "Unbound identifier '%s'", $1);
                       free($1);
                       YYERROR;
-                    } else if (symbol->type != DMNSN_AST_COLOR) {
+                    } else {
                       dmnsn_astnode eval = dmnsn_eval_vector(*symbol, symtable);
                       if (eval.type == DMNSN_AST_NONE) {
                         free($1);
@@ -486,8 +484,6 @@ COLOR_KEYWORD_ITEM: "identifier" {
 
                       dmnsn_copy_children($<astnode>0, eval);
                       dmnsn_delete_astnode(eval);
-                    } else {
-                      dmnsn_copy_children($<astnode>0, *symbol);
                     }
 
                     free($1);

@@ -55,14 +55,14 @@ $(echo -n \
     (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
     (integer 1)
     (object-modifiers
-      (pigment (color (integer 1) (integer 1) (integer 1)
-                      (integer 0) (integer 0)))))
+      (pigment (vector (integer 1) (integer 1) (integer 1)
+                       (integer 0) (integer 0)))))
   (sphere
     (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0))
     (integer 1)
     (object-modifiers
-      (pigment (color (integer 1) (integer 1) (integer 1)
-                      (integer 0) (integer 0))))))' \
+      (pigment (vector (integer 1) (integer 1) (integer 1)
+                       (integer 0) (integer 0))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"
 
 if [ "$directives" != "$directives_exp" ]; then
