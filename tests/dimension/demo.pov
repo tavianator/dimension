@@ -25,7 +25,7 @@ camera {
   right    <1.6, 0, 0>
   look_at  <0, 0, 0>
 
-  rotate   <0, 53, 0>
+  rotate   53*y
 }
 
 background {
@@ -39,7 +39,7 @@ light_source {
 box {
   <-1, -1, -1>, <1, 1, 1>
 
-  rotate <45, 0, 0>
+  rotate 45*x
 
   texture {
     pigment {

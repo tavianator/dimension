@@ -76,6 +76,58 @@ dmnsn_new_ast_float(double value)
 }
 
 dmnsn_astnode
+dmnsn_new_ast_ivector(long x, long y, long z, long f, long t)
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_VECTOR);
+  astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
+
+  dmnsn_astnode comp;
+
+  comp = dmnsn_new_ast_integer(x);
+  dmnsn_array_push(astnode.children, &comp);
+
+  comp = dmnsn_new_ast_integer(y);
+  dmnsn_array_push(astnode.children, &comp);
+
+  comp = dmnsn_new_ast_integer(z);
+  dmnsn_array_push(astnode.children, &comp);
+
+  comp = dmnsn_new_ast_integer(f);
+  dmnsn_array_push(astnode.children, &comp);
+
+  comp = dmnsn_new_ast_integer(t);
+  dmnsn_array_push(astnode.children, &comp);
+
+  return astnode;
+}
+
+dmnsn_astnode
+dmnsn_new_ast_vector(double x, double y, double z, double f, double t)
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_VECTOR);
+  astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
+
+  dmnsn_astnode comp;
+
+  comp = dmnsn_new_ast_float(x);
+  dmnsn_array_push(astnode.children, &comp);
+
+  comp = dmnsn_new_ast_float(y);
+  dmnsn_array_push(astnode.children, &comp);
+
+  comp = dmnsn_new_ast_float(z);
+  dmnsn_array_push(astnode.children, &comp);
+
+  comp = dmnsn_new_ast_float(f);
+  dmnsn_array_push(astnode.children, &comp);
+
+  comp = dmnsn_new_ast_float(t);
+  dmnsn_array_push(astnode.children, &comp);
+
+  return astnode;
+}
+
+dmnsn_astnode
 dmnsn_new_ast_string(const char *value)
 {
   dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_STRING);

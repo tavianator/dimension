@@ -125,6 +125,9 @@ typedef dmnsn_array dmnsn_astree;
 dmnsn_astnode dmnsn_new_ast_array();
 dmnsn_astnode dmnsn_new_ast_integer(long value);
 dmnsn_astnode dmnsn_new_ast_float(double value);
+dmnsn_astnode dmnsn_new_ast_ivector(long x, long y, long z, long f, long t);
+dmnsn_astnode dmnsn_new_ast_vector(double x, double y, double z,
+                                   double f, double t);
 dmnsn_astnode dmnsn_new_ast_string(const char *value);
 
 void dmnsn_delete_astnode(dmnsn_astnode astnode);

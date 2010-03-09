@@ -397,6 +397,12 @@ ARITH_EXPR: FLOAT_LITERAL
           }
           | "(" ARITH_EXPR ")" { $$ = $2; }
           | IDENTIFIER
+          | "x" { $$ = dmnsn_new_ast_ivector(1, 0, 0, 0, 0); }
+          | "u" { $$ = dmnsn_new_ast_ivector(1, 0, 0, 0, 0); }
+          | "y" { $$ = dmnsn_new_ast_ivector(0, 1, 0, 0, 0); }
+          | "v" { $$ = dmnsn_new_ast_ivector(0, 1, 0, 0, 0); }
+          | "z" { $$ = dmnsn_new_ast_ivector(0, 0, 1, 0, 0); }
+          | "t" { $$ = dmnsn_new_ast_ivector(0, 0, 0, 1, 0); }
 ;
 
 /* Colors */
