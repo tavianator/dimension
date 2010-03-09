@@ -174,6 +174,7 @@ main(int argc, char **argv) {
   /* Construct the symbol table */
   dmnsn_symbol_table *symtable = dmnsn_new_symbol_table();
   dmnsn_declare_symbol(symtable, "__file__", dmnsn_new_ast_string(input));
+  dmnsn_declare_symbol(symtable, "version", dmnsn_new_ast_float(3.6));
 
   /* Debugging option - output the abstract syntax tree as an S-expression */
   if (parse) {
