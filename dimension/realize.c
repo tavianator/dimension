@@ -32,7 +32,7 @@ dmnsn_realize_integer(dmnsn_astnode astnode)
     return *(long *)astnode.ptr;
   case DMNSN_AST_FLOAT:
     dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                     "WARNING: float cast to integer");
+                     "WARNING: float rounded to integer");
     return *(double *)astnode.ptr;
 
   default:
