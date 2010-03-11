@@ -277,7 +277,10 @@ main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  dmnsn_progressbar("Rendering scene with %u threads", render_progress,
+  dmnsn_progressbar(scene->nthreads > 1
+                    ? "Rendering scene with %u threads"
+                    : "Rendering scene with %u thread",
+                    render_progress,
                     scene->nthreads);
 
   if (dmnsn_finish_progress(render_progress) != 0) {
