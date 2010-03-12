@@ -81,12 +81,15 @@
     RETURN();                                                   \
   } while (0)
 
-#define STRING_TOKEN()                          \
-  do {                                          \
-    NEW_TOKEN(DMNSN_T_STRING);                  \
-    lvalp->value    = malloc(string_extent);    \
-    lvalp->value[0] = '\0';                     \
-    CALCULATE_COLUMN();                         \
+#define STRING_TOKEN()                                          \
+  do {                                                          \
+    NEW_TOKEN(DMNSN_T_STRING);                                  \
+    lvalp->value    = malloc(string_extent);                    \
+    if (!lvalp->value)                                          \
+      dmnsn_error(DMNSN_SEVERITY_HIGH,                          \
+                  "Couldn't allocate space for token value.");  \
+    lvalp->value[0] = '\0';                                     \
+    CALCULATE_COLUMN();                                         \
   } while (0)
 
 #define STRCAT(str, len)                                                \

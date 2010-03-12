@@ -519,6 +519,8 @@ dmnsn_vector_promote(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       component.type = DMNSN_AST_INTEGER;
 
       long *val = malloc(sizeof(long));
+      if (!val)
+        dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for integer.");
       *val      = 0;
 
       component.ptr = val;

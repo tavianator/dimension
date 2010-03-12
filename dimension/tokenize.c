@@ -226,6 +226,8 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate space for filename.");
   char *localdir = dirname(filename_copy);
   char *local_include = malloc(strlen(localdir) + strlen(include) + 2);
+  if (!local_include)
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate space for filename.");
   strcpy(local_include, localdir);
   strcat(local_include, "/");
   strcat(local_include, include);
