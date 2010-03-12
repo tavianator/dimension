@@ -20,6 +20,313 @@
 #include "parse.h"
 #include "utility.h"
 
+/*
+ * Symbol table
+ */
+
+typedef struct dmnsn_patricia_trie {
+  char *prefix;
+
+  bool leaf;
+  dmnsn_array *children;
+  dmnsn_astnode value;
+} dmnsn_patricia_trie;
+
+void
+dmnsn_delete_patricia_trie(dmnsn_patricia_trie *trie)
+{
+  if (trie) {
+    free(trie->prefix);
+
+    if (trie->leaf)
+      dmnsn_delete_astnode(trie->value);
+
+    unsigned int i;
+    for (i = 0; i < dmnsn_array_size(trie->children); ++i) {
+      dmnsn_patricia_trie *subtrie;
+      dmnsn_array_get(trie->children, i, &subtrie);
+      dmnsn_delete_patricia_trie(subtrie);
+    }
+    dmnsn_delete_array(trie->children);
+
+    free(trie);
+  }
+}
+
+dmnsn_patricia_trie *
+dmnsn_new_patricia_trie()
+{
+  dmnsn_patricia_trie *trie = malloc(sizeof(dmnsn_patricia_trie));
+  if (!trie) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate PATRICIA trie.");
+  }
+
+  trie->prefix = strdup("");
+  if (!trie->prefix) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate PATRICIA trie.");
+  }
+
+  trie->leaf = false;
+  trie->children = dmnsn_new_array(sizeof(dmnsn_patricia_trie *));
+  return trie;
+}
+
+void
+dmnsn_patricia_insert(dmnsn_patricia_trie *trie,
+                      const char *id, dmnsn_astnode value)
+{
+  /*
+   * PATRICIA trie insertion: O(k), where k is the length of the longest string
+   * in the trie.
+   */
+
+  ++*value.refcount;
+
+  while (true) {
+    if (trie->prefix[0] == '\0'&& !trie->leaf
+        && dmnsn_array_size(trie->children) == 0)
+    {
+      /* Replace an empty tree with a single-element tree */
+      trie->prefix = realloc(trie->prefix, strlen(id) + 1);
+      if (!trie->prefix)
+        dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for prefix.");
+      strcpy(trie->prefix, id);
+
+      trie->leaf = true;
+      trie->value = value;
+      break;
+    }
+
+    char *prefix = trie->prefix;
+    while (*prefix == *id && *prefix && *id) {
+      ++prefix;
+      ++id;
+    }
+
+    if (*id == '\0' && *prefix == '\0') {
+      /* Complete match */
+      if (trie->leaf) {
+        dmnsn_delete_astnode(trie->value);
+      }
+      trie->leaf = true;
+      trie->value = value;
+      break;
+    } else if (*prefix == '\0') {
+      /* Partial match; id starts with prefix */
+      size_t i, size = dmnsn_array_size(trie->children);
+      for (i = 0; i < size; ++i) {
+        dmnsn_patricia_trie *subtrie;
+        dmnsn_array_get(trie->children, i, &subtrie);
+
+        if (subtrie->prefix[0] == id[0]) {
+          trie = subtrie;
+          break;
+        }
+      }
+
+      if (i == size) {
+        /* No submatch found, add a new child */
+        dmnsn_patricia_trie *subtrie = dmnsn_new_patricia_trie();
+        dmnsn_array_push(trie->children, &subtrie);
+        trie = subtrie;
+      }
+    } else {
+      /* Split the tree */
+      dmnsn_patricia_trie *copy = dmnsn_new_patricia_trie();
+      copy->prefix = realloc(copy->prefix, strlen(prefix) + 1);
+      strcpy(copy->prefix, prefix);
+      *prefix = '\0';
+
+      if (trie->leaf) {
+        copy->leaf = true;
+        copy->value = trie->value;
+        trie->leaf = false;
+      }
+
+      dmnsn_delete_array(copy->children);
+      copy->children = trie->children;
+      trie->children = dmnsn_new_array(sizeof(dmnsn_patricia_trie *));
+
+      dmnsn_patricia_trie *subtrie = dmnsn_new_patricia_trie();
+      dmnsn_array_push(trie->children, &copy);
+      dmnsn_array_push(trie->children, &subtrie);
+      trie = subtrie;
+    }
+  }
+}
+
+bool
+dmnsn_patricia_remove(dmnsn_patricia_trie *trie, const char *id)
+{
+  /*
+   * PATRICIA trie removal: O(k), where k is the length of the longest string
+   * in the trie.
+   *
+   * This implementation doesn't actually collapse the tree back upwards if a
+   * node is left with only one child, to reduce complexity.
+   */
+
+  size_t len = strlen(trie->prefix);
+  if (strncmp(id, trie->prefix, len) != 0)
+    return false;
+  id += len;
+
+  while (true) {
+    if (*id == '\0' && trie->leaf) {
+      dmnsn_delete_astnode(trie->value);
+      trie->leaf = false;
+      return true;
+    } else {
+      size_t i, size = dmnsn_array_size(trie->children);
+      for (i = 0; i < size; ++i) {
+        dmnsn_patricia_trie *subtrie;
+        dmnsn_array_get(trie->children, i, &subtrie);
+
+        len = strlen(subtrie->prefix);
+        if (strncmp(id, subtrie->prefix, len) == 0) {
+          trie = subtrie;
+          id += len;
+          break;
+        }
+      }
+
+      if (i == size)
+        break;
+    }
+  }
+
+  return false;
+}
+
+dmnsn_astnode *
+dmnsn_patricia_find(dmnsn_patricia_trie *trie, const char *id)
+{
+  /*
+   * PATRICIA trie search: O(k), where k is the length of the longest string
+   * in the trie.
+   */
+
+  size_t len = strlen(trie->prefix);
+  if (strncmp(id, trie->prefix, len) != 0)
+    return NULL;
+  id += len;
+
+  while (true) {
+    if (*id == '\0' && trie->leaf) {
+      return &trie->value;
+    } else {
+      size_t i, size = dmnsn_array_size(trie->children);
+      for (i = 0; i < size; ++i) {
+        dmnsn_patricia_trie *subtrie;
+        dmnsn_array_get(trie->children, i, &subtrie);
+
+        len = strlen(subtrie->prefix);
+        if (strncmp(id, subtrie->prefix, len) == 0) {
+          trie = subtrie;
+          id += len;
+          break;
+        }
+      }
+
+      if (i == size)
+        break;
+    }
+  }
+
+  return NULL;
+}
+
+dmnsn_symbol_table *
+dmnsn_new_symbol_table()
+{
+  dmnsn_symbol_table *symtable = dmnsn_new_array(sizeof(dmnsn_patricia_trie *));
+  dmnsn_push_scope(symtable);
+  return symtable;
+}
+
+void
+dmnsn_delete_symbol_table(dmnsn_symbol_table *symtable)
+{
+  while (dmnsn_array_size(symtable) > 0) {
+    dmnsn_pop_scope(symtable);
+  }
+  dmnsn_delete_array(symtable);
+}
+
+void
+dmnsn_push_scope(dmnsn_symbol_table *symtable)
+{
+  dmnsn_patricia_trie *scope = dmnsn_new_patricia_trie();
+  dmnsn_array_push(symtable, &scope);
+}
+
+void dmnsn_pop_scope(dmnsn_symbol_table *symtable)
+{
+  dmnsn_patricia_trie *scope;
+  dmnsn_array_pop(symtable, &scope);
+  dmnsn_delete_patricia_trie(scope);
+}
+
+void dmnsn_local_symbol(dmnsn_symbol_table *symtable,
+                        const char *id, dmnsn_astnode value)
+{
+  dmnsn_patricia_trie *trie;
+  dmnsn_array_get(symtable, dmnsn_array_size(symtable) - 1, &trie);
+  dmnsn_patricia_insert(trie, id, value);
+}
+
+void
+dmnsn_declare_symbol(dmnsn_symbol_table *symtable,
+                     const char *id, dmnsn_astnode value)
+{
+  dmnsn_astnode *node = dmnsn_find_symbol(symtable, id);
+  if (node) {
+    /* Always update the most local symbol */
+    dmnsn_delete_astnode(*node);
+    ++*value.refcount;
+    *node = value;
+  } else {
+    /* but create new ones at the least local scope */
+    dmnsn_patricia_trie *trie;
+    dmnsn_array_get(symtable, 0, &trie);
+    dmnsn_patricia_insert(trie, id, value);
+  }
+}
+
+void
+dmnsn_undef_symbol(dmnsn_symbol_table *symtable, const char *id)
+{
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(symtable); ++i) {
+    dmnsn_patricia_trie *trie;
+    dmnsn_array_get(symtable, dmnsn_array_size(symtable) - i - 1, &trie);
+    if (dmnsn_patricia_remove(trie, id))
+      break;
+  }
+}
+
+dmnsn_astnode *
+dmnsn_find_symbol(dmnsn_symbol_table *symtable, const char *id)
+{
+  dmnsn_astnode *symbol = NULL;
+
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(symtable); ++i) {
+    dmnsn_patricia_trie *trie;
+    dmnsn_array_get(symtable, dmnsn_array_size(symtable) - i - 1, &trie);
+
+    symbol = dmnsn_patricia_find(trie, id);
+    if (symbol)
+      break;
+  }
+
+  return symbol;
+}
+
+/*
+ * Abstract syntax tree
+ */
+
 static dmnsn_astnode
 dmnsn_new_astnode(dmnsn_astnode_type type)
 {
@@ -132,6 +439,8 @@ dmnsn_new_ast_string(const char *value)
 {
   dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_STRING);
   astnode.ptr = strdup(value);
+  if (!astnode.ptr)
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for string.");
   return astnode;
 }
 
@@ -159,152 +468,6 @@ dmnsn_delete_astree(dmnsn_astree *astree)
     }
     dmnsn_delete_array(astree);
   }
-}
-
-/* TODO: use a hash table for symbol tables rather than an array */
-
-typedef struct dmnsn_symbol {
-  char *id;
-  dmnsn_astnode value;
-} dmnsn_symbol;
-
-dmnsn_symbol_table *
-dmnsn_new_symbol_table()
-{
-  dmnsn_symbol_table *symtable = dmnsn_new_array(sizeof(dmnsn_array *));
-  dmnsn_push_scope(symtable);
-  return symtable;
-}
-
-static void
-dmnsn_delete_symbol(dmnsn_symbol symbol)
-{
-  free(symbol.id);
-  dmnsn_delete_astnode(symbol.value);
-}
-
-static void
-dmnsn_delete_scope(dmnsn_array *scope)
-{
-  while (dmnsn_array_size(scope) > 0) {
-    dmnsn_symbol symbol;
-    dmnsn_array_pop(scope, &symbol);
-    dmnsn_delete_symbol(symbol);
-  }
-  dmnsn_delete_array(scope);
-}
-
-void
-dmnsn_delete_symbol_table(dmnsn_symbol_table *symtable)
-{
-  while (dmnsn_array_size(symtable) > 0) {
-    dmnsn_array *scope;
-    dmnsn_array_pop(symtable, &scope);
-    dmnsn_delete_scope(scope);
-  }
-  dmnsn_delete_array(symtable);
-}
-
-void
-dmnsn_push_scope(dmnsn_symbol_table *symtable)
-{
-  dmnsn_array *scope = dmnsn_new_array(sizeof(dmnsn_symbol));
-  dmnsn_array_push(symtable, &scope);
-}
-
-void dmnsn_pop_scope(dmnsn_symbol_table *symtable)
-{
-  dmnsn_array *scope;
-  dmnsn_array_pop(symtable, &scope);
-  dmnsn_delete_scope(scope);
-}
-
-void dmnsn_local_symbol(dmnsn_symbol_table *symtable,
-                        const char *id, dmnsn_astnode value)
-{
-  ++*value.refcount;
-
-  dmnsn_array *scope;
-  dmnsn_array_get(symtable, dmnsn_array_size(symtable) - 1, &scope);
-
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(scope); ++i) {
-    dmnsn_symbol *symbol = dmnsn_array_at(scope,
-                                          dmnsn_array_size(scope) - i - 1);
-
-    if (strcmp(id, symbol->id) == 0) {
-      dmnsn_delete_astnode(symbol->value);
-      symbol->value = value;
-      return;
-    }
-  }
-
-  dmnsn_symbol symbol = { .id = strdup(id), .value = value };
-  dmnsn_array_push(scope, &symbol);
-}
-
-void
-dmnsn_declare_symbol(dmnsn_symbol_table *symtable,
-                     const char *id, dmnsn_astnode value)
-{
-  ++*value.refcount;
-
-  dmnsn_astnode *node = dmnsn_find_symbol(symtable, id);
-  if (node) {
-    /* Always update the most local symbol */
-    dmnsn_delete_astnode(*node);
-    *node = value;
-  } else {
-    /* but create new ones at the least local scope */
-    dmnsn_array *scope;
-    dmnsn_array_get(symtable, 0, &scope);
-
-    dmnsn_symbol symbol = { .id = strdup(id), .value = value };
-    dmnsn_array_push(scope, &symbol);
-  }
-}
-
-void
-dmnsn_undef_symbol(dmnsn_symbol_table *symtable, const char *id)
-{
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(symtable); ++i) {
-    dmnsn_array *scope;
-    dmnsn_array_get(symtable, dmnsn_array_size(symtable) - i - 1, &scope);
-
-    unsigned int j;
-    for (j = 0; j < dmnsn_array_size(scope); ++j) {
-      dmnsn_symbol *symbol = dmnsn_array_at(scope,
-                                            dmnsn_array_size(scope) - j - 1);
-
-      if (strcmp(id, symbol->id) == 0) {
-        dmnsn_delete_symbol(*symbol);
-        dmnsn_array_remove(scope, dmnsn_array_size(scope) - j - 1);
-        return;
-      }
-    }
-  }
-}
-
-dmnsn_astnode *
-dmnsn_find_symbol(dmnsn_symbol_table *symtable, const char *id)
-{
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(symtable); ++i) {
-    dmnsn_array *scope;
-    dmnsn_array_get(symtable, dmnsn_array_size(symtable) - i - 1, &scope);
-
-    unsigned int j;
-    for (j = 0; j < dmnsn_array_size(scope); ++j) {
-      dmnsn_symbol *symbol = dmnsn_array_at(scope,
-                                            dmnsn_array_size(scope) - j - 1);
-
-      if (strcmp(id, symbol->id) == 0)
-        return &symbol->value;
-    }
-  }
-
-  return NULL;
 }
 
 static dmnsn_astnode
