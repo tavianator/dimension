@@ -134,6 +134,8 @@ dmnsn_patricia_insert(dmnsn_patricia_trie *trie,
       /* Split the tree */
       dmnsn_patricia_trie *copy = dmnsn_new_patricia_trie();
       copy->prefix = realloc(copy->prefix, strlen(prefix) + 1);
+      if (!trie->prefix)
+        dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for prefix.");
       strcpy(copy->prefix, prefix);
       *prefix = '\0';
 

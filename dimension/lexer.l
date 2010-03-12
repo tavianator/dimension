@@ -97,6 +97,9 @@
     if (string_length + len + 1 >= string_length) {                     \
       string_extent = 2*(string_length + len + 1);                      \
       lvalp->value = realloc(lvalp->value, string_extent);              \
+      if (!lvalp->value)                                                \
+        dmnsn_error(DMNSN_SEVERITY_HIGH,                                \
+                    "Couldn't allocate space for token value.");        \
     }                                                                   \
                                                                         \
     strncpy(lvalp->value + string_length, str, len + 1);                \
