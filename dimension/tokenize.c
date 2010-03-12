@@ -222,6 +222,8 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
 
   const char *include = inode->ptr;
   char *filename_copy = strdup(filename);
+  if (!filename_copy)
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate space for filename.");
   char *localdir = dirname(filename_copy);
   char *local_include = malloc(strlen(localdir) + strlen(include) + 2);
   strcpy(local_include, localdir);
@@ -673,6 +675,9 @@ dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
 
     if (buffered.lval.value) {
       lvalp->value = strdup(buffered.lval.value);
+      if (!lvalp->value)
+        dmnsn_error(DMNSN_SEVERITY_HIGH,
+                    "Couldn't allocate space for token value.");
     } else {
       lvalp->value = NULL;
     }

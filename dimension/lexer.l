@@ -71,11 +71,14 @@
     RETURN();                                   \
   } while (0)
 
-#define RETURN_VALUE_TOKEN(token_type)          \
-  do {                                          \
-    NEW_TOKEN(token_type);                      \
-    lvalp->value = strdup(yytext);              \
-    RETURN();                                   \
+#define RETURN_VALUE_TOKEN(token_type)                          \
+  do {                                                          \
+    NEW_TOKEN(token_type);                                      \
+    lvalp->value = strdup(yytext);                              \
+    if (!lvalp->value)                                          \
+      dmnsn_error(DMNSN_SEVERITY_HIGH,                          \
+                  "Couldn't allocate space for token value.");  \
+    RETURN();                                                   \
   } while (0)
 
 #define STRING_TOKEN()                          \
