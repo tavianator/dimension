@@ -56,7 +56,7 @@ dmnsn_bvst_copy_recursive(dmnsn_bvst_node *root)
 
 /* Copy a BVST */
 dmnsn_bvst *
-dmnsn_bvst_copy(dmnsn_bvst *tree)
+dmnsn_copy_bvst(dmnsn_bvst *tree)
 {
   dmnsn_bvst *copy = dmnsn_new_bvst();
   if (tree->root)

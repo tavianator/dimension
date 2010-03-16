@@ -54,7 +54,7 @@ struct dmnsn_bvst_node {
 };
 
 dmnsn_bvst *dmnsn_new_bvst();
-dmnsn_bvst *dmnsn_bvst_copy(dmnsn_bvst *tree);
+dmnsn_bvst *dmnsn_copy_bvst(dmnsn_bvst *tree);
 void dmnsn_delete_bvst(dmnsn_bvst *tree);
 
 void dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object);

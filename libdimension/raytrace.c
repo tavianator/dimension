@@ -140,7 +140,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
     payloads[i].index = i;
     payloads[i].threads = nthreads;
     if (i > 0) {
-      payloads[i].bvst = dmnsn_bvst_copy(payloads[0].bvst);
+      payloads[i].bvst = dmnsn_copy_bvst(payloads[0].bvst);
     }
   }
 
