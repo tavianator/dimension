@@ -378,7 +378,6 @@ dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
     if (result_temp.node && (t < 0.0 || result_temp.intersection->t < t)) {
       dmnsn_delete_intersection(result.intersection);
       result = result_temp;
-      t = result.intersection->t;
     } else {
       dmnsn_delete_intersection(result_temp.intersection);
     }

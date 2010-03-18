@@ -89,6 +89,8 @@ main(int argc, char **argv) {
 
     case 'w':
       {
+        dmnsn_assert(optarg, "NULL argument.");
+
         char *endptr;
         width = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
@@ -99,6 +101,8 @@ main(int argc, char **argv) {
       }
     case 'h':
       {
+        dmnsn_assert(optarg, "NULL argument.");
+
         char *endptr;
         height = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
@@ -110,6 +114,8 @@ main(int argc, char **argv) {
 
     case DMNSN_OPT_THREADS:
       {
+        dmnsn_assert(optarg, "NULL argument.");
+
         char *endptr;
         nthreads = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {

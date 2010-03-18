@@ -107,7 +107,7 @@
     CALCULATE_COLUMN();                                                 \
   } while(0)
 
-int token;
+int token = DMNSN_T_LEX_ERROR;
 size_t string_length = 0, string_extent = 8;
 unsigned long wchar;
 
