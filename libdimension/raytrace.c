@@ -279,19 +279,6 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   return 0;
 }
 
-/* Add epsilon*l.n to l.x0, to avoid self-intersections */
-static dmnsn_line
-dmnsn_line_add_epsilon(dmnsn_line l)
-{
-  return dmnsn_new_line(
-    dmnsn_vector_add(
-      l.x0,
-      dmnsn_vector_mul(1.0e-9, l.n)
-    ),
-    l.n
-  );
-}
-
 #define ITEXTURE(state) (state->intersection->texture)
 #define DTEXTURE(state) (state->scene->default_texture)
 

@@ -903,6 +903,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         dmnsn_make_ast_float(&ret, ((double)l)/r);
       }
       break;
+
     case DMNSN_AST_EQUAL:
       dmnsn_make_ast_integer(&ret, l == r);
       break;
@@ -989,11 +990,12 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_DIV:
       dmnsn_make_ast_float(&ret, l/r);
       break;
+
     case DMNSN_AST_EQUAL:
-      dmnsn_make_ast_integer(&ret, l == r);
+      dmnsn_make_ast_integer(&ret, fabs(l - r) < dmnsn_epsilon);
       break;
     case DMNSN_AST_NOT_EQUAL:
-      dmnsn_make_ast_integer(&ret, l != r);
+      dmnsn_make_ast_integer(&ret, fabs(l - r) >= dmnsn_epsilon);
       break;
     case DMNSN_AST_LESS:
       dmnsn_make_ast_integer(&ret, l < r);
@@ -1008,10 +1010,12 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_integer(&ret, l >= r);
       break;
     case DMNSN_AST_AND:
-      dmnsn_make_ast_integer(&ret, l && r);
+      dmnsn_make_ast_integer(&ret, fabs(l) >= dmnsn_epsilon
+                                   && fabs(r) >= dmnsn_epsilon);
       break;
     case DMNSN_AST_OR:
-      dmnsn_make_ast_integer(&ret, l || r);
+      dmnsn_make_ast_integer(&ret, fabs(l) >= dmnsn_epsilon
+                                   || fabs(r) >= dmnsn_epsilon);
       break;
 
     default:

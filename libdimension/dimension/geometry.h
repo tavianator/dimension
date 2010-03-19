@@ -39,7 +39,10 @@ typedef struct {
   dmnsn_vector n;  /* A normal vector; the direction of the line */
 } dmnsn_line;
 
-/* Vector constants */
+/* Constants */
+
+#define dmnsn_epsilon 1.0e-9
+
 static const dmnsn_vector dmnsn_zero = { 0.0, 0.0, 0.0 };
 static const dmnsn_vector dmnsn_x    = { 1.0, 0.0, 0.0 };
 static const dmnsn_vector dmnsn_y    = { 0.0, 1.0, 0.0 };
@@ -186,6 +189,19 @@ DMNSN_INLINE dmnsn_vector
 dmnsn_line_point(dmnsn_line l, double t)
 {
   return dmnsn_vector_add(l.x0, dmnsn_vector_mul(t, l.n));
+}
+
+/* Add epsilon*l.n to l.x0, to avoid self-intersections */
+DMNSN_INLINE dmnsn_line
+dmnsn_line_add_epsilon(dmnsn_line l)
+{
+  return dmnsn_new_line(
+    dmnsn_vector_add(
+      l.x0,
+      dmnsn_vector_mul(dmnsn_epsilon, l.n)
+    ),
+    l.n
+  );
 }
 
 /* Solve for the t value such that x0 + t*n = x */
