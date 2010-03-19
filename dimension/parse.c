@@ -358,29 +358,39 @@ dmnsn_new_ast_array()
   return astnode;
 }
 
+static void
+dmnsn_make_ast_integer(dmnsn_astnode *astnode, long value)
+{
+  astnode->type = DMNSN_AST_INTEGER;
+  astnode->ptr = malloc(sizeof(long));
+  if (!astnode->ptr)
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for integer.");
+  *(long *)astnode->ptr = value;
+}
+
 dmnsn_astnode
 dmnsn_new_ast_integer(long value)
 {
   dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_INTEGER);
-
-  astnode.ptr = malloc(sizeof(long));
-  if (!astnode.ptr)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for integer.");
-
-  *(long *)astnode.ptr = value;
+  dmnsn_make_ast_integer(&astnode, value);
   return astnode;
+}
+
+static void
+dmnsn_make_ast_float(dmnsn_astnode *astnode, double value)
+{
+  astnode->type = DMNSN_AST_FLOAT;
+  astnode->ptr = malloc(sizeof(double));
+  if (!astnode->ptr)
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for integer.");
+  *(double *)astnode->ptr = value;
 }
 
 dmnsn_astnode
 dmnsn_new_ast_float(double value)
 {
   dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_FLOAT);
-
-  astnode.ptr = malloc(sizeof(double));
-  if (!astnode.ptr)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for float.");
-
-  *(double *)astnode.ptr = value;
+  dmnsn_make_ast_float(&astnode, value);
   return astnode;
 }
 
@@ -608,9 +618,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     }
   } else if (rhs.type == DMNSN_AST_INTEGER) {
     long n = *(long *)rhs.ptr;
-    long *res = malloc(sizeof(long));
-    if (!res)
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate room for integer.");
+    ret = dmnsn_copy_astnode(astnode);
 
     switch(astnode.type) {
     case DMNSN_AST_DOT_X:
@@ -618,24 +626,24 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_DOT_Z:
     case DMNSN_AST_DOT_T:
     case DMNSN_AST_DOT_TRANSMIT:
-      *res = n;
+      dmnsn_make_ast_integer(&ret, n);
+      break;
 
     case DMNSN_AST_NEGATE:
-      *res = -n;
+      dmnsn_make_ast_integer(&ret, -n);
       break;
 
     default:
-      dmnsn_assert(false, "Attempt to evaluate wrong unary operator.");
+      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                       "Invalid unary operator '%s' on %s",
+                       dmnsn_astnode_string(astnode.type),
+                       dmnsn_astnode_string(rhs.type));
+      ret.type = DMNSN_AST_NONE;
+      break;
     }
-
-    ret = dmnsn_copy_astnode(astnode);
-    ret.type = DMNSN_AST_INTEGER;
-    ret.ptr  = res;
   } else if (rhs.type == DMNSN_AST_FLOAT) {
     double n = *(double *)rhs.ptr;
-    double *res = malloc(sizeof(double));
-    if (!res)
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate room for float.");
+    ret = dmnsn_copy_astnode(astnode);
 
     switch(astnode.type) {
     case DMNSN_AST_DOT_X:
@@ -643,20 +651,21 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_DOT_Z:
     case DMNSN_AST_DOT_T:
     case DMNSN_AST_DOT_TRANSMIT:
-      *res = n;
+      dmnsn_make_ast_float(&ret, n);
+      break;
 
     case DMNSN_AST_NEGATE:
-      *res = -n;
+      dmnsn_make_ast_float(&ret, -n);
       break;
 
     default:
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Attempt to evaluate wrong unary operator.");
+      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                       "Invalid unary operator '%s' on %s",
+                       dmnsn_astnode_string(astnode.type),
+                       dmnsn_astnode_string(rhs.type));
+      ret.type = DMNSN_AST_NONE;
+      break;
     }
-
-    ret = dmnsn_copy_astnode(astnode);
-    ret.type = DMNSN_AST_FLOAT;
-    ret.ptr  = res;
   } else {
     dmnsn_diagnostic(rhs.filename, rhs.line, rhs.col,
                      "expected %s, %s, or %s; found %s",
@@ -837,7 +846,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_GREATER:
     case DMNSN_AST_GREATER_EQUAL:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                       "invalid comparison operator '%s' between vectors",
+                       "Invalid comparison operator '%s' between vectors",
                        dmnsn_astnode_string(astnode.type));
       ret = dmnsn_copy_astnode(astnode);
       ret.type = DMNSN_AST_NONE;
@@ -862,63 +871,68 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         break;
       }
     }
-  } else if (lhs.type == DMNSN_AST_INTEGER && rhs.type == DMNSN_AST_INTEGER
-             && astnode.type != DMNSN_AST_DIV) {
+  } else if (lhs.type == DMNSN_AST_INTEGER && rhs.type == DMNSN_AST_INTEGER) {
     ret = dmnsn_copy_astnode(astnode);
 
     long l, r;
     l = *(long *)lhs.ptr;
     r = *(long *)rhs.ptr;
 
-    long *res = malloc(sizeof(long));
-    if (!res)
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate room for integer.");
-
     switch (astnode.type) {
     case DMNSN_AST_ADD:
-      *res = l + r;
+      dmnsn_make_ast_integer(&ret, l + r);
       break;
     case DMNSN_AST_SUB:
-      *res = l - r;
+      dmnsn_make_ast_integer(&ret, l - r);
       break;
     case DMNSN_AST_MUL:
-      *res = l*r;
+      dmnsn_make_ast_integer(&ret, l*r);
+      break;
+    case DMNSN_AST_DIV:
+      if (l%r == 0) {
+        dmnsn_make_ast_integer(&ret, l/r);
+      } else {
+        dmnsn_make_ast_float(&ret, ((double)l)/r);
+      }
       break;
     case DMNSN_AST_EQUAL:
-      *res = l == r;
+      dmnsn_make_ast_integer(&ret, l == r);
       break;
     case DMNSN_AST_NOT_EQUAL:
-      *res = l != r;
+      dmnsn_make_ast_integer(&ret, l != r);
       break;
     case DMNSN_AST_LESS:
-      *res = l < r;
+      dmnsn_make_ast_integer(&ret, l < r);
       break;
     case DMNSN_AST_LESS_EQUAL:
-      *res = l <= r;
+      dmnsn_make_ast_integer(&ret, l <= r);
       break;
     case DMNSN_AST_GREATER:
-      *res = l > r;
+      dmnsn_make_ast_integer(&ret, l > r);
       break;
     case DMNSN_AST_GREATER_EQUAL:
-      *res = l >= r;
+      dmnsn_make_ast_integer(&ret, l >= r);
       break;
     case DMNSN_AST_AND:
-      *res = l && r;
+      dmnsn_make_ast_integer(&ret, l && r);
       break;
     case DMNSN_AST_OR:
-      *res = l || r;
+      dmnsn_make_ast_integer(&ret, l || r);
       break;
 
     default:
-      dmnsn_assert(false, "Attempt to evaluate wrong binary operator.");
+      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                       "Invalid binary operator '%s' on %s an %s",
+                       dmnsn_astnode_string(astnode.type),
+                       dmnsn_astnode_string(lhs.type),
+                       dmnsn_astnode_string(rhs.type));
+      ret.type = DMNSN_AST_NONE;
+      break;
     }
-
-    ret.type = DMNSN_AST_INTEGER;
-    ret.ptr  = res;
   } else {
     ret = dmnsn_copy_astnode(astnode);
 
-    double l = 0.0, r = 0.0;
+    double l, r;
 
     if (lhs.type == DMNSN_AST_INTEGER) {
       l = *(long *)lhs.ptr;
@@ -954,54 +968,53 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       return ret;
     }
 
-    double *res = malloc(sizeof(double));
-    if (!res)
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate room for float.");
-
     switch (astnode.type) {
     case DMNSN_AST_ADD:
-      *res = l + r;
+      dmnsn_make_ast_float(&ret, l + r);
       break;
     case DMNSN_AST_SUB:
-      *res = l - r;
+      dmnsn_make_ast_float(&ret, l - r);
       break;
     case DMNSN_AST_MUL:
-      *res = l*r;
+      dmnsn_make_ast_float(&ret, l*r);
       break;
     case DMNSN_AST_DIV:
-      *res = l/r;
+      dmnsn_make_ast_float(&ret, l/r);
       break;
     case DMNSN_AST_EQUAL:
-      *res = l == r;
+      dmnsn_make_ast_integer(&ret, l == r);
       break;
     case DMNSN_AST_NOT_EQUAL:
-      *res = l != r;
+      dmnsn_make_ast_integer(&ret, l != r);
       break;
     case DMNSN_AST_LESS:
-      *res = l < r;
+      dmnsn_make_ast_integer(&ret, l < r);
       break;
     case DMNSN_AST_LESS_EQUAL:
-      *res = l <= r;
+      dmnsn_make_ast_integer(&ret, l <= r);
       break;
     case DMNSN_AST_GREATER:
-      *res = l > r;
+      dmnsn_make_ast_integer(&ret, l > r);
       break;
     case DMNSN_AST_GREATER_EQUAL:
-      *res = l >= r;
+      dmnsn_make_ast_integer(&ret, l >= r);
       break;
     case DMNSN_AST_AND:
-      *res = l && r;
+      dmnsn_make_ast_integer(&ret, l && r);
       break;
     case DMNSN_AST_OR:
-      *res = l || r;
+      dmnsn_make_ast_integer(&ret, l || r);
       break;
 
     default:
-      dmnsn_assert(false, "Attempt to evaluate wrong binary operator.");
+      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                       "Invalid binary operator '%s' on %s an %s",
+                       dmnsn_astnode_string(astnode.type),
+                       dmnsn_astnode_string(lhs.type),
+                       dmnsn_astnode_string(rhs.type));
+      ret.type = DMNSN_AST_NONE;
+      break;
     }
-
-    ret.type = DMNSN_AST_FLOAT;
-    ret.ptr  = res;
   }
 
   dmnsn_delete_astnode(lhs);
