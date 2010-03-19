@@ -178,6 +178,8 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_AND,           "&" );
   dmnsn_astnode_map(DMNSN_AST_OR,            "|" );
 
+  dmnsn_astnode_map(DMNSN_AST_EXP, "exp");
+
   dmnsn_astnode_map(DMNSN_AST_NEGATE,       "-");
   dmnsn_astnode_map(DMNSN_AST_DOT_X,        ".x");
   dmnsn_astnode_map(DMNSN_AST_DOT_Y,        ".y");

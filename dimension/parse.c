@@ -633,6 +633,10 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_integer(&ret, -n);
       break;
 
+    case DMNSN_AST_EXP:
+      dmnsn_make_ast_float(&ret, exp(n));
+      break;
+
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
                        "Invalid unary operator '%s' on %s",
@@ -656,6 +660,10 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
     case DMNSN_AST_NEGATE:
       dmnsn_make_ast_float(&ret, -n);
+      break;
+
+    case DMNSN_AST_EXP:
+      dmnsn_make_ast_float(&ret, exp(n));
       break;
 
     default:
@@ -1061,6 +1069,7 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_DOT_T:
   case DMNSN_AST_DOT_TRANSMIT:
   case DMNSN_AST_NEGATE:
+  case DMNSN_AST_EXP:
     return dmnsn_eval_unary(astnode, symtable);
 
   case DMNSN_AST_ADD:

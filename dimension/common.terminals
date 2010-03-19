@@ -176,7 +176,7 @@
 %token DMNSN_T_EMISSION
 %token DMNSN_T_ERROR_BOUND
 %token DMNSN_T_EVALUATE
-%token DMNSN_T_EXP
+%token DMNSN_T_EXP                      "exp"
 %token DMNSN_T_EXPAND_THRESHOLDS
 %token DMNSN_T_EXPONENT
 %token DMNSN_T_EXTERIOR

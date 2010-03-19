@@ -396,6 +396,9 @@ ARITH_EXPR: FLOAT_LITERAL
             $$ = dmnsn_new_astnode1(DMNSN_AST_DOT_TRANSMIT, @$, $1);
           }
           | "(" ARITH_EXPR ")" { $$ = $2; }
+          | "exp" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_EXP, @$, $3);
+          }
           | IDENTIFIER
           | "x" { $$ = dmnsn_new_ast_ivector(1, 0, 0, 0, 0); }
           | "u" { $$ = dmnsn_new_ast_ivector(1, 0, 0, 0, 0); }

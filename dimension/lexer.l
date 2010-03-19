@@ -183,6 +183,7 @@ unsigned long wchar;
 "colour"                RETURN_TOKEN(DMNSN_T_COLOR);
 "direction"             RETURN_TOKEN(DMNSN_T_DIRECTION);
 "diffuse"               RETURN_TOKEN(DMNSN_T_DIFFUSE);
+"exp"                   RETURN_TOKEN(DMNSN_T_EXP);
 "falloff"               RETURN_TOKEN(DMNSN_T_FALLOFF);
 "filter"                RETURN_TOKEN(DMNSN_T_FILTER);
 "finish"                RETURN_TOKEN(DMNSN_T_FINISH);
