@@ -19,6 +19,8 @@
 
 #include "parse.h"
 #include "utility.h"
+#include <math.h>
+#include <fenv.h>
 
 /*
  * Symbol table
@@ -557,6 +559,18 @@ dmnsn_vector_promote(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   return promoted;
 }
 
+static void
+dmnsn_make_ast_maybe_integer(dmnsn_astnode *ret, double n)
+{
+  feclearexcept(FE_ALL_EXCEPT);
+  long l = lrint(n);
+  if (fetestexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW)) {
+    dmnsn_make_ast_float(ret, n);
+  } else {
+    dmnsn_make_ast_integer(ret, l);
+  }
+}
+
 static dmnsn_astnode
 dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 {
@@ -633,13 +647,49 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_integer(&ret, -n);
       break;
 
+    case DMNSN_AST_ABS:
+      dmnsn_make_ast_integer(&ret, labs(n));
+      break;
+    case DMNSN_AST_ACOS:
+      dmnsn_make_ast_float(&ret, acos(n));
+      break;
+    case DMNSN_AST_ACOSH:
+      dmnsn_make_ast_float(&ret, acosh(n));
+      break;
+    case DMNSN_AST_ASIN:
+      dmnsn_make_ast_float(&ret, asin(n));
+      break;
+    case DMNSN_AST_ASINH:
+      dmnsn_make_ast_float(&ret, asinh(n));
+      break;
+    case DMNSN_AST_ATAN:
+      dmnsn_make_ast_float(&ret, atan(n));
+      break;
+    case DMNSN_AST_ATANH:
+      dmnsn_make_ast_float(&ret, atanh(n));
+      break;
+    case DMNSN_AST_CEIL:
+      dmnsn_make_ast_integer(&ret, n);
+      break;
+    case DMNSN_AST_COS:
+      dmnsn_make_ast_float(&ret, cos(n));
+      break;
+    case DMNSN_AST_COSH:
+      dmnsn_make_ast_float(&ret, cosh(n));
+      break;
+    case DMNSN_AST_DEGREES:
+      dmnsn_make_ast_float(&ret, n*45.0/atan(1.0));
+      break;
     case DMNSN_AST_EXP:
       dmnsn_make_ast_float(&ret, exp(n));
+      break;
+    case DMNSN_AST_FLOOR:
+      dmnsn_make_ast_integer(&ret, n);
       break;
 
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                       "Invalid unary operator '%s' on %s",
+                       "invalid unary operator '%s' on %s",
                        dmnsn_astnode_string(astnode.type),
                        dmnsn_astnode_string(rhs.type));
       ret.type = DMNSN_AST_NONE;
@@ -662,13 +712,65 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, -n);
       break;
 
+    case DMNSN_AST_ABS:
+      dmnsn_make_ast_float(&ret, fabs(n));
+      break;
+    case DMNSN_AST_ACOS:
+      dmnsn_make_ast_float(&ret, acos(n));
+      break;
+    case DMNSN_AST_ACOSH:
+      dmnsn_make_ast_float(&ret, acosh(n));
+      break;
+    case DMNSN_AST_ASIN:
+      dmnsn_make_ast_float(&ret, asin(n));
+      break;
+    case DMNSN_AST_ASINH:
+      dmnsn_make_ast_float(&ret, asinh(n));
+      break;
+    case DMNSN_AST_ATAN:
+      dmnsn_make_ast_float(&ret, atan(n));
+      break;
+    case DMNSN_AST_ATANH:
+      dmnsn_make_ast_float(&ret, atanh(n));
+      break;
+    case DMNSN_AST_CEIL:
+      dmnsn_make_ast_maybe_integer(&ret, ceil(n));
+      break;
+    case DMNSN_AST_COS:
+      dmnsn_make_ast_float(&ret, cos(n));
+      break;
+    case DMNSN_AST_COSH:
+      dmnsn_make_ast_float(&ret, cosh(n));
+      break;
+    case DMNSN_AST_DEGREES:
+      dmnsn_make_ast_float(&ret, n*45.0/atan(1.0));
+      break;
     case DMNSN_AST_EXP:
       dmnsn_make_ast_float(&ret, exp(n));
+      break;
+    case DMNSN_AST_FLOOR:
+      dmnsn_make_ast_maybe_integer(&ret, floor(n));
       break;
 
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                       "Invalid unary operator '%s' on %s",
+                       "invalid unary operator '%s' on %s",
+                       dmnsn_astnode_string(astnode.type),
+                       dmnsn_astnode_string(rhs.type));
+      ret.type = DMNSN_AST_NONE;
+      break;
+    }
+  } else if (rhs.type == DMNSN_AST_STRING) {
+    ret = dmnsn_copy_astnode(astnode);
+
+    switch(astnode.type) {
+    case DMNSN_AST_ASC:
+      dmnsn_make_ast_integer(&ret, ((char *)rhs.ptr)[0]);
+      break;
+
+    default:
+      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                       "invalid unary operator '%s' on %s",
                        dmnsn_astnode_string(astnode.type),
                        dmnsn_astnode_string(rhs.type));
       ret.type = DMNSN_AST_NONE;
@@ -676,10 +778,10 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     }
   } else {
     dmnsn_diagnostic(rhs.filename, rhs.line, rhs.col,
-                     "expected %s, %s, or %s; found %s",
+                     "expected %s or %s or %s; found %s",
                      dmnsn_astnode_string(DMNSN_AST_INTEGER),
                      dmnsn_astnode_string(DMNSN_AST_FLOAT),
-                     dmnsn_astnode_string(DMNSN_AST_VECTOR),
+                     dmnsn_astnode_string(DMNSN_AST_STRING),
                      dmnsn_astnode_string(rhs.type));
     ret = dmnsn_copy_astnode(astnode);
     ret.type = DMNSN_AST_NONE;
@@ -854,7 +956,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_GREATER:
     case DMNSN_AST_GREATER_EQUAL:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                       "Invalid comparison operator '%s' between vectors",
+                       "invalid comparison operator '%s' between vectors",
                        dmnsn_astnode_string(astnode.type));
       ret = dmnsn_copy_astnode(astnode);
       ret.type = DMNSN_AST_NONE;
@@ -929,9 +1031,16 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_integer(&ret, l || r);
       break;
 
+    case DMNSN_AST_ATAN2:
+      dmnsn_make_ast_float(&ret, atan2(l, r));
+      break;
+    case DMNSN_AST_INT_DIV:
+      dmnsn_make_ast_maybe_integer(&ret, trunc(l/r));
+      break;
+
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                       "Invalid binary operator '%s' on %s an %s",
+                       "invalid binary operator '%s' on %s and %s",
                        dmnsn_astnode_string(astnode.type),
                        dmnsn_astnode_string(lhs.type),
                        dmnsn_astnode_string(rhs.type));
@@ -949,10 +1058,9 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       l = *(double *)lhs.ptr;
     } else {
       dmnsn_diagnostic(lhs.filename, lhs.line, lhs.col,
-                       "expected %s, %s, or %s; found %s",
+                       "expected %s or %s; found %s",
                        dmnsn_astnode_string(DMNSN_AST_INTEGER),
                        dmnsn_astnode_string(DMNSN_AST_FLOAT),
-                       dmnsn_astnode_string(DMNSN_AST_VECTOR),
                        dmnsn_astnode_string(lhs.type));
       ret.type = DMNSN_AST_NONE;
       dmnsn_delete_astnode(lhs);
@@ -966,10 +1074,9 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       r = *(double *)rhs.ptr;
     } else {
       dmnsn_diagnostic(rhs.filename, rhs.line, rhs.col,
-                       "expected %s, %s, or %s; found %s",
+                       "expected %s or %s; found %s",
                        dmnsn_astnode_string(DMNSN_AST_INTEGER),
                        dmnsn_astnode_string(DMNSN_AST_FLOAT),
-                       dmnsn_astnode_string(DMNSN_AST_VECTOR),
                        dmnsn_astnode_string(rhs.type));
       ret.type = DMNSN_AST_NONE;
       dmnsn_delete_astnode(lhs);
@@ -1018,9 +1125,16 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
                                    || fabs(r) >= dmnsn_epsilon);
       break;
 
+    case DMNSN_AST_ATAN2:
+      dmnsn_make_ast_float(&ret, atan2(l, r));
+      break;
+    case DMNSN_AST_INT_DIV:
+      dmnsn_make_ast_float(&ret, trunc(l/r));
+      break;
+
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                       "Invalid binary operator '%s' on %s an %s",
+                       "invalid binary operator '%s' on %s and %s",
                        dmnsn_astnode_string(astnode.type),
                        dmnsn_astnode_string(lhs.type),
                        dmnsn_astnode_string(rhs.type));
@@ -1041,6 +1155,7 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_NONE:
   case DMNSN_AST_INTEGER:
   case DMNSN_AST_FLOAT:
+  case DMNSN_AST_STRING:
     do {
       ++*astnode.refcount;
     } while (*astnode.refcount <= 1);
@@ -1060,7 +1175,7 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         return dmnsn_eval(id, symtable);
       } else {
         dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                         "Unbound identifier '%s'", (const char *)astnode.ptr);
+                         "unbound identifier '%s'", (const char *)astnode.ptr);
         dmnsn_astnode error = dmnsn_new_astnode(DMNSN_AST_NONE);
         ++*error.refcount;
         return error;
@@ -1073,7 +1188,20 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_DOT_T:
   case DMNSN_AST_DOT_TRANSMIT:
   case DMNSN_AST_NEGATE:
+  case DMNSN_AST_ABS:
+  case DMNSN_AST_ACOS:
+  case DMNSN_AST_ACOSH:
+  case DMNSN_AST_ASC:
+  case DMNSN_AST_ASIN:
+  case DMNSN_AST_ASINH:
+  case DMNSN_AST_ATAN:
+  case DMNSN_AST_ATANH:
+  case DMNSN_AST_CEIL:
+  case DMNSN_AST_COS:
+  case DMNSN_AST_COSH:
+  case DMNSN_AST_DEGREES:
   case DMNSN_AST_EXP:
+  case DMNSN_AST_FLOOR:
     return dmnsn_eval_unary(astnode, symtable);
 
   case DMNSN_AST_ADD:
@@ -1088,6 +1216,8 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_GREATER_EQUAL:
   case DMNSN_AST_AND:
   case DMNSN_AST_OR:
+  case DMNSN_AST_ATAN2:
+  case DMNSN_AST_INT_DIV:
     return dmnsn_eval_binary(astnode, symtable);
 
   default:
@@ -1106,7 +1236,7 @@ dmnsn_astnode
 dmnsn_eval_scalar(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 {
   dmnsn_astnode ret = dmnsn_eval(astnode, symtable);
-  if (ret.type == DMNSN_AST_VECTOR) {
+  if (ret.type != DMNSN_AST_INTEGER && ret.type != DMNSN_AST_FLOAT) {
     dmnsn_diagnostic(ret.filename, ret.line, ret.col,
                      "expected %s or %s; found %s",
                      dmnsn_astnode_string(DMNSN_AST_INTEGER),
@@ -1123,7 +1253,6 @@ dmnsn_eval_vector(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 {
   dmnsn_astnode eval = dmnsn_eval(astnode, symtable);
   dmnsn_astnode ret  = dmnsn_vector_promote(eval, symtable);
-
   dmnsn_delete_astnode(eval);
   return ret;
 }

@@ -64,11 +64,11 @@
 /* Keywords */
 %token DMNSN_T_AA_LEVEL
 %token DMNSN_T_AA_THRESHOLD
-%token DMNSN_T_ABS
+%token DMNSN_T_ABS                      "abs"
 %token DMNSN_T_ABSORPTION
 %token DMNSN_T_ACCURACY
-%token DMNSN_T_ACOS
-%token DMNSN_T_ACOSH
+%token DMNSN_T_ACOS                     "acos"
+%token DMNSN_T_ACOSH                    "acosh"
 %token DMNSN_T_ADAPTIVE
 %token DMNSN_T_ADC_BAILOUT
 %token DMNSN_T_AGATE
@@ -86,14 +86,14 @@
 %token DMNSN_T_ARC_ANGLE
 %token DMNSN_T_AREA_LIGHT
 %token DMNSN_T_ARRAY
-%token DMNSN_T_ASC
+%token DMNSN_T_ASC                      "asc"
 %token DMNSN_T_ASCII
-%token DMNSN_T_ASIN
-%token DMNSN_T_ASINH
+%token DMNSN_T_ASIN                     "asin"
+%token DMNSN_T_ASINH                    "asinh"
 %token DMNSN_T_ASSUMED_GAMMA            "assumed_gamma"
-%token DMNSN_T_ATAN
-%token DMNSN_T_ATAN2
-%token DMNSN_T_ATANH
+%token DMNSN_T_ATAN                     "atan"
+%token DMNSN_T_ATAN2                    "atan2"
+%token DMNSN_T_ATANH                    "atanh"
 %token DMNSN_T_AUTOSTOP
 %token DMNSN_T_AVERAGE
 %token DMNSN_T_B_SPLINE
@@ -117,7 +117,7 @@
 %token DMNSN_T_BUMPS
 %token DMNSN_T_CAMERA                   "camera"
 %token DMNSN_T_CAUSTICS
-%token DMNSN_T_CEIL
+%token DMNSN_T_CEIL                     "ceil"
 %token DMNSN_T_CELLS
 %token DMNSN_T_CHARSET
 %token DMNSN_T_CHECKER
@@ -141,8 +141,8 @@
 %token DMNSN_T_CONTROL0
 %token DMNSN_T_CONTROL1
 %token DMNSN_T_COORDS
-%token DMNSN_T_COS
-%token DMNSN_T_COSH
+%token DMNSN_T_COS                      "cos"
+%token DMNSN_T_COSH                     "cosh"
 %token DMNSN_T_COUNT
 %token DMNSN_T_CRACKLE
 %token DMNSN_T_CRAND
@@ -154,7 +154,7 @@
 %token DMNSN_T_CYLINDER
 %token DMNSN_T_CYLINDRICAL
 %token DMNSN_T_DEFINED
-%token DMNSN_T_DEGREES
+%token DMNSN_T_DEGREES                  "degrees"
 %token DMNSN_T_DENSITY
 %token DMNSN_T_DENSITY_FILE
 %token DMNSN_T_DENSITY_MAP
@@ -170,7 +170,7 @@
 %token DMNSN_T_DISPERSION_SAMPLES
 %token DMNSN_T_DIST_EXP
 %token DMNSN_T_DISTANCE
-%token DMNSN_T_DIV
+%token DMNSN_T_DIV                      "div"
 %token DMNSN_T_DOUBLE_ILLUMINATE
 %token DMNSN_T_ECCENTRICITY
 %token DMNSN_T_EMISSION
@@ -197,7 +197,7 @@
 %token DMNSN_T_FISHEYE
 %token DMNSN_T_FLATNESS
 %token DMNSN_T_FLIP
-%token DMNSN_T_FLOOR
+%token DMNSN_T_FLOOR                    "floor"
 %token DMNSN_T_FOCAL_POINT
 %token DMNSN_T_FOG
 %token DMNSN_T_FOG_ALT

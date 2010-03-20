@@ -172,21 +172,36 @@ unsigned long wchar;
 }
 
 (?# Keywords)
+"abs"                   RETURN_TOKEN(DMNSN_T_ABS);
+"acos"                  RETURN_TOKEN(DMNSN_T_ACOS);
+"acosh"                 RETURN_TOKEN(DMNSN_T_ACOSH);
 "ambient"               RETURN_TOKEN(DMNSN_T_AMBIENT);
 "angle"                 RETURN_TOKEN(DMNSN_T_ANGLE);
+"asc"                   RETURN_TOKEN(DMNSN_T_ASC);
+"asin"                  RETURN_TOKEN(DMNSN_T_ASIN);
+"asinh"                 RETURN_TOKEN(DMNSN_T_ASINH);
 "assumed_gamma"         RETURN_TOKEN(DMNSN_T_ASSUMED_GAMMA);
+"atan"                  RETURN_TOKEN(DMNSN_T_ATAN);
+"atan2"                 RETURN_TOKEN(DMNSN_T_ATAN2);
+"atanh"                 RETURN_TOKEN(DMNSN_T_ATANH);
 "background"            RETURN_TOKEN(DMNSN_T_BACKGROUND);
 "box"                   RETURN_TOKEN(DMNSN_T_BOX);
 "blue"                  RETURN_TOKEN(DMNSN_T_BLUE);
+"ceil"                  RETURN_TOKEN(DMNSN_T_CEIL);
 "camera"                RETURN_TOKEN(DMNSN_T_CAMERA);
 "color"                 RETURN_TOKEN(DMNSN_T_COLOR);
 "colour"                RETURN_TOKEN(DMNSN_T_COLOR);
-"direction"             RETURN_TOKEN(DMNSN_T_DIRECTION);
+"cos"                   RETURN_TOKEN(DMNSN_T_COS);
+"cosh"                  RETURN_TOKEN(DMNSN_T_COSH);
+"degrees"               RETURN_TOKEN(DMNSN_T_DEGREES);
 "diffuse"               RETURN_TOKEN(DMNSN_T_DIFFUSE);
+"direction"             RETURN_TOKEN(DMNSN_T_DIRECTION);
+"div"                   RETURN_TOKEN(DMNSN_T_DIV);
 "exp"                   RETURN_TOKEN(DMNSN_T_EXP);
 "falloff"               RETURN_TOKEN(DMNSN_T_FALLOFF);
 "filter"                RETURN_TOKEN(DMNSN_T_FILTER);
 "finish"                RETURN_TOKEN(DMNSN_T_FINISH);
+"floor"                 RETURN_TOKEN(DMNSN_T_FLOOR);
 "global_settings"       RETURN_TOKEN(DMNSN_T_GLOBAL_SETTINGS);
 "gray"                  RETURN_TOKEN(DMNSN_T_GRAY);
 "grey"                  RETURN_TOKEN(DMNSN_T_GRAY);

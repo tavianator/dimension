@@ -19,19 +19,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-arithexp=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/arithexp.pov)
+arithexp=$(${top_builddir}/dimension/dimension --parse ${srcdir}/arithexp.pov)
 arithexp_exp="$(echo -n \
-'(sphere {
-    (integer "2") *
-    < < (float "2.0") - (float "1.0") , (float "3.0") , (float "4.0") > . x ,
-      \( (float "1.0") + (integer "2") \) * (integer "2") - (integer "5") ,
-      (float "1.0") + (integer "2") * (integer "2") - (integer "4") >
-    -
-    - < (integer "0") , (integer "0") , (integer "1") > ,
-    exp \( (integer "1") \) - (integer "1") * (integer "2")
-  })' \
-| tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
-$(echo -n \
 '((sphere
     (vector (float 2) (float 2) (float 3) (integer 0) (integer 0))
     (float 0.718282)
