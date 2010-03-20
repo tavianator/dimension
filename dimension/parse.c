@@ -591,26 +591,39 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_array_get(rhs.children, 0, &ret);
       ++*ret.refcount;
       break;
-
     case DMNSN_AST_DOT_Y:
       dmnsn_array_get(rhs.children, 1, &ret);
       ++*ret.refcount;
       break;
-
     case DMNSN_AST_DOT_Z:
       dmnsn_array_get(rhs.children, 2, &ret);
       ++*ret.refcount;
       break;
-
     case DMNSN_AST_DOT_T:
       dmnsn_array_get(rhs.children, 3, &ret);
       ++*ret.refcount;
       break;
-
     case DMNSN_AST_DOT_TRANSMIT:
       dmnsn_array_get(rhs.children, 4, &ret);
       ++*ret.refcount;
       break;
+
+    case DMNSN_AST_VLENGTH:
+      {
+        dmnsn_astnode dot = dmnsn_copy_astnode(astnode);
+        dot.type = DMNSN_AST_VDOT;
+        *rhs.refcount += 2;
+        dmnsn_array_push(dot.children, &rhs);
+        dmnsn_array_push(dot.children, &rhs);
+
+        dmnsn_astnode rewrite = dmnsn_copy_astnode(astnode);
+        rewrite.type = DMNSN_AST_SQRT;
+        dmnsn_array_push(rewrite.children, &dot);
+
+        ret = dmnsn_eval_unary(rewrite, symtable);
+        dmnsn_delete_astnode(rewrite);
+        break;
+      }
 
     default:
       {
@@ -686,6 +699,36 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_FLOOR:
       dmnsn_make_ast_integer(&ret, n);
       break;
+    case DMNSN_AST_INT:
+      dmnsn_make_ast_integer(&ret, n);
+      break;
+    case DMNSN_AST_LN:
+      dmnsn_make_ast_float(&ret, log(n));
+      break;
+    case DMNSN_AST_LOG:
+      dmnsn_make_ast_float(&ret, log(n)/log(10.0));
+      break;
+    case DMNSN_AST_RADIANS:
+      dmnsn_make_ast_float(&ret, n*atan(1.0)/45.0);
+      break;
+    case DMNSN_AST_SIN:
+      dmnsn_make_ast_float(&ret, sin(n));
+      break;
+    case DMNSN_AST_SINH:
+      dmnsn_make_ast_float(&ret, sinh(n));
+      break;
+    case DMNSN_AST_SQRT:
+      dmnsn_make_ast_float(&ret, sqrt(n));
+      break;
+    case DMNSN_AST_TAN:
+      dmnsn_make_ast_float(&ret, tan(n));
+      break;
+    case DMNSN_AST_TANH:
+      dmnsn_make_ast_float(&ret, tanh(n));
+      break;
+    case DMNSN_AST_VLENGTH:
+      dmnsn_make_ast_float(&ret, sqrt(3*n*n));
+      break;
 
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
@@ -751,6 +794,36 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_FLOOR:
       dmnsn_make_ast_maybe_integer(&ret, floor(n));
       break;
+    case DMNSN_AST_INT:
+      dmnsn_make_ast_maybe_integer(&ret, trunc(n));
+      break;
+    case DMNSN_AST_LN:
+      dmnsn_make_ast_float(&ret, log(n));
+      break;
+    case DMNSN_AST_LOG:
+      dmnsn_make_ast_float(&ret, log(n)/log(10.0));
+      break;
+    case DMNSN_AST_RADIANS:
+      dmnsn_make_ast_float(&ret, n*atan(1.0)/45.0);
+      break;
+    case DMNSN_AST_SIN:
+      dmnsn_make_ast_float(&ret, sin(n));
+      break;
+    case DMNSN_AST_SINH:
+      dmnsn_make_ast_float(&ret, sinh(n));
+      break;
+    case DMNSN_AST_SQRT:
+      dmnsn_make_ast_float(&ret, sqrt(n));
+      break;
+    case DMNSN_AST_TAN:
+      dmnsn_make_ast_float(&ret, tan(n));
+      break;
+    case DMNSN_AST_TANH:
+      dmnsn_make_ast_float(&ret, tanh(n));
+      break;
+    case DMNSN_AST_VLENGTH:
+      dmnsn_make_ast_float(&ret, sqrt(3.0*n*n));
+      break;
 
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
@@ -767,6 +840,28 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_ASC:
       dmnsn_make_ast_integer(&ret, ((char *)rhs.ptr)[0]);
       break;
+    case DMNSN_AST_STRLEN:
+      dmnsn_make_ast_integer(&ret, strlen(rhs.ptr));
+      break;
+    case DMNSN_AST_VAL:
+      {
+        char *endptr;
+        long l = strtol(rhs.ptr, &endptr, 0);
+        if (*endptr != '\0' || endptr == rhs.ptr) {
+          double d = strtod(rhs.ptr, &endptr);
+          if (*endptr != '\0' || endptr == rhs.ptr) {
+            dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                             "invalid numeric string '%s'",
+                             (const char *)rhs.ptr);
+            ret.type = DMNSN_AST_NONE;
+          } else {
+            dmnsn_make_ast_float(&ret, d);
+          }
+        } else {
+          dmnsn_make_ast_integer(&ret, l);
+        }
+        break;
+      }
 
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
@@ -962,6 +1057,41 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       ret.type = DMNSN_AST_NONE;
       break;
 
+    case DMNSN_AST_VDOT:
+      {
+        dmnsn_astnode rewrite = dmnsn_copy_astnode(astnode);
+        rewrite.type = DMNSN_AST_MUL;
+
+        dmnsn_astnode l, r;
+        dmnsn_array_get(lhs.children, 0, &l);
+        dmnsn_array_get(rhs.children, 0, &r);
+        ++*l.refcount;
+        ++*r.refcount;
+        dmnsn_array_push(rewrite.children, &l);
+        dmnsn_array_push(rewrite.children, &r);
+
+        for (i = 1; i < 3; ++i) {
+          dmnsn_astnode temp = dmnsn_copy_astnode(astnode);
+          temp.type = DMNSN_AST_MUL;
+          dmnsn_array_get(lhs.children, i, &l);
+          dmnsn_array_get(rhs.children, i, &r);
+          ++*l.refcount;
+          ++*r.refcount;
+          dmnsn_array_push(temp.children, &l);
+          dmnsn_array_push(temp.children, &r);
+
+          dmnsn_astnode next = dmnsn_copy_astnode(astnode);
+          next.type = DMNSN_AST_ADD;
+          dmnsn_array_push(next.children, &rewrite);
+          dmnsn_array_push(next.children, &temp);
+          rewrite = next;
+        }
+
+        ret = dmnsn_eval_binary(rewrite, symtable);
+        dmnsn_delete_astnode(rewrite);
+        break;
+      }
+
     default:
       {
         ret = dmnsn_copy_astnode(astnode);
@@ -980,6 +1110,23 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         dmnsn_delete_astnode(op);
         break;
       }
+    }
+  } else if (lhs.type == DMNSN_AST_STRING && rhs.type == DMNSN_AST_STRING) {
+    ret = dmnsn_copy_astnode(astnode);
+
+    switch (astnode.type) {
+    case DMNSN_AST_STRCMP:
+      dmnsn_make_ast_integer(&ret, strcmp(lhs.ptr, rhs.ptr));
+      break;
+
+    default:
+      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                       "invalid binary operator '%s' on %s and %s",
+                       dmnsn_astnode_string(astnode.type),
+                       dmnsn_astnode_string(lhs.type),
+                       dmnsn_astnode_string(rhs.type));
+      ret.type = DMNSN_AST_NONE;
+      break;
     }
   } else if (lhs.type == DMNSN_AST_INTEGER && rhs.type == DMNSN_AST_INTEGER) {
     ret = dmnsn_copy_astnode(astnode);
@@ -1035,7 +1182,16 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, atan2(l, r));
       break;
     case DMNSN_AST_INT_DIV:
-      dmnsn_make_ast_maybe_integer(&ret, trunc(l/r));
+      dmnsn_make_ast_integer(&ret, l/r);
+      break;
+    case DMNSN_AST_MOD:
+      dmnsn_make_ast_float(&ret, fmod(l, r));
+      break;
+    case DMNSN_AST_POW:
+      dmnsn_make_ast_float(&ret, pow(l, r));
+      break;
+    case DMNSN_AST_VDOT:
+      dmnsn_make_ast_integer(&ret, 3*l*r);
       break;
 
     default:
@@ -1131,6 +1287,15 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_INT_DIV:
       dmnsn_make_ast_float(&ret, trunc(l/r));
       break;
+    case DMNSN_AST_MOD:
+      dmnsn_make_ast_float(&ret, fmod(l, r));
+      break;
+    case DMNSN_AST_POW:
+      dmnsn_make_ast_float(&ret, pow(l, r));
+      break;
+    case DMNSN_AST_VDOT:
+      dmnsn_make_ast_float(&ret, 3.0*l*r);
+      break;
 
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
@@ -1202,6 +1367,18 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_DEGREES:
   case DMNSN_AST_EXP:
   case DMNSN_AST_FLOOR:
+  case DMNSN_AST_INT:
+  case DMNSN_AST_LN:
+  case DMNSN_AST_LOG:
+  case DMNSN_AST_RADIANS:
+  case DMNSN_AST_SIN:
+  case DMNSN_AST_SINH:
+  case DMNSN_AST_SQRT:
+  case DMNSN_AST_STRLEN:
+  case DMNSN_AST_TAN:
+  case DMNSN_AST_TANH:
+  case DMNSN_AST_VAL:
+  case DMNSN_AST_VLENGTH:
     return dmnsn_eval_unary(astnode, symtable);
 
   case DMNSN_AST_ADD:
@@ -1218,6 +1395,10 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_OR:
   case DMNSN_AST_ATAN2:
   case DMNSN_AST_INT_DIV:
+  case DMNSN_AST_MOD:
+  case DMNSN_AST_POW:
+  case DMNSN_AST_STRCMP:
+  case DMNSN_AST_VDOT:
     return dmnsn_eval_binary(astnode, symtable);
 
   default:

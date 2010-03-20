@@ -232,7 +232,7 @@
 %token DMNSN_T_INITIAL_FRAME
 %token DMNSN_T_INSIDE
 %token DMNSN_T_INSIDE_VECTOR
-%token DMNSN_T_INT
+%token DMNSN_T_INT                      "int"
 %token DMNSN_T_INTERIOR                 "interior"
 %token DMNSN_T_INTERIOR_TEXTURE
 %token DMNSN_T_INTERNAL
@@ -255,10 +255,10 @@
 %token DMNSN_T_LIGHT_SOURCE             "light_source"
 %token DMNSN_T_LINEAR_SPLINE
 %token DMNSN_T_LINEAR_SWEEP
-%token DMNSN_T_LN
+%token DMNSN_T_LN                       "ln"
 %token DMNSN_T_LOAD_FILE
 %token DMNSN_T_LOCATION                 "location"
-%token DMNSN_T_LOG
+%token DMNSN_T_LOG                      "log"
 %token DMNSN_T_LOOK_AT                  "look_at"
 %token DMNSN_T_LOOKS_LIKE
 %token DMNSN_T_LOW_ERROR_FACTOR
@@ -290,7 +290,7 @@
 %token DMNSN_T_MIN
 %token DMNSN_T_MIN_EXTENT
 %token DMNSN_T_MINIMUM_REUSE
-%token DMNSN_T_MOD
+%token DMNSN_T_MOD                      "mod"
 %token DMNSN_T_MORTAR
 %token DMNSN_T_NATURAL_SPLINE
 %token DMNSN_T_NEAREST_COUNT
@@ -341,7 +341,7 @@
 %token DMNSN_T_POLY_WAVE
 %token DMNSN_T_POLYGON
 %token DMNSN_T_POT
-%token DMNSN_T_POW
+%token DMNSN_T_POW                      "pow"
 %token DMNSN_T_PPM
 %token DMNSN_T_PRECISION
 %token DMNSN_T_PRECOMPUTE
@@ -358,7 +358,7 @@
 %token DMNSN_T_QUICK_COLOR
 %token DMNSN_T_QUILTED
 %token DMNSN_T_RADIAL
-%token DMNSN_T_RADIANS
+%token DMNSN_T_RADIANS                  "radians"
 %token DMNSN_T_RADIOSITY
 %token DMNSN_T_RADIUS
 %token DMNSN_T_RAINBOW
@@ -388,9 +388,9 @@
 %token DMNSN_T_SEED
 %token DMNSN_T_SELECT
 %token DMNSN_T_SHADOWLESS
-%token DMNSN_T_SIN
+%token DMNSN_T_SIN                      "sin"
 %token DMNSN_T_SINE_WAVE
-%token DMNSN_T_SINH
+%token DMNSN_T_SINH                     "sinh"
 %token DMNSN_T_SIZE
 %token DMNSN_T_SKY                      "sky"
 %token DMNSN_T_SKY_SPHERE
@@ -413,11 +413,11 @@
 %token DMNSN_T_SPOTLIGHT
 %token DMNSN_T_SPOTTED
 %token DMNSN_T_SQR
-%token DMNSN_T_SQRT
+%token DMNSN_T_SQRT                     "sqrt"
 %token DMNSN_T_STR
-%token DMNSN_T_STRCMP
+%token DMNSN_T_STRCMP                   "strcmp"
 %token DMNSN_T_STRENGTH
-%token DMNSN_T_STRLEN
+%token DMNSN_T_STRLEN                   "strlen"
 %token DMNSN_T_STRLWR
 %token DMNSN_T_STRUPR
 %token DMNSN_T_STURM
@@ -426,8 +426,8 @@
 %token DMNSN_T_SUPERELLIPSOID
 %token DMNSN_T_SYS
 %token DMNSN_T_T                        "t"
-%token DMNSN_T_TAN
-%token DMNSN_T_TANH
+%token DMNSN_T_TAN                      "tan"
+%token DMNSN_T_TANH                     "tanh"
 %token DMNSN_T_TARGET
 %token DMNSN_T_TEXT
 %token DMNSN_T_TEXTURE                  "texture"
@@ -468,13 +468,13 @@
 %token DMNSN_T_UV_VECTORS
 %token DMNSN_T_V                        "v"
 %token DMNSN_T_V_STEPS
-%token DMNSN_T_VAL
+%token DMNSN_T_VAL                      "val"
 %token DMNSN_T_VARIANCE
 %token DMNSN_T_VAXIS_ROTATE
 %token DMNSN_T_VCROSS
-%token DMNSN_T_VDOT
+%token DMNSN_T_VDOT                     "vdot"
 %token DMNSN_T_VERTEX_VECTORS
-%token DMNSN_T_VLENGTH
+%token DMNSN_T_VLENGTH                  "vlength"
 %token DMNSN_T_VNORMALIZE
 %token DMNSN_T_VROTATE
 %token DMNSN_T_VSTR

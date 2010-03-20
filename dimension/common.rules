@@ -444,6 +444,54 @@ ARITH_EXPR: FLOAT_LITERAL
           | "floor" "(" ARITH_EXPR ")" {
             $$ = dmnsn_new_astnode1(DMNSN_AST_FLOOR, @$, $3);
           }
+          | "int" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_INT, @$, $3);
+          }
+          | "ln" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_LN, @$, $3);
+          }
+          | "log" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_LOG, @$, $3);
+          }
+          | "mod" "(" ARITH_EXPR "," ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_MOD, @$, $3, $5);
+          }
+          | "pow" "(" ARITH_EXPR "," ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_POW, @$, $3, $5);
+          }
+          | "radians" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_RADIANS, @$, $3);
+          }
+          | "sin" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_SIN, @$, $3);
+          }
+          | "sinh" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_SINH, @$, $3);
+          }
+          | "sqrt" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_SQRT, @$, $3);
+          }
+          | "strcmp" "(" STRING "," STRING ")" {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_STRCMP, @$, $3, $5);
+          }
+          | "strlen" "(" STRING ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_STRLEN, @$, $3);
+          }
+          | "tan" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_TAN, @$, $3);
+          }
+          | "tanh" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_TANH, @$, $3);
+          }
+          | "val" "(" STRING ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_VAL, @$, $3);
+          }
+          | "vdot" "(" ARITH_EXPR "," ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_VDOT, @$, $3, $5);
+          }
+          | "vlength" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_VLENGTH, @$, $3);
+          }
           | IDENTIFIER
           | "x" { $$ = dmnsn_new_ast_ivector(1, 0, 0, 0, 0); }
           | "u" { $$ = dmnsn_new_ast_ivector(1, 0, 0, 0, 0); }

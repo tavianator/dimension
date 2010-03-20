@@ -87,3 +87,75 @@ sphere {
 #if (floor(-1.5) != -2)
   #error "floor"
 #end
+
+#if (int(-1.9) != -1)
+  #error "int"
+#end
+
+#if (ln(2.718281828459045) != 1)
+  #error "ln"
+#end
+
+#if (log(1000) != 3)
+  #error "log"
+#end
+
+#if (mod(3.5, 2) != 1.5)
+  #error "mod"
+#end
+
+#if (pow(2, 3) != 8)
+  #error "pow"
+#end
+
+#if (radians(90) != 1.570796326794897)
+  #error "radians"
+#end
+
+#if (sin(1.570796326794897) != 1)
+  #error "sin"
+#end
+
+#if (sinh(1.44363547517881) != 2)
+  #error "sinh"
+#end
+
+#if (strcmp("asdfjkl;", "jkl;asdf") >= 0)
+  #error "strcmp"
+#end
+
+#if (strlen("asdfjkl;") != 8)
+  #error "strlen"
+#end
+
+#if (sqrt(2) != 1.414213562373095)
+  #error "sqrt"
+#end
+
+#if (tan(0.7853981633974483) != 1)
+  #error "tan"
+#end
+
+#if (tanh(0.5493061443340548) != 0.5)
+  #error "tanh"
+#end
+
+#if (val("123.45") != 123.45)
+  #error "val"
+#end
+
+#if (vdot(<1, 2, 3>, 2) != 12)
+  #error "vdot"
+#end
+
+#if (vdot(2, 2) != 12)
+  #error "vdot"
+#end
+
+#if (vlength(<1, 1, 1>) != 1.732050807568877)
+  #error "vlength"
+#end
+
+#if (vlength(1) != 1.732050807568877)
+  #error "vlength"
+#end
