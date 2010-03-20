@@ -270,7 +270,7 @@
 %token DMNSN_T_MATERIAL
 %token DMNSN_T_MATERIAL_MAP
 %token DMNSN_T_MATRIX
-%token DMNSN_T_MAX
+%token DMNSN_T_MAX                      "max"
 %token DMNSN_T_MAX_EXTENT
 %token DMNSN_T_MAX_GRADIENT
 %token DMNSN_T_MAX_INTERSECTIONS
@@ -287,7 +287,7 @@
 %token DMNSN_T_METALLIC
 %token DMNSN_T_METHOD
 %token DMNSN_T_METRIC
-%token DMNSN_T_MIN
+%token DMNSN_T_MIN                      "min"
 %token DMNSN_T_MIN_EXTENT
 %token DMNSN_T_MINIMUM_REUSE
 %token DMNSN_T_MOD                      "mod"

@@ -197,6 +197,8 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_INT,     "int"    );
   dmnsn_astnode_map(DMNSN_AST_LN,      "ln"     );
   dmnsn_astnode_map(DMNSN_AST_LOG,     "log"    );
+  dmnsn_astnode_map(DMNSN_AST_MAX,     "max"    );
+  dmnsn_astnode_map(DMNSN_AST_MIN,     "min"    );
   dmnsn_astnode_map(DMNSN_AST_MOD,     "mod"    );
   dmnsn_astnode_map(DMNSN_AST_POW,     "pow"    );
   dmnsn_astnode_map(DMNSN_AST_RADIANS, "radians");

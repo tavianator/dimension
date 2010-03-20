@@ -73,6 +73,8 @@
 
 /* Generalized arithmetic expressions */
 %type <astnode> ARITH_EXPR
+%type <astnode> MAX_LIST
+%type <astnode> MIN_LIST
 
 /* Colors */
 %type <astnode> COLOR

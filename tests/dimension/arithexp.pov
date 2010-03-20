@@ -100,6 +100,14 @@ sphere {
   #error "log"
 #end
 
+#if (max(-1.5, 0, 1) != 1)
+  #error "max"
+#end
+
+#if (min(-1.5, 0, 1) != -1.5)
+  #error "min"
+#end
+
 #if (mod(3.5, 2) != 1.5)
   #error "mod"
 #end

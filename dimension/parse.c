@@ -1184,6 +1184,12 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_INT_DIV:
       dmnsn_make_ast_integer(&ret, l/r);
       break;
+    case DMNSN_AST_MAX:
+      dmnsn_make_ast_integer(&ret, l > r ? l : r);
+      break;
+    case DMNSN_AST_MIN:
+      dmnsn_make_ast_integer(&ret, l < r ? l : r);
+      break;
     case DMNSN_AST_MOD:
       dmnsn_make_ast_float(&ret, fmod(l, r));
       break;
@@ -1286,6 +1292,36 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
     case DMNSN_AST_INT_DIV:
       dmnsn_make_ast_float(&ret, trunc(l/r));
+      break;
+    case DMNSN_AST_MAX:
+      if (l > r) {
+        if (lhs.type == DMNSN_AST_INTEGER) {
+          dmnsn_make_ast_maybe_integer(&ret, l);
+        } else {
+          dmnsn_make_ast_float(&ret, l);
+        }
+      } else {
+        if (rhs.type == DMNSN_AST_INTEGER) {
+          dmnsn_make_ast_maybe_integer(&ret, r);
+        } else {
+          dmnsn_make_ast_float(&ret, r);
+        }
+      }
+      break;
+    case DMNSN_AST_MIN:
+      if (l < r) {
+        if (lhs.type == DMNSN_AST_INTEGER) {
+          dmnsn_make_ast_maybe_integer(&ret, l);
+        } else {
+          dmnsn_make_ast_float(&ret, l);
+        }
+      } else {
+        if (rhs.type == DMNSN_AST_INTEGER) {
+          dmnsn_make_ast_maybe_integer(&ret, r);
+        } else {
+          dmnsn_make_ast_float(&ret, r);
+        }
+      }
       break;
     case DMNSN_AST_MOD:
       dmnsn_make_ast_float(&ret, fmod(l, r));
@@ -1395,6 +1431,8 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_OR:
   case DMNSN_AST_ATAN2:
   case DMNSN_AST_INT_DIV:
+  case DMNSN_AST_MAX:
+  case DMNSN_AST_MIN:
   case DMNSN_AST_MOD:
   case DMNSN_AST_POW:
   case DMNSN_AST_STRCMP:
