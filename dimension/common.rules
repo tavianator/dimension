@@ -498,34 +498,20 @@ ARITH_EXPR: FLOAT_LITERAL
           | "vlength" "(" ARITH_EXPR ")" {
             $$ = dmnsn_new_astnode1(DMNSN_AST_VLENGTH, @$, $3);
           }
-          | "pi" {
-            $$ = dmnsn_new_astnode(DMNSN_AST_PI, @$);
-          }
-          | "true" {
-            $$ = dmnsn_new_astnode(DMNSN_AST_TRUE, @$);
-          }
-          | "on" {
-            $$ = dmnsn_new_astnode(DMNSN_AST_TRUE, @$);
-          }
-          | "yes" {
-            $$ = dmnsn_new_astnode(DMNSN_AST_TRUE, @$);
-          }
-          | "false" {
-            $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$);
-          }
-          | "off" {
-            $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$);
-          }
-          | "no" {
-            $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$);
-          }
+          | "pi"    { $$ = dmnsn_new_astnode(DMNSN_AST_PI,    @$); }
+          | "true"  { $$ = dmnsn_new_astnode(DMNSN_AST_TRUE,  @$); }
+          | "on"    { $$ = dmnsn_new_astnode(DMNSN_AST_TRUE,  @$); }
+          | "yes"   { $$ = dmnsn_new_astnode(DMNSN_AST_TRUE,  @$); }
+          | "false" { $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$); }
+          | "off"   { $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$); }
+          | "no"    { $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$); }
+          | "x"     { $$ = dmnsn_new_astnode(DMNSN_AST_X,     @$); }
+          | "u"     { $$ = dmnsn_new_astnode(DMNSN_AST_X,     @$); }
+          | "y"     { $$ = dmnsn_new_astnode(DMNSN_AST_Y,     @$); }
+          | "v"     { $$ = dmnsn_new_astnode(DMNSN_AST_Y,     @$); }
+          | "z"     { $$ = dmnsn_new_astnode(DMNSN_AST_Z,     @$); }
+          | "t"     { $$ = dmnsn_new_astnode(DMNSN_AST_T,     @$); }
           | IDENTIFIER
-          | "x" { $$ = dmnsn_new_ast_ivector(1, 0, 0, 0, 0); }
-          | "u" { $$ = dmnsn_new_ast_ivector(1, 0, 0, 0, 0); }
-          | "y" { $$ = dmnsn_new_ast_ivector(0, 1, 0, 0, 0); }
-          | "v" { $$ = dmnsn_new_ast_ivector(0, 1, 0, 0, 0); }
-          | "z" { $$ = dmnsn_new_ast_ivector(0, 0, 1, 0, 0); }
-          | "t" { $$ = dmnsn_new_ast_ivector(0, 0, 0, 1, 0); }
 ;
 
 MAX_LIST: ARITH_EXPR "," ARITH_EXPR {

@@ -396,55 +396,71 @@ dmnsn_new_ast_float(double value)
   return astnode;
 }
 
-dmnsn_astnode
-dmnsn_new_ast_ivector(long x, long y, long z, long f, long t)
+static void
+dmnsn_make_ast_ivector(dmnsn_astnode *astnode,
+                       long x, long y, long z, long f, long t)
 {
-  dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_VECTOR);
-  astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
+  astnode->type = DMNSN_AST_VECTOR;
+  if (!astnode->children)
+    astnode->children = dmnsn_new_array(sizeof(dmnsn_astnode));
 
   dmnsn_astnode comp;
 
   comp = dmnsn_new_ast_integer(x);
-  dmnsn_array_push(astnode.children, &comp);
+  dmnsn_array_push(astnode->children, &comp);
 
   comp = dmnsn_new_ast_integer(y);
-  dmnsn_array_push(astnode.children, &comp);
+  dmnsn_array_push(astnode->children, &comp);
 
   comp = dmnsn_new_ast_integer(z);
-  dmnsn_array_push(astnode.children, &comp);
+  dmnsn_array_push(astnode->children, &comp);
 
   comp = dmnsn_new_ast_integer(f);
-  dmnsn_array_push(astnode.children, &comp);
+  dmnsn_array_push(astnode->children, &comp);
 
   comp = dmnsn_new_ast_integer(t);
-  dmnsn_array_push(astnode.children, &comp);
+  dmnsn_array_push(astnode->children, &comp);
+}
 
+dmnsn_astnode
+dmnsn_new_ast_ivector(long x, long y, long z, long f, long t)
+{
+  dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_VECTOR);
+  dmnsn_make_ast_ivector(&astnode, x, y, z, f, t);
   return astnode;
+}
+
+static void
+dmnsn_make_ast_vector(dmnsn_astnode *astnode,
+                      double x, double y, double z, double f, double t)
+{
+  astnode->type = DMNSN_AST_VECTOR;
+  if (!astnode->children)
+    astnode->children = dmnsn_new_array(sizeof(dmnsn_astnode));
+
+  dmnsn_astnode comp;
+
+  comp = dmnsn_new_ast_float(x);
+  dmnsn_array_push(astnode->children, &comp);
+
+  comp = dmnsn_new_ast_float(y);
+  dmnsn_array_push(astnode->children, &comp);
+
+  comp = dmnsn_new_ast_float(z);
+  dmnsn_array_push(astnode->children, &comp);
+
+  comp = dmnsn_new_ast_float(f);
+  dmnsn_array_push(astnode->children, &comp);
+
+  comp = dmnsn_new_ast_float(t);
+  dmnsn_array_push(astnode->children, &comp);
 }
 
 dmnsn_astnode
 dmnsn_new_ast_vector(double x, double y, double z, double f, double t)
 {
   dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_VECTOR);
-  astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));
-
-  dmnsn_astnode comp;
-
-  comp = dmnsn_new_ast_float(x);
-  dmnsn_array_push(astnode.children, &comp);
-
-  comp = dmnsn_new_ast_float(y);
-  dmnsn_array_push(astnode.children, &comp);
-
-  comp = dmnsn_new_ast_float(z);
-  dmnsn_array_push(astnode.children, &comp);
-
-  comp = dmnsn_new_ast_float(f);
-  dmnsn_array_push(astnode.children, &comp);
-
-  comp = dmnsn_new_ast_float(t);
-  dmnsn_array_push(astnode.children, &comp);
-
+  dmnsn_make_ast_vector(&astnode, x, y, z, f, t);
   return astnode;
 }
 
@@ -585,6 +601,19 @@ dmnsn_eval_zeroary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     break;
   case DMNSN_AST_FALSE:
     dmnsn_make_ast_integer(&ret, 0);
+    break;
+
+  case DMNSN_AST_X:
+    dmnsn_make_ast_ivector(&ret, 1, 0, 0, 0, 0);
+    break;
+  case DMNSN_AST_Y:
+    dmnsn_make_ast_ivector(&ret, 0, 1, 0, 0, 0);
+    break;
+  case DMNSN_AST_Z:
+    dmnsn_make_ast_ivector(&ret, 0, 0, 1, 0, 0);
+    break;
+  case DMNSN_AST_T:
+    dmnsn_make_ast_ivector(&ret, 0, 0, 0, 1, 0);
     break;
 
   default:
@@ -1421,6 +1450,10 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_PI:
   case DMNSN_AST_TRUE:
   case DMNSN_AST_FALSE:
+  case DMNSN_AST_X:
+  case DMNSN_AST_Y:
+  case DMNSN_AST_Z:
+  case DMNSN_AST_T:
     return dmnsn_eval_zeroary(astnode, symtable);
 
   case DMNSN_AST_DOT_X:
