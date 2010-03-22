@@ -51,6 +51,7 @@
 /* Operators */
 %left "|"
 %left "&"
+%left "!"
 %left "=" "!=" "<" "<=" ">" ">="
 %left "+" "-"
 %left "*" "/"

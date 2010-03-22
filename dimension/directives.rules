@@ -121,3 +121,6 @@ CONDITIONAL: ARITH_EXPR {
            | "(" CONDITIONAL ")" {
              $$ = $2;
            }
+           | "!" CONDITIONAL {
+             $$ = dmnsn_new_astnode1(DMNSN_AST_NOT, @$, $2);
+           }

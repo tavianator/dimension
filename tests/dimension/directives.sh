@@ -37,7 +37,7 @@ directives_exp="$(echo -n \
   #end
   #declare (identifier "Counter") = (integer "0") ;
   #while \( (identifier "Counter") < (integer "2") \)
-    #if \( #if \( (integer "1") = (integer "1") \) (integer "0") #end = (integer "0") & (integer "0") \)
+    #if \( #if \( (integer "1") = (integer "1") \) (integer "0") #end = (integer "0") & ! (integer "1") \)
       #error (string "Nested #if parsing failed")
     #else
       sphere {

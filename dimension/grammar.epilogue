@@ -177,6 +177,7 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_GREATER_EQUAL, ">=");
   dmnsn_astnode_map(DMNSN_AST_AND,           "&" );
   dmnsn_astnode_map(DMNSN_AST_OR,            "|" );
+  dmnsn_astnode_map(DMNSN_AST_NOT,           "!" );
 
   dmnsn_astnode_map(DMNSN_AST_ABS,     "abs"    );
   dmnsn_astnode_map(DMNSN_AST_ACOS,    "acos"   );

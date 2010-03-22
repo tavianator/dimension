@@ -42,7 +42,7 @@
 
 #declare Counter = 0;
 #while (Counter < 2)
-  #if (#if (1 = 1) 0 #end = 0 & 0)
+  #if (#if (1 = 1) 0 #end = 0 & !1)
     #error "Nested #if parsing failed"
   #else
     sphere {
