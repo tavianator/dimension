@@ -498,6 +498,27 @@ ARITH_EXPR: FLOAT_LITERAL
           | "vlength" "(" ARITH_EXPR ")" {
             $$ = dmnsn_new_astnode1(DMNSN_AST_VLENGTH, @$, $3);
           }
+          | "pi" {
+            $$ = dmnsn_new_astnode(DMNSN_AST_PI, @$);
+          }
+          | "true" {
+            $$ = dmnsn_new_astnode(DMNSN_AST_TRUE, @$);
+          }
+          | "on" {
+            $$ = dmnsn_new_astnode(DMNSN_AST_TRUE, @$);
+          }
+          | "yes" {
+            $$ = dmnsn_new_astnode(DMNSN_AST_TRUE, @$);
+          }
+          | "false" {
+            $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$);
+          }
+          | "off" {
+            $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$);
+          }
+          | "no" {
+            $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$);
+          }
           | IDENTIFIER
           | "x" { $$ = dmnsn_new_ast_ivector(1, 0, 0, 0, 0); }
           | "u" { $$ = dmnsn_new_ast_ivector(1, 0, 0, 0, 0); }

@@ -214,6 +214,10 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_VDOT,    "vdot"   );
   dmnsn_astnode_map(DMNSN_AST_VLENGTH, "vlength");
 
+  dmnsn_astnode_map(DMNSN_AST_PI,    "pi"   );
+  dmnsn_astnode_map(DMNSN_AST_TRUE,  "true" );
+  dmnsn_astnode_map(DMNSN_AST_FALSE, "false");
+
   dmnsn_astnode_map(DMNSN_AST_NEGATE,       "-");
   dmnsn_astnode_map(DMNSN_AST_DOT_X,        ".x");
   dmnsn_astnode_map(DMNSN_AST_DOT_Y,        ".y");

@@ -24,6 +24,8 @@ sphere {
   exp(1) - 1*2
 }
 
+/* Float functions */
+
 #if (abs(-1) != 1)
   #error "abs"
 #end
@@ -166,4 +168,18 @@ sphere {
 
 #if (vlength(1) != 1.732050807568877)
   #error "vlength"
+#end
+
+/* Float built-in IDs */
+
+#if (pi != 3.141592653589793)
+  #error "pi"
+#end
+
+#if (!true | !yes | !on)
+  #error "true"
+#end
+
+#if (false | no | off)
+  #error "false"
 #end

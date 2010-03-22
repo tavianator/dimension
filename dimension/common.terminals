@@ -189,7 +189,7 @@
 %token DMNSN_T_FADE_POWER
 %token DMNSN_T_FALLOFF                  "falloff"
 %token DMNSN_T_FALLOFF_ANGLE
-%token DMNSN_T_FALSE
+%token DMNSN_T_FALSE                    "false"
 %token DMNSN_T_FILE_EXISTS
 %token DMNSN_T_FILTER                   "filter"
 %token DMNSN_T_FINAL_CLOCK
@@ -295,7 +295,7 @@
 %token DMNSN_T_MORTAR
 %token DMNSN_T_NATURAL_SPLINE
 %token DMNSN_T_NEAREST_COUNT
-%token DMNSN_T_NO
+%token DMNSN_T_NO                       "no"
 %token DMNSN_T_NO_BUMP_SCALE
 %token DMNSN_T_NO_IMAGE
 %token DMNSN_T_NO_REFLECTION
@@ -308,11 +308,11 @@
 %token DMNSN_T_NUMBER_OF_WAVES
 %token DMNSN_T_OBJECT
 %token DMNSN_T_OCTAVES
-%token DMNSN_T_OFF
+%token DMNSN_T_OFF                      "off"
 %token DMNSN_T_OFFSET
 %token DMNSN_T_OMEGA
 %token DMNSN_T_OMNIMAX
-%token DMNSN_T_ON
+%token DMNSN_T_ON                       "on"
 %token DMNSN_T_ONCE
 %token DMNSN_T_ONION
 %token DMNSN_T_OPEN
@@ -330,7 +330,7 @@
 %token DMNSN_T_PHONG                    "phong"
 %token DMNSN_T_PHONG_SIZE               "phong_size"
 %token DMNSN_T_PHOTONS
-%token DMNSN_T_PI
+%token DMNSN_T_PI                       "pi"
 %token DMNSN_T_PIGMENT                  "pigment"
 %token DMNSN_T_PIGMENT_MAP
 %token DMNSN_T_PIGMENT_PATTERN
@@ -450,7 +450,7 @@
 %token DMNSN_T_TRANSMIT                 "transmit"
 %token DMNSN_T_TRIANGLE
 %token DMNSN_T_TRIANGLE_WAVE
-%token DMNSN_T_TRUE
+%token DMNSN_T_TRUE                     "true"
 %token DMNSN_T_TTF
 %token DMNSN_T_TURB_DEPTH
 %token DMNSN_T_TURBULENCE
@@ -488,7 +488,7 @@
 %token DMNSN_T_WRINKLES
 %token DMNSN_T_X                        "x"
 %token DMNSN_T_Y                        "y"
-%token DMNSN_T_YES
+%token DMNSN_T_YES                      "yes"
 %token DMNSN_T_Z                        "z"
 
 /* Directives (#declare etc.) */

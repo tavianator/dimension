@@ -572,6 +572,33 @@ dmnsn_make_ast_maybe_integer(dmnsn_astnode *ret, double n)
 }
 
 static dmnsn_astnode
+dmnsn_eval_zeroary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
+{
+  dmnsn_astnode ret = dmnsn_copy_astnode(astnode);
+
+  switch(astnode.type) {
+  case DMNSN_AST_PI:
+    dmnsn_make_ast_float(&ret, 4*atan(1.0));
+    break;
+  case DMNSN_AST_TRUE:
+    dmnsn_make_ast_integer(&ret, 1);
+    break;
+  case DMNSN_AST_FALSE:
+    dmnsn_make_ast_integer(&ret, 0);
+    break;
+
+  default:
+    dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                     "invalid constant '%s'",
+                     dmnsn_astnode_string(astnode.type));
+    ret.type = DMNSN_AST_NONE;
+    break;
+  }
+
+  return ret;
+}
+
+static dmnsn_astnode
 dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 {
   unsigned int i;
@@ -1390,6 +1417,11 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         return error;
       }
     }
+
+  case DMNSN_AST_PI:
+  case DMNSN_AST_TRUE:
+  case DMNSN_AST_FALSE:
+    return dmnsn_eval_zeroary(astnode, symtable);
 
   case DMNSN_AST_DOT_X:
   case DMNSN_AST_DOT_Y:
