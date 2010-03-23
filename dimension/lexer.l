@@ -294,7 +294,7 @@ unsigned long wchar;
 #[\b\r\t\v ]*write              RETURN_TOKEN(DMNSN_T_WRITE);
 #[\b\r\t\v ]*[[:alnum:]_]*      {
   dmnsn_diagnostic(filename, yylineno, yycolumn,
-                   "Unrecognized language directive '%s'", yytext);
+                   "unrecognized language directive '%s'", yytext);
   RETURN_TOKEN(DMNSN_T_LEX_ERROR);
 }
 
@@ -345,7 +345,7 @@ unsigned long wchar;
 (?# Fall-through)
 .       {
   dmnsn_diagnostic(filename, yylineno, yycolumn,
-                   "Unrecognized character '%c' (0x%X)",
+                   "unrecognized character '%c' (0x%X)",
                    (int)*yytext, (unsigned int)(unsigned char)*yytext);
   RETURN_TOKEN(DMNSN_T_LEX_ERROR);
 }

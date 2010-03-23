@@ -668,7 +668,7 @@ COLOR_KEYWORD_ITEM: IDENTIFIER {
                     if (!symbol) {
                       dmnsn_diagnostic(@1.first_filename, @1.first_line,
                                        @1.first_column,
-                                       "Unbound identifier '%s'",
+                                       "unbound identifier '%s'",
                                        (const char *)$1.ptr);
                       dmnsn_delete_astnode($1);
                       YYERROR;

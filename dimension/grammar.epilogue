@@ -87,14 +87,14 @@ dmnsn_token_string(dmnsn_token_type token_type)
 
   unsigned int i = YYTRANSLATE(token_type);
   if (i > YYNTOKENS) {
-    fprintf(stderr, "Warning: unrecognised token %d.\n", (int)token_type);
+    fprintf(stderr, "WARNING: unrecognised token %d.\n", (int)token_type);
     return "unrecognized-token";
   }
 
   /* Trim the quotation marks */
 
   if (strlen(yytname[i]) - 1 >= TOKEN_SIZE) {
-    fprintf(stderr, "Warning: name of token %d too long.\n", (int)token_type);
+    fprintf(stderr, "WARNING: name of token %d too long.\n", (int)token_type);
     return "unrepresentable-token";
   }
 
@@ -243,7 +243,7 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_MACRO, "macro");
 
   default:
-    fprintf(stderr, "Warning: unrecognised astnode type %d.\n",
+    fprintf(stderr, "WARNING: unrecognised astnode type %d.\n",
             (int)astnode_type);
     return "unrecognized-astnode";
   }
