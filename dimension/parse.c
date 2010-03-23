@@ -85,7 +85,7 @@ dmnsn_patricia_insert(dmnsn_patricia_trie *trie,
   ++*value.refcount;
 
   while (true) {
-    if (trie->prefix[0] == '\0'&& !trie->leaf
+    if (trie->prefix[0] == '\0' && !trie->leaf
         && dmnsn_array_size(trie->children) == 0)
     {
       /* Replace an empty tree with a single-element tree */
