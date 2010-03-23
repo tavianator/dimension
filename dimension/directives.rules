@@ -70,6 +70,7 @@ LANGUAGE_DIRECTIVE: "#include" STRING {
                     dmnsn_delete_astnode($2);
                     YYERROR;
                   }
+;
 
 RVALUE: ARITH_EXPR ";" %dprec 2 {
         $$ = dmnsn_eval($1, symtable);
@@ -88,39 +89,4 @@ RVALUE: ARITH_EXPR ";" %dprec 2 {
       | INTERIOR
       | CAMERA
       | TRANSFORMATION
-
-CONDITIONAL: ARITH_EXPR {
-             /* Force the expression to be evaluated logically */
-             dmnsn_astnode zero = dmnsn_new_ast_integer(0);
-             $$ = dmnsn_new_astnode2(DMNSN_AST_OR, @$, zero, $1);
-           }
-           | ARITH_EXPR "="  ARITH_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_EQUAL, @$, $1, $3);
-           }
-           | ARITH_EXPR "!=" ARITH_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_NOT_EQUAL, @$, $1, $3);
-           }
-           | ARITH_EXPR "<"  ARITH_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_LESS, @$, $1, $3);
-           }
-           | ARITH_EXPR "<=" ARITH_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_LESS_EQUAL, @$, $1, $3);
-           }
-           | ARITH_EXPR ">"  ARITH_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_GREATER, @$, $1, $3);
-           }
-           | ARITH_EXPR ">=" ARITH_EXPR {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_GREATER_EQUAL, @$, $1, $3);
-           }
-           | CONDITIONAL "&" CONDITIONAL {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_AND, @$, $1, $3);
-           }
-           | CONDITIONAL "|" CONDITIONAL {
-             $$ = dmnsn_new_astnode2(DMNSN_AST_OR, @$, $1, $3);
-           }
-           | "(" CONDITIONAL ")" {
-             $$ = $2;
-           }
-           | "!" CONDITIONAL {
-             $$ = dmnsn_new_astnode1(DMNSN_AST_NOT, @$, $2);
-           }
+;

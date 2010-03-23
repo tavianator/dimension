@@ -1413,6 +1413,35 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   return ret;
 }
 
+static dmnsn_astnode
+dmnsn_eval_ternary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
+{
+  dmnsn_astnode test, iftrue, iffalse, ret;
+  dmnsn_array_get(astnode.children, 0, &test);
+  dmnsn_array_get(astnode.children, 1, &iftrue);
+  dmnsn_array_get(astnode.children, 2, &iffalse);
+  test = dmnsn_eval_scalar(test, symtable);
+
+  switch(astnode.type) {
+  case DMNSN_AST_TERNARY:
+    dmnsn_assert(test.type == DMNSN_AST_INTEGER,
+                 "Conditional expression evaluated to non-integer.");
+    ret = dmnsn_eval(*(long *)test.ptr ? iftrue : iffalse, symtable);
+    break;
+
+  default:
+    dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                     "invalid ternary operator '%s'",
+                     dmnsn_astnode_string(astnode.type));
+    ret = dmnsn_copy_astnode(astnode);
+    ret.type = DMNSN_AST_NONE;
+    break;
+  }
+
+  dmnsn_delete_astnode(test);
+  return ret;
+}
+
 dmnsn_astnode
 dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 {
@@ -1512,6 +1541,9 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_STRCMP:
   case DMNSN_AST_VDOT:
     return dmnsn_eval_binary(astnode, symtable);
+
+  case DMNSN_AST_TERNARY:
+    return dmnsn_eval_ternary(astnode, symtable);
 
   default:
     dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
