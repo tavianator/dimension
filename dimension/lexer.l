@@ -299,7 +299,7 @@ unsigned long wchar;
 }
 
 (?# Identifiers)
-[[:alpha:]][[:alnum:]_]*        RETURN_VALUE_TOKEN(DMNSN_T_IDENTIFIER);
+[[:alpha:]_][[:alnum:]_]*       RETURN_VALUE_TOKEN(DMNSN_T_IDENTIFIER);
 
 (?# Strings)
 
