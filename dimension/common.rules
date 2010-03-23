@@ -495,11 +495,26 @@ ARITH_EXPR: FLOAT_LITERAL
           | "val" "(" STRING ")" {
             $$ = dmnsn_new_astnode1(DMNSN_AST_VAL, @$, $3);
           }
+          | "vaxis_rotate" "(" ARITH_EXPR "," ARITH_EXPR "," ARITH_EXPR ")" {
+            dmnsn_astnode axis
+              = dmnsn_new_astnode1(DMNSN_AST_VNORMALIZE, @$, $5);
+            axis = dmnsn_new_astnode2(DMNSN_AST_MUL, @$, $7, axis);
+            $$ = dmnsn_new_astnode2(DMNSN_AST_VAXIS_ROTATE, @$, $3, axis);
+          }
+          | "vcross" "(" ARITH_EXPR "," ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_VCROSS, @$, $3, $5);
+          }
           | "vdot" "(" ARITH_EXPR "," ARITH_EXPR ")" {
             $$ = dmnsn_new_astnode2(DMNSN_AST_VDOT, @$, $3, $5);
           }
           | "vlength" "(" ARITH_EXPR ")" {
             $$ = dmnsn_new_astnode1(DMNSN_AST_VLENGTH, @$, $3);
+          }
+          | "vnormalize" "(" ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode1(DMNSN_AST_VNORMALIZE, @$, $3);
+          }
+          | "vrotate" "(" ARITH_EXPR "," ARITH_EXPR ")" {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_VROTATE, @$, $3, $5);
           }
           | "pi"    { $$ = dmnsn_new_astnode(DMNSN_AST_PI,    @$); }
           | "true"  { $$ = dmnsn_new_astnode(DMNSN_AST_TRUE,  @$); }

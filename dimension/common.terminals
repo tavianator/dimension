@@ -471,13 +471,13 @@
 %token DMNSN_T_V_STEPS
 %token DMNSN_T_VAL                      "val"
 %token DMNSN_T_VARIANCE
-%token DMNSN_T_VAXIS_ROTATE
-%token DMNSN_T_VCROSS
+%token DMNSN_T_VAXIS_ROTATE             "vaxis_rotate"
+%token DMNSN_T_VCROSS                   "vcross"
 %token DMNSN_T_VDOT                     "vdot"
 %token DMNSN_T_VERTEX_VECTORS
 %token DMNSN_T_VLENGTH                  "vlength"
-%token DMNSN_T_VNORMALIZE
-%token DMNSN_T_VROTATE
+%token DMNSN_T_VNORMALIZE               "vnormalize"
+%token DMNSN_T_VROTATE                  "vrotate"
 %token DMNSN_T_VSTR
 %token DMNSN_T_VTURBULENCE
 %token DMNSN_T_WARP

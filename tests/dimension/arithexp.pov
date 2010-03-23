@@ -154,6 +154,22 @@ sphere {
   #error "val"
 #end
 
+#if (vaxis_rotate(<1, 0, 0>, <1, 0, 1>, 180) != <0, 0, 1>)
+  #error "vaxis_rotate"
+#end
+
+#if (vaxis_rotate(1, 1, 180) != <1, 1, 1>)
+  #error "vaxis_rotate"
+#end
+
+#if (vcross(<1, 2, 3>, <3, 2, 1>) != <-4, 8, -4>)
+  #error "vcross"
+#end
+
+#if (vcross(1, 2) != 0)
+  #error "vcross"
+#end
+
 #if (vdot(<1, 2, 3>, 2) != 12)
   #error "vdot"
 #end
@@ -168,6 +184,23 @@ sphere {
 
 #if (vlength(1) != 1.732050807568877)
   #error "vlength"
+#end
+
+#if (vnormalize(<1, 1, 1>)
+     != <0.5773502691896258, 0.5773502691896258, 0.5773502691896258>)
+  #error "vnormalize"
+#end
+
+#if (vnormalize(1) != 0.4472135954999579) // Vector promoted comparison
+  #error "vnormalize"
+#end
+
+#if (vrotate(<1, 0, 0>, <0, -90, 0>) != <0, 0, 1>)
+  #error "vrotate"
+#end
+
+#if (vrotate(1, 2) != <1, 1, 1>)
+  #error "vrotate"
 #end
 
 /* Float built-in IDs */

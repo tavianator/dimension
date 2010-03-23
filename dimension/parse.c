@@ -521,6 +521,17 @@ dmnsn_copy_astnode(dmnsn_astnode astnode)
   return copy;
 }
 
+static dmnsn_astnode
+dmnsn_new_astnode2(dmnsn_astnode_type type, dmnsn_astnode loc,
+                   dmnsn_astnode n1, dmnsn_astnode n2)
+{
+  dmnsn_astnode astnode = dmnsn_copy_astnode(loc);
+  astnode.type = type;
+  dmnsn_array_push(astnode.children, &n1);
+  dmnsn_array_push(astnode.children, &n2);
+  return astnode;
+}
+
 /* 5-element vectors */
 #define DMNSN_VECTOR_NELEM 5
 
@@ -676,7 +687,24 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         rewrite.type = DMNSN_AST_SQRT;
         dmnsn_array_push(rewrite.children, &dot);
 
-        ret = dmnsn_eval_unary(rewrite, symtable);
+        ret = dmnsn_eval(rewrite, symtable);
+        dmnsn_delete_astnode(rewrite);
+        break;
+      }
+    case DMNSN_AST_VNORMALIZE:
+      {
+        dmnsn_astnode norm = dmnsn_copy_astnode(astnode);
+        norm.type = DMNSN_AST_VLENGTH;
+        ++*rhs.refcount;
+        dmnsn_array_push(norm.children, &rhs);
+
+        dmnsn_astnode rewrite = dmnsn_copy_astnode(astnode);
+        rewrite.type = DMNSN_AST_DIV;
+        ++*rhs.refcount;
+        dmnsn_array_push(rewrite.children, &rhs);
+        dmnsn_array_push(rewrite.children, &norm);
+
+        ret = dmnsn_eval(rewrite, symtable);
         dmnsn_delete_astnode(rewrite);
         break;
       }
@@ -787,8 +815,14 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, tanh(n));
       break;
     case DMNSN_AST_VLENGTH:
-      dmnsn_make_ast_float(&ret, sqrt(3*n*n));
+      dmnsn_make_ast_float(&ret, sqrt(3.0*n*n));
       break;
+    case DMNSN_AST_VNORMALIZE:
+      {
+        double elem = 1.0/sqrt(DMNSN_VECTOR_NELEM);
+        dmnsn_make_ast_vector(&ret, elem, elem, elem, elem, elem);
+        break;
+      }
 
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
@@ -888,6 +922,12 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_VLENGTH:
       dmnsn_make_ast_float(&ret, sqrt(3.0*n*n));
       break;
+    case DMNSN_AST_VNORMALIZE:
+      {
+        double elem = 1.0/sqrt(DMNSN_VECTOR_NELEM);
+        dmnsn_make_ast_vector(&ret, elem, elem, elem, elem, elem);
+        break;
+      }
 
     default:
       dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
@@ -972,6 +1012,14 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     rhs = dmnsn_vector_promote(rhs, symtable);
     dmnsn_delete_astnode(oldlhs);
     dmnsn_delete_astnode(oldrhs);
+
+    if (lhs.type == DMNSN_AST_NONE || rhs.type == DMNSN_AST_NONE) {
+      ret = dmnsn_copy_astnode(astnode);
+      ret.type = DMNSN_AST_NONE;
+      dmnsn_delete_astnode(lhs);
+      dmnsn_delete_astnode(rhs);
+      return ret;
+    }    
 
     switch (astnode.type) {
     case DMNSN_AST_EQUAL:
@@ -1121,6 +1169,78 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       ret.type = DMNSN_AST_NONE;
       break;
 
+    case DMNSN_AST_VAXIS_ROTATE:
+      {
+        dmnsn_astnode rx, ry, rz;
+        dmnsn_array_get(lhs.children, 0, &rx);
+        dmnsn_array_get(lhs.children, 1, &ry);
+        dmnsn_array_get(lhs.children, 2, &rz);
+        dmnsn_astnode ax, ay, az;
+        dmnsn_array_get(rhs.children, 0, &ax);
+        dmnsn_array_get(rhs.children, 1, &ay);
+        dmnsn_array_get(rhs.children, 2, &az);
+
+        dmnsn_vector r = dmnsn_new_vector(
+          rx.type == DMNSN_AST_INTEGER ? *(long *)rx.ptr : *(double *)rx.ptr,
+          ry.type == DMNSN_AST_INTEGER ? *(long *)ry.ptr : *(double *)ry.ptr,
+          rz.type == DMNSN_AST_INTEGER ? *(long *)rz.ptr : *(double *)rz.ptr
+        );
+        dmnsn_vector axis = dmnsn_new_vector(
+          ax.type == DMNSN_AST_INTEGER ? *(long *)ax.ptr : *(double *)ax.ptr,
+          ay.type == DMNSN_AST_INTEGER ? *(long *)ay.ptr : *(double *)ay.ptr,
+          az.type == DMNSN_AST_INTEGER ? *(long *)az.ptr : *(double *)az.ptr
+        );
+
+        axis = dmnsn_vector_mul(atan(1.0)/45.0, axis);
+        r = dmnsn_matrix_vector_mul(dmnsn_rotation_matrix(axis), r);
+
+        ret = dmnsn_copy_astnode(astnode);
+        dmnsn_make_ast_vector(&ret, r.x, r.y, r.z, 0.0, 0.0);
+        break;
+      }
+    case DMNSN_AST_VCROSS:
+      {
+        dmnsn_astnode ux, uy, uz;
+        dmnsn_array_get(lhs.children, 0, &ux);
+        dmnsn_array_get(lhs.children, 1, &uy);
+        dmnsn_array_get(lhs.children, 2, &uz);
+        *ux.refcount += 2;
+        *uy.refcount += 2;
+        *uz.refcount += 2;
+        dmnsn_astnode vx, vy, vz;
+        dmnsn_array_get(rhs.children, 0, &vx);
+        dmnsn_array_get(rhs.children, 1, &vy);
+        dmnsn_array_get(rhs.children, 2, &vz);
+        *vx.refcount += 2;
+        *vy.refcount += 2;
+        *vz.refcount += 2;
+
+        dmnsn_astnode uvx = dmnsn_new_astnode2(
+          DMNSN_AST_SUB, astnode,
+          dmnsn_new_astnode2(DMNSN_AST_MUL, astnode, uy, vz),
+          dmnsn_new_astnode2(DMNSN_AST_MUL, astnode, uz, vy)
+        );
+        dmnsn_astnode uvy = dmnsn_new_astnode2(
+          DMNSN_AST_SUB, astnode,
+          dmnsn_new_astnode2(DMNSN_AST_MUL, astnode, uz, vx),
+          dmnsn_new_astnode2(DMNSN_AST_MUL, astnode, ux, vz)
+        );
+        dmnsn_astnode uvz = dmnsn_new_astnode2(
+          DMNSN_AST_SUB, astnode,
+          dmnsn_new_astnode2(DMNSN_AST_MUL, astnode, ux, vy),
+          dmnsn_new_astnode2(DMNSN_AST_MUL, astnode, uy, vx)
+        );
+
+        dmnsn_astnode rewrite = dmnsn_copy_astnode(astnode);
+        rewrite.type = DMNSN_AST_VECTOR;
+        dmnsn_array_push(rewrite.children, &uvx);
+        dmnsn_array_push(rewrite.children, &uvy);
+        dmnsn_array_push(rewrite.children, &uvz);
+
+        ret = dmnsn_eval(rewrite, symtable);
+        dmnsn_delete_astnode(rewrite);
+        break;
+      }
     case DMNSN_AST_VDOT:
       {
         dmnsn_astnode rewrite = dmnsn_copy_astnode(astnode);
@@ -1153,6 +1273,47 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
         ret = dmnsn_eval_binary(rewrite, symtable);
         dmnsn_delete_astnode(rewrite);
+        break;
+      }
+    case DMNSN_AST_VROTATE:
+      {
+        dmnsn_astnode rx, ry, rz;
+        dmnsn_array_get(lhs.children, 0, &rx);
+        dmnsn_array_get(lhs.children, 1, &ry);
+        dmnsn_array_get(lhs.children, 2, &rz);
+        dmnsn_astnode ax, ay, az;
+        dmnsn_array_get(rhs.children, 0, &ax);
+        dmnsn_array_get(rhs.children, 1, &ay);
+        dmnsn_array_get(rhs.children, 2, &az);
+
+        dmnsn_vector r = dmnsn_new_vector(
+          rx.type == DMNSN_AST_INTEGER ? *(long *)rx.ptr : *(double *)rx.ptr,
+          ry.type == DMNSN_AST_INTEGER ? *(long *)ry.ptr : *(double *)ry.ptr,
+          rz.type == DMNSN_AST_INTEGER ? *(long *)rz.ptr : *(double *)rz.ptr
+        );
+        dmnsn_vector axis = dmnsn_new_vector(
+          ax.type == DMNSN_AST_INTEGER ? *(long *)ax.ptr : *(double *)ax.ptr,
+          ay.type == DMNSN_AST_INTEGER ? *(long *)ay.ptr : *(double *)ay.ptr,
+          az.type == DMNSN_AST_INTEGER ? *(long *)az.ptr : *(double *)az.ptr
+        );
+
+        axis = dmnsn_vector_mul(atan(1.0)/45.0, axis);
+
+        r = dmnsn_matrix_vector_mul(
+          dmnsn_rotation_matrix(dmnsn_new_vector(axis.x, 0.0, 0.0)),
+          r
+        );
+        r = dmnsn_matrix_vector_mul(
+          dmnsn_rotation_matrix(dmnsn_new_vector(0.0, axis.y, 0.0)),
+          r
+        );
+        r = dmnsn_matrix_vector_mul(
+          dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 0.0, axis.z)),
+          r
+        );
+
+        ret = dmnsn_copy_astnode(astnode);
+        dmnsn_make_ast_vector(&ret, r.x, r.y, r.z, 0.0, 0.0);
         break;
       }
 
@@ -1260,8 +1421,18 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_POW:
       dmnsn_make_ast_float(&ret, pow(l, r));
       break;
+    case DMNSN_AST_VCROSS:
+      dmnsn_make_ast_integer(&ret, 0);
+      break;
     case DMNSN_AST_VDOT:
       dmnsn_make_ast_integer(&ret, 3*l*r);
+      break;
+    case DMNSN_AST_VROTATE:
+      ret.type = DMNSN_AST_VECTOR;
+      *lhs.refcount += 3;
+      dmnsn_array_push(ret.children, &lhs);
+      dmnsn_array_push(ret.children, &lhs);
+      dmnsn_array_push(ret.children, &lhs);
       break;
 
     default:
@@ -1393,8 +1564,18 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_POW:
       dmnsn_make_ast_float(&ret, pow(l, r));
       break;
+    case DMNSN_AST_VCROSS:
+      dmnsn_make_ast_integer(&ret, 0);
+      break;
     case DMNSN_AST_VDOT:
       dmnsn_make_ast_float(&ret, 3.0*l*r);
+      break;
+    case DMNSN_AST_VROTATE:
+      ret.type = DMNSN_AST_VECTOR;
+      *lhs.refcount += 3;
+      dmnsn_array_push(ret.children, &lhs);
+      dmnsn_array_push(ret.children, &lhs);
+      dmnsn_array_push(ret.children, &lhs);
       break;
 
     default:
@@ -1518,6 +1699,7 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_TANH:
   case DMNSN_AST_VAL:
   case DMNSN_AST_VLENGTH:
+  case DMNSN_AST_VNORMALIZE:
     return dmnsn_eval_unary(astnode, symtable);
 
   case DMNSN_AST_ADD:
@@ -1539,7 +1721,10 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   case DMNSN_AST_MOD:
   case DMNSN_AST_POW:
   case DMNSN_AST_STRCMP:
+  case DMNSN_AST_VAXIS_ROTATE:
+  case DMNSN_AST_VCROSS:
   case DMNSN_AST_VDOT:
+  case DMNSN_AST_VROTATE:
     return dmnsn_eval_binary(astnode, symtable);
 
   case DMNSN_AST_TERNARY:
