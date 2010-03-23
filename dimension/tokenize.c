@@ -217,9 +217,9 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
 
   dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev, filename);
 
-  dmnsn_astnode *inode = dmnsn_find_symbol(symtable, "__include__");
-  dmnsn_assert(inode, "__include__ unset.");
-  dmnsn_assert(inode->type == DMNSN_AST_STRING, "__include__ has wrong type.");
+  dmnsn_astnode *inode = dmnsn_find_symbol(symtable, "$include");
+  dmnsn_assert(inode, "$include unset.");
+  dmnsn_assert(inode->type == DMNSN_AST_STRING, "$include has wrong type.");
 
   const char *include = inode->ptr;
   char *filename_copy = strdup(filename);
@@ -239,7 +239,7 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
     dmnsn_diagnostic(llocp->first_filename, llocp->first_line,
                      llocp->first_column,
                      "Couldn't open include file '%s'", include);
-    dmnsn_undef_symbol(symtable, "__include__");
+    dmnsn_undef_symbol(symtable, "$include");
     free(local_include);
     dmnsn_delete_token_buffer(tbuffer);
     return NULL;
@@ -252,7 +252,7 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
                      llocp->first_column,
                      "Couldn't allocate buffer for include file '%s'",
                      include);
-    dmnsn_undef_symbol(symtable, "__include__");
+    dmnsn_undef_symbol(symtable, "$include");
     fclose(file);
     free(local_include);
     dmnsn_delete_token_buffer(tbuffer);
@@ -261,14 +261,14 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
   dmnsn_yy_push_buffer(buffer, yyscanner);
 
   /* Stuff the filename in the symbol table to persist it */
-  dmnsn_astnode *includes = dmnsn_find_symbol(symtable, "__includes__");
+  dmnsn_astnode *includes = dmnsn_find_symbol(symtable, "$includes");
   if (!includes) {
-    dmnsn_declare_symbol(symtable, "__includes__", dmnsn_new_ast_array());
-    includes = dmnsn_find_symbol(symtable, "__includes__");
+    dmnsn_declare_symbol(symtable, "$includes", dmnsn_new_ast_array());
+    includes = dmnsn_find_symbol(symtable, "$includes");
   }
-  dmnsn_assert(includes, "__includes__ unset.");
+  dmnsn_assert(includes, "$includes unset.");
   dmnsn_assert(includes->type == DMNSN_AST_ARRAY,
-               "__includes__ has wrong type.");
+               "$includes has wrong type.");
 
   dmnsn_astnode fnode = dmnsn_new_ast_string(local_include);
   free(local_include);
@@ -277,7 +277,7 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
 
   dmnsn_push_scope(symtable);
 
-  dmnsn_undef_symbol(symtable, "__include__");
+  dmnsn_undef_symbol(symtable, "$include");
   return tbuffer;
 }
 
@@ -427,8 +427,8 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
 
   dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev, filename);
 
-  dmnsn_astnode *cnode = dmnsn_find_symbol(symtable, "__cond__");
-  dmnsn_assert(cnode, "__cond__ unset.");
+  dmnsn_astnode *cnode = dmnsn_find_symbol(symtable, "$cond");
+  dmnsn_assert(cnode, "$cond unset.");
 
   bool cond = false;
   if (cnode->type == DMNSN_AST_INTEGER) {
@@ -436,10 +436,10 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
   } else if (cnode->type == DMNSN_AST_FLOAT) {
     cond = (*(double *)cnode->ptr) ? true : false;
   } else {
-    dmnsn_assert(false, "__cond__ has wrong type.");
+    dmnsn_assert(false, "$cond has wrong type.");
   }
 
-  dmnsn_undef_symbol(symtable, "__cond__");
+  dmnsn_undef_symbol(symtable, "$cond");
 
   int nesting = 1, else_seen = 0;
   while (1) {
@@ -680,13 +680,13 @@ dmnsn_declare_macro(int token, dmnsn_token_buffer *prev,
 
   dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, NULL, filename);
 
-  dmnsn_astnode *mname = dmnsn_find_symbol(symtable, "__macro__");
-  dmnsn_assert(mname, "__macro__ unset.");
-  dmnsn_assert(mname->type == DMNSN_AST_STRING, "__macro__ has wrong type.");
+  dmnsn_astnode *mname = dmnsn_find_symbol(symtable, "$macro");
+  dmnsn_assert(mname, "$macro unset.");
+  dmnsn_assert(mname->type == DMNSN_AST_STRING, "$macro has wrong type.");
   dmnsn_astnode *mnode = dmnsn_find_symbol(symtable, mname->ptr);
   dmnsn_assert(mnode, "#macro unset.");
   dmnsn_assert(mnode->type == DMNSN_AST_MACRO, "#macro has wrong type.");
-  dmnsn_undef_symbol(symtable, "__macro__");
+  dmnsn_undef_symbol(symtable, "$macro");
 
   int nesting = 1;
   while (1) {

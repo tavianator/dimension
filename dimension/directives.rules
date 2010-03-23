@@ -5,7 +5,7 @@
  */
 
 LANGUAGE_DIRECTIVE: "#include" STRING {
-                    dmnsn_declare_symbol(symtable, "__include__", $2);
+                    dmnsn_declare_symbol(symtable, "$include", $2);
                     dmnsn_delete_astnode($2);
                   }
                   | "#declare" IDENTIFIER "=" RVALUE {
@@ -31,18 +31,18 @@ LANGUAGE_DIRECTIVE: "#include" STRING {
                       YYERROR;
                     }
 
-                    dmnsn_local_symbol(symtable, "__cond__", cond);
+                    dmnsn_local_symbol(symtable, "$cond", cond);
                     dmnsn_delete_astnode(cond);
                   }
                   | "#ifdef" "(" IDENTIFIER ")" {
                     dmnsn_astnode *node = dmnsn_find_symbol(symtable, $3.ptr);
-                    dmnsn_local_symbol(symtable, "__cond__",
+                    dmnsn_local_symbol(symtable, "$cond",
                                        dmnsn_new_ast_integer(node ? 1 : 0));
                     dmnsn_delete_astnode($3);
                   }
                   | "#ifndef" "(" IDENTIFIER ")" {
                     dmnsn_astnode *node = dmnsn_find_symbol(symtable, $3.ptr);
-                    dmnsn_local_symbol(symtable, "__cond__",
+                    dmnsn_local_symbol(symtable, "$cond",
                                        dmnsn_new_ast_integer(node ? 0 : 1));
                     dmnsn_delete_astnode($3);
                   }
@@ -72,7 +72,7 @@ LANGUAGE_DIRECTIVE: "#include" STRING {
                   }
                   | "#macro" IDENTIFIER "(" DECL_PARAMS ")" {
                     dmnsn_declare_symbol(symtable, $2.ptr, $4);
-                    dmnsn_local_symbol(symtable, "__macro__",
+                    dmnsn_local_symbol(symtable, "$macro",
                                        dmnsn_new_ast_string($2.ptr));
                     dmnsn_delete_astnode($2);
                     dmnsn_delete_astnode($4);

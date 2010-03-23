@@ -23,12 +23,12 @@ dmnsn_astree *
 dmnsn_parse(FILE *file, dmnsn_symbol_table *symtable)
 {
   const char *filename;
-  dmnsn_astnode *fnode = dmnsn_find_symbol(symtable, "__file__");
+  dmnsn_astnode *fnode = dmnsn_find_symbol(symtable, "$file");
   if (fnode && fnode->type == DMNSN_AST_STRING) {
     filename = fnode->ptr;
   } else {
     filename = "<>";
-    dmnsn_declare_symbol(symtable, "__file__", dmnsn_new_ast_string(filename));
+    dmnsn_declare_symbol(symtable, "$file", dmnsn_new_ast_string(filename));
   }
 
   void *scanner;
@@ -52,12 +52,12 @@ dmnsn_astree *
 dmnsn_parse_string(const char *str, dmnsn_symbol_table *symtable)
 {
   const char *filename;
-  dmnsn_astnode *fnode = dmnsn_find_symbol(symtable, "__file__");
+  dmnsn_astnode *fnode = dmnsn_find_symbol(symtable, "$file");
   if (fnode && fnode->type == DMNSN_AST_STRING) {
     filename = fnode->ptr;
   } else {
     filename = "<string>";
-    dmnsn_declare_symbol(symtable, "__file__", dmnsn_new_ast_string(filename));
+    dmnsn_declare_symbol(symtable, "$file", dmnsn_new_ast_string(filename));
   }
 
   void *scanner;
