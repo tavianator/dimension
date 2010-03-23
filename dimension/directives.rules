@@ -8,19 +8,19 @@ LANGUAGE_DIRECTIVE: "#include" STRING {
                     dmnsn_declare_symbol(symtable, "__include__", $2);
                     dmnsn_delete_astnode($2);
                   }
-                  | "#declare" "identifier" "=" RVALUE {
-                    dmnsn_declare_symbol(symtable, $2, $4);
-                    free($2);
+                  | "#declare" IDENTIFIER "=" RVALUE {
+                    dmnsn_declare_symbol(symtable, $2.ptr, $4);
+                    dmnsn_delete_astnode($2);
                     dmnsn_delete_astnode($4);
                   }
-                  | "#local" "identifier" "=" RVALUE {
-                    dmnsn_local_symbol(symtable, $2, $4);
-                    free($2);
+                  | "#local" IDENTIFIER "=" RVALUE {
+                    dmnsn_local_symbol(symtable, $2.ptr, $4);
+                    dmnsn_delete_astnode($2);
                     dmnsn_delete_astnode($4);
                   }
-                  | "#undef" "identifier" {
-                    dmnsn_undef_symbol(symtable, $2);
-                    free($2);
+                  | "#undef" IDENTIFIER {
+                    dmnsn_undef_symbol(symtable, $2.ptr);
+                    dmnsn_delete_astnode($2);
                   }
                   | "#if" "(" CONDITIONAL ")" {
                     dmnsn_astnode cond = dmnsn_eval($3, symtable);
@@ -34,17 +34,17 @@ LANGUAGE_DIRECTIVE: "#include" STRING {
                     dmnsn_local_symbol(symtable, "__cond__", cond);
                     dmnsn_delete_astnode(cond);
                   }
-                  | "#ifdef" "(" "identifier" ")" {
-                    dmnsn_astnode *node = dmnsn_find_symbol(symtable, $3);
+                  | "#ifdef" "(" IDENTIFIER ")" {
+                    dmnsn_astnode *node = dmnsn_find_symbol(symtable, $3.ptr);
                     dmnsn_local_symbol(symtable, "__cond__",
                                        dmnsn_new_ast_integer(node ? 1 : 0));
-                    free($3);
+                    dmnsn_delete_astnode($3);
                   }
-                  | "#ifndef" "(" "identifier" ")" {
-                    dmnsn_astnode *node = dmnsn_find_symbol(symtable, $3);
+                  | "#ifndef" "(" IDENTIFIER ")" {
+                    dmnsn_astnode *node = dmnsn_find_symbol(symtable, $3.ptr);
                     dmnsn_local_symbol(symtable, "__cond__",
                                        dmnsn_new_ast_integer(node ? 0 : 1));
-                    free($3);
+                    dmnsn_delete_astnode($3);
                   }
                   | "#version" FLOAT ";" {
                     dmnsn_diagnostic(@$.first_filename, @$.first_line,
@@ -70,6 +70,42 @@ LANGUAGE_DIRECTIVE: "#include" STRING {
                     dmnsn_delete_astnode($2);
                     YYERROR;
                   }
+                  | "#macro" IDENTIFIER "(" DECL_PARAMS ")" {
+                    dmnsn_declare_symbol(symtable, $2.ptr, $4);
+                    dmnsn_local_symbol(symtable, "__macro__",
+                                       dmnsn_new_ast_string($2.ptr));
+                    dmnsn_delete_astnode($2);
+                    dmnsn_delete_astnode($4);
+                  }
+                  | IDENTIFIER "(" PARAMS ")" {
+                    dmnsn_astnode *node = dmnsn_find_symbol(symtable, $1.ptr);
+                    dmnsn_assert(node && node->type == DMNSN_AST_MACRO,
+                                 "Attempt to expand non-macro.");
+                    dmnsn_delete_astnode($1);
+
+                    unsigned int nparams = dmnsn_array_size(node->children);
+                    unsigned int nparams_given = dmnsn_array_size($3.children);
+
+                    if (nparams_given != nparams) {
+                      dmnsn_diagnostic(@$.first_filename, @$.first_line,
+                                       @$.first_column,
+                                       "wrong number of macro arguments"
+                                       " (%u; should be %u)",
+                                       nparams_given, nparams);
+                      dmnsn_delete_astnode($3);
+                      YYERROR;
+                    }
+
+                    unsigned int i;
+                    for (i = 0; i < nparams; ++i) {
+                      dmnsn_astnode id, param;
+                      dmnsn_array_get(node->children, i, &id);
+                      dmnsn_array_get($3.children, i, &param);
+                      dmnsn_local_symbol(symtable, id.ptr, param);
+                    }
+
+                    dmnsn_delete_astnode($3);
+                  }
 ;
 
 RVALUE: ARITH_EXPR ";" %dprec 2 {
@@ -89,4 +125,63 @@ RVALUE: ARITH_EXPR ";" %dprec 2 {
       | INTERIOR
       | CAMERA
       | TRANSFORMATION
+;
+
+DECL_PARAMS: /* empty */ {
+             $$ = dmnsn_new_astnode(DMNSN_AST_MACRO, @$);
+           }
+           | DECL_PARAM_LIST
+;
+
+DECL_PARAM_LIST: IDENTIFIER {
+                 $$ = dmnsn_new_astnode(DMNSN_AST_MACRO, @$);
+                 dmnsn_array_push($$.children, &$1);
+               }
+               | DECL_PARAM_LIST "," IDENTIFIER {
+                 $$ = $1;
+                 dmnsn_array_push($$.children, &$3);
+               }
+;
+
+PARAMS: /* empty */ {
+        $$ = dmnsn_new_astnode(DMNSN_AST_ARRAY, @$);
+      }
+      | PARAM_LIST
+;
+
+PARAM_LIST: IDENTIFIER %dprec 2 {
+            $$ = dmnsn_new_astnode(DMNSN_AST_MACRO, @$);
+            dmnsn_array_push($$.children, &$1);
+          }
+          | PARAM      %dprec 1 {
+            $$ = dmnsn_new_astnode(DMNSN_AST_MACRO, @$);
+            dmnsn_array_push($$.children, &$1);
+          }
+          | PARAM_LIST "," IDENTIFIER %dprec 2 {
+            $$ = $1;
+            dmnsn_array_push($$.children, &$3);
+          }
+          | PARAM_LIST "," PARAM      %dprec 1 {
+            $$ = $1;
+            dmnsn_array_push($$.children, &$3);
+          }
+;
+
+PARAM: ARITH_EXPR %dprec 2 {
+       $$ = dmnsn_eval($1, symtable);
+       dmnsn_delete_astnode($1);
+
+       if ($$.type == DMNSN_AST_NONE) {
+         dmnsn_delete_astnode($$);
+         YYERROR;
+       }
+     }
+     | COLOR %dprec 1
+     | OBJECT
+     | TEXTURE
+     | PIGMENT
+     | FINISH
+     | INTERIOR
+     | CAMERA
+     | TRANSFORMATION
 ;

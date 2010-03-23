@@ -62,8 +62,9 @@ dmnsn_new_token_buffer(int type, dmnsn_token_buffer *prev, const char *filename)
 }
 
 static void
-dmnsn_delete_token_buffer(dmnsn_token_buffer *tbuffer)
+dmnsn_delete_token_buffer(void *ptr)
 {
+  dmnsn_token_buffer *tbuffer = ptr;
   if (tbuffer) {
     unsigned int i;
     for (i = 0; i < dmnsn_array_size(tbuffer->buffered); ++i) {
@@ -636,6 +637,148 @@ dmnsn_stream_buffer(int token, dmnsn_token_buffer *prev,
   return tbuffer;
 }
 
+static bool
+dmnsn_declare_macro(int token, dmnsn_token_buffer *prev,
+                    dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                    const char *filename, dmnsn_symbol_table *symtable,
+                    void *yyscanner)
+{
+  dmnsn_token_buffer *decl_buffer
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+
+  /* Buffer the current token */
+  dmnsn_buffered_token buffered = {
+    .type = token,
+    .lval = *lvalp,
+    .lloc = *llocp
+  };
+  dmnsn_array_push(decl_buffer->buffered, &buffered);
+
+  /* Grab all the tokens belonging to the #macro ID (...)  */
+  if (dmnsn_buffer_balanced(decl_buffer, true, DMNSN_T_LPAREN, DMNSN_T_RPAREN,
+                            filename, symtable, yyscanner)
+      != 0)
+  {
+    dmnsn_delete_token_buffer(decl_buffer);
+    return false;
+  }
+
+  /* Fake EOF */
+  buffered.type = DMNSN_T_EOF;
+  buffered.lval.value = NULL;
+  dmnsn_array_push(decl_buffer->buffered, &buffered);
+
+  dmnsn_yyset_extra(decl_buffer, yyscanner);
+  if (dmnsn_ld_yyparse(filename, yyscanner, symtable) != 0) {
+    dmnsn_yyset_extra(decl_buffer->prev, yyscanner);
+    dmnsn_delete_token_buffer(decl_buffer);
+    return false;
+  }
+
+  dmnsn_yyset_extra(decl_buffer->prev, yyscanner);
+  dmnsn_delete_token_buffer(decl_buffer);
+
+  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, NULL, filename);
+
+  dmnsn_astnode *mname = dmnsn_find_symbol(symtable, "__macro__");
+  dmnsn_assert(mname, "__macro__ unset.");
+  dmnsn_assert(mname->type == DMNSN_AST_STRING, "__macro__ has wrong type.");
+  dmnsn_astnode *mnode = dmnsn_find_symbol(symtable, mname->ptr);
+  dmnsn_assert(mnode, "#macro unset.");
+  dmnsn_assert(mnode->type == DMNSN_AST_MACRO, "#macro has wrong type.");
+  dmnsn_undef_symbol(symtable, "__macro__");
+
+  int nesting = 1;
+  while (1) {
+    /* Non-recursive call */
+    buffered.type = dmnsn_yylex_wrapper(&buffered.lval, &buffered.lloc,
+                                        filename, symtable, yyscanner);
+
+    if (buffered.type == DMNSN_T_EOF) {
+      dmnsn_diagnostic(filename, buffered.lloc.first_line,
+                       buffered.lloc.first_column,
+                       "syntax error, unexpected end-of-file");
+      dmnsn_delete_token_buffer(tbuffer);
+      return false;
+    }
+
+    switch (buffered.type) {
+    case DMNSN_T_IF:
+    case DMNSN_T_IFDEF:
+    case DMNSN_T_IFNDEF:
+    case DMNSN_T_MACRO:
+    case DMNSN_T_SWITCH:
+    case DMNSN_T_WHILE:
+      ++nesting;
+      break;
+
+    case DMNSN_T_END:
+      --nesting;
+      break;
+
+    default:
+      break;
+    }
+
+    if (nesting == 0)
+      break;
+
+    dmnsn_array_push(tbuffer->buffered, &buffered);
+  }
+
+  mnode->ptr     = tbuffer;
+  mnode->free_fn = &dmnsn_delete_token_buffer;
+  return true;
+}
+
+static dmnsn_token_buffer *
+dmnsn_macro_buffer(int token, dmnsn_astnode *mnode, dmnsn_token_buffer *prev,
+                   dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
+                   const char *filename, dmnsn_symbol_table *symtable,
+                   void *yyscanner)
+{
+  dmnsn_token_buffer *invoke_buffer
+    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+
+  /* Buffer the current token */
+  dmnsn_buffered_token buffered = {
+    .type = token,
+    .lval = *lvalp,
+    .lloc = *llocp
+  };
+  dmnsn_array_push(invoke_buffer->buffered, &buffered);
+
+  /* Grab all the tokens belonging to the #macro ID (...)  */
+  if (dmnsn_buffer_balanced(invoke_buffer, true, DMNSN_T_LPAREN, DMNSN_T_RPAREN,
+                            filename, symtable, yyscanner)
+      != 0)
+  {
+    dmnsn_delete_token_buffer(invoke_buffer);
+    return NULL;
+  }
+
+  /* Fake EOF */
+  buffered.type = DMNSN_T_EOF;
+  buffered.lval.value = NULL;
+  dmnsn_array_push(invoke_buffer->buffered, &buffered);
+
+  dmnsn_yyset_extra(invoke_buffer, yyscanner);
+  dmnsn_push_scope(symtable);
+  if (dmnsn_ld_yyparse(filename, yyscanner, symtable) != 0) {
+    dmnsn_yyset_extra(invoke_buffer->prev, yyscanner);
+    dmnsn_delete_token_buffer(invoke_buffer);
+    return NULL;
+  }
+
+  dmnsn_yyset_extra(invoke_buffer->prev, yyscanner);
+  dmnsn_delete_token_buffer(invoke_buffer);
+
+  dmnsn_token_buffer *tbuffer = mnode->ptr;
+  tbuffer->i    = 0;
+  tbuffer->prev = prev;
+  return tbuffer;
+}
+
 int dmnsn_yylex_impl(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
                      const char *filename, void *yyscanner);
 
@@ -660,7 +803,11 @@ dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
         }
 
         dmnsn_yyset_extra(tbuffer->prev, yyscanner);
-        dmnsn_delete_token_buffer(tbuffer);
+        if (tbuffer->type == DMNSN_T_MACRO) {
+          dmnsn_pop_scope(symtable);
+        } else {
+          dmnsn_delete_token_buffer(tbuffer);
+        }
         tbuffer = dmnsn_yyget_extra(yyscanner);
       }
     }
@@ -860,6 +1007,35 @@ dmnsn_yylex(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
         dmnsn_yyset_extra(tb->prev, yyscanner);
         dmnsn_delete_token_buffer(tb);
         break;
+      }
+
+    case DMNSN_T_MACRO:
+      {
+        bool status = dmnsn_declare_macro(
+          token, tbuffer, lvalp, llocp, filename, symtable, yyscanner
+        );
+        if (!status) {
+          return DMNSN_T_LEX_ERROR;
+        }
+        break;
+      }
+
+    case DMNSN_T_IDENTIFIER:
+      {
+        dmnsn_astnode *symbol = dmnsn_find_symbol(symtable, lvalp->value);
+        if (symbol && symbol->type == DMNSN_AST_MACRO) {
+          dmnsn_token_buffer *tb = dmnsn_macro_buffer(
+            token, symbol, tbuffer, lvalp, llocp, filename, symtable, yyscanner
+          );
+          if (!tb) {
+            return DMNSN_T_LEX_ERROR;
+          }
+
+          dmnsn_yyset_extra(tb, yyscanner);
+          break;
+        } else {
+          return token;
+        }
       }
 
     default:

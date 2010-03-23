@@ -20,3 +20,8 @@
  *************************************************************************/
 
 %type <astnode> RVALUE
+%type <astnode> DECL_PARAMS
+%type <astnode> DECL_PARAM_LIST
+%type <astnode> PARAMS
+%type <astnode> PARAM_LIST
+%type <astnode> PARAM

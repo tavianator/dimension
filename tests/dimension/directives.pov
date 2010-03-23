@@ -40,18 +40,26 @@
   #error "#undef failed"
 #end
 
+#macro Make_Sphere(n)
+  sphere {
+    Center + <0, n, 0>, R
+    pigment {
+      color Color green 1
+    }
+  }
+#end
+
+#macro Inc(n)
+  #declare n = n + 1;
+#end
+
 #declare Counter = 0;
 #while (Counter < 2)
   #if (#if (1 = 1) 0 #end = 0 & !1)
     #error "Nested #if parsing failed"
   #else
-    sphere {
-      Center + <0, Counter, 0>, R
-      pigment {
-        color Color green 1
-      }
-    }
+    Make_Sphere(Counter)
   #end
 
-  #declare Counter = Counter + 1;
+  Inc(Counter)
 #end

@@ -338,6 +338,7 @@ dmnsn_new_astnode(dmnsn_astnode_type type)
     .type     = type,
     .children = NULL,
     .ptr      = NULL,
+    .free_fn  = NULL,
     .refcount = malloc(sizeof(unsigned int)),
     .filename = "<environment>",
     .line     = -1,
@@ -479,7 +480,11 @@ dmnsn_delete_astnode(dmnsn_astnode astnode)
 {
   if (*astnode.refcount <= 1) {
     dmnsn_delete_astree(astnode.children);
-    free(astnode.ptr);
+    if (astnode.free_fn) {
+      (*astnode.free_fn)(astnode.ptr);
+    } else {
+      free(astnode.ptr);
+    }
     free(astnode.refcount);
   } else {
     --*astnode.refcount;

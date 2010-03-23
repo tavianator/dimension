@@ -152,7 +152,9 @@ typedef enum {
 
   DMNSN_AST_STRING,
 
-  DMNSN_AST_ARRAY
+  DMNSN_AST_ARRAY,
+
+  DMNSN_AST_MACRO
 } dmnsn_astnode_type;
 
 /* Abstract syntax tree node (a dmnsn_array* of these is an AST) */
@@ -164,6 +166,7 @@ typedef struct dmnsn_astnode {
 
   /* Generic data pointer */
   void *ptr;
+  dmnsn_free_fn *free_fn;
 
   /* Reference count */
   unsigned int *refcount;

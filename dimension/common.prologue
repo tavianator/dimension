@@ -56,6 +56,7 @@ dmnsn_new_astnode(dmnsn_astnode_type type, YYLTYPE lloc)
     .type     = type,
     .children = dmnsn_new_array(sizeof(dmnsn_astnode)),
     .ptr      = NULL,
+    .free_fn  = NULL,
     .refcount = malloc(sizeof(unsigned int)),
     .filename = lloc.first_filename,
     .line     = lloc.first_line,

@@ -35,19 +35,25 @@ directives_exp="$(echo -n \
   #ifdef \( (identifier "Unused") \)
     #error (string "#undef failed")
   #end
+  #macro (identifier "Make_Sphere") \( (identifier "n") \)
+    sphere {
+      (identifier "Center") + < (integer "0") , (identifier "n") , (integer "0") > , (identifier "R")
+      pigment {
+        color (identifier "Color") green (integer "1")
+      }
+    }
+  #end
+  #macro (identifier "Inc") \( (identifier "n") \)
+    #declare (identifier "n") = (identifier "n") + (integer "1") ;
+  #end
   #declare (identifier "Counter") = (integer "0") ;
   #while \( (identifier "Counter") < (integer "2") \)
     #if \( #if \( (integer "1") = (integer "1") \) (integer "0") #end = (integer "0") & ! (integer "1") \)
       #error (string "Nested #if parsing failed")
     #else
-      sphere {
-        (identifier "Center") + < (integer "0") , (identifier "Counter") , (integer "0") > , (identifier "R")
-        pigment {
-          color (identifier "Color") green (integer "1")
-        }
-      }
+      (identifier "Make_Sphere") \( (identifier "Counter") \)
     #end
-    #declare (identifier "Counter") = (identifier "Counter") + (integer "1") ;
+    (identifier "Inc") \( (identifier "Counter") \)
   #end)' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 $(echo -n \

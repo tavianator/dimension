@@ -21,7 +21,8 @@
 
 %name-prefix "dmnsn_ld_yy"
 
-%expect 10
+%expect 12
+%expect-rr 6
 
 %parse-param {const char *filename}
 %parse-param {void *yyscanner}

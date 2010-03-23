@@ -22,8 +22,18 @@
 /* Fundamental language elements */
 
 IDENTIFIER: "identifier" {
+            const char *id = $1;
+            dmnsn_astnode *symbol = dmnsn_find_symbol(symtable, id);
+            while (symbol && symbol->type == DMNSN_AST_IDENTIFIER) {
+              id = symbol->ptr;
+              symbol = dmnsn_find_symbol(symtable, id);
+            }
             $$ = dmnsn_new_astnode(DMNSN_AST_IDENTIFIER, @$);
-            $$.ptr = $1;
+            $$.ptr = strdup(id);
+            if (!$$.ptr)
+              dmnsn_error(DMNSN_SEVERITY_HIGH,
+                          "Couldn't allocate room for identifier.");
+            free($1);
           }
 ;
 
@@ -653,18 +663,19 @@ COLOR_KEYWORD_GROUP_INIT: /* empty */ {
                         }
 ;
 
-COLOR_KEYWORD_ITEM: "identifier" {
-                    dmnsn_astnode *symbol = dmnsn_find_symbol(symtable, $1);
+COLOR_KEYWORD_ITEM: IDENTIFIER {
+                    dmnsn_astnode *symbol = dmnsn_find_symbol(symtable, $1.ptr);
                     if (!symbol) {
                       dmnsn_diagnostic(@1.first_filename, @1.first_line,
                                        @1.first_column,
-                                       "Unbound identifier '%s'", $1);
-                      free($1);
+                                       "Unbound identifier '%s'",
+                                       (const char *)$1.ptr);
+                      dmnsn_delete_astnode($1);
                       YYERROR;
                     } else {
                       dmnsn_astnode eval = dmnsn_eval_vector(*symbol, symtable);
                       if (eval.type == DMNSN_AST_NONE) {
-                        free($1);
+                        dmnsn_delete_astnode($1);
                         YYERROR;
                       }
 
@@ -672,7 +683,7 @@ COLOR_KEYWORD_ITEM: "identifier" {
                       dmnsn_delete_astnode(eval);
                     }
 
-                    free($1);
+                    dmnsn_delete_astnode($1);
                   }
                   | "red" FLOAT {
                     dmnsn_astnode old;
