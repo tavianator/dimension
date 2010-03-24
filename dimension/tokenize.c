@@ -789,27 +789,27 @@ dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
 {
   dmnsn_token_buffer *tbuffer = dmnsn_yyget_extra(yyscanner);
 
-  if (tbuffer && tbuffer->type != DMNSN_T_INCLUDE) {
-    while (tbuffer && tbuffer->i >= dmnsn_array_size(tbuffer->buffered)) {
-      if (tbuffer->type == DMNSN_T_WHILE) {
-        tbuffer->i = 0;
-      } else {
-        if (dmnsn_array_size(tbuffer->buffered) == 0
-            && tbuffer->prev && tbuffer->prev->type == DMNSN_T_WHILE)
-        {
-          dmnsn_yyset_extra(tbuffer->prev, yyscanner);
-          dmnsn_delete_token_buffer(tbuffer);
-          tbuffer = dmnsn_yyget_extra(yyscanner);
-        }
-
+  while (tbuffer && tbuffer->type != DMNSN_T_INCLUDE
+         && tbuffer->i >= dmnsn_array_size(tbuffer->buffered))
+  {
+    if (tbuffer->type == DMNSN_T_WHILE) {
+      tbuffer->i = 0;
+    } else {
+      if (dmnsn_array_size(tbuffer->buffered) == 0
+          && tbuffer->prev && tbuffer->prev->type == DMNSN_T_WHILE)
+      {
         dmnsn_yyset_extra(tbuffer->prev, yyscanner);
-        if (tbuffer->type == DMNSN_T_MACRO) {
-          dmnsn_pop_scope(symtable);
-        } else {
-          dmnsn_delete_token_buffer(tbuffer);
-        }
+        dmnsn_delete_token_buffer(tbuffer);
         tbuffer = dmnsn_yyget_extra(yyscanner);
       }
+
+      dmnsn_yyset_extra(tbuffer->prev, yyscanner);
+      if (tbuffer->type == DMNSN_T_MACRO) {
+        dmnsn_pop_scope(symtable);
+      } else {
+        dmnsn_delete_token_buffer(tbuffer);
+      }
+      tbuffer = dmnsn_yyget_extra(yyscanner);
     }
   }
 
