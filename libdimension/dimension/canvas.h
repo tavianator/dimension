@@ -75,5 +75,6 @@ dmnsn_get_pixel(const dmnsn_canvas *canvas, unsigned int x, unsigned int y)
 
 void dmnsn_set_pixel(dmnsn_canvas *canvas, unsigned int x, unsigned int y,
                      dmnsn_color color);
+void dmnsn_clear_canvas(dmnsn_canvas *canvas, dmnsn_color color);
 
 #endif /* DIMENSION_CANVAS_H */

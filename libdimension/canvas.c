@@ -95,3 +95,16 @@ dmnsn_set_pixel(dmnsn_canvas *canvas, unsigned int x, unsigned int y,
     (*optimizer.optimizer_fn)(canvas, optimizer, x, y);
   }
 }
+
+/* Fill a canvas with a solid color */
+void
+dmnsn_clear_canvas(dmnsn_canvas *canvas, dmnsn_color color)
+{
+  unsigned int x;
+  for (x = 0; x < canvas->x; ++x) {
+    unsigned int y;
+    for (y = 0; y < canvas->y; ++y) {
+      dmnsn_set_pixel(canvas, x, y, color);
+    }
+  }
+}

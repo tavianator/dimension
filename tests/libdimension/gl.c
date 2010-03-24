@@ -45,6 +45,8 @@ main() {
     return EXIT_FAILURE;
   }
 
+  dmnsn_clear_canvas(scene->canvas, dmnsn_black);
+
   /* Create a new glX display */
   display = dmnsn_new_display(scene->canvas);
   if (!display) {
