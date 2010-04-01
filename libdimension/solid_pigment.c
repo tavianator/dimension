@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 
 /* Solid color pigment callback */
@@ -35,6 +36,7 @@ dmnsn_new_solid_pigment(dmnsn_color color)
     solid = malloc(sizeof(dmnsn_color));
     if (!solid) {
       dmnsn_delete_pigment(pigment);
+      errno = ENOMEM;
       return NULL;
     }
     *solid = color;

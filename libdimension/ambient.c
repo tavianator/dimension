@@ -19,8 +19,9 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <stdlib.h> /* For malloc */
+#include <errno.h>
 #include <math.h>
+#include <stdlib.h> /* For malloc */
 
 /*
  * Ambient finish
@@ -44,6 +45,7 @@ dmnsn_new_ambient_finish(dmnsn_color ambient)
     dmnsn_color *param = malloc(sizeof(dmnsn_color));
     if (!param) {
       dmnsn_delete_finish(finish);
+      errno = ENOMEM;
       return NULL;
     }
 

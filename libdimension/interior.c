@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 
 /* Allocate an interior */
@@ -29,6 +30,8 @@ dmnsn_new_interior()
   if (interior) {
     interior->ior     = 1.0;
     interior->free_fn = NULL;
+  } else {
+    errno = ENOMEM;
   }
   return interior;
 }

@@ -19,24 +19,28 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 
 /* Stubs for GL functions when compiled with --disable-gl */
 
 int
 dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 {
-  return 1;
+  errno = ENOTSUP;
+  return -1;
 }
 
 int
 dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 {
-  return 1;
+  errno = ENOTSUP;
+  return -1;
 }
 
 dmnsn_canvas *
 dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
                      unsigned int width, unsigned int height)
 {
+  errno = ENOTSUP;
   return NULL;
 }

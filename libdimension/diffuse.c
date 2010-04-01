@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 #include <math.h>
 
@@ -48,6 +49,7 @@ dmnsn_new_diffuse_finish(double diffuse)
     double *param = malloc(sizeof(double));
     if (!param) {
       dmnsn_delete_finish(finish);
+      errno = ENOMEM;
       return NULL;
     }
 

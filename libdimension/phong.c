@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 #include <math.h>
 
@@ -58,6 +59,7 @@ dmnsn_new_phong_finish(double specular, double exp)
     double *params = malloc(2*sizeof(double));
     if (!params) {
       dmnsn_delete_finish(finish);
+      errno = ENOMEM;
       return NULL;
     }
 

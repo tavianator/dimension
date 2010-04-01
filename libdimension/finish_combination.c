@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 #include <math.h>
 
@@ -126,6 +127,7 @@ dmnsn_new_finish_combination(dmnsn_finish *f1, dmnsn_finish *f2)
         dmnsn_delete_finish(finish);
         dmnsn_delete_finish(f2);
         dmnsn_delete_finish(f1);
+        errno = ENOMEM;
         return NULL;
       }
 

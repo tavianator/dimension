@@ -20,6 +20,7 @@
 
 #include "dimension.h"
 #include <pthread.h>
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 
 /* For thread synchronization */
@@ -46,6 +47,7 @@ dmnsn_new_progress()
     progress->rwlock = malloc(sizeof(pthread_rwlock_t));
     if (!progress->rwlock) {
       dmnsn_delete_progress(progress);
+      errno = ENOMEM;
       return NULL;
     }
     if (pthread_rwlock_init(progress->rwlock, NULL) != 0) {
@@ -56,6 +58,7 @@ dmnsn_new_progress()
     progress->cond = malloc(sizeof(pthread_cond_t));
     if (!progress->cond) {
       dmnsn_delete_progress(progress);
+      errno = ENOMEM;
       return NULL;
     }
     if (pthread_cond_init(progress->cond, NULL) != 0) {
@@ -66,12 +69,15 @@ dmnsn_new_progress()
     progress->mutex = malloc(sizeof(pthread_mutex_t));
     if (!progress->mutex) {
       dmnsn_delete_progress(progress);
+      errno = ENOMEM;
       return NULL;
     }
     if (pthread_mutex_init(progress->mutex, NULL) != 0) {
       dmnsn_delete_progress(progress);
       return NULL;
     }
+  } else {
+    errno = ENOMEM;
   }
 
   return progress;
@@ -105,7 +111,7 @@ dmnsn_delete_progress(dmnsn_progress *progress)
 int dmnsn_finish_progress(dmnsn_progress *progress)
 {
   void *ptr;
-  int retval = 1;
+  int retval = -1;
 
   if (progress) {
     if (pthread_join(progress->thread, &ptr) != 0) {

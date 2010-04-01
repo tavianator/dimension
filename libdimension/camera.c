@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 
 /* Allocate a new dummy camera */
@@ -28,6 +29,8 @@ dmnsn_new_camera()
   dmnsn_camera *camera = malloc(sizeof(dmnsn_camera));
   if (camera) {
     camera->free_fn = NULL;
+  } else {
+    errno = ENOMEM;
   }
   return camera;
 }

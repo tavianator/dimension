@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 #include <unistd.h> /* For sysconf */
 
@@ -31,6 +32,7 @@ dmnsn_new_scene()
     scene->default_texture = dmnsn_new_texture();
     if (!scene->default_texture) {
       dmnsn_delete_scene(scene);
+      errno = ENOMEM;
       return NULL;
     }
 
@@ -46,6 +48,8 @@ dmnsn_new_scene()
     if (nprocs < 1)
       nprocs = 1;
     scene->nthreads = nprocs;
+  } else {
+    errno = ENOMEM;
   }
   return scene;
 }

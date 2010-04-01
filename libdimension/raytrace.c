@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension_impl.h"
+#include <errno.h>
 
 /*
  * Boilerplate for multithreading
@@ -59,6 +60,7 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
     payload = malloc(sizeof(dmnsn_raytrace_payload));
     if (!payload) {
       dmnsn_delete_progress(progress);
+      errno = ENOMEM;
       return NULL;
     }
 
@@ -95,6 +97,8 @@ dmnsn_raytrace_scene_thread(void *ptr)
   int *retval = malloc(sizeof(int));
   if (retval) {
     *retval = dmnsn_raytrace_scene_multithread(payload);
+  } else {
+    errno = ENOMEM;
   }
   dmnsn_done_progress(payload->progress);
   free(payload);
@@ -121,13 +125,15 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
 
   payloads = malloc(nthreads*sizeof(dmnsn_raytrace_payload));
   if (!payloads) {
-    return 1;
+    errno = ENOMEM;
+    return -1;
   }
 
   threads = malloc(nthreads*sizeof(pthread_t));
   if (!threads) {
     free(payloads);
-    return 1;
+    errno = ENOMEM;
+    return -1;
   }
 
   /* Set up the progress object */
@@ -164,7 +170,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
       }
 
       free(payloads);
-      return 1;
+      return -1;
     }
   }
 
@@ -202,6 +208,8 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
     *retval = dmnsn_raytrace_scene_impl(payload->progress, payload->scene,
                                         payload->bvst,
                                         payload->index, payload->threads);
+  } else {
+    errno = ENOMEM;
   }
   return retval;
 }

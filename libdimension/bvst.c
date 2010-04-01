@@ -21,9 +21,6 @@
 #include "dimension_impl.h"
 #include <stdlib.h>
 
-static dmnsn_bvst_node *dmnsn_new_bvst_node();
-static void dmnsn_delete_bvst_node(dmnsn_bvst_node *node);
-
 /* Return an empty tree */
 dmnsn_bvst *
 dmnsn_new_bvst()
@@ -35,6 +32,16 @@ dmnsn_new_bvst()
     dmnsn_error(DMNSN_SEVERITY_HIGH, "BVST allocation failed.");
   }
   return tree;
+}
+
+static dmnsn_bvst_node *
+dmnsn_new_bvst_node()
+{
+  dmnsn_bvst_node *node = malloc(sizeof(dmnsn_bvst_node));
+  if (!node) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "BVST node allocation failed.");
+  }
+  return node;
 }
 
 /* Recursively copy the nodes of a BVST */
@@ -66,8 +73,14 @@ dmnsn_copy_bvst(dmnsn_bvst *tree)
   return copy;
 }
 
+static void
+dmnsn_delete_bvst_node(dmnsn_bvst_node *node)
+{
+  free(node);
+}
+
 /* Recursively free a BVST */
-void
+static void
 dmnsn_delete_bvst_recursive(dmnsn_bvst_node *node)
 {
   if (node) {
@@ -442,20 +455,4 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max,
   }
 
   return 0;
-}
-
-static dmnsn_bvst_node *
-dmnsn_new_bvst_node()
-{
-  dmnsn_bvst_node *node = malloc(sizeof(dmnsn_bvst_node));
-  if (!node) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "BVST node allocation failed.");
-  }
-  return node;
-}
-
-static void
-dmnsn_delete_bvst_node(dmnsn_bvst_node *node)
-{
-  free(node);
 }

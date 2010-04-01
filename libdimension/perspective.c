@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 
 /*
  * Perspective camera
@@ -41,6 +42,7 @@ dmnsn_new_perspective_camera()
     ptr = malloc(sizeof(dmnsn_matrix));
     if (!ptr) {
       dmnsn_delete_camera(camera);
+      errno = ENOMEM;
       return NULL;
     }
     *ptr = dmnsn_identity_matrix();

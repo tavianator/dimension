@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 
 /* Allocate a new dummy light */
@@ -30,6 +31,8 @@ dmnsn_new_light()
     light->light_fn = NULL;
     light->free_fn  = NULL;
     light->ptr      = NULL;
+  } else {
+    errno = ENOMEM;
   }
   return light;
 }

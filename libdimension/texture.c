@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 
 /* Allocate a dummy pigment */
@@ -28,6 +29,8 @@ dmnsn_new_pigment()
   dmnsn_pigment *pigment = malloc(sizeof(dmnsn_pigment));
   if (pigment) {
     pigment->free_fn = NULL;
+  } else {
+    errno = ENOMEM;
   }
   return pigment;
 }
@@ -55,6 +58,8 @@ dmnsn_new_finish()
     finish->ambient_fn    = NULL;
     finish->reflection_fn = NULL;
     finish->free_fn       = NULL;
+  } else {
+    errno = ENOMEM;
   }
   return finish;
 }
@@ -79,6 +84,8 @@ dmnsn_new_texture()
   if (texture) {
     texture->pigment = NULL;
     texture->finish  = NULL;
+  } else {
+    errno = ENOMEM;
   }
   return texture;
 }

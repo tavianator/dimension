@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 
 /*
  * Point light source
@@ -39,6 +40,7 @@ dmnsn_new_point_light(dmnsn_vector x0, dmnsn_color color)
     dmnsn_color *ptr = malloc(sizeof(dmnsn_color));
     if (!ptr) {
       dmnsn_delete_light(light);
+      errno = ENOMEM;
       return NULL;
     }
     *ptr = color;

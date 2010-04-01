@@ -21,8 +21,9 @@
 #include "dimension.h"
 #include <pthread.h>
 #include <png.h>
-#include <setjmp.h>
 #include <arpa/inet.h>
+#include <errno.h>
+#include <setjmp.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -51,7 +52,8 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
 
   optimizer.ptr = malloc(4*canvas->x*canvas->y*sizeof(uint16_t));
   if (!optimizer.ptr) {
-    return 1;
+    errno = ENOMEM;
+    return -1;
   }
 
   dmnsn_optimize_canvas(canvas, optimizer);
@@ -144,6 +146,7 @@ dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
     payload = malloc(sizeof(dmnsn_png_write_payload));
     if (!payload) {
       dmnsn_delete_progress(progress);
+      errno = ENOMEM;
       return NULL;
     }
 
@@ -185,6 +188,7 @@ dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
     payload = malloc(sizeof(dmnsn_png_write_payload));
     if (!payload) {
       dmnsn_delete_progress(progress);
+      errno = ENOMEM;
       return NULL;
     }
 
@@ -235,7 +239,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
   if (retval) {
     *payload->canvas = dmnsn_png_read_canvas_impl(payload->progress,
                                                   payload->file);
-    *retval = *payload->canvas ? 0 : 1; /* Fail if it returned NULL */
+    *retval = *payload->canvas ? 0 : -1; /* Fail if it returned NULL */
   }
   dmnsn_done_progress(payload->progress);
   free(payload);
@@ -258,7 +262,8 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
 
   if (!file) {
     /* file was NULL */
-    return 1;
+    errno = EINVAL;
+    return -1;
   }
 
   width = canvas->x;
@@ -269,14 +274,14 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (!png_ptr) {
     /* Couldn't create libpng write struct */
-    return 1;
+    return -1;
   }
 
   info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr) {
     /* Couldn't create libpng info struct */
     png_destroy_write_struct(&png_ptr, NULL);
-    return 1;
+    return -1;
   }
 
   /* libpng will longjmp here if it encounters an error from here on */
@@ -284,7 +289,7 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
     /* libpng error */
     free(row);
     png_destroy_write_struct(&png_ptr, &info_ptr);
-    return 1;
+    return -1;
   }
 
   /* Associate file with the libpng write struct */
@@ -329,7 +334,8 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   row = malloc(4*sizeof(uint16_t)*width);
   if (!row) {
     png_destroy_write_struct(&png_ptr, &info_ptr);
-    return 1;
+    errno = ENOMEM;
+    return -1;
   }
 
   /* Write the pixels */
@@ -443,12 +449,14 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
 
   if (!file) {
     /* file was NULL */
+    errno = EINVAL;
     return NULL;
   }
 
   fread(header, 1, 8, file);
   if (png_sig_cmp(header, 0, 8)) {
     /* file is not a PNG file, or the read failed */
+    errno = EINVAL;
     return NULL;
   }
 
@@ -519,6 +527,7 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
   image = malloc(rowbytes*height);
   if (!image) {
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    errno = ENOMEM;
     return NULL;
   }
 
@@ -528,6 +537,7 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
   if (!row_pointers) {
     free(image);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    errno = ENOMEM;
     return NULL;
   }
 

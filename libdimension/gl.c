@@ -20,6 +20,7 @@
 
 #include "dimension.h"
 #include <GL/gl.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -49,7 +50,8 @@ dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
   /* Allocate a buffer to hold RGB values */
   optimizer.ptr = malloc(4*canvas->x*canvas->y*sizeof(GLushort));
   if (!optimizer.ptr) {
-    return 1;
+    errno = ENOTSUP;
+    return -1;
   }
 
   /* Set a new optimizer */
@@ -83,7 +85,8 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   /* We couldn't, so transform the canvas to RGB now */
   pixels = malloc(4*width*height*sizeof(GLushort));
   if (!pixels) {
-    return 1;
+    errno = ENOMEM;
+    return -1;
   }
 
   for (y = 0; y < height; ++y) {
@@ -150,6 +153,7 @@ dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
   pixels = malloc(4*width*height*sizeof(GLushort));
   if (!pixels) {
     dmnsn_delete_canvas(canvas);
+    errno = ENOMEM;
     return NULL;
   }
 

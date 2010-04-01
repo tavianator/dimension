@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <errno.h>
 #include <stdlib.h> /* For malloc */
 
 /* Allocate an intersection - cannot fail */
@@ -49,6 +50,8 @@ dmnsn_new_object()
     object->interior = NULL;
     object->trans    = dmnsn_identity_matrix();
     object->free_fn  = NULL;
+  } else {
+    errno = ENOMEM;
   }
   return object;
 }

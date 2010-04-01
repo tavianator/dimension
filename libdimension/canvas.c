@@ -20,6 +20,7 @@
 
 #include "dimension.h"
 #include <pthread.h>
+#include <errno.h>
 #include <stdlib.h> /* For malloc(), free() */
 
 /* Allocate a new canvas, of width x and height y */
@@ -41,8 +42,11 @@ dmnsn_new_canvas(unsigned int x, unsigned int y)
     canvas->pixels = malloc(sizeof(dmnsn_color)*x*y);
     if (!canvas->pixels) {
       dmnsn_delete_canvas(canvas);
+      errno = ENOMEM;
       return NULL;
     }
+  } else {
+    errno = ENOMEM;
   }
 
   return canvas;
