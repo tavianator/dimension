@@ -54,7 +54,23 @@ directives_exp="$(echo -n \
       (identifier "Make_Sphere") \( (identifier "Counter") \)
     #end
     (identifier "Inc") \( (identifier "Counter") \)
-  #end)' \
+  #end
+
+  #declare (identifier "Box") =
+    box {
+      < - (integer "1") , - (integer "1") , - (integer "1") > ,
+      < (integer "1") , (integer "1") , (integer "1") >
+      pigment {
+        color rgb < (integer "1") , (integer "1") , (integer "1") >
+      }
+    }
+
+  object {
+    (identifier "Box")
+    finish {
+      phong (float "0.2")
+    }
+  })' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 $(echo -n \
 '((sphere
@@ -68,7 +84,15 @@ $(echo -n \
     (integer 1)
     (object-modifiers
       (pigment (vector (integer 1) (integer 1) (integer 1)
-                       (integer 0) (integer 0))))))' \
+                       (integer 0) (integer 0)))))
+  (box
+    (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
+    (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
+    (object-modifiers
+      (pigment (vector (integer 1) (integer 1) (integer 1)
+                       (integer 0) (integer 0)))
+      (finish
+         (phong (float 0.2))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"
 
 if [ "$directives" != "$directives_exp" ]; then

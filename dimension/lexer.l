@@ -220,6 +220,7 @@ unsigned long wchar;
 "min"                   RETURN_TOKEN(DMNSN_T_MIN);
 "mod"                   RETURN_TOKEN(DMNSN_T_MOD);
 "no"                    RETURN_TOKEN(DMNSN_T_NO);
+"object"                RETURN_TOKEN(DMNSN_T_OBJECT);
 "off"                   RETURN_TOKEN(DMNSN_T_OFF);
 "on"                    RETURN_TOKEN(DMNSN_T_ON);
 "perspective"           RETURN_TOKEN(DMNSN_T_PERSPECTIVE);

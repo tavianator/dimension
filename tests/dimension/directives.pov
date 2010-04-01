@@ -63,3 +63,18 @@
 
   Inc(Counter)
 #end
+
+#declare Box =
+  box {
+    <-1, -1, -1>, <1, 1, 1>
+    pigment {
+      color rgb <1, 1, 1>
+    }
+  }
+
+object {
+  Box
+  finish {
+    phong 0.2
+  }
+}

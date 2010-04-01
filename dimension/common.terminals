@@ -306,7 +306,7 @@
 %token DMNSN_T_NORMAL_MAP
 %token DMNSN_T_NORMAL_VECTORS
 %token DMNSN_T_NUMBER_OF_WAVES
-%token DMNSN_T_OBJECT
+%token DMNSN_T_OBJECT                   "object"
 %token DMNSN_T_OCTAVES
 %token DMNSN_T_OFF                      "off"
 %token DMNSN_T_OFFSET
