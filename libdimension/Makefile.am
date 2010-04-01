@@ -63,7 +63,6 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           object.c                                             \
                           perspective.c                                        \
                           phong.c                                              \
-                          png.c                                                \
                           point_light.c                                        \
                           progress.c                                           \
                           raytrace.c                                           \
@@ -73,7 +72,14 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           sphere.c                                             \
                           texture.c
 libdimension_la_LDFLAGS = -version-info 0:0:0 $(AM_LDFLAGS)
-libdimension_la_LIBADD  = -lm -lpthread -lpng
+libdimension_la_LIBADD  = -lm -lpthread
+
+if PNG
+libdimension_la_SOURCES += png.c
+libdimension_la_LIBADD  += -lpng
+else
+libdimension_la_SOURCES += png-stubs.c
+endif
 
 if GL
 libdimension_la_SOURCES += gl.c

@@ -29,6 +29,10 @@ check_PROGRAMS    = error-test                                                 \
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
 
+if !PNG
+XFAIL_TESTS += png-test
+endif
+
 if !GL
 XFAIL_TESTS += gl-test
 endif

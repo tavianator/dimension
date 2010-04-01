@@ -31,6 +31,14 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
+dnl PNG canvas export
+AC_ARG_ENABLE([png],
+              [AS_HELP_STRING([--enable-png],
+                              [Enable PNG canvas export [default=yes]])],
+              [],
+              [enable_png=yes])
+AM_CONDITIONAL([PNG], [test "$enable_png" != "no"])
+
 dnl OpenGL canvas export
 AC_ARG_ENABLE([gl],
               [AS_HELP_STRING([--enable-gl],
