@@ -31,6 +31,14 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
+dnl OpenGL canvas export
+AC_ARG_ENABLE([gl],
+              [AS_HELP_STRING([--enable-gl],
+                              [Enable OpenGL canvas export [default=yes]])],
+              [],
+              [enable_gl=yes])
+AM_CONDITIONAL([GL], [test "$enable_gl" != "no"])
+
 dnl Profile-guided optimization (default disabled)
 AC_ARG_ENABLE([pgo],
               [AS_HELP_STRING([--enable-pgo],

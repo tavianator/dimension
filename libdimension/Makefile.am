@@ -57,7 +57,6 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           error.c                                              \
                           finish_combination.c                                 \
                           geometry.c                                           \
-                          gl.c                                                 \
                           inlines.c                                            \
                           interior.c                                           \
                           light.c                                              \
@@ -74,7 +73,14 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           sphere.c                                             \
                           texture.c
 libdimension_la_LDFLAGS = -version-info 0:0:0 $(AM_LDFLAGS)
-libdimension_la_LIBADD  = -lm -lpthread -lpng -lGL
+libdimension_la_LIBADD  = -lm -lpthread -lpng
+
+if GL
+libdimension_la_SOURCES += gl.c
+libdimension_la_LIBADD  += -lGL
+else
+libdimension_la_SOURCES += gl-stubs.c
+endif
 
 if PGO
 

@@ -29,6 +29,10 @@ check_PROGRAMS    = error-test                                                 \
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
 
+if !GL
+XFAIL_TESTS += gl-test
+endif
+
 .PHONY: clean-local-png-test
 clean-local: clean-local-png-test
 
@@ -39,6 +43,8 @@ libdimension_tests_la_LIBADD = $(top_builddir)/libdimension/libdimension-pgo.la
 else
 libdimension_tests_la_LIBADD = $(top_builddir)/libdimension/libdimension.la
 endif
+
+libdimension_tests_la_LIBADD += -lX11 -lGL
 
 error_test_SOURCES = error.c
 error_test_LDADD   = libdimension-tests.la
