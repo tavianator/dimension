@@ -31,8 +31,8 @@
 static dmnsn_intersection *
 dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line);
 
-static int dmnsn_sphere_inside_fn(const dmnsn_object *sphere,
-                                  dmnsn_vector point);
+static bool dmnsn_sphere_inside_fn(const dmnsn_object *sphere,
+                                   dmnsn_vector point);
 
 /* Allocate a new sphere */
 dmnsn_object *
@@ -81,7 +81,7 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line)
 }
 
 /* Return whether a point is inside a sphere (x**2 + y**2 + z**2 < 1.0) */
-static int
+static bool
 dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
 {
   return point.x*point.x + point.y*point.y + point.z*point.z < 1.0;

@@ -25,6 +25,8 @@
 #ifndef DIMENSION_OBJECT_H
 #define DIMENSION_OBJECT_H
 
+#include <stdbool.h>
+
 /* A type to represent a ray-object intersection */
 typedef struct dmnsn_intersection {
   /* The ray and point which intersected */
@@ -51,8 +53,8 @@ typedef struct dmnsn_object dmnsn_object;
 typedef dmnsn_intersection *
 dmnsn_object_intersection_fn(const dmnsn_object *object, dmnsn_line line);
 
-typedef int dmnsn_object_inside_fn(const dmnsn_object *object,
-                                   dmnsn_vector point);
+typedef bool dmnsn_object_inside_fn(const dmnsn_object *object,
+                                    dmnsn_vector point);
 
 /* dmnsn_object definition */
 struct dmnsn_object {

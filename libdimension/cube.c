@@ -29,8 +29,8 @@
 /* Cube callbacks */
 static dmnsn_intersection *dmnsn_cube_intersection_fn(const dmnsn_object *cube,
                                                       dmnsn_line line);
-static int dmnsn_cube_inside_fn(const dmnsn_object *cube,
-                                  dmnsn_vector point);
+static bool dmnsn_cube_inside_fn(const dmnsn_object *cube,
+                                 dmnsn_vector point);
 
 /* Allocate a new cube object */
 dmnsn_object *
@@ -135,7 +135,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
 }
 
 /* Inside callback for a cube */
-static int
+static bool
 dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
 {
   return point.x > -1.0 && point.x < 1.0
