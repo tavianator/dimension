@@ -202,13 +202,8 @@ static void
 dmnsn_bvst_node_swallow(dmnsn_bvst_node *node,
                         dmnsn_vector min, dmnsn_vector max)
 {
-  if (node->min.x > min.x) node->min.x = min.x;
-  if (node->min.y > min.y) node->min.y = min.y;
-  if (node->min.z > min.z) node->min.z = min.z;
-
-  if (node->max.x < max.x) node->max.x = max.x;
-  if (node->max.y < max.y) node->max.y = max.y;
-  if (node->max.z < max.z) node->max.z = max.z;
+  node->min = dmnsn_vector_min(node->min, min);
+  node->max = dmnsn_vector_max(node->max, max);
 }
 
 /* Tree rotations */

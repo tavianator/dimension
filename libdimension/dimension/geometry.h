@@ -163,6 +163,26 @@ dmnsn_vector_normalize(dmnsn_vector n)
   return dmnsn_vector_div(n, dmnsn_vector_norm(n));
 }
 
+DMNSN_INLINE dmnsn_vector
+dmnsn_vector_min(dmnsn_vector a, dmnsn_vector b)
+{
+  dmnsn_vector ret = a;
+  if (b.x < ret.x) ret.x = b.x;
+  if (b.y < ret.y) ret.y = b.y;
+  if (b.z < ret.z) ret.z = b.z;
+  return ret;
+}
+
+DMNSN_INLINE dmnsn_vector
+dmnsn_vector_max(dmnsn_vector a, dmnsn_vector b)
+{
+  dmnsn_vector ret = a;
+  if (b.x > ret.x) ret.x = b.x;
+  if (b.y > ret.y) ret.y = b.y;
+  if (b.z > ret.z) ret.z = b.z;
+  return ret;
+}
+
 double dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2,
                                dmnsn_vector axis);
 
