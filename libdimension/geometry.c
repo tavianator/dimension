@@ -359,6 +359,53 @@ dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs)
   return dmnsn_vector_div(r, w);
 }
 
+/* Give an axis-aligned box that contains the given box transformed by `lhs' */
+dmnsn_bounding_box
+dmnsn_matrix_bounding_box_mul(dmnsn_matrix trans, dmnsn_bounding_box box)
+{
+  dmnsn_vector corner;
+  dmnsn_bounding_box ret;
+  ret.min = dmnsn_matrix_vector_mul(trans, box.min);
+  ret.max = ret.min;
+
+  corner  = dmnsn_new_vector(box.min.x, box.min.y, box.max.z);
+  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  ret.min = dmnsn_vector_min(ret.min, corner);
+  ret.max = dmnsn_vector_max(ret.max, corner);
+
+  corner  = dmnsn_new_vector(box.min.x, box.max.y, box.min.z);
+  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  ret.min = dmnsn_vector_min(ret.min, corner);
+  ret.max = dmnsn_vector_max(ret.max, corner);
+
+  corner  = dmnsn_new_vector(box.min.x, box.max.y, box.max.z);
+  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  ret.min = dmnsn_vector_min(ret.min, corner);
+  ret.max = dmnsn_vector_max(ret.max, corner);
+
+  corner  = dmnsn_new_vector(box.max.x, box.min.y, box.min.z);
+  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  ret.min = dmnsn_vector_min(ret.min, corner);
+  ret.max = dmnsn_vector_max(ret.max, corner);
+
+  corner  = dmnsn_new_vector(box.max.x, box.min.y, box.max.z);
+  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  ret.min = dmnsn_vector_min(ret.min, corner);
+  ret.max = dmnsn_vector_max(ret.max, corner);
+
+  corner  = dmnsn_new_vector(box.max.x, box.max.y, box.min.z);
+  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  ret.min = dmnsn_vector_min(ret.min, corner);
+  ret.max = dmnsn_vector_max(ret.max, corner);
+
+  corner  = dmnsn_new_vector(box.max.x, box.max.y, box.max.z);
+  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  ret.min = dmnsn_vector_min(ret.min, corner);
+  ret.max = dmnsn_vector_max(ret.max, corner);
+
+  return ret;
+}
+
 /* Solve for the t value such that x0 + t*n = x */
 double
 dmnsn_line_index(dmnsn_line l, dmnsn_vector x)

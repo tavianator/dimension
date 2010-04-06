@@ -68,7 +68,7 @@ struct dmnsn_object {
   dmnsn_matrix trans, trans_inv;
 
   /* Bounding box */
-  dmnsn_vector min, max;
+  dmnsn_bounding_box bounding_box;
 
   /* Callback functions */
   dmnsn_object_intersection_fn *intersection_fn;

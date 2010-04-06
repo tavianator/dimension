@@ -26,18 +26,22 @@
 #define DIMENSION_GEOMETRY_H
 
 #include <math.h>
+#include <stdbool.h>
 
-/* Vector and matrix types. */
+/* Vector and matrix types */
 
-typedef struct { double x, y, z; } dmnsn_vector;
+typedef struct dmnsn_vector { double x, y, z; } dmnsn_vector;
 
-typedef struct { double n[4][4]; } dmnsn_matrix;
+typedef struct dmnsn_matrix { double n[4][4]; } dmnsn_matrix;
 
-/* A line, or ray. */
-typedef struct {
+/* A line, or ray */
+typedef struct dmnsn_line {
   dmnsn_vector x0; /* A point on the line */
   dmnsn_vector n;  /* A normal vector; the direction of the line */
 } dmnsn_line;
+
+/* A bounding box */
+typedef struct dmnsn_bounding_box { dmnsn_vector min, max; } dmnsn_bounding_box;
 
 /* Constants */
 
@@ -189,6 +193,8 @@ double dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2,
 dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
 dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
 dmnsn_vector dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs);
+dmnsn_bounding_box dmnsn_matrix_bounding_box_mul(dmnsn_matrix lhs,
+                                                 dmnsn_bounding_box rhs);
 
 /* Affine line transformation; n = lhs*(x0 + n) - lhs*x0, x0 *= lhs */
 DMNSN_INLINE dmnsn_line
@@ -226,5 +232,13 @@ dmnsn_line_add_epsilon(dmnsn_line l)
 
 /* Solve for the t value such that x0 + t*n = x */
 double dmnsn_line_index(dmnsn_line l, dmnsn_vector x);
+
+/* Return whether p is within the axis-aligned bounding box */
+DMNSN_INLINE bool
+dmnsn_bounding_box_contains(dmnsn_bounding_box box, dmnsn_vector p)
+{
+  return (p.x >= box.min.x && p.y >= box.min.y && p.z >= box.min.z)
+      && (p.x <= box.max.x && p.y <= box.max.y && p.z <= box.max.z);
+}
 
 #endif /* DIMENSION_GEOMETRY_H */

@@ -46,8 +46,8 @@ struct dmnsn_bvst_node {
   /* Parent node for easy backtracking */
   dmnsn_bvst_node *parent;
 
-  /* Bounding box corners */
-  dmnsn_vector min, max;
+  /* Bounding box */
+  dmnsn_bounding_box bounding_box;
 
   /* Node payload */
   dmnsn_object *object;

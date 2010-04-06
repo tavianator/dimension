@@ -40,10 +40,10 @@ dmnsn_new_sphere()
 {
   dmnsn_object *sphere = dmnsn_new_object();
   if (sphere) {
-    sphere->intersection_fn = &dmnsn_sphere_intersection_fn;
-    sphere->inside_fn       = &dmnsn_sphere_inside_fn;
-    sphere->min             = dmnsn_new_vector(-1.0, -1.0, -1.0);
-    sphere->max             = dmnsn_new_vector(1.0, 1.0, 1.0);
+    sphere->intersection_fn  = &dmnsn_sphere_intersection_fn;
+    sphere->inside_fn        = &dmnsn_sphere_inside_fn;
+    sphere->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
+    sphere->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
   }
   return sphere;
 }

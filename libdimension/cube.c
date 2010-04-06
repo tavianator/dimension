@@ -38,10 +38,10 @@ dmnsn_new_cube()
 {
   dmnsn_object *cube = dmnsn_new_object();
   if (cube) {
-    cube->intersection_fn = &dmnsn_cube_intersection_fn;
-    cube->inside_fn       = &dmnsn_cube_inside_fn;
-    cube->min             = dmnsn_new_vector(-1.0, -1.0, -1.0);
-    cube->max             = dmnsn_new_vector(1.0, 1.0, 1.0);
+    cube->intersection_fn  = &dmnsn_cube_intersection_fn;
+    cube->inside_fn        = &dmnsn_cube_inside_fn;
+    cube->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
+    cube->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
   }
   return cube;
 }

@@ -100,12 +100,9 @@ dmnsn_delete_bvst(dmnsn_bvst *tree)
   }
 }
 
-/* Return whether node1 contains node2 */
-static int dmnsn_box_contains(dmnsn_vector p,
-                              dmnsn_vector min, dmnsn_vector max);
 /* Expand node to contain the bounding box from min to max */
 static void dmnsn_bvst_node_swallow(dmnsn_bvst_node *node,
-                                    dmnsn_vector min, dmnsn_vector max);
+                                    dmnsn_bounding_box box);
 
 /* Insert an object into the tree */
 void
@@ -121,46 +118,18 @@ dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object)
   node->parent = NULL;
   node->object = object;
 
-  /* Calculate the new bounding box by finding the minimum coordinate of the
-     transformed corners of the object's original bounding box */
-
-  node->min = dmnsn_matrix_vector_mul(object->trans, object->min);
-  node->max = node->min;
-
-  dmnsn_vector corner;
-  corner = dmnsn_new_vector(object->min.x, object->min.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_bvst_node_swallow(node, corner, corner);
-
-  corner = dmnsn_new_vector(object->min.x, object->max.y, object->min.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_bvst_node_swallow(node, corner, corner);
-
-  corner = dmnsn_new_vector(object->min.x, object->max.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_bvst_node_swallow(node, corner, corner);
-
-  corner = dmnsn_new_vector(object->max.x, object->min.y, object->min.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_bvst_node_swallow(node, corner, corner);
-
-  corner = dmnsn_new_vector(object->max.x, object->min.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_bvst_node_swallow(node, corner, corner);
-
-  corner = dmnsn_new_vector(object->max.x, object->max.y, object->min.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_bvst_node_swallow(node, corner, corner);
-
-  corner = dmnsn_new_vector(object->max.x, object->max.y, object->max.z);
-  corner = dmnsn_matrix_vector_mul(object->trans, corner);
-  dmnsn_bvst_node_swallow(node, corner, corner);
+  /* Calculate the new bounding box */
+  node->bounding_box = dmnsn_matrix_bounding_box_mul(object->trans,
+                                                     object->bounding_box);
 
   /* Now insert the node */
 
   while (parent) {
-    if (dmnsn_box_contains(node->min, parent->min, parent->max)
-        && dmnsn_box_contains(node->max, parent->min, parent->max)) {
+    if (dmnsn_bounding_box_contains(parent->bounding_box,
+                                    node->bounding_box.min)
+        && dmnsn_bounding_box_contains(parent->bounding_box,
+                                       node->bounding_box.max))
+    {
       /* parent fully contains node */
       if (parent->contains)
         parent = parent->contains;
@@ -173,7 +142,7 @@ dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object)
     } else {
       /* Expand node's bounding box to fully contain parent's if it doesn't
          already */
-      dmnsn_bvst_node_swallow(node, parent->min, parent->max);
+      dmnsn_bvst_node_swallow(node, parent->bounding_box);
       /* node now fully contains parent */
       if (parent->container)
         parent = parent->container;
@@ -189,21 +158,12 @@ dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object)
   dmnsn_bvst_splay(tree, node);
 }
 
-/* Return whether p is within the axis-aligned box with corners min and max */
-static int
-dmnsn_box_contains(dmnsn_vector p, dmnsn_vector min, dmnsn_vector max)
-{
-  return (p.x >= min.x && p.y >= min.y && p.z >= min.z)
-    && (p.x <= max.x && p.y <= max.y && p.z <= max.z);
-}
-
 /* Expand node to contain the bounding box from min to max */
 static void
-dmnsn_bvst_node_swallow(dmnsn_bvst_node *node,
-                        dmnsn_vector min, dmnsn_vector max)
+dmnsn_bvst_node_swallow(dmnsn_bvst_node *node, dmnsn_bounding_box box)
 {
-  node->min = dmnsn_vector_min(node->min, min);
-  node->max = dmnsn_vector_max(node->max, max);
+  node->bounding_box.min = dmnsn_vector_min(node->bounding_box.min, box.min);
+  node->bounding_box.max = dmnsn_vector_max(node->bounding_box.max, box.max);
 }
 
 /* Tree rotations */
@@ -320,8 +280,8 @@ dmnsn_bvst_search(dmnsn_bvst *tree, dmnsn_line ray)
   return result.intersection;
 }
 
-static int dmnsn_ray_box_intersection(dmnsn_line ray, dmnsn_vector min,
-                                      dmnsn_vector max, double t);
+static bool dmnsn_ray_box_intersection(dmnsn_line ray, dmnsn_bounding_box box,
+                                       double t);
 
 static dmnsn_bvst_search_result
 dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
@@ -342,15 +302,14 @@ dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
     dmnsn_delete_intersection(result_temp.intersection);
   }
 
-  if (dmnsn_box_contains(ray.x0, node->min, node->max)
-      || dmnsn_ray_box_intersection(ray, node->min, node->max, t))
+  if (dmnsn_bounding_box_contains(node->bounding_box, ray.x0)
+      || dmnsn_ray_box_intersection(ray, node->bounding_box, t))
   {
     /* Transform the ray according to the object */
     ray_trans = dmnsn_matrix_line_mul(node->object->trans_inv, ray);
 
-    if (dmnsn_box_contains(ray_trans.x0, node->object->min, node->object->max)
-        || dmnsn_ray_box_intersection(ray_trans, node->object->min,
-                                      node->object->max, t))
+    if (dmnsn_bounding_box_contains(node->object->bounding_box, ray_trans.x0)
+        || dmnsn_ray_box_intersection(ray_trans, node->object->bounding_box, t))
     {
       result_temp.intersection =
         (*node->object->intersection_fn)(node->object, ray_trans);
@@ -394,60 +353,65 @@ dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
   return result;
 }
 
-static int
-dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector min, dmnsn_vector max,
-                           double t)
+static bool
+dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 {
   double t_temp;
   dmnsn_vector p;
 
   if (line.n.x != 0.0) {
-    /* x == min.x */
-    t_temp = (min.x - line.x0.x)/line.n.x;
+    /* x == box.min.x */
+    t_temp = (box.min.x - line.x0.x)/line.n.x;
     p = dmnsn_line_point(line, t_temp);
-    if (p.y >= min.y && p.y <= max.y && p.z >= min.z && p.z <= max.z
+    if (p.y >= box.min.y && p.y <= box.max.y
+        && p.z >= box.min.z && p.z <= box.max.z
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return 1;
+      return true;
 
-    /* x == max.x */
-    t_temp = (max.x - line.x0.x)/line.n.x;
+    /* x == box.max.x */
+    t_temp = (box.max.x - line.x0.x)/line.n.x;
     p = dmnsn_line_point(line, t_temp);
-    if (p.y >= min.y && p.y <= max.y && p.z >= min.z && p.z <= max.z
+    if (p.y >= box.min.y && p.y <= box.max.y
+        && p.z >= box.min.z && p.z <= box.max.z
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return 1;
+      return true;
   }
 
   if (line.n.y != 0.0) {
-    /* y == -1.0 */
-    t_temp = (min.y - line.x0.y)/line.n.y;
+    /* y == box.min.y */
+    t_temp = (box.min.y - line.x0.y)/line.n.y;
     p = dmnsn_line_point(line, t_temp);
-    if (p.x >= min.x && p.x <= max.x && p.z >= min.z && p.z <= max.z
+    if (p.x >= box.min.x && p.x <= box.max.x
+        && p.z >= box.min.z && p.z <= box.max.z
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return 1;
+      return true;
 
-    /* y == 1.0 */
-    t_temp = (max.y - line.x0.y)/line.n.y;
+    /* y == box.max.y */
+    t_temp = (box.max.y - line.x0.y)/line.n.y;
     p = dmnsn_line_point(line, t_temp);
-    if (p.x >= min.x && p.x <= max.x && p.z >= min.z && p.z <= max.z
+    if (p.x >= box.min.x && p.x <= box.max.x
+        && p.z >= box.min.z && p.z <= box.max.z
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return 1;
+      return true;
   }
 
   if (line.n.z != 0.0) {
-    /* z == -1.0 */
-    t_temp = (min.z - line.x0.z)/line.n.z;
+    /* z == box.min.z */
+    t_temp = (box.min.z - line.x0.z)/line.n.z;
     p = dmnsn_line_point(line, t_temp);
-    if (p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y
+    if (p.x >= box.min.x && p.x <= box.max.x
+        && p.y >= box.min.y && p.y <= box.max.y
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return 1;
+      return true;
 
-    /* z == 1.0 */
-    t_temp = (max.z - line.x0.z)/line.n.z;
+    /* z == box.max.z */
+    t_temp = (box.max.z - line.x0.z)/line.n.z;
     p = dmnsn_line_point(line, t_temp);
-    if (p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y
+    if (p.x >= box.min.x && p.x <= box.max.x
+        && p.y >= box.min.y && p.y <= box.max.y
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return 1;
+      return true;
   }
 
-  return 0;
+  return false;
 }
