@@ -25,7 +25,7 @@ dmnsn_intersection *
 dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line)
 {
   dmnsn_intersection *intersection = dmnsn_new_intersection();
-  intersection->t       = (object->min.z - line.x0.z)/line.n.z;
+  intersection->t       = (object->bounding_box.min.z - line.x0.z)/line.n.z;
   intersection->texture = object->texture;
   return intersection;
 }
@@ -38,31 +38,31 @@ dmnsn_randomize_bounding_box(dmnsn_object *object)
   rand1 = 2.0*((double)rand())/RAND_MAX - 1.0;
   rand2 = 2.0*((double)rand())/RAND_MAX - 1.0;
   if (rand1 < rand2) {
-    object->min.x = rand1;
-    object->max.x = rand2;
+    object->bounding_box.min.x = rand1;
+    object->bounding_box.max.x = rand2;
   } else {
-    object->max.x = rand1;
-    object->min.x = rand2;
+    object->bounding_box.max.x = rand1;
+    object->bounding_box.min.x = rand2;
   }
 
   rand1 = 2.0*((double)rand())/RAND_MAX - 1.0;
   rand2 = 2.0*((double)rand())/RAND_MAX - 1.0;
   if (rand1 < rand2) {
-    object->min.y = rand1;
-    object->max.y = rand2;
+    object->bounding_box.min.y = rand1;
+    object->bounding_box.max.y = rand2;
   } else {
-    object->max.y = rand1;
-    object->min.y = rand2;
+    object->bounding_box.max.y = rand1;
+    object->bounding_box.min.y = rand2;
   }
 
   rand1 = 2.0*((double)rand())/RAND_MAX - 1.0;
   rand2 = 2.0*((double)rand())/RAND_MAX - 1.0;
   if (rand1 < rand2) {
-    object->min.z = rand1;
-    object->max.z = rand2;
+    object->bounding_box.min.z = rand1;
+    object->bounding_box.max.z = rand2;
   } else {
-    object->max.z = rand1;
-    object->min.z = rand2;
+    object->bounding_box.max.z = rand1;
+    object->bounding_box.min.z = rand2;
   }
 }
 
