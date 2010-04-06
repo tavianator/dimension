@@ -86,7 +86,6 @@ dmnsn_new_default_scene()
     dmnsn_delete_scene(scene);
     return NULL;
   }
-  dmnsn_array_push(scene->objects, &sphere);
 
   sphere->texture = dmnsn_new_texture();
   if (!sphere->texture) {
@@ -104,13 +103,14 @@ dmnsn_new_default_scene()
 
   dmnsn_object *cube = dmnsn_new_cube();
   if (!cube) {
+    dmnsn_delete_object(sphere);
     dmnsn_delete_scene(scene);
     return NULL;
   }
-  dmnsn_array_push(scene->objects, &cube);
 
   cube->texture = dmnsn_new_texture();
   if (!cube->texture) {
+    dmnsn_delete_object(sphere);
     dmnsn_delete_scene(scene);
     return NULL;
   }
@@ -120,6 +120,7 @@ dmnsn_new_default_scene()
   cube_color.trans  = 0.5;
   cube->texture->pigment = dmnsn_new_solid_pigment(cube_color);
   if (!cube->texture->pigment) {
+    dmnsn_delete_object(sphere);
     dmnsn_delete_scene(scene);
     return NULL;
   }
@@ -127,18 +128,27 @@ dmnsn_new_default_scene()
   dmnsn_color reflect = dmnsn_color_mul(0.5, dmnsn_white);
   cube->texture->finish = dmnsn_new_reflective_finish(reflect, reflect, 1.0);
   if (!cube->texture->finish) {
+    dmnsn_delete_object(sphere);
     dmnsn_delete_scene(scene);
     return NULL;
   }
 
   cube->interior = dmnsn_new_interior();
   if (!cube->interior) {
+    dmnsn_delete_object(sphere);
     dmnsn_delete_scene(scene);
     return NULL;
   }
   cube->interior->ior = 1.1;
 
   cube->trans = dmnsn_rotation_matrix(dmnsn_new_vector(0.75, 0.0, 0.0));
+
+  dmnsn_object *csg = dmnsn_new_csg_union(sphere, cube);
+  if (!csg) {
+    dmnsn_delete_scene(scene);
+    return NULL;
+  }
+  dmnsn_array_push(scene->objects, &csg);
 
   /* Now make a light */
 

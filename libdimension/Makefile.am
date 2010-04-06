@@ -26,6 +26,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/cameras.h                                   \
                          dimension/canvas.h                                    \
                          dimension/color.h                                     \
+                         dimension/csg.h                                       \
                          dimension/error.h                                     \
                          dimension/finishes.h                                  \
                          dimension/geometry.h                                  \
@@ -52,6 +53,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           canvas.c                                             \
                           color.c                                              \
                           cube.c                                               \
+                          csg.c                                                \
                           diffuse.c                                            \
                           dimension_impl.h                                     \
                           error.c                                              \

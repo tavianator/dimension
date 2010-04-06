@@ -74,6 +74,7 @@ typedef void dmnsn_free_fn(void *ptr);
 #include <dimension/interior.h>
 #include <dimension/object.h>
 #include <dimension/objects.h>
+#include <dimension/csg.h>
 #include <dimension/light.h>
 #include <dimension/lights.h>
 #include <dimension/camera.h>
