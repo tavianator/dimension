@@ -41,18 +41,14 @@ typedef struct dmnsn_intersection {
   const dmnsn_interior *interior;
 } dmnsn_intersection;
 
-/* Intersection allocation cannot fail */
-dmnsn_intersection *dmnsn_new_intersection();
-void dmnsn_delete_intersection(dmnsn_intersection *intersection);
-
 /* Forward-declare dmnsn_object */
 typedef struct dmnsn_object dmnsn_object;
 
 /* Object callback types */
 
-typedef dmnsn_intersection *
-dmnsn_object_intersection_fn(const dmnsn_object *object, dmnsn_line line);
-
+typedef bool dmnsn_object_intersection_fn(const dmnsn_object *object,
+                                          dmnsn_line line,
+                                          dmnsn_intersection *intersection);
 typedef bool dmnsn_object_inside_fn(const dmnsn_object *object,
                                     dmnsn_vector point);
 

@@ -21,13 +21,13 @@
 #include <sandglass.h>
 #include <stdlib.h>
 
-dmnsn_intersection *
-dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line)
+bool
+dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line,
+                           dmnsn_intersection *intersection)
 {
-  dmnsn_intersection *intersection = dmnsn_new_intersection();
   intersection->t       = (object->bounding_box.min.z - line.x0.z)/line.n.z;
   intersection->texture = object->texture;
-  return intersection;
+  return true;
 }
 
 void
@@ -104,7 +104,7 @@ main()
 {
   dmnsn_bvst *tree;
   dmnsn_bvst_node *node;
-  dmnsn_intersection *intersection;
+  dmnsn_intersection intersection;
   dmnsn_line ray;
   const unsigned int nobjects = 128;
   dmnsn_object *objects[nobjects];
@@ -144,11 +144,10 @@ main()
   ray.x0 = dmnsn_new_vector(0.0, 0.0, -2.0);
   ray.n  = dmnsn_new_vector(0.0, 0.0, 1.0);
 
-  dmnsn_delete_intersection((*objects[0]->intersection_fn)(objects[0], ray));
+  (*objects[0]->intersection_fn)(objects[0], ray, &intersection);
   sandglass_bench_noprecache(&sandglass, {
-    intersection = dmnsn_bvst_search(tree, ray);
+    dmnsn_bvst_search(tree, ray, &intersection);
   });
-  dmnsn_delete_intersection(intersection);
   printf("dmnsn_bvst_search(): %ld\n", sandglass.grains);
 
   /* dmnsn_bvst_splay() */

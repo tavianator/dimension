@@ -27,9 +27,9 @@
 
 /* Sphere object callbacks */
 
-static dmnsn_intersection *
-dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line);
-
+static bool dmnsn_sphere_intersection_fn(const dmnsn_object *sphere,
+                                         dmnsn_line line,
+                                         dmnsn_intersection *intersection);
 static bool dmnsn_sphere_inside_fn(const dmnsn_object *sphere,
                                    dmnsn_vector point);
 
@@ -46,11 +46,11 @@ dmnsn_new_sphere()
 }
 
 /* Returns the closest intersection of `line' with `sphere' */
-static dmnsn_intersection *
-dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line)
+static bool
+dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
+                             dmnsn_intersection *intersection)
 {
   double a, b, c, t;
-  dmnsn_intersection *intersection = NULL;
 
   /* Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1 */
 
@@ -65,16 +65,16 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line)
     }
 
     if (t >= 0.0) {
-      intersection = dmnsn_new_intersection();
       intersection->ray      = line;
       intersection->t        = t;
       intersection->normal   = dmnsn_line_point(line, t);
       intersection->texture  = sphere->texture;
       intersection->interior = sphere->interior;
+      return true;
     }
   }
 
-  return intersection;
+  return false;
 }
 
 /* Return whether a point is inside a sphere (x**2 + y**2 + z**2 < 1.0) */

@@ -60,6 +60,7 @@ void dmnsn_delete_bvst(dmnsn_bvst *tree);
 void dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object);
 void dmnsn_bvst_splay(dmnsn_bvst *tree, dmnsn_bvst_node *node);
 
-dmnsn_intersection *dmnsn_bvst_search(dmnsn_bvst *tree, dmnsn_line ray);
+bool dmnsn_bvst_search(dmnsn_bvst *tree, dmnsn_line ray,
+                       dmnsn_intersection *intersection);
 
 #endif /* DIMENSION_IMPL_BVST_H */

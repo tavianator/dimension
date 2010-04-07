@@ -286,30 +286,28 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
 
   unsigned int reclevel = state->reclevel;
   while (reclevel) {
-    dmnsn_intersection *shadow_caster
-      = dmnsn_bvst_search(state->bvst, shadow_ray);
+    dmnsn_intersection shadow_caster;
+    bool shadow_casted
+      = dmnsn_bvst_search(state->bvst, shadow_ray, &shadow_caster);
 
-    if (!shadow_caster || shadow_caster->t > 1.0) {
-      dmnsn_delete_intersection(shadow_caster);
+    if (!shadow_casted || shadow_caster.t > 1.0) {
       break;
     }
 
     dmnsn_raytrace_state shadow_state = *state;
-    shadow_state.intersection = shadow_caster;
+    shadow_state.intersection = &shadow_caster;
     shadow_state.reclevel     = reclevel;
 
     dmnsn_raytrace_pigment(&shadow_state);
     if (shadow_state.pigment.filter || shadow_state.pigment.trans) {
       color = dmnsn_color_filter(color, shadow_state.pigment);
-      shadow_ray.x0 = dmnsn_line_point(shadow_ray, shadow_caster->t);
+      shadow_ray.x0 = dmnsn_line_point(shadow_ray, shadow_caster.t);
       shadow_ray.n  = dmnsn_vector_sub(light->x0, shadow_ray.x0);
       shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
     } else {
-      dmnsn_delete_intersection(shadow_caster);
       return dmnsn_black;
     }
 
-    dmnsn_delete_intersection(shadow_caster);
     --reclevel;
   }
 
@@ -448,12 +446,12 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
     return dmnsn_black;
   --state->reclevel;
 
-  dmnsn_intersection *intersection
-    = dmnsn_bvst_search(state->bvst, ray);
+  dmnsn_intersection intersection;
+  bool intersected = dmnsn_bvst_search(state->bvst, ray, &intersection);
 
   dmnsn_color color = state->scene->background;
-  if (intersection) {
-    state->intersection = intersection;
+  if (intersected) {
+    state->intersection = &intersection;
     state->r = dmnsn_line_point(state->intersection->ray,
                                 state->intersection->t);
     state->viewer = dmnsn_vector_normalize(
@@ -494,8 +492,6 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
     }
 
     color = dmnsn_color_add(state->diffuse, state->additional);
-
-    dmnsn_delete_intersection(intersection);
   }
 
   return color;

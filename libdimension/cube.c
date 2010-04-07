@@ -26,8 +26,9 @@
  */
 
 /* Cube callbacks */
-static dmnsn_intersection *dmnsn_cube_intersection_fn(const dmnsn_object *cube,
-                                                      dmnsn_line line);
+static bool dmnsn_cube_intersection_fn(const dmnsn_object *cube,
+                                       dmnsn_line line,
+                                       dmnsn_intersection *intersection);
 static bool dmnsn_cube_inside_fn(const dmnsn_object *cube,
                                  dmnsn_vector point);
 
@@ -44,12 +45,12 @@ dmnsn_new_cube()
 }
 
 /* Intersections callback for a cube */
-static dmnsn_intersection *
-dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
+static bool
+dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
+                           dmnsn_intersection *intersection)
 {
   double t = -1.0, t_temp;
   dmnsn_vector p, normal;
-  dmnsn_intersection *intersection = NULL;
 
   /* Six ray-plane intersection tests (x, y, z) = +/- 1.0 */
 
@@ -120,15 +121,15 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line)
   }
 
   if (t >= 0.0) {
-    intersection = dmnsn_new_intersection();
     intersection->ray      = line;
     intersection->t        = t;
     intersection->normal   = normal;
     intersection->texture  = cube->texture;
     intersection->interior = cube->interior;
+    return true;
+  } else {
+    return false;
   }
-
-  return intersection;
 }
 
 /* Inside callback for a cube */

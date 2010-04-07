@@ -255,22 +255,26 @@ dmnsn_bvst_rotate(dmnsn_bvst_node *node)
 
 typedef struct {
   dmnsn_bvst_node *node;
-  dmnsn_intersection  *intersection;
+  bool intersected;
+  dmnsn_intersection intersection;
 } dmnsn_bvst_search_result;
 
 static dmnsn_bvst_search_result
 dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t);
 
-dmnsn_intersection *
-dmnsn_bvst_search(dmnsn_bvst *tree, dmnsn_line ray)
+bool
+dmnsn_bvst_search(dmnsn_bvst *tree, dmnsn_line ray,
+                  dmnsn_intersection *intersection)
 {
   dmnsn_bvst_search_result result
     = dmnsn_bvst_search_recursive(tree->root, ray, -1.0);
 
-  if (result.node)
+  if (result.intersected) {
     dmnsn_bvst_splay(tree, result.node);
+    *intersection = result.intersection;
+  }
 
-  return result.intersection;
+  return result.intersected;
 }
 
 static bool dmnsn_ray_box_intersection(dmnsn_line ray, dmnsn_bounding_box box,
@@ -280,7 +284,10 @@ static dmnsn_bvst_search_result
 dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
 {
   dmnsn_line ray_trans;
-  dmnsn_bvst_search_result result = { NULL, NULL }, result_temp;
+  dmnsn_bvst_search_result result_temp, result = {
+    .node = NULL,
+    .intersected = false
+  };
 
   if (!node)
     return result;
@@ -288,11 +295,9 @@ dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
   /* Go down the right subtree first because the closest object is more likely
      to lie in the larger bounding boxes */
   result_temp = dmnsn_bvst_search_recursive(node->container, ray, t);
-  if (result_temp.node && (t < 0.0 || result_temp.intersection->t < t)) {
+  if (result_temp.node && (t < 0.0 || result_temp.intersection.t < t)) {
     result = result_temp;
-    t = result.intersection->t;
-  } else {
-    dmnsn_delete_intersection(result_temp.intersection);
+    t = result.intersection.t;
   }
 
   if (dmnsn_bounding_box_contains(node->bounding_box, ray.x0)
@@ -304,23 +309,24 @@ dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
     if (dmnsn_bounding_box_contains(node->object->bounding_box, ray_trans.x0)
         || dmnsn_ray_box_intersection(ray_trans, node->object->bounding_box, t))
     {
-      result_temp.intersection =
-        (*node->object->intersection_fn)(node->object, ray_trans);
+      result_temp.intersected =
+        (*node->object->intersection_fn)(node->object, ray_trans,
+                                         &result_temp.intersection);
 
-      if (result_temp.intersection
-          && (t < 0.0 || result_temp.intersection->t < t)) {
-        dmnsn_delete_intersection(result.intersection);
+      if (result_temp.intersected
+          && (t < 0.0 || result_temp.intersection.t < t)) {
         result.node = node;
+        result.intersected = true;
         result.intersection = result_temp.intersection;
-        t = result.intersection->t;
+        t = result.intersection.t;
 
         /* Transform the intersection back to the observer's view */
-        result.intersection->ray = ray;
-        result.intersection->normal = dmnsn_vector_normalize(
+        result.intersection.ray = ray;
+        result.intersection.normal = dmnsn_vector_normalize(
           dmnsn_vector_sub(
             dmnsn_matrix_vector_mul(
               node->object->trans,
-              result.intersection->normal
+              result.intersection.normal
             ),
             dmnsn_matrix_vector_mul(
               node->object->trans,
@@ -328,18 +334,13 @@ dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
             )
           )
         );
-      } else {
-        dmnsn_delete_intersection(result_temp.intersection);
       }
     }
 
     /* Go down the left subtree */
     result_temp = dmnsn_bvst_search_recursive(node->contains, ray, t);
-    if (result_temp.node && (t < 0.0 || result_temp.intersection->t < t)) {
-      dmnsn_delete_intersection(result.intersection);
+    if (result_temp.node && (t < 0.0 || result_temp.intersection.t < t)) {
       result = result_temp;
-    } else {
-      dmnsn_delete_intersection(result_temp.intersection);
     }
   }
 
