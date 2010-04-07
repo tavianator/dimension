@@ -50,11 +50,7 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
   optimizer.optimizer_fn = &dmnsn_png_optimizer_fn;
   optimizer.free_fn = &free;
 
-  optimizer.ptr = malloc(4*canvas->x*canvas->y*sizeof(uint16_t));
-  if (!optimizer.ptr) {
-    errno = ENOMEM;
-    return -1;
-  }
+  optimizer.ptr = dmnsn_malloc(4*canvas->x*canvas->y*sizeof(uint16_t));
 
   dmnsn_optimize_canvas(canvas, optimizer);
   return 0;
@@ -140,28 +136,20 @@ dmnsn_progress *
 dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
 {
   dmnsn_progress *progress = dmnsn_new_progress();
-  dmnsn_png_write_payload *payload;
 
-  if (progress) {
-    payload = malloc(sizeof(dmnsn_png_write_payload));
-    if (!payload) {
-      dmnsn_delete_progress(progress);
-      errno = ENOMEM;
-      return NULL;
-    }
+  dmnsn_png_write_payload *payload
+    = dmnsn_malloc(sizeof(dmnsn_png_write_payload));
+  payload->progress = progress;
+  payload->canvas   = canvas;
+  payload->file     = file;
 
-    payload->progress = progress;
-    payload->canvas   = canvas;
-    payload->file     = file;
-
-    /* Create the worker thread */
-    if (pthread_create(&progress->thread, NULL, &dmnsn_png_write_canvas_thread,
-                       payload) != 0)
-    {
-      free(payload);
-      dmnsn_delete_progress(progress);
-      return NULL;
-    }
+  /* Create the worker thread */
+  if (pthread_create(&progress->thread, NULL, &dmnsn_png_write_canvas_thread,
+                     payload) != 0)
+  {
+    free(payload);
+    dmnsn_delete_progress(progress);
+    return NULL;
   }
 
   return progress;
@@ -182,28 +170,18 @@ dmnsn_progress *
 dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
 {
   dmnsn_progress *progress = dmnsn_new_progress();
-  dmnsn_png_read_payload *payload;
+  dmnsn_png_read_payload *payload
+    = dmnsn_malloc(sizeof(dmnsn_png_write_payload));
 
-  if (progress) {
-    payload = malloc(sizeof(dmnsn_png_write_payload));
-    if (!payload) {
-      dmnsn_delete_progress(progress);
-      errno = ENOMEM;
-      return NULL;
-    }
+  payload->progress = progress;
+  payload->canvas   = canvas;
+  payload->file     = file;
 
-    payload->progress = progress;
-    payload->canvas   = canvas;
-    payload->file     = file;
-
-    /* Create the worker thread */
-    if (pthread_create(&progress->thread, NULL, &dmnsn_png_read_canvas_thread,
-                       payload) != 0)
-    {
-      free(payload);
-      dmnsn_delete_progress(progress);
-      return NULL;
-    }
+  /* Create the worker thread */
+  if (pthread_create(&progress->thread, NULL, &dmnsn_png_read_canvas_thread,
+                     payload) != 0)
+  {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start worker thread.");
   }
 
   return progress;
@@ -221,11 +199,9 @@ static void *
 dmnsn_png_write_canvas_thread(void *ptr)
 {
   dmnsn_png_write_payload *payload = ptr;
-  int *retval = malloc(sizeof(int));
-  if (retval) {
-    *retval = dmnsn_png_write_canvas_impl(payload->progress,
-                                          payload->canvas, payload->file);
-  }
+  int *retval = dmnsn_malloc(sizeof(int));
+  *retval = dmnsn_png_write_canvas_impl(payload->progress,
+                                        payload->canvas, payload->file);
   dmnsn_done_progress(payload->progress);
   free(payload);
   return retval;
@@ -235,12 +211,12 @@ static void *
 dmnsn_png_read_canvas_thread(void *ptr)
 {
   dmnsn_png_read_payload *payload = ptr;
-  int *retval = malloc(sizeof(int));
-  if (retval) {
-    *payload->canvas = dmnsn_png_read_canvas_impl(payload->progress,
-                                                  payload->file);
-    *retval = *payload->canvas ? 0 : -1; /* Fail if it returned NULL */
-  }
+  *payload->canvas = dmnsn_png_read_canvas_impl(payload->progress,
+                                                payload->file);
+
+  int *retval = dmnsn_malloc(sizeof(int));
+  *retval = *payload->canvas ? 0 : -1; /* Fail if it returned NULL */
+
   dmnsn_done_progress(payload->progress);
   free(payload);
   return retval;
@@ -331,12 +307,7 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   }
 
   /* Allocate the temporary row of RGBA values */
-  row = malloc(4*sizeof(uint16_t)*width);
-  if (!row) {
-    png_destroy_write_struct(&png_ptr, &info_ptr);
-    errno = ENOMEM;
-    return -1;
-  }
+  row = dmnsn_malloc(4*sizeof(uint16_t)*width);
 
   /* Write the pixels */
   for (y = 0; y < height; ++y) {
@@ -524,22 +495,10 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
   rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
   /* Allocate the temporary image buffer */
-  image = malloc(rowbytes*height);
-  if (!image) {
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    errno = ENOMEM;
-    return NULL;
-  }
+  image = dmnsn_malloc(rowbytes*height);
 
   /* Allocate and set an array of pointers to rows in image */
-
-  row_pointers = malloc(sizeof(png_bytep)*height);
-  if (!row_pointers) {
-    free(image);
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    errno = ENOMEM;
-    return NULL;
-  }
+  row_pointers = dmnsn_malloc(sizeof(png_bytep)*height);
 
   for (y = 0; y < height; ++y) {
     row_pointers[y] = image + y*rowbytes;
@@ -551,13 +510,6 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
 
   /* Allocate the canvas */
   canvas = dmnsn_new_canvas(width, height);
-  if (!canvas) {
-    free(row_pointers);
-    free(image);
-    png_read_end(png_ptr, NULL);
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    return NULL;
-  }
 
   /* Now we convert the image to our canvas format.  This depends on the image
      bit depth (which has been scaled up to at least 8 or 16), and the presence

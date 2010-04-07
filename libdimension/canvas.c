@@ -21,33 +21,24 @@
 #include "dimension.h"
 #include <pthread.h>
 #include <errno.h>
-#include <stdlib.h> /* For malloc(), free() */
+#include <stdlib.h> /* For free() */
 
 /* Allocate a new canvas, of width x and height y */
 dmnsn_canvas *
 dmnsn_new_canvas(unsigned int x, unsigned int y)
 {
   /* Allocate the dmnsn_canvas struct */
-  dmnsn_canvas *canvas = malloc(sizeof(dmnsn_canvas));
+  dmnsn_canvas *canvas = dmnsn_malloc(sizeof(dmnsn_canvas));
 
-  if (canvas) {
-    /* Set the width and height */
-    canvas->x = x;
-    canvas->y = y;
+  /* Set the width and height */
+  canvas->x = x;
+  canvas->y = y;
 
-    /* Allocate room for the optimizers */
-    canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
+  /* Allocate room for the optimizers */
+  canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
 
-    /* Allocate the pixels */
-    canvas->pixels = malloc(sizeof(dmnsn_color)*x*y);
-    if (!canvas->pixels) {
-      dmnsn_delete_canvas(canvas);
-      errno = ENOMEM;
-      return NULL;
-    }
-  } else {
-    errno = ENOMEM;
-  }
+  /* Allocate the pixels */
+  canvas->pixels = dmnsn_malloc(sizeof(dmnsn_color)*x*y);
 
   return canvas;
 }

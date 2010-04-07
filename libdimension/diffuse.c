@@ -20,7 +20,6 @@
 
 #include "dimension.h"
 #include <errno.h>
-#include <stdlib.h> /* For malloc */
 #include <math.h>
 
 /*
@@ -45,19 +44,13 @@ dmnsn_finish *
 dmnsn_new_diffuse_finish(double diffuse)
 {
   dmnsn_finish *finish = dmnsn_new_finish();
-  if (finish) {
-    double *param = malloc(sizeof(double));
-    if (!param) {
-      dmnsn_delete_finish(finish);
-      errno = ENOMEM;
-      return NULL;
-    }
 
-    *param = diffuse;
+  double *param = dmnsn_malloc(sizeof(double));
+  *param = diffuse;
 
-    finish->ptr        = param;
-    finish->diffuse_fn = &dmnsn_diffuse_finish_fn;
-    finish->free_fn    = &free;
-  }
+  finish->ptr        = param;
+  finish->diffuse_fn = &dmnsn_diffuse_finish_fn;
+  finish->free_fn    = &free;
+
   return finish;
 }

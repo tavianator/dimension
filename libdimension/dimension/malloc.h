@@ -18,31 +18,14 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
-#include <errno.h>
-
 /*
- * Point light source
+ * Seriously, how often does malloc fail?  And how often can you do something
+ * better than bail out when it does?  dmnsn_malloc() is like malloc in every
+ * way except it calls dmnsn_error() on failure.
  */
 
-static dmnsn_color
-dmnsn_point_light_fn(const dmnsn_light *light, dmnsn_vector v)
-{
-  return *(dmnsn_color *)light->ptr;
-}
+#include <stdlib.h> /* For size_t */
 
-dmnsn_light *
-dmnsn_new_point_light(dmnsn_vector x0, dmnsn_color color)
-{
-  dmnsn_light *light = dmnsn_new_light();
-
-  dmnsn_color *ptr = dmnsn_malloc(sizeof(dmnsn_color));
-  *ptr = color;
-
-  light->x0       = x0;
-  light->light_fn = &dmnsn_point_light_fn;
-  light->free_fn  = &free;
-  light->ptr      = ptr;
-
-  return light;
-}
+void *dmnsn_malloc(size_t size);
+void *dmnsn_realloc(void *ptr, size_t size);
+char *dmnsn_strdup(const char *s);

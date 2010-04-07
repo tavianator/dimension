@@ -20,7 +20,6 @@
 
 #include "dimension.h"
 #include <errno.h>
-#include <stdlib.h> /* For malloc */
 #include <math.h>
 
 /*
@@ -119,47 +118,27 @@ dmnsn_finish_combination_free_fn(void *ptr)
 dmnsn_finish *
 dmnsn_new_finish_combination(dmnsn_finish *f1, dmnsn_finish *f2)
 {
-  if (f1 && f2) {
-    dmnsn_finish *finish = dmnsn_new_finish();
-    if (finish) {
-      dmnsn_finish **params = malloc(2*sizeof(dmnsn_finish *));
-      if (!params) {
-        dmnsn_delete_finish(finish);
-        dmnsn_delete_finish(f2);
-        dmnsn_delete_finish(f1);
-        errno = ENOMEM;
-        return NULL;
-      }
+  dmnsn_finish *finish = dmnsn_new_finish();
 
-      params[0] = f1;
-      params[1] = f2;
+  dmnsn_finish **params = dmnsn_malloc(2*sizeof(dmnsn_finish *));
+  params[0] = f1;
+  params[1] = f2;
 
-      finish->ptr = params;
+  finish->ptr = params;
 
-      if (f1->diffuse_fn || f2->diffuse_fn)
-        finish->diffuse_fn = &dmnsn_finish_combination_diffuse_fn;
+  if (f1->diffuse_fn || f2->diffuse_fn)
+    finish->diffuse_fn = &dmnsn_finish_combination_diffuse_fn;
 
-      if (f1->specular_fn || f2->specular_fn)
-        finish->specular_fn = &dmnsn_finish_combination_specular_fn;
+  if (f1->specular_fn || f2->specular_fn)
+    finish->specular_fn = &dmnsn_finish_combination_specular_fn;
 
-      if (f1->ambient_fn || f2->ambient_fn)
-        finish->ambient_fn = &dmnsn_finish_combination_ambient_fn;
+  if (f1->ambient_fn || f2->ambient_fn)
+    finish->ambient_fn = &dmnsn_finish_combination_ambient_fn;
 
-      if (f1->reflection_fn || f2->reflection_fn)
-        finish->reflection_fn = &dmnsn_finish_combination_reflection_fn;
+  if (f1->reflection_fn || f2->reflection_fn)
+    finish->reflection_fn = &dmnsn_finish_combination_reflection_fn;
 
-      finish->free_fn    = &dmnsn_finish_combination_free_fn;
+  finish->free_fn = &dmnsn_finish_combination_free_fn;
 
-      return finish;
-    } else {
-      dmnsn_delete_finish(f2);
-      dmnsn_delete_finish(f1);
-    }
-  } else if (f1) {
-    dmnsn_delete_finish(f1);
-  } else if (f2) {
-    dmnsn_delete_finish(f2);
-  }
-
-  return NULL;
+  return finish;
 }

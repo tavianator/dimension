@@ -397,9 +397,6 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
   case DMNSN_AST_VECTOR:
     color = dmnsn_realize_color(color_node);
     pigment = dmnsn_new_solid_pigment(color);
-    if (!pigment) {
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't create pigment.");
-    }
     break;
 
   default:
@@ -443,9 +440,6 @@ dmnsn_realize_reflection(dmnsn_astnode astnode)
   }
 
   dmnsn_finish *reflection = dmnsn_new_reflective_finish(min, max, falloff);
-  if (!reflection) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate a reflection.");
-  }
 
   return reflection;
 }
@@ -530,10 +524,6 @@ dmnsn_realize_finish(dmnsn_astnode astnode)
     finish = dmnsn_new_finish_combination(reflection, finish);
   }
 
-  if (!finish) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate finish.");
-  }
-
   return finish;
 }
 
@@ -543,9 +533,6 @@ dmnsn_realize_texture(dmnsn_astnode astnode)
   dmnsn_assert(astnode.type == DMNSN_AST_TEXTURE, "Expected a texture.");
 
   dmnsn_texture *texture = dmnsn_new_texture();
-  if (!texture) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate texture.");
-  }
 
   unsigned int i;
   for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
@@ -577,9 +564,6 @@ dmnsn_realize_interior(dmnsn_astnode astnode)
   dmnsn_assert(astnode.type == DMNSN_AST_INTERIOR, "Expected a texture.");
 
   dmnsn_interior *interior = dmnsn_new_interior();
-  if (!interior) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate interior.");
-  }
 
   unsigned int i;
   for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
@@ -674,9 +658,6 @@ dmnsn_realize_box(dmnsn_astnode astnode)
                x2 = dmnsn_realize_vector(corner2);
 
   dmnsn_object *box = dmnsn_new_cube();
-  if (!box) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate box.");
-  }
 
   box->trans = dmnsn_scale_matrix(
     dmnsn_new_vector(fabs(x2.x - x1.x)/2.0,
@@ -710,9 +691,6 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
   double r = dmnsn_realize_float(radius);
 
   dmnsn_object *sphere = dmnsn_new_sphere();
-  if (!sphere) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate sphere.");
-  }
 
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(r, r, r));
   sphere->trans = dmnsn_matrix_mul(dmnsn_translation_matrix(x0), sphere->trans);
@@ -740,9 +718,6 @@ dmnsn_realize_union(dmnsn_astnode astnode)
   dmnsn_object *o2 = dmnsn_realize_object(o2node);
 
   dmnsn_object *csg = dmnsn_new_csg_union(o1, o2);
-  if (!csg) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate union.");
-  }
 
   unsigned int i;
   for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
@@ -751,9 +726,6 @@ dmnsn_realize_union(dmnsn_astnode astnode)
 
     dmnsn_object *object = dmnsn_realize_object(onode);
     csg = dmnsn_new_csg_union(csg, object);
-    if (!csg) {
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate union.");
-    }
   }
 
   dmnsn_astnode modifiers;
@@ -780,9 +752,6 @@ dmnsn_realize_intersection(dmnsn_astnode astnode)
   dmnsn_object *o2 = dmnsn_realize_object(o2node);
 
   dmnsn_object *csg = dmnsn_new_csg_intersection(o1, o2);
-  if (!csg) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate intersection.");
-  }
 
   unsigned int i;
   for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
@@ -791,9 +760,6 @@ dmnsn_realize_intersection(dmnsn_astnode astnode)
 
     dmnsn_object *object = dmnsn_realize_object(onode);
     csg = dmnsn_new_csg_intersection(csg, object);
-    if (!csg) {
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate intersection.");
-    }
   }
 
   dmnsn_astnode modifiers;
@@ -819,9 +785,6 @@ dmnsn_realize_difference(dmnsn_astnode astnode)
   dmnsn_object *o2 = dmnsn_realize_object(o2node);
 
   dmnsn_object *csg = dmnsn_new_csg_difference(o1, o2);
-  if (!csg) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate difference.");
-  }
 
   unsigned int i;
   for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
@@ -830,9 +793,6 @@ dmnsn_realize_difference(dmnsn_astnode astnode)
 
     dmnsn_object *object = dmnsn_realize_object(onode);
     csg = dmnsn_new_csg_difference(csg, object);
-    if (!csg) {
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate difference.");
-    }
   }
 
   dmnsn_astnode modifiers;
@@ -858,9 +818,6 @@ dmnsn_realize_merge(dmnsn_astnode astnode)
   dmnsn_object *o2 = dmnsn_realize_object(o2node);
 
   dmnsn_object *csg = dmnsn_new_csg_merge(o1, o2);
-  if (!csg) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate merge.");
-  }
 
   unsigned int i;
   for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
@@ -869,9 +826,6 @@ dmnsn_realize_merge(dmnsn_astnode astnode)
 
     dmnsn_object *object = dmnsn_realize_object(onode);
     csg = dmnsn_new_csg_merge(csg, object);
-    if (!csg) {
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate merge.");
-    }
   }
 
   dmnsn_astnode modifiers;
@@ -918,9 +872,6 @@ dmnsn_realize_light_source(dmnsn_astnode astnode)
   dmnsn_color color = dmnsn_realize_color(color_node);
 
   dmnsn_light *light = dmnsn_new_point_light(x0, color);
-  if (!light) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate light.");
-  }
 
   return light;
 }
@@ -929,9 +880,6 @@ static dmnsn_scene *
 dmnsn_realize_astree(const dmnsn_astree *astree)
 {
   dmnsn_scene *scene = dmnsn_new_scene();
-  if (!scene) {
-    return NULL;
-  }
 
   /* Default finish */
   scene->default_texture->finish = dmnsn_new_finish_combination(
@@ -940,20 +888,12 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
     ),
     dmnsn_new_diffuse_finish(0.6)
   );
-  if (!scene->default_texture->finish) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
 
   /* Background color */
   scene->background = dmnsn_black;
 
   /* Create the default perspective camera */
   scene->camera = dmnsn_new_perspective_camera();
-  if (!scene->camera) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
 
   /*
    * Now parse the abstract syntax tree

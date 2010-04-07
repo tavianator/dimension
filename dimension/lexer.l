@@ -74,20 +74,14 @@
 #define RETURN_VALUE_TOKEN(token_type)                          \
   do {                                                          \
     NEW_TOKEN(token_type);                                      \
-    lvalp->value = strdup(yytext);                              \
-    if (!lvalp->value)                                          \
-      dmnsn_error(DMNSN_SEVERITY_HIGH,                          \
-                  "Couldn't allocate space for token value.");  \
+    lvalp->value = dmnsn_strdup(yytext);                        \
     RETURN();                                                   \
   } while (0)
 
 #define STRING_TOKEN()                                          \
   do {                                                          \
     NEW_TOKEN(DMNSN_T_STRING);                                  \
-    lvalp->value    = malloc(string_extent);                    \
-    if (!lvalp->value)                                          \
-      dmnsn_error(DMNSN_SEVERITY_HIGH,                          \
-                  "Couldn't allocate space for token value.");  \
+    lvalp->value = dmnsn_malloc(string_extent);                 \
     lvalp->value[0] = '\0';                                     \
     CALCULATE_COLUMN();                                         \
   } while (0)
@@ -96,10 +90,7 @@
   do {                                                                  \
     if (string_length + len + 1 >= string_length) {                     \
       string_extent = 2*(string_length + len + 1);                      \
-      lvalp->value = realloc(lvalp->value, string_extent);              \
-      if (!lvalp->value)                                                \
-        dmnsn_error(DMNSN_SEVERITY_HIGH,                                \
-                    "Couldn't allocate space for token value.");        \
+      lvalp->value = dmnsn_realloc(lvalp->value, string_extent);        \
     }                                                                   \
                                                                         \
     strncpy(lvalp->value + string_length, str, len + 1);                \

@@ -20,19 +20,14 @@
 
 #include "dimension.h"
 #include <errno.h>
-#include <stdlib.h> /* For malloc */
 
 /* Allocate an interior */
 dmnsn_interior *
 dmnsn_new_interior()
 {
-  dmnsn_interior *interior = malloc(sizeof(dmnsn_interior));
-  if (interior) {
-    interior->ior     = 1.0;
-    interior->free_fn = NULL;
-  } else {
-    errno = ENOMEM;
-  }
+  dmnsn_interior *interior = dmnsn_malloc(sizeof(dmnsn_interior));
+  interior->ior     = 1.0;
+  interior->free_fn = NULL;
   return interior;
 }
 

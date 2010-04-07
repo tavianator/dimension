@@ -33,10 +33,6 @@ main() {
 
   /* Create the default test scene */
   scene = dmnsn_new_default_scene();
-  if (!scene) {
-    fprintf(stderr, "--- Couldn't create default scene! ---\n");
-    return EXIT_FAILURE;
-  }
 
   /* Optimize the canvas for GL drawing */
   if (dmnsn_gl_optimize_canvas(scene->canvas) != 0) {
@@ -59,12 +55,6 @@ main() {
 
   printf("Rendering scene\n");
   progress = dmnsn_raytrace_scene_async(scene);
-  if (!progress) {
-    dmnsn_delete_display(display);
-    dmnsn_delete_scene(scene);
-    fprintf(stderr, "--- Couldn't start raytracing worker thread! ---\n");
-    return EXIT_FAILURE;
-  }
 
   /* Display the scene as it's rendered */
   while (dmnsn_get_progress(progress) < 1.0) {

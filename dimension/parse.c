@@ -58,16 +58,8 @@ dmnsn_delete_patricia_trie(dmnsn_patricia_trie *trie)
 dmnsn_patricia_trie *
 dmnsn_new_patricia_trie()
 {
-  dmnsn_patricia_trie *trie = malloc(sizeof(dmnsn_patricia_trie));
-  if (!trie) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate PATRICIA trie.");
-  }
-
-  trie->prefix = strdup("");
-  if (!trie->prefix) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate PATRICIA trie.");
-  }
-
+  dmnsn_patricia_trie *trie = dmnsn_malloc(sizeof(dmnsn_patricia_trie));
+  trie->prefix = dmnsn_strdup("");
   trie->leaf = false;
   trie->children = dmnsn_new_array(sizeof(dmnsn_patricia_trie *));
   return trie;
@@ -89,9 +81,7 @@ dmnsn_patricia_insert(dmnsn_patricia_trie *trie,
         && dmnsn_array_size(trie->children) == 0)
     {
       /* Replace an empty tree with a single-element tree */
-      trie->prefix = realloc(trie->prefix, strlen(id) + 1);
-      if (!trie->prefix)
-        dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for prefix.");
+      trie->prefix = dmnsn_realloc(trie->prefix, strlen(id) + 1);
       strcpy(trie->prefix, id);
 
       trie->leaf = true;
@@ -135,9 +125,7 @@ dmnsn_patricia_insert(dmnsn_patricia_trie *trie,
     } else {
       /* Split the tree */
       dmnsn_patricia_trie *copy = dmnsn_new_patricia_trie();
-      copy->prefix = realloc(copy->prefix, strlen(prefix) + 1);
-      if (!trie->prefix)
-        dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for prefix.");
+      copy->prefix = dmnsn_realloc(copy->prefix, strlen(prefix) + 1);
       strcpy(copy->prefix, prefix);
       *prefix = '\0';
 
@@ -339,17 +327,13 @@ dmnsn_new_astnode(dmnsn_astnode_type type)
     .children = NULL,
     .ptr      = NULL,
     .free_fn  = NULL,
-    .refcount = malloc(sizeof(unsigned int)),
+    .refcount = dmnsn_malloc(sizeof(unsigned int)),
     .filename = "<environment>",
     .line     = -1,
     .col      = -1,
   };
 
-  if (!astnode.refcount) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate reference count.");
-  }
   *astnode.refcount = 0;
-
   return astnode;
 }
 
@@ -365,9 +349,7 @@ static void
 dmnsn_make_ast_integer(dmnsn_astnode *astnode, long value)
 {
   astnode->type = DMNSN_AST_INTEGER;
-  astnode->ptr = malloc(sizeof(long));
-  if (!astnode->ptr)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for integer.");
+  astnode->ptr = dmnsn_malloc(sizeof(long));
   *(long *)astnode->ptr = value;
 }
 
@@ -383,9 +365,7 @@ static void
 dmnsn_make_ast_float(dmnsn_astnode *astnode, double value)
 {
   astnode->type = DMNSN_AST_FLOAT;
-  astnode->ptr = malloc(sizeof(double));
-  if (!astnode->ptr)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for integer.");
+  astnode->ptr = dmnsn_malloc(sizeof(double));
   *(double *)astnode->ptr = value;
 }
 
@@ -469,9 +449,7 @@ dmnsn_astnode
 dmnsn_new_ast_string(const char *value)
 {
   dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_STRING);
-  astnode.ptr = strdup(value);
-  if (!astnode.ptr)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for string.");
+  astnode.ptr = dmnsn_strdup(value);
   return astnode;
 }
 
@@ -512,17 +490,13 @@ dmnsn_copy_astnode(dmnsn_astnode astnode)
     .type     = astnode.type,
     .children = dmnsn_new_array(sizeof(dmnsn_astnode)),
     .ptr      = NULL,
-    .refcount = malloc(sizeof(unsigned int)),
+    .refcount = dmnsn_malloc(sizeof(unsigned int)),
     .filename = astnode.filename,
     .line     = astnode.line,
     .col      = astnode.col
   };
 
-  if (!copy.refcount) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate reference count.");
-  }
   *copy.refcount = 1;
-
   return copy;
 }
 
@@ -564,10 +538,8 @@ dmnsn_vector_promote(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       component = dmnsn_copy_astnode(component);
       component.type = DMNSN_AST_INTEGER;
 
-      long *val = malloc(sizeof(long));
-      if (!val)
-        dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate room for integer.");
-      *val      = 0;
+      long *val = dmnsn_malloc(sizeof(long));
+      *val = 0;
 
       component.ptr = val;
       dmnsn_array_push(promoted.children, &component);

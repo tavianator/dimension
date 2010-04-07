@@ -47,10 +47,7 @@ typedef struct dmnsn_token_buffer {
 static dmnsn_token_buffer *
 dmnsn_new_token_buffer(int type, dmnsn_token_buffer *prev, const char *filename)
 {
-  dmnsn_token_buffer *tbuffer = malloc(sizeof(dmnsn_token_buffer));
-  if (!tbuffer) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Failed to allocate token buffer.");
-  }
+  dmnsn_token_buffer *tbuffer = dmnsn_malloc(sizeof(dmnsn_token_buffer));
 
   tbuffer->type = type;
   tbuffer->buffered = dmnsn_new_array(sizeof(dmnsn_buffered_token));
@@ -222,13 +219,9 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
   dmnsn_assert(inode->type == DMNSN_AST_STRING, "$include has wrong type.");
 
   const char *include = inode->ptr;
-  char *filename_copy = strdup(filename);
-  if (!filename_copy)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate space for filename.");
+  char *filename_copy = dmnsn_strdup(filename);
   char *localdir = dirname(filename_copy);
-  char *local_include = malloc(strlen(localdir) + strlen(include) + 2);
-  if (!local_include)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate space for filename.");
+  char *local_include = dmnsn_malloc(strlen(localdir) + strlen(include) + 2);
   strcpy(local_include, localdir);
   strcat(local_include, "/");
   strcat(local_include, include);
@@ -823,10 +816,7 @@ dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
     token = buffered.type;
 
     if (buffered.lval.value) {
-      lvalp->value = strdup(buffered.lval.value);
-      if (!lvalp->value)
-        dmnsn_error(DMNSN_SEVERITY_HIGH,
-                    "Couldn't allocate space for token value.");
+      lvalp->value = dmnsn_strdup(buffered.lval.value);
     } else {
       lvalp->value = NULL;
     }

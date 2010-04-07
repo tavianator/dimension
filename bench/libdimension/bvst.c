@@ -122,10 +122,6 @@ main()
 
   for (i = 0; i < nobjects; ++i) {
     objects[i] = dmnsn_new_object();
-    if (!objects[i]) {
-      fprintf(stderr, "--- Couldn't allocate object! ---\n");
-      return EXIT_FAILURE;
-    }
 
     /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
     dmnsn_randomize_bounding_box(objects[i]);

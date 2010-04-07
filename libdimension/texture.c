@@ -20,18 +20,13 @@
 
 #include "dimension.h"
 #include <errno.h>
-#include <stdlib.h> /* For malloc */
 
 /* Allocate a dummy pigment */
 dmnsn_pigment *
 dmnsn_new_pigment()
 {
-  dmnsn_pigment *pigment = malloc(sizeof(dmnsn_pigment));
-  if (pigment) {
-    pigment->free_fn = NULL;
-  } else {
-    errno = ENOMEM;
-  }
+  dmnsn_pigment *pigment = dmnsn_malloc(sizeof(dmnsn_pigment));
+  pigment->free_fn = NULL;
   return pigment;
 }
 
@@ -51,16 +46,12 @@ dmnsn_delete_pigment(dmnsn_pigment *pigment)
 dmnsn_finish *
 dmnsn_new_finish()
 {
-  dmnsn_finish *finish = malloc(sizeof(dmnsn_finish));
-  if (finish) {
-    finish->diffuse_fn    = NULL;
-    finish->specular_fn   = NULL;
-    finish->ambient_fn    = NULL;
-    finish->reflection_fn = NULL;
-    finish->free_fn       = NULL;
-  } else {
-    errno = ENOMEM;
-  }
+  dmnsn_finish *finish = dmnsn_malloc(sizeof(dmnsn_finish));
+  finish->diffuse_fn    = NULL;
+  finish->specular_fn   = NULL;
+  finish->ambient_fn    = NULL;
+  finish->reflection_fn = NULL;
+  finish->free_fn       = NULL;
   return finish;
 }
 
@@ -80,13 +71,9 @@ dmnsn_delete_finish(dmnsn_finish *finish)
 dmnsn_texture *
 dmnsn_new_texture()
 {
-  dmnsn_texture *texture = malloc(sizeof(dmnsn_texture));
-  if (texture) {
-    texture->pigment = NULL;
-    texture->finish  = NULL;
-  } else {
-    errno = ENOMEM;
-  }
+  dmnsn_texture *texture = dmnsn_malloc(sizeof(dmnsn_texture));
+  texture->pigment = NULL;
+  texture->finish  = NULL;
   return texture;
 }
 

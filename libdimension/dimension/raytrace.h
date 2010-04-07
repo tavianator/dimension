@@ -26,7 +26,7 @@
 #define DIMENSION_RAYTRACE_H
 
 /* Render a scene by raytracing */
-int dmnsn_raytrace_scene(dmnsn_scene *scene);
+void dmnsn_raytrace_scene(dmnsn_scene *scene);
 dmnsn_progress *dmnsn_raytrace_scene_async(dmnsn_scene *scene);
 
 #endif /* DIMENSION_RAYTRACE_H */

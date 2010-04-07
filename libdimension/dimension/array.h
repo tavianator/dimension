@@ -28,7 +28,7 @@
 #define DIMENSION_ARRAY_H
 
 #include <pthread.h> /* For pthread_rwlock_t */
-#include <stdlib.h>  /* For size_t, malloc */
+#include <stdlib.h>  /* For size_t */
 #include <string.h>  /* For memcpy */
 
 typedef struct {
@@ -46,26 +46,17 @@ dmnsn_delete_array(dmnsn_array *array)
   }
 }
 
-/* Array allocation never returns NULL - if dmnsn_new_array returns, it
-   succeeded */
+/* Array allocation */
 DMNSN_INLINE dmnsn_array *
 dmnsn_new_array(size_t obj_size)
 {
-  dmnsn_array *array = (dmnsn_array *)malloc(sizeof(dmnsn_array));
-  if (array) {
-    array->obj_size = obj_size;
-    array->length   = 0;
-    array->capacity = 4; /* Start with capacity of 4 */
+  dmnsn_array *array = (dmnsn_array *)dmnsn_malloc(sizeof(dmnsn_array));
+  array->obj_size = obj_size;
+  array->length   = 0;
+  array->capacity = 4; /* Start with capacity of 4 */
 
-    /* Allocate the memory */
-    array->ptr = malloc(array->capacity*array->obj_size);
-    if (!array->ptr) {
-      dmnsn_delete_array(array);
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Array allocation failed.");
-    }
-  } else {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array allocation failed.");
-  }
+  /* Allocate the memory */
+  array->ptr = dmnsn_malloc(array->capacity*array->obj_size);
 
   return array;
 }
@@ -84,10 +75,7 @@ dmnsn_array_resize(dmnsn_array *array, size_t length)
   if (length > array->capacity) {
     /* Resize if we don't have enough capacity */
     array->capacity = length*2; /* We are greedy */
-    array->ptr = realloc(array->ptr, array->obj_size*array->capacity);
-    if (!array->ptr) {
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Resizing array failed.");
-    }
+    array->ptr = dmnsn_realloc(array->ptr, array->obj_size*array->capacity);
   }
 
   array->length = length;

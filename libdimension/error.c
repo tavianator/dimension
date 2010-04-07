@@ -153,8 +153,9 @@ dmnsn_default_fatal_error_fn()
   if (pid == tid) {
     exit(EXIT_FAILURE);
   } else {
-    int *ret = malloc(sizeof(int));
-    *ret = 1;
+    int *ret = malloc(sizeof(int)); /* Don't use dmnsn_malloc */
+    if (ret)
+      *ret = 1;
     pthread_exit(ret);
   }
 #else

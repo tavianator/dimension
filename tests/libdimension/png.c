@@ -36,10 +36,6 @@ main() {
 
   /* Allocate our default scene */
   scene = dmnsn_new_default_scene();
-  if (!scene) {
-    fprintf(stderr, "--- Allocation of default scene failed! ---\n");
-    return EXIT_FAILURE;
-  }
 
   /* Optimize the canvas for PNG export */
   if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
@@ -51,11 +47,7 @@ main() {
   /* Render scene */
 
   printf("Rendering scene\n");
-  if (dmnsn_raytrace_scene(scene) != 0) {
-    dmnsn_delete_scene(scene);
-    fprintf(stderr, "--- Raytracing failed! ---\n");
-    return EXIT_FAILURE;
-  }
+  dmnsn_raytrace_scene(scene);
 
   /* Write the image to PNG */
 

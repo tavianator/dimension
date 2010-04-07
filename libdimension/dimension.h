@@ -61,6 +61,7 @@ typedef void dmnsn_free_fn(void *ptr);
 
 /* Include all the libdimension headers */
 #include <dimension/error.h>
+#include <dimension/malloc.h>
 #include <dimension/array.h>
 #include <dimension/progress.h>
 #include <dimension/geometry.h>

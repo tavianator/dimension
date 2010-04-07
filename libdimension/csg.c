@@ -98,48 +98,28 @@ dmnsn_csg_union_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 dmnsn_object *
 dmnsn_new_csg_union(dmnsn_object *A, dmnsn_object *B)
 {
-  if (A && B) {
-    A->trans_inv = dmnsn_matrix_inverse(A->trans);
-    B->trans_inv = dmnsn_matrix_inverse(B->trans);
+  A->trans_inv = dmnsn_matrix_inverse(A->trans);
+  B->trans_inv = dmnsn_matrix_inverse(B->trans);
 
-    dmnsn_object *csg = dmnsn_new_object();
-    if (csg) {
-      dmnsn_object **params = malloc(2*sizeof(dmnsn_object *));
-      if (!params) {
-        dmnsn_delete_object(csg);
-        dmnsn_delete_object(B);
-        dmnsn_delete_object(A);
-        errno = ENOMEM;
-        return NULL;
-      }
+  dmnsn_object *csg = dmnsn_new_object();
 
-      params[0] = A;
-      params[1] = B;
+  dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
+  params[0] = A;
+  params[1] = B;
 
-      csg->ptr             = params;
-      csg->intersection_fn = &dmnsn_csg_union_intersection_fn;
-      csg->inside_fn       = &dmnsn_csg_union_inside_fn;
-      csg->free_fn         = &dmnsn_csg_free_fn;
+  csg->ptr             = params;
+  csg->intersection_fn = &dmnsn_csg_union_intersection_fn;
+  csg->inside_fn       = &dmnsn_csg_union_inside_fn;
+  csg->free_fn         = &dmnsn_csg_free_fn;
 
-      dmnsn_bounding_box Abox
-        = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
-      dmnsn_bounding_box Bbox
-        = dmnsn_matrix_bounding_box_mul(B->trans, B->bounding_box);
-      csg->bounding_box.min = dmnsn_vector_min(Abox.min, Bbox.min);
-      csg->bounding_box.max = dmnsn_vector_max(Abox.max, Bbox.max);
+  dmnsn_bounding_box Abox
+    = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
+  dmnsn_bounding_box Bbox
+    = dmnsn_matrix_bounding_box_mul(B->trans, B->bounding_box);
+  csg->bounding_box.min = dmnsn_vector_min(Abox.min, Bbox.min);
+  csg->bounding_box.max = dmnsn_vector_max(Abox.max, Bbox.max);
 
-      return csg;
-    } else {
-      dmnsn_delete_object(B);
-      dmnsn_delete_object(A);
-    }
-  } else if (A) {
-    dmnsn_delete_object(B);
-  } else if (B) {
-    dmnsn_delete_object(A);
-  }
-
-  return NULL;
+  return csg;
 }
 
 /* Intersections */
@@ -237,48 +217,28 @@ dmnsn_csg_intersection_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 dmnsn_object *
 dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
 {
-  if (A && B) {
-    A->trans_inv = dmnsn_matrix_inverse(A->trans);
-    B->trans_inv = dmnsn_matrix_inverse(B->trans);
+  A->trans_inv = dmnsn_matrix_inverse(A->trans);
+  B->trans_inv = dmnsn_matrix_inverse(B->trans);
 
-    dmnsn_object *csg = dmnsn_new_object();
-    if (csg) {
-      dmnsn_object **params = malloc(2*sizeof(dmnsn_object *));
-      if (!params) {
-        dmnsn_delete_object(csg);
-        dmnsn_delete_object(B);
-        dmnsn_delete_object(A);
-        errno = ENOMEM;
-        return NULL;
-      }
+  dmnsn_object *csg = dmnsn_new_object();
 
-      params[0] = A;
-      params[1] = B;
+  dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
+  params[0] = A;
+  params[1] = B;
 
-      csg->ptr             = params;
-      csg->intersection_fn = &dmnsn_csg_intersection_intersection_fn;
-      csg->inside_fn       = &dmnsn_csg_intersection_inside_fn;
-      csg->free_fn         = &dmnsn_csg_free_fn;
+  csg->ptr             = params;
+  csg->intersection_fn = &dmnsn_csg_intersection_intersection_fn;
+  csg->inside_fn       = &dmnsn_csg_intersection_inside_fn;
+  csg->free_fn         = &dmnsn_csg_free_fn;
 
-      dmnsn_bounding_box Abox
-        = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
-      dmnsn_bounding_box Bbox
-        = dmnsn_matrix_bounding_box_mul(B->trans, B->bounding_box);
-      csg->bounding_box.min = dmnsn_vector_min(Abox.min, Bbox.min);
-      csg->bounding_box.max = dmnsn_vector_max(Abox.max, Bbox.max);
+  dmnsn_bounding_box Abox
+    = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
+  dmnsn_bounding_box Bbox
+    = dmnsn_matrix_bounding_box_mul(B->trans, B->bounding_box);
+  csg->bounding_box.min = dmnsn_vector_min(Abox.min, Bbox.min);
+  csg->bounding_box.max = dmnsn_vector_max(Abox.max, Bbox.max);
 
-      return csg;
-    } else {
-      dmnsn_delete_object(B);
-      dmnsn_delete_object(A);
-    }
-  } else if (A) {
-    dmnsn_delete_object(B);
-  } else if (B) {
-    dmnsn_delete_object(A);
-  }
-
-  return NULL;
+  return csg;
 }
 
 /* Differences */
@@ -376,48 +336,28 @@ dmnsn_csg_difference_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 dmnsn_object *
 dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
 {
-  if (A && B) {
-    A->trans_inv = dmnsn_matrix_inverse(A->trans);
-    B->trans_inv = dmnsn_matrix_inverse(B->trans);
+  A->trans_inv = dmnsn_matrix_inverse(A->trans);
+  B->trans_inv = dmnsn_matrix_inverse(B->trans);
 
-    dmnsn_object *csg = dmnsn_new_object();
-    if (csg) {
-      dmnsn_object **params = malloc(2*sizeof(dmnsn_object *));
-      if (!params) {
-        dmnsn_delete_object(csg);
-        dmnsn_delete_object(B);
-        dmnsn_delete_object(A);
-        errno = ENOMEM;
-        return NULL;
-      }
+  dmnsn_object *csg = dmnsn_new_object();
 
-      params[0] = A;
-      params[1] = B;
+  dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
+  params[0] = A;
+  params[1] = B;
 
-      csg->ptr             = params;
-      csg->intersection_fn = &dmnsn_csg_difference_intersection_fn;
-      csg->inside_fn       = &dmnsn_csg_difference_inside_fn;
-      csg->free_fn         = &dmnsn_csg_free_fn;
+  csg->ptr             = params;
+  csg->intersection_fn = &dmnsn_csg_difference_intersection_fn;
+  csg->inside_fn       = &dmnsn_csg_difference_inside_fn;
+  csg->free_fn         = &dmnsn_csg_free_fn;
 
-      dmnsn_bounding_box Abox
-        = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
-      dmnsn_bounding_box Bbox
-        = dmnsn_matrix_bounding_box_mul(B->trans, B->bounding_box);
-      csg->bounding_box.min = dmnsn_vector_min(Abox.min, Bbox.min);
-      csg->bounding_box.max = dmnsn_vector_max(Abox.max, Bbox.max);
+  dmnsn_bounding_box Abox
+    = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
+  dmnsn_bounding_box Bbox
+    = dmnsn_matrix_bounding_box_mul(B->trans, B->bounding_box);
+  csg->bounding_box.min = dmnsn_vector_min(Abox.min, Bbox.min);
+  csg->bounding_box.max = dmnsn_vector_max(Abox.max, Bbox.max);
 
-      return csg;
-    } else {
-      dmnsn_delete_object(B);
-      dmnsn_delete_object(A);
-    }
-  } else if (A) {
-    dmnsn_delete_object(B);
-  } else if (B) {
-    dmnsn_delete_object(A);
-  }
-
-  return NULL;
+  return csg;
 }
 
 /* Merges */
@@ -515,46 +455,26 @@ dmnsn_csg_merge_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 dmnsn_object *
 dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B)
 {
-  if (A && B) {
-    A->trans_inv = dmnsn_matrix_inverse(A->trans);
-    B->trans_inv = dmnsn_matrix_inverse(B->trans);
+  A->trans_inv = dmnsn_matrix_inverse(A->trans);
+  B->trans_inv = dmnsn_matrix_inverse(B->trans);
 
-    dmnsn_object *csg = dmnsn_new_object();
-    if (csg) {
-      dmnsn_object **params = malloc(2*sizeof(dmnsn_object *));
-      if (!params) {
-        dmnsn_delete_object(csg);
-        dmnsn_delete_object(B);
-        dmnsn_delete_object(A);
-        errno = ENOMEM;
-        return NULL;
-      }
+  dmnsn_object *csg = dmnsn_new_object();
 
-      params[0] = A;
-      params[1] = B;
+  dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
+  params[0] = A;
+  params[1] = B;
 
-      csg->ptr             = params;
-      csg->intersection_fn = &dmnsn_csg_merge_intersection_fn;
-      csg->inside_fn       = &dmnsn_csg_merge_inside_fn;
-      csg->free_fn         = &dmnsn_csg_free_fn;
+  csg->ptr             = params;
+  csg->intersection_fn = &dmnsn_csg_merge_intersection_fn;
+  csg->inside_fn       = &dmnsn_csg_merge_inside_fn;
+  csg->free_fn         = &dmnsn_csg_free_fn;
 
-      dmnsn_bounding_box Abox
-        = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
-      dmnsn_bounding_box Bbox
-        = dmnsn_matrix_bounding_box_mul(B->trans, B->bounding_box);
-      csg->bounding_box.min = dmnsn_vector_min(Abox.min, Bbox.min);
-      csg->bounding_box.max = dmnsn_vector_max(Abox.max, Bbox.max);
+  dmnsn_bounding_box Abox
+    = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
+  dmnsn_bounding_box Bbox
+    = dmnsn_matrix_bounding_box_mul(B->trans, B->bounding_box);
+  csg->bounding_box.min = dmnsn_vector_min(Abox.min, Bbox.min);
+  csg->bounding_box.max = dmnsn_vector_max(Abox.max, Bbox.max);
 
-      return csg;
-    } else {
-      dmnsn_delete_object(B);
-      dmnsn_delete_object(A);
-    }
-  } else if (A) {
-    dmnsn_delete_object(B);
-  } else if (B) {
-    dmnsn_delete_object(A);
-  }
-
-  return NULL;
+  return csg;
 }

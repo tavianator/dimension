@@ -21,7 +21,6 @@
 #include "dimension.h"
 #include <pthread.h>
 #include <errno.h>
-#include <stdlib.h> /* For malloc */
 
 /* For thread synchronization */
 static void dmnsn_progress_rdlock(const dmnsn_progress *progress);
@@ -32,70 +31,44 @@ static void dmnsn_progress_unlock(const dmnsn_progress *progress);
 dmnsn_progress *
 dmnsn_new_progress()
 {
+  dmnsn_progress *progress = dmnsn_malloc(sizeof(dmnsn_progress));
+  progress->elements = dmnsn_new_array(sizeof(dmnsn_progress_element));
+
   dmnsn_progress_element element = { .progress = 0, .total = 1 };
-  dmnsn_progress *progress = malloc(sizeof(dmnsn_progress));
-  if (progress) {
-    progress->elements = dmnsn_new_array(sizeof(dmnsn_progress_element));
-    dmnsn_array_push(progress->elements, &element);
+  dmnsn_array_push(progress->elements, &element);
 
-    /* Initialize the rwlock, condition variable, and mutex */
+  /* Initialize the rwlock, condition variable, and mutex */
 
-    progress->rwlock = NULL;
-    progress->mutex  = NULL;
-    progress->cond   = NULL;
+  progress->rwlock = dmnsn_malloc(sizeof(pthread_rwlock_t));
+  if (pthread_rwlock_init(progress->rwlock, NULL) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't initialize read-write lock.");
+  }
 
-    progress->rwlock = malloc(sizeof(pthread_rwlock_t));
-    if (!progress->rwlock) {
-      dmnsn_delete_progress(progress);
-      errno = ENOMEM;
-      return NULL;
-    }
-    if (pthread_rwlock_init(progress->rwlock, NULL) != 0) {
-      dmnsn_delete_progress(progress);
-      return NULL;
-    }
+  progress->cond = dmnsn_malloc(sizeof(pthread_cond_t));
+  if (pthread_cond_init(progress->cond, NULL) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't initialize condition variable.");
+  }
 
-    progress->cond = malloc(sizeof(pthread_cond_t));
-    if (!progress->cond) {
-      dmnsn_delete_progress(progress);
-      errno = ENOMEM;
-      return NULL;
-    }
-    if (pthread_cond_init(progress->cond, NULL) != 0) {
-      dmnsn_delete_progress(progress);
-      return NULL;
-    }
-
-    progress->mutex = malloc(sizeof(pthread_mutex_t));
-    if (!progress->mutex) {
-      dmnsn_delete_progress(progress);
-      errno = ENOMEM;
-      return NULL;
-    }
-    if (pthread_mutex_init(progress->mutex, NULL) != 0) {
-      dmnsn_delete_progress(progress);
-      return NULL;
-    }
-  } else {
-    errno = ENOMEM;
+  progress->mutex = dmnsn_malloc(sizeof(pthread_mutex_t));
+  if (pthread_mutex_init(progress->mutex, NULL) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't initialize mutex.");
   }
 
   return progress;
 }
 
-/* Delete a dmnsn_progress*, which has not yet been associated with a thread;
-   mostly for failed returns from *_async() functions. */
+/* Delete a dmnsn_progress*, which has not yet been associated with a thread */
 void
 dmnsn_delete_progress(dmnsn_progress *progress)
 {
   if (progress) {
-    if (progress->rwlock && pthread_rwlock_destroy(progress->rwlock) != 0) {
+    if (pthread_rwlock_destroy(progress->rwlock) != 0) {
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking rwlock.");
     }
-    if (progress->mutex && pthread_mutex_destroy(progress->mutex) != 0) {
+    if (pthread_mutex_destroy(progress->mutex) != 0) {
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking mutex.");
     }
-    if (progress->cond && pthread_cond_destroy(progress->cond) != 0) {
+    if (pthread_cond_destroy(progress->cond) != 0) {
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking condition variable.");
     }
 

@@ -19,30 +19,32 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <errno.h>
+#include <string.h>
 
-/*
- * Point light source
- */
-
-static dmnsn_color
-dmnsn_point_light_fn(const dmnsn_light *light, dmnsn_vector v)
+void *
+dmnsn_malloc(size_t size)
 {
-  return *(dmnsn_color *)light->ptr;
+  void *ptr = malloc(size);
+  if (!ptr) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Memory allocation failed.");
+  }
+  return ptr;
 }
 
-dmnsn_light *
-dmnsn_new_point_light(dmnsn_vector x0, dmnsn_color color)
+void *
+dmnsn_realloc(void *ptr, size_t size)
 {
-  dmnsn_light *light = dmnsn_new_light();
+  ptr = realloc(ptr, size);
+  if (!ptr) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Memory allocation failed.");
+  }
+  return ptr;
+}
 
-  dmnsn_color *ptr = dmnsn_malloc(sizeof(dmnsn_color));
-  *ptr = color;
-
-  light->x0       = x0;
-  light->light_fn = &dmnsn_point_light_fn;
-  light->free_fn  = &free;
-  light->ptr      = ptr;
-
-  return light;
+char *
+dmnsn_strdup(const char *s)
+{
+  char *copy = dmnsn_malloc(strlen(s) + 1);
+  strcpy(copy, s);
+  return copy;
 }

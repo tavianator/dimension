@@ -40,68 +40,55 @@ typedef struct {
 static void *dmnsn_raytrace_scene_thread(void *ptr);
 
 /* Raytrace a scene */
-int
+void
 dmnsn_raytrace_scene(dmnsn_scene *scene)
 {
   dmnsn_progress *progress = dmnsn_raytrace_scene_async(scene);
-  return dmnsn_finish_progress(progress);
+  dmnsn_finish_progress(progress);
 }
 
 /* Raytrace a scene in the background */
 dmnsn_progress *
 dmnsn_raytrace_scene_async(dmnsn_scene *scene)
 {
-  unsigned int i;
-  dmnsn_object *object;
-  dmnsn_raytrace_payload *payload;
   dmnsn_progress *progress = dmnsn_new_progress();
 
-  if (progress) {
-    payload = malloc(sizeof(dmnsn_raytrace_payload));
-    if (!payload) {
-      dmnsn_delete_progress(progress);
-      errno = ENOMEM;
-      return NULL;
-    }
+  dmnsn_raytrace_payload *payload
+    = dmnsn_malloc(sizeof(dmnsn_raytrace_payload));
+  payload->progress = progress;
+  payload->scene    = scene;
+  payload->bvst     = dmnsn_new_bvst();
 
-    payload->progress = progress;
-    payload->scene    = scene;
-    payload->bvst     = dmnsn_new_bvst();
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(payload->scene->objects); ++i) {
+    dmnsn_object *object;
+    dmnsn_array_get(payload->scene->objects, i, &object);
+    dmnsn_bvst_insert(payload->bvst, object);
+  }
 
-    for (i = 0; i < dmnsn_array_size(payload->scene->objects); ++i) {
-      dmnsn_array_get(payload->scene->objects, i, &object);
-      dmnsn_bvst_insert(payload->bvst, object);
-    }
-
-    if (pthread_create(&progress->thread, NULL, &dmnsn_raytrace_scene_thread,
-                       payload) != 0)
-    {
-      dmnsn_delete_bvst(payload->bvst);
-      free(payload);
-      dmnsn_delete_progress(progress);
-      return NULL;
-    }
+  if (pthread_create(&progress->thread, NULL, &dmnsn_raytrace_scene_thread,
+                     payload) != 0)
+  {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start worker thread.");
   }
 
   return progress;
 }
 
 /* Start the multi-threaded implementation */
-static int dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload);
+static void dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload);
 
 /* Thread callback */
 static void *
 dmnsn_raytrace_scene_thread(void *ptr)
 {
   dmnsn_raytrace_payload *payload = ptr;
-  int *retval = malloc(sizeof(int));
-  if (retval) {
-    *retval = dmnsn_raytrace_scene_multithread(payload);
-  } else {
-    errno = ENOMEM;
-  }
+  dmnsn_raytrace_scene_multithread(payload);
   dmnsn_done_progress(payload->progress);
   free(payload);
+
+  int *retval = dmnsn_malloc(sizeof(int));
+  *retval = 0;
   return retval;
 }
 
@@ -109,12 +96,9 @@ dmnsn_raytrace_scene_thread(void *ptr)
 static void *dmnsn_raytrace_scene_multithread_thread(void *ptr);
 
 /* Set up the multi-threaded engine */
-static int
+static void
 dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
 {
-  int i, j;
-  void *ptr;
-  int retval = 0;
   dmnsn_raytrace_payload *payloads;
   pthread_t *threads;
 
@@ -123,24 +107,15 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
   if (nthreads < 1)
     nthreads = 1;
 
-  payloads = malloc(nthreads*sizeof(dmnsn_raytrace_payload));
-  if (!payloads) {
-    errno = ENOMEM;
-    return -1;
-  }
-
-  threads = malloc(nthreads*sizeof(pthread_t));
-  if (!threads) {
-    free(payloads);
-    errno = ENOMEM;
-    return -1;
-  }
+  payloads = dmnsn_malloc(nthreads*sizeof(dmnsn_raytrace_payload));
+  threads  = dmnsn_malloc(nthreads*sizeof(pthread_t));
 
   /* Set up the progress object */
   dmnsn_new_progress_element(payload->progress,
                              payload->scene->canvas->y);
 
   /* Create the payloads */
+  unsigned int i;
   for (i = 0; i < nthreads; ++i) {
     payloads[i] = *payload;
     payloads[i].index = i;
@@ -156,62 +131,38 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
                        &dmnsn_raytrace_scene_multithread_thread,
                        &payloads[i]) != 0)
     {
-      for (j = 0; j < i; ++j) {
-        if (pthread_join(threads[j], &ptr)) {
-          dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                      "Couldn't join worker thread in failed raytrace engine"
-                      " initialization.");
-        } else {
-          /* Only free on a successful join - otherwise we might free a pointer
-             out from under a running thread */
-          dmnsn_delete_bvst(payloads[j].bvst);
-          free(ptr);
-        }
-      }
-
-      free(payloads);
-      return -1;
+      dmnsn_error(DMNSN_SEVERITY_HIGH,
+                  "Couldn't start worker thread in raytrace engine.");
     }
   }
 
   for (i = 0; i < nthreads; ++i) {
-    if (pthread_join(threads[i], &ptr)) {
+    if (pthread_join(threads[i], NULL)) {
       dmnsn_error(DMNSN_SEVERITY_MEDIUM,
                   "Couldn't join worker thread in raytrace engine.");
     } else {
-      if (retval == 0) {
-        retval = *(int *)ptr;
-      }
       dmnsn_delete_bvst(payloads[i].bvst);
-      free(ptr);
     }
   }
 
   free(threads);
   free(payloads);
-  return retval;
 }
 
 /* Actual raytracing implementation */
-static int dmnsn_raytrace_scene_impl(dmnsn_progress *progress,
-                                     dmnsn_scene *scene,
-                                     dmnsn_bvst *bvst,
-                                     unsigned int index, unsigned int threads);
+static void dmnsn_raytrace_scene_impl(dmnsn_progress *progress,
+                                      dmnsn_scene *scene,
+                                      dmnsn_bvst *bvst,
+                                      unsigned int index, unsigned int threads);
 
 /* Multi-threading thread callback */
 static void *
 dmnsn_raytrace_scene_multithread_thread(void *ptr)
 {
   dmnsn_raytrace_payload *payload = ptr;
-  int *retval = malloc(sizeof(int));
-  if (retval) {
-    *retval = dmnsn_raytrace_scene_impl(payload->progress, payload->scene,
-                                        payload->bvst,
-                                        payload->index, payload->threads);
-  } else {
-    errno = ENOMEM;
-  }
-  return retval;
+  dmnsn_raytrace_scene_impl(payload->progress, payload->scene,
+                            payload->bvst, payload->index, payload->threads);
+  return NULL;
 }
 
 /*
@@ -242,7 +193,7 @@ static dmnsn_color dmnsn_raytrace_shoot(dmnsn_raytrace_state *state,
                                         dmnsn_line ray);
 
 /* Actually raytrace a scene */
-static int
+static void
 dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
                           dmnsn_bvst *bvst,
                           unsigned int index, unsigned int threads)
@@ -283,8 +234,6 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 
     dmnsn_increment_progress(progress);
   }
-
-  return 0;
 }
 
 #define ITEXTURE(state) (state->intersection->texture)

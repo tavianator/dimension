@@ -20,20 +20,15 @@
 
 #include "dimension.h"
 #include <errno.h>
-#include <stdlib.h> /* For malloc */
 
 /* Allocate a new dummy light */
 dmnsn_light *
 dmnsn_new_light()
 {
-  dmnsn_light *light = malloc(sizeof(dmnsn_light));
-  if (light) {
-    light->light_fn = NULL;
-    light->free_fn  = NULL;
-    light->ptr      = NULL;
-  } else {
-    errno = ENOMEM;
-  }
+  dmnsn_light *light = dmnsn_malloc(sizeof(dmnsn_light));
+  light->light_fn = NULL;
+  light->free_fn  = NULL;
+  light->ptr      = NULL;
   return light;
 }
 

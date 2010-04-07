@@ -214,11 +214,6 @@ main(int argc, char **argv) {
 
   /* Allocate a canvas */
   scene->canvas = dmnsn_new_canvas(width, height);
-  if (!scene->canvas) {
-    dmnsn_delete_scene(scene);
-    fprintf(stderr, "Couldn't allocate canvas!\n");
-    return EXIT_FAILURE;
-  }
 
   /* Set the new number of threads if --threads changed it */
   if (nthreads)
@@ -231,30 +226,16 @@ main(int argc, char **argv) {
   /* Generate a default output filename by replacing the extension of the
      basename of the input file with ".png" */
   if (!output) {
-    char *input_copy = strdup(input);
-    if (!input_copy) {
-      fprintf(stderr, "Couldn't allocate space for output filename!\n");
-      return EXIT_FAILURE;
-    }
-
+    char *input_copy = dmnsn_strdup(input);
     char *base = basename(input_copy);
     char *ext = strrchr(base, '.');
     if (ext) {
-      output = malloc(ext - base + 5);
-      if (!output) {
-        fprintf(stderr, "Couldn't allocate space for output filename!\n");
-        return EXIT_FAILURE;
-      }
-
+      output = dmnsn_malloc(ext - base + 5);
       strncpy(output, base, ext - base + 5);
       ext = output + (ext - base);
     } else {
       size_t len = strlen(base);
-      output = malloc(len + 5);
-      if (!output) {
-        fprintf(stderr, "Couldn't allocate space for output filename!\n");
-        return EXIT_FAILURE;
-      }
+      output = dmnsn_malloc(len + 5);
       strcpy(output, base);
       ext = output + len;
     }
@@ -277,12 +258,6 @@ main(int argc, char **argv) {
   }
 
   dmnsn_progress *render_progress = dmnsn_raytrace_scene_async(scene);
-  if (!render_progress) {
-    dmnsn_delete_scene(scene);
-    fprintf(stderr, "Error starting render!\n");
-    return EXIT_FAILURE;
-  }
-
   dmnsn_progressbar(scene->nthreads > 1
                     ? "Rendering scene with %u threads"
                     : "Rendering scene with %u thread",

@@ -48,11 +48,7 @@ dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
   optimizer.free_fn = &free;
 
   /* Allocate a buffer to hold RGB values */
-  optimizer.ptr = malloc(4*canvas->x*canvas->y*sizeof(GLushort));
-  if (!optimizer.ptr) {
-    errno = ENOTSUP;
-    return -1;
-  }
+  optimizer.ptr = dmnsn_malloc(4*canvas->x*canvas->y*sizeof(GLushort));
 
   /* Set a new optimizer */
   dmnsn_optimize_canvas(canvas, optimizer);
@@ -83,11 +79,7 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   }
 
   /* We couldn't, so transform the canvas to RGB now */
-  pixels = malloc(4*width*height*sizeof(GLushort));
-  if (!pixels) {
-    errno = ENOMEM;
-    return -1;
-  }
+  pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
 
   for (y = 0; y < height; ++y) {
     for (x = 0; x < width; ++x) {
@@ -146,16 +138,7 @@ dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
   unsigned int x, y;
 
   canvas = dmnsn_new_canvas(width, height);
-  if (!canvas) {
-    return NULL;
-  }
-
-  pixels = malloc(4*width*height*sizeof(GLushort));
-  if (!pixels) {
-    dmnsn_delete_canvas(canvas);
-    errno = ENOMEM;
-    return NULL;
-  }
+  pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
 
   glReadPixels(x0, y0, width, height, GL_RGBA, GL_UNSIGNED_SHORT, pixels);
 

@@ -20,7 +20,6 @@
 
 #include "dimension.h"
 #include <errno.h>
-#include <stdlib.h> /* For malloc */
 #include <math.h>
 
 /*
@@ -55,20 +54,14 @@ dmnsn_finish *
 dmnsn_new_phong_finish(double specular, double exp)
 {
   dmnsn_finish *finish = dmnsn_new_finish();
-  if (finish) {
-    double *params = malloc(2*sizeof(double));
-    if (!params) {
-      dmnsn_delete_finish(finish);
-      errno = ENOMEM;
-      return NULL;
-    }
 
-    params[0] = specular;
-    params[1] = exp;
+  double *params = dmnsn_malloc(2*sizeof(double));
+  params[0] = specular;
+  params[1] = exp;
 
-    finish->ptr         = params;
-    finish->specular_fn = &dmnsn_phong_specular_fn;
-    finish->free_fn     = &free;
-  }
+  finish->ptr         = params;
+  finish->specular_fn = &dmnsn_phong_specular_fn;
+  finish->free_fn     = &free;
+
   return finish;
 }

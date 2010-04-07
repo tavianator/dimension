@@ -20,16 +20,12 @@
 
 #include "dimension.h"
 #include <errno.h>
-#include <stdlib.h> /* For malloc */
 
-/* Allocate an intersection - cannot fail */
+/* Allocate an intersection */
 dmnsn_intersection *
 dmnsn_new_intersection()
 {
-  dmnsn_intersection *intersection = malloc(sizeof(dmnsn_intersection));
-  if (!intersection) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate an intersection.");
-  }
+  dmnsn_intersection *intersection = dmnsn_malloc(sizeof(dmnsn_intersection));
   return intersection;
 }
 
@@ -44,15 +40,11 @@ dmnsn_delete_intersection(dmnsn_intersection *intersection)
 dmnsn_object *
 dmnsn_new_object()
 {
-  dmnsn_object *object = malloc(sizeof(dmnsn_object));
-  if (object) {
-    object->texture  = NULL;
-    object->interior = NULL;
-    object->trans    = dmnsn_identity_matrix();
-    object->free_fn  = NULL;
-  } else {
-    errno = ENOMEM;
-  }
+  dmnsn_object *object = dmnsn_malloc(sizeof(dmnsn_object));
+  object->texture  = NULL;
+  object->interior = NULL;
+  object->trans    = dmnsn_identity_matrix();
+  object->free_fn  = NULL;
   return object;
 }
 

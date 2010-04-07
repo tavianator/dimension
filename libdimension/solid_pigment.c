@@ -20,7 +20,6 @@
 
 #include "dimension.h"
 #include <errno.h>
-#include <stdlib.h> /* For malloc */
 
 /* Solid color pigment callback */
 static dmnsn_color dmnsn_solid_pigment_fn(const dmnsn_pigment *pigment,
@@ -30,21 +29,14 @@ static dmnsn_color dmnsn_solid_pigment_fn(const dmnsn_pigment *pigment,
 dmnsn_pigment *
 dmnsn_new_solid_pigment(dmnsn_color color)
 {
-  dmnsn_color *solid;
   dmnsn_pigment *pigment = dmnsn_new_pigment();
-  if (pigment) {
-    solid = malloc(sizeof(dmnsn_color));
-    if (!solid) {
-      dmnsn_delete_pigment(pigment);
-      errno = ENOMEM;
-      return NULL;
-    }
-    *solid = color;
 
-    pigment->pigment_fn = &dmnsn_solid_pigment_fn;
-    pigment->free_fn    = &free;
-    pigment->ptr        = solid;
-  }
+  dmnsn_color *solid = dmnsn_malloc(sizeof(dmnsn_color));
+  *solid = color;
+
+  pigment->pigment_fn = &dmnsn_solid_pigment_fn;
+  pigment->free_fn    = &free;
+  pigment->ptr        = solid;
 
   return pigment;
 }

@@ -57,17 +57,13 @@ dmnsn_new_astnode(dmnsn_astnode_type type, YYLTYPE lloc)
     .children = dmnsn_new_array(sizeof(dmnsn_astnode)),
     .ptr      = NULL,
     .free_fn  = NULL,
-    .refcount = malloc(sizeof(unsigned int)),
+    .refcount = dmnsn_malloc(sizeof(unsigned int)),
     .filename = lloc.first_filename,
     .line     = lloc.first_line,
     .col      = lloc.first_column
   };
 
-  if (!astnode.refcount) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate reference count.");
-  }
   *astnode.refcount = 1;
-
   return astnode;
 }
 

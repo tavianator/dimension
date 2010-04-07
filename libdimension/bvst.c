@@ -25,22 +25,15 @@
 dmnsn_bvst *
 dmnsn_new_bvst()
 {
-  dmnsn_bvst *tree = malloc(sizeof(dmnsn_bvst));
-  if (tree) {
-    tree->root = NULL;
-  } else {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "BVST allocation failed.");
-  }
+  dmnsn_bvst *tree = dmnsn_malloc(sizeof(dmnsn_bvst));
+  tree->root = NULL;
   return tree;
 }
 
 static dmnsn_bvst_node *
 dmnsn_new_bvst_node()
 {
-  dmnsn_bvst_node *node = malloc(sizeof(dmnsn_bvst_node));
-  if (!node) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "BVST node allocation failed.");
-  }
+  dmnsn_bvst_node *node = dmnsn_malloc(sizeof(dmnsn_bvst_node));
   return node;
 }
 

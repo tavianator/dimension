@@ -20,7 +20,6 @@
 
 #include "dimension.h"
 #include <errno.h>
-#include <stdlib.h> /* For malloc */
 #include <math.h>
 
 /*
@@ -50,21 +49,16 @@ dmnsn_finish *
 dmnsn_new_reflective_finish(dmnsn_color min, dmnsn_color max, double falloff)
 {
   dmnsn_finish *finish = dmnsn_new_finish();
-  if (finish) {
-    dmnsn_reflection_params *params = malloc(sizeof(dmnsn_reflection_params));
-    if (!params) {
-      dmnsn_delete_finish(finish);
-      errno = ENOMEM;
-      return NULL;
-    }
 
-    params->min     = min;
-    params->max     = max;
-    params->falloff = falloff;
+  dmnsn_reflection_params *params
+    = dmnsn_malloc(sizeof(dmnsn_reflection_params));
+  params->min     = min;
+  params->max     = max;
+  params->falloff = falloff;
 
-    finish->ptr           = params;
-    finish->reflection_fn = &dmnsn_reflective_finish_fn;
-    finish->free_fn       = &free;
-  }
+  finish->ptr           = params;
+  finish->reflection_fn = &dmnsn_reflective_finish_fn;
+  finish->free_fn       = &free;
+
   return finish;
 }

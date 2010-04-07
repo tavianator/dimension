@@ -24,9 +24,6 @@ dmnsn_new_default_scene()
 {
   /* Allocate a new scene */
   dmnsn_scene *scene = dmnsn_new_scene();
-  if (!scene) {
-    return NULL;
-  }
 
   /* Default finish */
   scene->default_texture->finish = dmnsn_new_ambient_finish(
@@ -40,10 +37,6 @@ dmnsn_new_default_scene()
     dmnsn_new_phong_finish(0.2, 40.0),
     scene->default_texture->finish
   );
-  if (!scene->default_texture->finish) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
 
   /* Background color */
   scene->background = dmnsn_color_mul(0.1, dmnsn_blue);
@@ -51,10 +44,6 @@ dmnsn_new_default_scene()
 
   /* Allocate a canvas */
   scene->canvas = dmnsn_new_canvas(768, 480);
-  if (!scene->canvas) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
 
   /* Set up the transformation matrix for the perspective camera */
   dmnsn_matrix trans = dmnsn_scale_matrix(
@@ -73,81 +62,32 @@ dmnsn_new_default_scene()
 
   /* Create a perspective camera */
   scene->camera = dmnsn_new_perspective_camera();
-  if (!scene->camera) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
   dmnsn_set_perspective_camera_trans(scene->camera, trans);
 
   /* Now make our objects */
 
   dmnsn_object *sphere = dmnsn_new_sphere();
-  if (!sphere) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
-
   sphere->texture = dmnsn_new_texture();
-  if (!sphere->texture) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
-
   sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_yellow);
-  if (!sphere->texture->pigment) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
-
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.25, 1.25, 1.25));
 
   dmnsn_object *cube = dmnsn_new_cube();
-  if (!cube) {
-    dmnsn_delete_object(sphere);
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
-
   cube->texture = dmnsn_new_texture();
-  if (!cube->texture) {
-    dmnsn_delete_object(sphere);
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
 
   dmnsn_color cube_color = dmnsn_magenta;
   cube_color.filter = 0.25;
   cube_color.trans  = 0.5;
   cube->texture->pigment = dmnsn_new_solid_pigment(cube_color);
-  if (!cube->texture->pigment) {
-    dmnsn_delete_object(sphere);
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
 
   dmnsn_color reflect = dmnsn_color_mul(0.5, dmnsn_white);
   cube->texture->finish = dmnsn_new_reflective_finish(reflect, reflect, 1.0);
-  if (!cube->texture->finish) {
-    dmnsn_delete_object(sphere);
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
 
   cube->interior = dmnsn_new_interior();
-  if (!cube->interior) {
-    dmnsn_delete_object(sphere);
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
   cube->interior->ior = 1.1;
 
   cube->trans = dmnsn_rotation_matrix(dmnsn_new_vector(0.75, 0.0, 0.0));
 
   dmnsn_object *csg = dmnsn_new_csg_difference(cube, sphere);
-  if (!csg) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
   dmnsn_array_push(scene->objects, &csg);
 
   /* Now make a light */
@@ -156,10 +96,6 @@ dmnsn_new_default_scene()
     dmnsn_new_vector(-15.0, 20.0, 10.0),
     dmnsn_cyan
   );
-  if (!light) {
-    dmnsn_delete_scene(scene);
-    return NULL;
-  }
   dmnsn_array_push(scene->lights, &light);
 
   return scene;
@@ -186,10 +122,7 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
   XSetWindowAttributes swa;
   dmnsn_display *display;
 
-  display = malloc(sizeof(dmnsn_display));
-  if (!display) {
-    return NULL;
-  }
+  display = dmnsn_malloc(sizeof(dmnsn_display));
 
   display->dpy  = NULL;
   display->win  = 0;
