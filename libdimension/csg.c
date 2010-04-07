@@ -235,8 +235,8 @@ dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
     = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
   dmnsn_bounding_box Bbox
     = dmnsn_matrix_bounding_box_mul(B->trans, B->bounding_box);
-  csg->bounding_box.min = dmnsn_vector_min(Abox.min, Bbox.min);
-  csg->bounding_box.max = dmnsn_vector_max(Abox.max, Bbox.max);
+  csg->bounding_box.min = dmnsn_vector_max(Abox.min, Bbox.min);
+  csg->bounding_box.max = dmnsn_vector_min(Abox.max, Bbox.max);
 
   return csg;
 }
@@ -349,13 +349,7 @@ dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
   csg->intersection_fn = &dmnsn_csg_difference_intersection_fn;
   csg->inside_fn       = &dmnsn_csg_difference_inside_fn;
   csg->free_fn         = &dmnsn_csg_free_fn;
-
-  dmnsn_bounding_box Abox
-    = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
-  dmnsn_bounding_box Bbox
-    = dmnsn_matrix_bounding_box_mul(B->trans, B->bounding_box);
-  csg->bounding_box.min = dmnsn_vector_min(Abox.min, Bbox.min);
-  csg->bounding_box.max = dmnsn_vector_max(Abox.max, Bbox.max);
+  csg->bounding_box = dmnsn_matrix_bounding_box_mul(A->trans, A->bounding_box);
 
   return csg;
 }
