@@ -38,8 +38,14 @@
 %type <astnode> OBJECT
 %type <astnode> FINITE_SOLID_OBJECT
 %type <astnode> BOX
-%type <astnode> LIGHT_SOURCE
 %type <astnode> SPHERE
+%type <astnode> CSG_OBJECT
+%type <astnode> UNION
+%type <astnode> INTERSECTION
+%type <astnode> DIFFERENCE
+%type <astnode> MERGE
+%type <astnode> OBJECTS
+%type <astnode> LIGHT_SOURCE
 
 /* Object modifiers */
 %type <astnode> OBJECT_MODIFIERS

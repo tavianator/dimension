@@ -114,6 +114,7 @@ CAMERA_MODIFIER: "angle" FLOAT {
 /* Objects */
 
 OBJECT: FINITE_SOLID_OBJECT
+      | CSG_OBJECT
       | LIGHT_SOURCE
       | "object" "{"
           IDENTIFIER
@@ -195,6 +196,56 @@ SPHERE: "sphere" "{"
         $$ = dmnsn_new_astnode3(DMNSN_AST_SPHERE, @$, $3, $5, $6);
       }
 ;
+
+CSG_OBJECT: UNION
+          | INTERSECTION
+          | DIFFERENCE
+          | MERGE
+;
+
+UNION: "union" "{"
+         OBJECTS
+         OBJECT_MODIFIERS
+       "}"
+     {
+       $$ = dmnsn_new_astnode2(DMNSN_AST_UNION, @$, $3, $4);
+     }
+;
+
+INTERSECTION: "intersection" "{"
+                OBJECTS
+                OBJECT_MODIFIERS
+              "}"
+            {
+              $$ = dmnsn_new_astnode2(DMNSN_AST_INTERSECTION, @$, $3, $4);
+            }
+;
+
+DIFFERENCE: "difference" "{"
+              OBJECTS
+              OBJECT_MODIFIERS
+            "}"
+          {
+            $$ = dmnsn_new_astnode2(DMNSN_AST_DIFFERENCE, @$, $3, $4);
+          }
+;
+
+MERGE: "merge" "{"
+         OBJECTS
+         OBJECT_MODIFIERS
+       "}"
+     {
+       $$ = dmnsn_new_astnode2(DMNSN_AST_MERGE, @$, $3, $4);
+     }
+;
+
+OBJECTS: OBJECT OBJECT {
+         $$ = dmnsn_new_astnode2(DMNSN_AST_ARRAY, @$, $1, $2);
+       }
+       | OBJECTS OBJECT {
+         $$ = $1;
+         dmnsn_array_push($$.children, &$2);
+       }
 
 LIGHT_SOURCE: "light_source" "{"
                 VECTOR "," COLOR

@@ -659,6 +659,8 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
   }
 }
 
+static dmnsn_object *dmnsn_realize_object(dmnsn_astnode astnode);
+
 static dmnsn_object *
 dmnsn_realize_box(dmnsn_astnode astnode)
 {
@@ -695,27 +697,6 @@ dmnsn_realize_box(dmnsn_astnode astnode)
   return box;
 }
 
-static dmnsn_light *
-dmnsn_realize_light_source(dmnsn_astnode astnode)
-{
-  dmnsn_assert(astnode.type == DMNSN_AST_LIGHT_SOURCE,
-               "Expected a light source.");
-
-  dmnsn_astnode point, color_node;
-  dmnsn_array_get(astnode.children, 0, &point);
-  dmnsn_array_get(astnode.children, 1, &color_node);
-
-  dmnsn_vector x0 = dmnsn_realize_vector(point);
-  dmnsn_color color = dmnsn_realize_color(color_node);
-
-  dmnsn_light *light = dmnsn_new_point_light(x0, color);
-  if (!light) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate light.");
-  }
-
-  return light;
-}
-
 static dmnsn_object *
 dmnsn_realize_sphere(dmnsn_astnode astnode)
 {
@@ -741,6 +722,207 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
   dmnsn_realize_object_modifiers(modifiers, sphere);
 
   return sphere;
+}
+
+static dmnsn_object *
+dmnsn_realize_union(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_UNION, "Expected a union.");
+
+  dmnsn_astnode objects;
+  dmnsn_array_get(astnode.children, 0, &objects);
+
+  dmnsn_astnode o1node, o2node;
+  dmnsn_array_get(objects.children, 0, &o1node);
+  dmnsn_array_get(objects.children, 1, &o2node);
+
+  dmnsn_object *o1 = dmnsn_realize_object(o1node);
+  dmnsn_object *o2 = dmnsn_realize_object(o2node);
+
+  dmnsn_object *csg = dmnsn_new_csg_union(o1, o2);
+  if (!csg) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate union.");
+  }
+
+  unsigned int i;
+  for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
+    dmnsn_astnode onode;
+    dmnsn_array_get(objects.children, i, &onode);
+
+    dmnsn_object *object = dmnsn_realize_object(onode);
+    csg = dmnsn_new_csg_union(csg, object);
+    if (!csg) {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate union.");
+    }
+  }
+
+  dmnsn_astnode modifiers;
+  dmnsn_array_get(astnode.children, 1, &modifiers);
+  dmnsn_realize_object_modifiers(modifiers, csg);
+
+  return csg;
+}
+
+static dmnsn_object *
+dmnsn_realize_intersection(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_INTERSECTION,
+               "Expected an intersection.");
+
+  dmnsn_astnode objects;
+  dmnsn_array_get(astnode.children, 0, &objects);
+
+  dmnsn_astnode o1node, o2node;
+  dmnsn_array_get(objects.children, 0, &o1node);
+  dmnsn_array_get(objects.children, 1, &o2node);
+
+  dmnsn_object *o1 = dmnsn_realize_object(o1node);
+  dmnsn_object *o2 = dmnsn_realize_object(o2node);
+
+  dmnsn_object *csg = dmnsn_new_csg_intersection(o1, o2);
+  if (!csg) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate intersection.");
+  }
+
+  unsigned int i;
+  for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
+    dmnsn_astnode onode;
+    dmnsn_array_get(objects.children, i, &onode);
+
+    dmnsn_object *object = dmnsn_realize_object(onode);
+    csg = dmnsn_new_csg_intersection(csg, object);
+    if (!csg) {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate intersection.");
+    }
+  }
+
+  dmnsn_astnode modifiers;
+  dmnsn_array_get(astnode.children, 1, &modifiers);
+  dmnsn_realize_object_modifiers(modifiers, csg);
+
+  return csg;
+}
+
+static dmnsn_object *
+dmnsn_realize_difference(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_DIFFERENCE, "Expected a difference.");
+
+  dmnsn_astnode objects;
+  dmnsn_array_get(astnode.children, 0, &objects);
+
+  dmnsn_astnode o1node, o2node;
+  dmnsn_array_get(objects.children, 0, &o1node);
+  dmnsn_array_get(objects.children, 1, &o2node);
+
+  dmnsn_object *o1 = dmnsn_realize_object(o1node);
+  dmnsn_object *o2 = dmnsn_realize_object(o2node);
+
+  dmnsn_object *csg = dmnsn_new_csg_difference(o1, o2);
+  if (!csg) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate difference.");
+  }
+
+  unsigned int i;
+  for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
+    dmnsn_astnode onode;
+    dmnsn_array_get(objects.children, i, &onode);
+
+    dmnsn_object *object = dmnsn_realize_object(onode);
+    csg = dmnsn_new_csg_difference(csg, object);
+    if (!csg) {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate difference.");
+    }
+  }
+
+  dmnsn_astnode modifiers;
+  dmnsn_array_get(astnode.children, 1, &modifiers);
+  dmnsn_realize_object_modifiers(modifiers, csg);
+
+  return csg;
+}
+
+static dmnsn_object *
+dmnsn_realize_merge(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_MERGE, "Expected a merge.");
+
+  dmnsn_astnode objects;
+  dmnsn_array_get(astnode.children, 0, &objects);
+
+  dmnsn_astnode o1node, o2node;
+  dmnsn_array_get(objects.children, 0, &o1node);
+  dmnsn_array_get(objects.children, 1, &o2node);
+
+  dmnsn_object *o1 = dmnsn_realize_object(o1node);
+  dmnsn_object *o2 = dmnsn_realize_object(o2node);
+
+  dmnsn_object *csg = dmnsn_new_csg_merge(o1, o2);
+  if (!csg) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate merge.");
+  }
+
+  unsigned int i;
+  for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
+    dmnsn_astnode onode;
+    dmnsn_array_get(objects.children, i, &onode);
+
+    dmnsn_object *object = dmnsn_realize_object(onode);
+    csg = dmnsn_new_csg_merge(csg, object);
+    if (!csg) {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate merge.");
+    }
+  }
+
+  dmnsn_astnode modifiers;
+  dmnsn_array_get(astnode.children, 1, &modifiers);
+  dmnsn_realize_object_modifiers(modifiers, csg);
+
+  return csg;
+}
+
+static dmnsn_object *
+dmnsn_realize_object(dmnsn_astnode astnode)
+{
+  switch (astnode.type) {
+  case DMNSN_AST_BOX:
+    return dmnsn_realize_box(astnode);
+  case DMNSN_AST_DIFFERENCE:
+    return dmnsn_realize_difference(astnode);
+  case DMNSN_AST_INTERSECTION:
+    return dmnsn_realize_intersection(astnode);
+  case DMNSN_AST_MERGE:
+    return dmnsn_realize_merge(astnode);
+  case DMNSN_AST_SPHERE:
+    return dmnsn_realize_sphere(astnode);
+  case DMNSN_AST_UNION:
+    return dmnsn_realize_union(astnode);
+
+  default:
+    dmnsn_assert(false, "Expected an object.");
+    return NULL; // Shut up compiler
+  }
+}
+
+static dmnsn_light *
+dmnsn_realize_light_source(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_LIGHT_SOURCE,
+               "Expected a light source.");
+
+  dmnsn_astnode point, color_node;
+  dmnsn_array_get(astnode.children, 0, &point);
+  dmnsn_array_get(astnode.children, 1, &color_node);
+
+  dmnsn_vector x0 = dmnsn_realize_vector(point);
+  dmnsn_color color = dmnsn_realize_color(color_node);
+
+  dmnsn_light *light = dmnsn_new_point_light(x0, color);
+  if (!light) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't allocate light.");
+  }
+
+  return light;
 }
 
 static dmnsn_scene *
@@ -801,18 +983,18 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
       break;
 
     case DMNSN_AST_BOX:
-      object = dmnsn_realize_box(astnode);
+    case DMNSN_AST_DIFFERENCE:
+    case DMNSN_AST_INTERSECTION:
+    case DMNSN_AST_MERGE:
+    case DMNSN_AST_SPHERE:
+    case DMNSN_AST_UNION:
+      object = dmnsn_realize_object(astnode);
       dmnsn_array_push(scene->objects, &object);
       break;
 
     case DMNSN_AST_LIGHT_SOURCE:
       light = dmnsn_realize_light_source(astnode);
       dmnsn_array_push(scene->lights, &light);
-      break;
-
-    case DMNSN_AST_SPHERE:
-      object = dmnsn_realize_sphere(astnode);
-      dmnsn_array_push(scene->objects, &object);
       break;
 
     default:

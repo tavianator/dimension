@@ -161,7 +161,7 @@
 %token DMNSN_T_DENSITY_MAP
 %token DMNSN_T_DENTS
 %token DMNSN_T_DF3
-%token DMNSN_T_DIFFERENCE
+%token DMNSN_T_DIFFERENCE               "difference"
 %token DMNSN_T_DIFFUSE                  "diffuse"
 %token DMNSN_T_DIMENSION_SIZE
 %token DMNSN_T_DIMENSIONS
@@ -238,7 +238,7 @@
 %token DMNSN_T_INTERIOR_TEXTURE
 %token DMNSN_T_INTERNAL
 %token DMNSN_T_INTERPOLATE
-%token DMNSN_T_INTERSECTION
+%token DMNSN_T_INTERSECTION             "intersection"
 %token DMNSN_T_INTERVALS
 %token DMNSN_T_INVERSE
 %token DMNSN_T_IOR                      "ior"
@@ -282,7 +282,7 @@
 %token DMNSN_T_MEDIA
 %token DMNSN_T_MEDIA_ATTENUATION
 %token DMNSN_T_MEDIA_INTERACTION
-%token DMNSN_T_MERGE
+%token DMNSN_T_MERGE                    "merge"
 %token DMNSN_T_MESH
 %token DMNSN_T_MESH2
 %token DMNSN_T_METALLIC
@@ -458,7 +458,7 @@
 %token DMNSN_T_U                        "u"
 %token DMNSN_T_U_STEPS
 %token DMNSN_T_ULTRA_WIDE_ANGLE
-%token DMNSN_T_UNION
+%token DMNSN_T_UNION                    "union"
 %token DMNSN_T_UP                       "up"
 %token DMNSN_T_USE_ALPHA
 %token DMNSN_T_USE_COLOR

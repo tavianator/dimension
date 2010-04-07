@@ -35,33 +35,39 @@ demo_exp=$(echo -n \
   (light_source
     (vector (integer -15) (integer 20) (integer 10) (integer 0) (integer 0))
     (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)))
-  (box
-    (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
-    (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
-    (object-modifiers
-      (rotate (vector (integer 45) (integer 0) (integer 0)
+  (difference
+    (array
+      (box
+        (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
+        (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
+        (object-modifiers
+          (rotate (vector (integer 45) (integer 0) (integer 0)
+                          (integer 0) (integer 0)))
+          (texture
+            (pigment
+              (vector (integer 0) (integer 0) (integer 1)
+                      (float 0.25) (float 0.5)))
+            (finish
+              (reflection
+                (vector (float 0.5) (float 0.5) (float 0.5)
+                        (float 0.5) (float 0.5))
+                (vector (float 0.5) (float 0.5) (float 0.5)
+                        (float 0.5) (float 0.5))
+                reflection-items)))
+          (interior
+            (ior (float 1.1)))))
+      (sphere
+        (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
+        (float 1.25)
+        (object-modifiers
+          (texture
+            (pigment
+              (vector (integer 0) (integer 1) (integer 0)
                       (integer 0) (integer 0)))
-      (texture
-        (pigment
-          (vector (integer 0) (integer 0) (integer 1)
-                  (float 0.25) (float 0.5)))
-        (finish
-          (reflection
-            (vector (float 0.5) (float 0.5) (float 0.5) (float 0.5) (float 0.5))
-            (vector (float 0.5) (float 0.5) (float 0.5) (float 0.5) (float 0.5))
-            reflection-items)))
-      (interior
-        (ior (float 1.1)))))
-  (sphere
-    (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
-    (float 1.25)
-    (object-modifiers
-      (texture
-        (pigment
-          (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0)))
-        (finish
-          (phong (float 0.2))
-          (phong_size (float 40)))))))' \
+            (finish
+              (phong (float 0.2))
+              (phong_size (float 40)))))))
+      object-modifiers))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 
 if [ "$demo" != "$demo_exp" ]; then

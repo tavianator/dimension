@@ -36,35 +36,37 @@ light_source {
   <-15, 20, 10>, color rgb <1, 1, 1>
 }
 
-box {
-  <-1, -1, -1>, <1, 1, 1>
+difference {
+  box {
+    <-1, -1, -1>, <1, 1, 1>
 
-  rotate 45*x
+    rotate 45*x
 
-  texture {
-    pigment {
-      color rgbft <0, 0, 1, 0.25, 0.5>
+    texture {
+      pigment {
+        color rgbft <0, 0, 1, 0.25, 0.5>
+      }
+      finish {
+        reflection { 0.5 }
+      }
     }
-    finish {
-      reflection { 0.5 }
+
+    interior {
+      ior 1.1
     }
   }
 
-  interior {
-    ior 1.1
-  }
-}
+  sphere {
+    <0, 0, 0>, 1.25
 
-sphere {
-  <0, 0, 0>, 1.25
-
-  texture {
-    pigment {
-      color rgb <0, 1, 0>
-    }
-    finish {
-      phong 0.2
-      phong_size 40.0
+    texture {
+      pigment {
+        color rgb <0, 1, 0>
+      }
+      finish {
+        phong 0.2
+        phong_size 40.0
+      }
     }
   }
 }
