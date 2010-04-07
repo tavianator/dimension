@@ -143,7 +143,7 @@ dmnsn_new_default_scene()
 
   cube->trans = dmnsn_rotation_matrix(dmnsn_new_vector(0.75, 0.0, 0.0));
 
-  dmnsn_object *csg = dmnsn_new_csg_merge(sphere, cube);
+  dmnsn_object *csg = dmnsn_new_csg_difference(cube, sphere);
   if (!csg) {
     dmnsn_delete_scene(scene);
     return NULL;
