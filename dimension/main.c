@@ -34,6 +34,8 @@ static unsigned int width = 640, height = 480;
 static unsigned int nthreads = 0;
 static int tokenize = 0, parse = 0;
 
+static void print_usage(FILE *file, const char *arg0);
+
 int
 main(int argc, char **argv) {
   /*
@@ -46,8 +48,8 @@ main(int argc, char **argv) {
   };
 
   static struct option long_options[] = {
+    { "help",     no_argument,       NULL,      '?'               },
     { "output",   required_argument, NULL,      'o'               },
-    { "input",    required_argument, NULL,      'i'               },
     { "width",    required_argument, NULL,      'w'               },
     { "height",   required_argument, NULL,      'h'               },
     { "threads",  required_argument, NULL,      DMNSN_OPT_THREADS },
@@ -59,7 +61,7 @@ main(int argc, char **argv) {
   int opt, opt_index;
 
   while (1) {
-    opt = getopt_long(argc, argv, "o:i:w:h:", long_options, &opt_index);
+    opt = getopt_long(argc, argv, "?o:w:h:", long_options, &opt_index);
 
     if (opt == -1)
       break;
@@ -69,21 +71,17 @@ main(int argc, char **argv) {
       /* Option set a flag - do nothing here */
       break;
 
+    case '?':
+      print_usage(stdout, argv[0]);
+      return EXIT_SUCCESS;
+
     case 'o':
       if (output) {
         fprintf(stderr, "--output specified more than once!\n");
+        print_usage(stderr, argv[0]);
         return EXIT_FAILURE;
       } else {
         output = optarg;
-      }
-      break;
-
-    case 'i':
-      if (input) {
-        fprintf(stderr, "--input specified more than once!\n");
-        return EXIT_FAILURE;
-      } else {
-        input = optarg;
       }
       break;
 
@@ -95,6 +93,7 @@ main(int argc, char **argv) {
         width = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
           fprintf(stderr, "Invalid argument to --width!\n");
+          print_usage(stderr, argv[0]);
           return EXIT_FAILURE;
         }
         break;
@@ -107,6 +106,7 @@ main(int argc, char **argv) {
         height = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
           fprintf(stderr, "Invalid argument to --height!\n");
+          print_usage(stderr, argv[0]);
           return EXIT_FAILURE;
         }
         break;
@@ -120,6 +120,7 @@ main(int argc, char **argv) {
         nthreads = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
           fprintf(stderr, "Invalid argument to --threads!\n");
+          print_usage(stderr, argv[0]);
           return EXIT_FAILURE;
         }
         break;
@@ -127,24 +128,22 @@ main(int argc, char **argv) {
 
     default:
       fprintf(stderr, "Invalid command line option!\n");
+      print_usage(stderr, argv[0]);
       return EXIT_FAILURE;
     };
   }
 
   if (optind == argc - 1) {
-    if (input) {
-      fprintf(stderr, "Multiple input files specified!\n");
-      return EXIT_FAILURE;
-    } else {
-      input = argv[optind];
-    }
+    input = argv[optind];
   } else if (optind < argc) {
     fprintf(stderr, "Invalid extranious command line options!\n");
+    print_usage(stderr, argv[0]);
     return EXIT_FAILURE;
   }
 
   if (!input) {
     fprintf(stderr, "No input file specified!\n");
+    print_usage(stderr, argv[0]);
     return EXIT_FAILURE;
   }
 
@@ -290,4 +289,33 @@ main(int argc, char **argv) {
 
   dmnsn_delete_scene(scene);
   return EXIT_SUCCESS;
+}
+
+static void
+print_usage(FILE *file, const char *arg0)
+{
+  fprintf(file,
+          "Usage: %s [OPTIONS...] INPUT_FILE\n\n"
+          " Main options:\n"
+          "  -?, --help          show this help\n"
+          "  -o, --output=FILE   output to FILE\n\n"
+          " Output options:\n"
+          "  -w, --width=WIDTH   set canvas width to WIDTH (default 640)\n"
+          "  -h, --height=HEIGHT set canvas height to HEIGHT (default 480)\n\n"
+          " Rendering options:\n"
+          "  --threads=THREADS   render with THREADS parallel threads\n\n"
+          " Debugging options:\n"
+          "  --tokenize          tokenize the input and print the token list\n"
+          "  --parse             parse the input and print the abstract syntax"
+          " tree\n\n"
+          " Special options:\n"
+          "  --                  indicates the end of the argument list\n\n"
+          "%s\n"
+          "%s\n"
+          "Copyright (C) 2009-10 Tavian Barnes, <%s>\n"
+          "Licensed under the GNU General Public License\n",
+          arg0,
+          PACKAGE_STRING,
+          PACKAGE_URL,
+          PACKAGE_BUGREPORT);
 }
