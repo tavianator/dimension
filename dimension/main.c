@@ -32,6 +32,7 @@ static char *output = NULL, *input = NULL;
 static bool free_output = false;
 static unsigned int width = 640, height = 480;
 static unsigned int nthreads = 0;
+static dmnsn_quality quality = DMNSN_RENDER_FULL;
 static int tokenize = 0, parse = 0;
 
 static void print_usage(FILE *file, const char *arg0);
@@ -44,7 +45,8 @@ main(int argc, char **argv) {
 
   /* Long-only option codes */
   enum {
-    DMNSN_OPT_THREADS = 256
+    DMNSN_OPT_THREADS = 256,
+    DMNSN_OPT_QUALITY
   };
 
   static struct option long_options[] = {
@@ -53,6 +55,7 @@ main(int argc, char **argv) {
     { "width",    required_argument, NULL,      'w'               },
     { "height",   required_argument, NULL,      'h'               },
     { "threads",  required_argument, NULL,      DMNSN_OPT_THREADS },
+    { "quality",  required_argument, NULL,      DMNSN_OPT_QUALITY },
     { "tokenize", no_argument,       &tokenize, 1                 },
     { "parse",    no_argument,       &parse,    1                 },
     { 0,          0,                 0,         0                 }
@@ -120,6 +123,19 @@ main(int argc, char **argv) {
         nthreads = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
           fprintf(stderr, "Invalid argument to --threads!\n");
+          print_usage(stderr, argv[0]);
+          return EXIT_FAILURE;
+        }
+        break;
+      }
+    case DMNSN_OPT_QUALITY:
+      {
+        dmnsn_assert(optarg, "NULL argument.");
+
+        char *endptr;
+        quality = strtoul(optarg, &endptr, 0);
+        if (*endptr != '\0' || endptr == optarg) {
+          fprintf(stderr, "Invalid argument to --quality!\n");
           print_usage(stderr, argv[0]);
           return EXIT_FAILURE;
         }
@@ -217,6 +233,9 @@ main(int argc, char **argv) {
   /* Set the new number of threads if --threads changed it */
   if (nthreads)
     scene->nthreads = nthreads;
+
+  /* Set the render quality */
+  scene->quality = quality;
 
   /*
    * Now we render the scene
