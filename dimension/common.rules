@@ -236,8 +236,8 @@ MERGE: "merge" "{"
      }
 ;
 
-OBJECTS: OBJECT OBJECT {
-         $$ = dmnsn_new_astnode2(DMNSN_AST_ARRAY, @$, $1, $2);
+OBJECTS: OBJECT {
+         $$ = dmnsn_new_astnode1(DMNSN_AST_ARRAY, @$, $1);
        }
        | OBJECTS OBJECT {
          $$ = $1;
@@ -246,9 +246,10 @@ OBJECTS: OBJECT OBJECT {
 
 LIGHT_SOURCE: "light_source" "{"
                 VECTOR "," COLOR
+                OBJECT_MODIFIERS
               "}"
             {
-              $$ = dmnsn_new_astnode2(DMNSN_AST_LIGHT_SOURCE, @$, $3, $5);
+              $$ = dmnsn_new_astnode3(DMNSN_AST_LIGHT_SOURCE, @$, $3, $5, $6);
             }
 ;
 

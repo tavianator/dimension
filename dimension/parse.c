@@ -536,12 +536,7 @@ dmnsn_vector_promote(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
     while (dmnsn_array_size(promoted.children) < DMNSN_VECTOR_NELEM) {
       component = dmnsn_copy_astnode(component);
-      component.type = DMNSN_AST_INTEGER;
-
-      long *val = dmnsn_malloc(sizeof(long));
-      *val = 0;
-
-      component.ptr = val;
+      dmnsn_make_ast_integer(&component, 0);
       dmnsn_array_push(promoted.children, &component);
     }
   } else {
@@ -1759,6 +1754,8 @@ dmnsn_print_astnode(FILE *file, dmnsn_astnode astnode)
 
   case DMNSN_AST_FLOAT:
     dvalue = *(double *)astnode.ptr;
+    /* Don't print -0 */
+    if (dvalue == 0.0) dvalue = 0.0;
     fprintf(file, "(%s %g)", dmnsn_astnode_string(astnode.type), dvalue);
     break;
 

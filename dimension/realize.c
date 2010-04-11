@@ -643,7 +643,76 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
   }
 }
 
-static dmnsn_object *dmnsn_realize_object(dmnsn_astnode astnode);
+static void
+dmnsn_realize_light_source_modifiers(dmnsn_astnode astnode, dmnsn_light *light)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_OBJECT_MODIFIERS,
+               "Expected object modifiers.");
+
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    dmnsn_astnode modifier;
+    dmnsn_array_get(astnode.children, i, &modifier);
+
+    switch (modifier.type) {
+    case DMNSN_AST_ROTATION:
+      light->x0 = dmnsn_matrix_vector_mul(
+        dmnsn_realize_rotation(modifier),
+        light->x0
+      );
+      break;
+    case DMNSN_AST_SCALE:
+      light->x0 = dmnsn_matrix_vector_mul(
+        dmnsn_realize_scale(modifier),
+        light->x0
+      );
+      break;
+    case DMNSN_AST_TRANSLATION:
+      light->x0 = dmnsn_matrix_vector_mul(
+        dmnsn_realize_translation(modifier),
+        light->x0
+      );
+      break;
+
+    case DMNSN_AST_TEXTURE:
+    case DMNSN_AST_PIGMENT:
+    case DMNSN_AST_FINISH:
+    case DMNSN_AST_INTERIOR:
+      dmnsn_diagnostic(modifier.filename, modifier.line, modifier.col,
+                       "WARNING: ignoring %s applied to light source",
+                       dmnsn_astnode_string(modifier.type));
+      break;
+
+    default:
+      dmnsn_assert(false, "Invalid object modifier.");
+    }
+  }
+}
+
+static dmnsn_light *
+dmnsn_realize_light_source(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_LIGHT_SOURCE,
+               "Expected a light source.");
+
+  dmnsn_astnode point, color_node;
+  dmnsn_array_get(astnode.children, 0, &point);
+  dmnsn_array_get(astnode.children, 1, &color_node);
+
+  dmnsn_vector x0 = dmnsn_realize_vector(point);
+  dmnsn_color color = dmnsn_realize_color(color_node);
+
+  dmnsn_light *light = dmnsn_new_point_light(x0, color);
+
+  dmnsn_astnode modifiers;
+  dmnsn_array_get(astnode.children, 2, &modifiers);
+  dmnsn_realize_light_source_modifiers(modifiers, light);
+
+  return light;
+}
+
+static dmnsn_object *dmnsn_realize_object(dmnsn_astnode astnode,
+                                          dmnsn_array *lights);
 
 static dmnsn_object *
 dmnsn_realize_box(dmnsn_astnode astnode)
@@ -702,178 +771,108 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
   return sphere;
 }
 
+typedef dmnsn_object *dmnsn_csg_object_fn(dmnsn_object *a, dmnsn_object *b);
+
+/* Generalized CSG realizer */
 static dmnsn_object *
-dmnsn_realize_union(dmnsn_astnode astnode)
+dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
+                  dmnsn_csg_object_fn *csg_object_fn)
 {
-  dmnsn_assert(astnode.type == DMNSN_AST_UNION, "Expected a union.");
-
-  dmnsn_astnode objects;
+  dmnsn_astnode objects, modifiers;
   dmnsn_array_get(astnode.children, 0, &objects);
-
-  dmnsn_astnode o1node, o2node;
-  dmnsn_array_get(objects.children, 0, &o1node);
-  dmnsn_array_get(objects.children, 1, &o2node);
-
-  dmnsn_object *o1 = dmnsn_realize_object(o1node);
-  dmnsn_object *o2 = dmnsn_realize_object(o2node);
-
-  dmnsn_object *csg = dmnsn_new_csg_union(o1, o2);
+  dmnsn_array_get(astnode.children, 1, &modifiers);
 
   unsigned int i;
-  for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
+  dmnsn_object *csg = NULL;
+  for (i = 0; i < dmnsn_array_size(objects.children) && !csg; ++i) {
     dmnsn_astnode onode;
     dmnsn_array_get(objects.children, i, &onode);
 
-    dmnsn_object *object = dmnsn_realize_object(onode);
-    csg = dmnsn_new_csg_union(csg, object);
+    if (onode.type == DMNSN_AST_LIGHT_SOURCE) {
+      dmnsn_light *light = dmnsn_realize_light_source(onode);
+      dmnsn_realize_light_source_modifiers(modifiers, light);
+      dmnsn_array_push(lights, &light);
+    } else {
+      csg = dmnsn_realize_object(onode, lights);
+    }
   }
 
-  dmnsn_astnode modifiers;
-  dmnsn_array_get(astnode.children, 1, &modifiers);
-  dmnsn_realize_object_modifiers(modifiers, csg);
+  for (; i < dmnsn_array_size(objects.children); ++i) {
+    dmnsn_astnode onode;
+    dmnsn_array_get(objects.children, i, &onode);
 
+    if (onode.type == DMNSN_AST_LIGHT_SOURCE) {
+      dmnsn_light *light = dmnsn_realize_light_source(onode);
+      dmnsn_realize_light_source_modifiers(modifiers, light);
+      dmnsn_array_push(lights, &light);
+    } else {
+      dmnsn_object *object = dmnsn_realize_object(onode, lights);
+      csg = (*csg_object_fn)(csg, object);
+    }
+  }
+
+  dmnsn_realize_object_modifiers(modifiers, csg);
   return csg;
 }
 
 static dmnsn_object *
-dmnsn_realize_intersection(dmnsn_astnode astnode)
+dmnsn_realize_union(dmnsn_astnode astnode, dmnsn_array *lights)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_UNION, "Expected a union.");
+  return dmnsn_realize_csg(astnode, lights, &dmnsn_new_csg_union);
+}
+
+static dmnsn_object *
+dmnsn_realize_intersection(dmnsn_astnode astnode, dmnsn_array *lights)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_INTERSECTION,
                "Expected an intersection.");
-
-  dmnsn_astnode objects;
-  dmnsn_array_get(astnode.children, 0, &objects);
-
-  dmnsn_astnode o1node, o2node;
-  dmnsn_array_get(objects.children, 0, &o1node);
-  dmnsn_array_get(objects.children, 1, &o2node);
-
-  dmnsn_object *o1 = dmnsn_realize_object(o1node);
-  dmnsn_object *o2 = dmnsn_realize_object(o2node);
-
-  dmnsn_object *csg = dmnsn_new_csg_intersection(o1, o2);
-
-  unsigned int i;
-  for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
-    dmnsn_astnode onode;
-    dmnsn_array_get(objects.children, i, &onode);
-
-    dmnsn_object *object = dmnsn_realize_object(onode);
-    csg = dmnsn_new_csg_intersection(csg, object);
-  }
-
-  dmnsn_astnode modifiers;
-  dmnsn_array_get(astnode.children, 1, &modifiers);
-  dmnsn_realize_object_modifiers(modifiers, csg);
-
-  return csg;
+  return dmnsn_realize_csg(astnode, lights, &dmnsn_new_csg_intersection);
 }
 
 static dmnsn_object *
-dmnsn_realize_difference(dmnsn_astnode astnode)
+dmnsn_realize_difference(dmnsn_astnode astnode, dmnsn_array *lights)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_DIFFERENCE, "Expected a difference.");
-
-  dmnsn_astnode objects;
-  dmnsn_array_get(astnode.children, 0, &objects);
-
-  dmnsn_astnode o1node, o2node;
-  dmnsn_array_get(objects.children, 0, &o1node);
-  dmnsn_array_get(objects.children, 1, &o2node);
-
-  dmnsn_object *o1 = dmnsn_realize_object(o1node);
-  dmnsn_object *o2 = dmnsn_realize_object(o2node);
-
-  dmnsn_object *csg = dmnsn_new_csg_difference(o1, o2);
-
-  unsigned int i;
-  for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
-    dmnsn_astnode onode;
-    dmnsn_array_get(objects.children, i, &onode);
-
-    dmnsn_object *object = dmnsn_realize_object(onode);
-    csg = dmnsn_new_csg_difference(csg, object);
-  }
-
-  dmnsn_astnode modifiers;
-  dmnsn_array_get(astnode.children, 1, &modifiers);
-  dmnsn_realize_object_modifiers(modifiers, csg);
-
-  return csg;
+  return dmnsn_realize_csg(astnode, lights, &dmnsn_new_csg_difference);
 }
 
 static dmnsn_object *
-dmnsn_realize_merge(dmnsn_astnode astnode)
+dmnsn_realize_merge(dmnsn_astnode astnode, dmnsn_array *lights)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_MERGE, "Expected a merge.");
-
-  dmnsn_astnode objects;
-  dmnsn_array_get(astnode.children, 0, &objects);
-
-  dmnsn_astnode o1node, o2node;
-  dmnsn_array_get(objects.children, 0, &o1node);
-  dmnsn_array_get(objects.children, 1, &o2node);
-
-  dmnsn_object *o1 = dmnsn_realize_object(o1node);
-  dmnsn_object *o2 = dmnsn_realize_object(o2node);
-
-  dmnsn_object *csg = dmnsn_new_csg_merge(o1, o2);
-
-  unsigned int i;
-  for (i = 2; i < dmnsn_array_size(objects.children); ++i) {
-    dmnsn_astnode onode;
-    dmnsn_array_get(objects.children, i, &onode);
-
-    dmnsn_object *object = dmnsn_realize_object(onode);
-    csg = dmnsn_new_csg_merge(csg, object);
-  }
-
-  dmnsn_astnode modifiers;
-  dmnsn_array_get(astnode.children, 1, &modifiers);
-  dmnsn_realize_object_modifiers(modifiers, csg);
-
-  return csg;
+  return dmnsn_realize_csg(astnode, lights, &dmnsn_new_csg_merge);
 }
 
+/* Realize an object, or maybe a light */
 static dmnsn_object *
-dmnsn_realize_object(dmnsn_astnode astnode)
+dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
 {
   switch (astnode.type) {
   case DMNSN_AST_BOX:
     return dmnsn_realize_box(astnode);
   case DMNSN_AST_DIFFERENCE:
-    return dmnsn_realize_difference(astnode);
+    return dmnsn_realize_difference(astnode, lights);
   case DMNSN_AST_INTERSECTION:
-    return dmnsn_realize_intersection(astnode);
+    return dmnsn_realize_intersection(astnode, lights);
   case DMNSN_AST_MERGE:
-    return dmnsn_realize_merge(astnode);
+    return dmnsn_realize_merge(astnode, lights);
   case DMNSN_AST_SPHERE:
     return dmnsn_realize_sphere(astnode);
   case DMNSN_AST_UNION:
-    return dmnsn_realize_union(astnode);
+    return dmnsn_realize_union(astnode, lights);
+
+  case DMNSN_AST_LIGHT_SOURCE:
+    {
+      dmnsn_light *light = dmnsn_realize_light_source(astnode);
+      dmnsn_array_push(lights, &light);
+      return NULL;
+    }
 
   default:
     dmnsn_assert(false, "Expected an object.");
     return NULL; // Shut up compiler
   }
-}
-
-static dmnsn_light *
-dmnsn_realize_light_source(dmnsn_astnode astnode)
-{
-  dmnsn_assert(astnode.type == DMNSN_AST_LIGHT_SOURCE,
-               "Expected a light source.");
-
-  dmnsn_astnode point, color_node;
-  dmnsn_array_get(astnode.children, 0, &point);
-  dmnsn_array_get(astnode.children, 1, &color_node);
-
-  dmnsn_vector x0 = dmnsn_realize_vector(point);
-  dmnsn_color color = dmnsn_realize_color(color_node);
-
-  dmnsn_light *light = dmnsn_new_point_light(x0, color);
-
-  return light;
 }
 
 static dmnsn_scene *
@@ -928,8 +927,9 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
     case DMNSN_AST_MERGE:
     case DMNSN_AST_SPHERE:
     case DMNSN_AST_UNION:
-      object = dmnsn_realize_object(astnode);
-      dmnsn_array_push(scene->objects, &object);
+      object = dmnsn_realize_object(astnode, scene->lights);
+      if (object)
+        dmnsn_array_push(scene->objects, &object);
       break;
 
     case DMNSN_AST_LIGHT_SOURCE:
