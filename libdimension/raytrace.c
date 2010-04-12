@@ -265,6 +265,7 @@ dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
 {
   state->pigment = TEXTURE_CALLBACK(state, pigment, pigment_fn, dmnsn_black,
                                     state->r);
+  state->diffuse = state->pigment;
 }
 
 /* Get the color of a light ray at an intersection point */
@@ -355,6 +356,7 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
         state->additional = dmnsn_color_add(specular, state->additional);
       } else {
         state->diffuse = state->pigment;
+        state->diffuse.filter = state->diffuse.trans = 0.0;
       }
     }
   }
