@@ -19,7 +19,6 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <errno.h>
 
 /* Allocate a new dummy light */
 dmnsn_light *

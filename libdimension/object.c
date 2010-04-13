@@ -19,7 +19,6 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <errno.h>
 
 /* Allocate a dummy object */
 dmnsn_object *

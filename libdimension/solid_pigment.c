@@ -19,7 +19,6 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <errno.h>
 
 /* Solid color pigment callback */
 static dmnsn_color dmnsn_solid_pigment_fn(const dmnsn_pigment *pigment,

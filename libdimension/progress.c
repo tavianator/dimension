@@ -20,7 +20,6 @@
 
 #include "dimension.h"
 #include <pthread.h>
-#include <errno.h>
 
 /* For thread synchronization */
 static void dmnsn_progress_rdlock(const dmnsn_progress *progress);

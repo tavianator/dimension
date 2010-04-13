@@ -19,7 +19,6 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <errno.h>
 
 /* Allocate a dummy pigment */
 dmnsn_pigment *

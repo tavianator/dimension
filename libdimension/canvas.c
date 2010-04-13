@@ -20,7 +20,6 @@
 
 #include "dimension.h"
 #include <pthread.h>
-#include <errno.h>
 #include <stdlib.h> /* For free() */
 
 /* Allocate a new canvas, of width x and height y */

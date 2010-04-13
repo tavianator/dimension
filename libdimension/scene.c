@@ -19,7 +19,6 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <errno.h>
 #include <unistd.h> /* For sysconf */
 
 /* Allocate an empty scene */
