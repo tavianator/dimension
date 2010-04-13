@@ -52,6 +52,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           bvst.h                                               \
                           camera.c                                             \
                           canvas.c                                             \
+                          canvas_pigment.c                                     \
                           color.c                                              \
                           cube.c                                               \
                           csg.c                                                \

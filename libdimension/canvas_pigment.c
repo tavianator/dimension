@@ -18,16 +18,41 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Custom pigments.
- */
+#include "dimension.h"
 
-#ifndef DIMENSION_PIGMENTS_H
-#define DIMENSION_PIGMENTS_H
+/* Canvas color pigment callback */
+static dmnsn_color dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment,
+                                           dmnsn_vector v);
+static void dmnsn_canvas_pigment_free_fn(void *ptr);
 
-/* A solid color */
-dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color);
-/* An image map */
-dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas);
+/* Create a canvas color */
+dmnsn_pigment *
+dmnsn_new_canvas_pigment(dmnsn_canvas *canvas)
+{
+  dmnsn_pigment *pigment = dmnsn_new_pigment();
+  pigment->pigment_fn = &dmnsn_canvas_pigment_fn;
+  pigment->free_fn    = &dmnsn_canvas_pigment_free_fn;
+  pigment->ptr        = canvas;
+  return pigment;
+}
 
-#endif /* DIMENSION_PIGMENTS_H */
+/* Canvas color callback */
+static dmnsn_color
+dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
+{
+  dmnsn_canvas *canvas = pigment->ptr;
+
+  int x = v.x*(canvas->x - 1) + 0.5;
+  int y = v.x*(canvas->x - 1) + 0.5;
+  if (x >= 0 && y >= 0 && x < canvas->x && y < canvas->y) {
+    return dmnsn_get_pixel(canvas, x, y);
+  } else {
+    return dmnsn_black;
+  }
+}
+
+static void
+dmnsn_canvas_pigment_free_fn(void *ptr)
+{
+  dmnsn_delete_canvas(ptr);
+}
