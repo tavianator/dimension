@@ -222,6 +222,7 @@ unsigned long wchar;
 "phong_size"            RETURN_TOKEN(DMNSN_T_PHONG_SIZE);
 "pi"                    RETURN_TOKEN(DMNSN_T_PI);
 "pigment"               RETURN_TOKEN(DMNSN_T_PIGMENT);
+"plane"                 RETURN_TOKEN(DMNSN_T_PLANE);
 "pow"                   RETURN_TOKEN(DMNSN_T_POW);
 "radians"               RETURN_TOKEN(DMNSN_T_RADIANS);
 "red"                   RETURN_TOKEN(DMNSN_T_RED);

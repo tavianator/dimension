@@ -335,7 +335,7 @@
 %token DMNSN_T_PIGMENT_MAP
 %token DMNSN_T_PIGMENT_PATTERN
 %token DMNSN_T_PLANAR
-%token DMNSN_T_PLANE
+%token DMNSN_T_PLANE                    "plane"
 %token DMNSN_T_PNG
 %token DMNSN_T_POINT_AT
 %token DMNSN_T_POLY

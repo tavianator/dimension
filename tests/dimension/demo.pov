@@ -70,3 +70,10 @@ difference {
     }
   }
 }
+
+plane {
+  y, -2
+  pigment {
+    color rgb 1
+  }
+}

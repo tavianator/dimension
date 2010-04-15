@@ -39,6 +39,8 @@
 %type <astnode> FINITE_SOLID_OBJECT
 %type <astnode> BOX
 %type <astnode> SPHERE
+%type <astnode> INFINITE_SOLID_OBJECT
+%type <astnode> PLANE
 %type <astnode> CSG_OBJECT
 %type <astnode> UNION
 %type <astnode> INTERSECTION

@@ -111,6 +111,7 @@ CAMERA_MODIFIER: "angle" FLOAT {
 /* Objects */
 
 OBJECT: FINITE_SOLID_OBJECT
+      | INFINITE_SOLID_OBJECT
       | CSG_OBJECT
       | LIGHT_SOURCE
       | "object" "{"
@@ -192,6 +193,18 @@ SPHERE: "sphere" "{"
       {
         $$ = dmnsn_new_astnode3(DMNSN_AST_SPHERE, @$, $3, $5, $6);
       }
+;
+
+INFINITE_SOLID_OBJECT: PLANE
+;
+
+PLANE: "plane" "{"
+         VECTOR "," FLOAT
+         OBJECT_MODIFIERS
+       "}"
+     {
+       $$ = dmnsn_new_astnode3(DMNSN_AST_PLANE, @$, $3, $5, $6);
+     }
 ;
 
 CSG_OBJECT: UNION

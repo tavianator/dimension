@@ -137,6 +137,7 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_INTERSECTION, "intersection");
   dmnsn_astnode_map(DMNSN_AST_LIGHT_SOURCE, "light_source");
   dmnsn_astnode_map(DMNSN_AST_MERGE,        "merge");
+  dmnsn_astnode_map(DMNSN_AST_PLANE,        "plane");
   dmnsn_astnode_map(DMNSN_AST_SPHERE,       "sphere");
   dmnsn_astnode_map(DMNSN_AST_UNION,        "union");
 

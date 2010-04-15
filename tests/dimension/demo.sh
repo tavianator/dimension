@@ -68,7 +68,14 @@ demo_exp=$(echo -n \
             (finish
               (phong (float 0.2))
               (phong_size (float 40)))))))
-      object-modifiers))' \
+      object-modifiers)
+  (plane
+    (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0))
+    (integer -2)
+    (object-modifiers
+      (pigment
+        (vector (integer 1) (integer 1) (integer 1)
+                (integer 0) (integer 0))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 
 if [ "$demo" != "$demo_exp" ]; then

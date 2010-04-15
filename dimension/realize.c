@@ -771,6 +771,28 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
   return sphere;
 }
 
+static dmnsn_object *
+dmnsn_realize_plane(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_PLANE, "Expected a plane.");
+
+  dmnsn_astnode normal, distance;
+  dmnsn_array_get(astnode.children, 0, &normal);
+  dmnsn_array_get(astnode.children, 1, &distance);
+
+  dmnsn_vector n = dmnsn_vector_normalize(dmnsn_realize_vector(normal));
+  double d = dmnsn_realize_float(distance);
+
+  dmnsn_object *plane = dmnsn_new_plane(n);
+  plane->trans = dmnsn_translation_matrix(dmnsn_vector_mul(d, n));
+
+  dmnsn_astnode modifiers;
+  dmnsn_array_get(astnode.children, 2, &modifiers);
+  dmnsn_realize_object_modifiers(modifiers, plane);
+
+  return plane;
+}
+
 typedef dmnsn_object *dmnsn_csg_object_fn(dmnsn_object *a, dmnsn_object *b);
 
 /* Generalized CSG realizer */
@@ -857,6 +879,8 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
     return dmnsn_realize_intersection(astnode, lights);
   case DMNSN_AST_MERGE:
     return dmnsn_realize_merge(astnode, lights);
+  case DMNSN_AST_PLANE:
+    return dmnsn_realize_plane(astnode);
   case DMNSN_AST_SPHERE:
     return dmnsn_realize_sphere(astnode);
   case DMNSN_AST_UNION:
@@ -925,6 +949,7 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
     case DMNSN_AST_DIFFERENCE:
     case DMNSN_AST_INTERSECTION:
     case DMNSN_AST_MERGE:
+    case DMNSN_AST_PLANE:
     case DMNSN_AST_SPHERE:
     case DMNSN_AST_UNION:
       object = dmnsn_realize_object(astnode, scene->lights);
