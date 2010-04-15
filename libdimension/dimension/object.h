@@ -41,6 +41,8 @@ typedef struct dmnsn_intersection {
   const dmnsn_interior *interior;
 } dmnsn_intersection;
 
+dmnsn_vector dmnsn_matrix_normal_mul(dmnsn_matrix trans, dmnsn_vector normal);
+
 /* Forward-declare dmnsn_object */
 typedef struct dmnsn_object dmnsn_object;
 
@@ -79,5 +81,7 @@ struct dmnsn_object {
 dmnsn_object *dmnsn_new_object();
 /* Free an object */
 void dmnsn_delete_object(dmnsn_object *object);
+
+void dmnsn_object_precompute(dmnsn_object *object);
 
 #endif /* DIMENSION_OBJECT_H */

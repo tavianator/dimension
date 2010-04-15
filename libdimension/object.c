@@ -20,6 +20,17 @@
 
 #include "dimension.h"
 
+dmnsn_vector
+dmnsn_matrix_normal_mul(dmnsn_matrix trans, dmnsn_vector normal)
+{
+  return dmnsn_vector_normalize(
+    dmnsn_vector_sub(
+      dmnsn_matrix_vector_mul(trans, normal),
+      dmnsn_matrix_vector_mul(trans, dmnsn_zero)
+    )
+  );
+}
+
 /* Allocate a dummy object */
 dmnsn_object *
 dmnsn_new_object()
@@ -43,5 +54,19 @@ dmnsn_delete_object(dmnsn_object *object)
       (*object->free_fn)(object->ptr);
     }
     free(object);
+  }
+}
+
+/* Precompute object properties */
+void
+dmnsn_object_precompute(dmnsn_object *object)
+{
+  object->bounding_box
+    = dmnsn_matrix_bounding_box_mul(object->trans, object->bounding_box);
+  object->trans_inv = dmnsn_matrix_inverse(object->trans);
+  if (object->texture) {
+    object->texture->trans
+      = dmnsn_matrix_mul(object->trans, object->texture->trans);
+    dmnsn_texture_precompute(object->texture);
   }
 }

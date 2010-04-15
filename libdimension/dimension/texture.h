@@ -42,12 +42,17 @@ struct dmnsn_pigment {
   dmnsn_pigment_fn *pigment_fn;
   dmnsn_free_fn *free_fn;
 
+  /* Transformation matrix */
+  dmnsn_matrix trans, trans_inv;
+
   /* Generic pointer */
   void *ptr;
 };
 
 dmnsn_pigment *dmnsn_new_pigment();
 void dmnsn_delete_pigment(dmnsn_pigment *pigment);
+
+void dmnsn_pigment_precompute(dmnsn_pigment *pigment);
 
 /*
  * Finishes
@@ -91,11 +96,17 @@ void dmnsn_delete_finish(dmnsn_finish *finish);
  */
 
 typedef struct {
+  /* Texture components */
   dmnsn_pigment *pigment;
   dmnsn_finish  *finish;
+
+  /* Transformation matrix */
+  dmnsn_matrix trans, trans_inv;
 } dmnsn_texture;
 
 dmnsn_texture *dmnsn_new_texture();
 void dmnsn_delete_texture(dmnsn_texture *texture);
+
+void dmnsn_texture_precompute(dmnsn_texture *texture);
 
 #endif /* DIMENSION_TEXTURE_H */

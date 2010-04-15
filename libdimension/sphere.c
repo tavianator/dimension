@@ -19,7 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <math.h>   /* For sqrt   */
+#include <math.h>   /* For sqrt */
 
 /*
  * Sphere
@@ -50,13 +50,13 @@ static bool
 dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
                              dmnsn_intersection *intersection)
 {
-  double a, b, c, t;
-
+  dmnsn_line l = dmnsn_matrix_line_mul(sphere->trans_inv, line);
+ 
   /* Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1 */
-
-  a = line.n.x*line.n.x + line.n.y*line.n.y + line.n.z*line.n.z;
-  b = 2.0*(line.n.x*line.x0.x + line.n.y*line.x0.y + line.n.z*line.x0.z);
-  c = line.x0.x*line.x0.x + line.x0.y*line.x0.y + line.x0.z*line.x0.z - 1.0;
+  double a, b, c, t;
+  a = l.n.x*l.n.x + l.n.y*l.n.y + l.n.z*l.n.z;
+  b = 2.0*(l.n.x*l.x0.x + l.n.y*l.x0.y + l.n.z*l.x0.z);
+  c = l.x0.x*l.x0.x + l.x0.y*l.x0.y + l.x0.z*l.x0.z - 1.0;
 
   if (b*b - 4.0*a*c >= 0) {
     t = (-b - sqrt(b*b - 4.0*a*c))/(2*a);
@@ -67,7 +67,8 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
     if (t >= 0.0) {
       intersection->ray      = line;
       intersection->t        = t;
-      intersection->normal   = dmnsn_line_point(line, t);
+      intersection->normal   = dmnsn_matrix_normal_mul(sphere->trans,
+                                                       dmnsn_line_point(l, t));
       intersection->texture  = sphere->texture;
       intersection->interior = sphere->interior;
       return true;
@@ -81,5 +82,6 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
 static bool
 dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
 {
+  point = dmnsn_matrix_vector_mul(sphere->trans_inv, point);
   return point.x*point.x + point.y*point.y + point.z*point.z < 1.0;
 }

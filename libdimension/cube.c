@@ -49,15 +49,17 @@ static bool
 dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
                            dmnsn_intersection *intersection)
 {
+  dmnsn_line line_trans = dmnsn_matrix_line_mul(cube->trans_inv, line);
+
   double t = -1.0, t_temp;
   dmnsn_vector p, normal;
 
   /* Six ray-plane intersection tests (x, y, z) = +/- 1.0 */
 
-  if (line.n.x != 0.0) {
+  if (line_trans.n.x != 0.0) {
     /* x = -1.0 */
-    t_temp = (-1.0 - line.x0.x)/line.n.x;
-    p = dmnsn_line_point(line, t_temp);
+    t_temp = (-1.0 - line_trans.x0.x)/line_trans.n.x;
+    p = dmnsn_line_point(line_trans, t_temp);
     if (p.y >= -1.0 && p.y <= 1.0 && p.z >= -1.0 && p.z <= 1.0
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
@@ -66,8 +68,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
     }
 
     /* x = 1.0 */
-    t_temp = (1.0 - line.x0.x)/line.n.x;
-    p = dmnsn_line_point(line, t_temp);
+    t_temp = (1.0 - line_trans.x0.x)/line_trans.n.x;
+    p = dmnsn_line_point(line_trans, t_temp);
     if (p.y >= -1.0 && p.y <= 1.0 && p.z >= -1.0 && p.z <= 1.0
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
@@ -76,10 +78,10 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
     }
   }
 
-  if (line.n.y != 0.0) {
+  if (line_trans.n.y != 0.0) {
     /* y = -1.0 */
-    t_temp = (-1.0 - line.x0.y)/line.n.y;
-    p = dmnsn_line_point(line, t_temp);
+    t_temp = (-1.0 - line_trans.x0.y)/line_trans.n.y;
+    p = dmnsn_line_point(line_trans, t_temp);
     if (p.x >= -1.0 && p.x <= 1.0 && p.z >= -1.0 && p.z <= 1.0
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
@@ -88,8 +90,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
     }
 
     /* y = 1.0 */
-    t_temp = (1.0 - line.x0.y)/line.n.y;
-    p = dmnsn_line_point(line, t_temp);
+    t_temp = (1.0 - line_trans.x0.y)/line_trans.n.y;
+    p = dmnsn_line_point(line_trans, t_temp);
     if (p.x >= -1.0 && p.x <= 1.0 && p.z >= -1.0 && p.z <= 1.0
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
@@ -98,10 +100,10 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
     }
   }
 
-  if (line.n.z != 0.0) {
+  if (line_trans.n.z != 0.0) {
     /* z = -1.0 */
-    t_temp = (-1.0 - line.x0.z)/line.n.z;
-    p = dmnsn_line_point(line, t_temp);
+    t_temp = (-1.0 - line_trans.x0.z)/line_trans.n.z;
+    p = dmnsn_line_point(line_trans, t_temp);
     if (p.x >= -1.0 && p.x <= 1.0 && p.y >= -1.0 && p.y <= 1.0
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
@@ -110,8 +112,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
     }
 
     /* z = 1.0 */
-    t_temp = (1.0 - line.x0.z)/line.n.z;
-    p = dmnsn_line_point(line, t_temp);
+    t_temp = (1.0 - line_trans.x0.z)/line_trans.n.z;
+    p = dmnsn_line_point(line_trans, t_temp);
     if (p.x >= -1.0 && p.x <= 1.0 && p.y >= -1.0 && p.y <= 1.0
         && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
     {
@@ -123,7 +125,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
   if (t >= 0.0) {
     intersection->ray      = line;
     intersection->t        = t;
-    intersection->normal   = normal;
+    intersection->normal   = dmnsn_matrix_normal_mul(cube->trans, normal);
     intersection->texture  = cube->texture;
     intersection->interior = cube->interior;
     return true;
@@ -136,6 +138,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
 static bool
 dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
 {
+  point = dmnsn_matrix_vector_mul(cube->trans_inv, point);
   return point.x > -1.0 && point.x < 1.0
       && point.y > -1.0 && point.y < 1.0
       && point.z > -1.0 && point.z < 1.0;

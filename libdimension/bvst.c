@@ -101,10 +101,9 @@ static void dmnsn_bvst_node_swallow(dmnsn_bvst_node *node,
 void
 dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object)
 {
-  dmnsn_bvst_node *node = dmnsn_new_bvst_node(), *parent = tree->root;
+  dmnsn_object_precompute(object);
 
-  /* Store the inverse of the transformation matrix */
-  object->trans_inv = dmnsn_matrix_inverse(object->trans);
+  dmnsn_bvst_node *node = dmnsn_new_bvst_node(), *parent = tree->root;
 
   node->contains = NULL;
   node->container = NULL;
@@ -112,8 +111,7 @@ dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object)
   node->object = object;
 
   /* Calculate the new bounding box */
-  node->bounding_box = dmnsn_matrix_bounding_box_mul(object->trans,
-                                                     object->bounding_box);
+  node->bounding_box = object->bounding_box;
 
   /* Now insert the node */
 
@@ -283,7 +281,6 @@ static bool dmnsn_ray_box_intersection(dmnsn_line ray, dmnsn_bounding_box box,
 static dmnsn_bvst_search_result
 dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
 {
-  dmnsn_line ray_trans;
   dmnsn_bvst_search_result result_temp, result = {
     .node = NULL,
     .intersected = false
@@ -303,14 +300,11 @@ dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
   if (dmnsn_bounding_box_contains(node->bounding_box, ray.x0)
       || dmnsn_ray_box_intersection(ray, node->bounding_box, t))
   {
-    /* Transform the ray according to the object */
-    ray_trans = dmnsn_matrix_line_mul(node->object->trans_inv, ray);
-
-    if (dmnsn_bounding_box_contains(node->object->bounding_box, ray_trans.x0)
-        || dmnsn_ray_box_intersection(ray_trans, node->object->bounding_box, t))
+    if (dmnsn_bounding_box_contains(node->object->bounding_box, ray.x0)
+        || dmnsn_ray_box_intersection(ray, node->object->bounding_box, t))
     {
       result_temp.intersected =
-        (*node->object->intersection_fn)(node->object, ray_trans,
+        (*node->object->intersection_fn)(node->object, ray,
                                          &result_temp.intersection);
 
       if (result_temp.intersected
@@ -319,21 +313,6 @@ dmnsn_bvst_search_recursive(dmnsn_bvst_node *node, dmnsn_line ray, double t)
         result.intersected = true;
         result.intersection = result_temp.intersection;
         t = result.intersection.t;
-
-        /* Transform the intersection back to the observer's view */
-        result.intersection.ray = ray;
-        result.intersection.normal = dmnsn_vector_normalize(
-          dmnsn_vector_sub(
-            dmnsn_matrix_vector_mul(
-              node->object->trans,
-              result.intersection.normal
-            ),
-            dmnsn_matrix_vector_mul(
-              node->object->trans,
-              dmnsn_zero
-            )
-          )
-        );
       }
     }
 
