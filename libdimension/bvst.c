@@ -105,12 +105,10 @@ dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object)
 
   dmnsn_bvst_node *node = dmnsn_new_bvst_node(), *parent = tree->root;
 
-  node->contains = NULL;
-  node->container = NULL;
-  node->parent = NULL;
-  node->object = object;
-
-  /* Calculate the new bounding box */
+  node->contains     = NULL;
+  node->container    = NULL;
+  node->parent       = NULL;
+  node->object       = object;
   node->bounding_box = object->bounding_box;
 
   /* Now insert the node */
@@ -122,9 +120,9 @@ dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object)
                                        node->bounding_box.max))
     {
       /* parent fully contains node */
-      if (parent->contains)
+      if (parent->contains) {
         parent = parent->contains;
-      else {
+      } else {
         /* We found our parent; insert node into the tree */
         parent->contains = node;
         node->parent = parent;
@@ -135,9 +133,9 @@ dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object)
          already */
       dmnsn_bvst_node_swallow(node, parent->bounding_box);
       /* node now fully contains parent */
-      if (parent->container)
+      if (parent->container) {
         parent = parent->container;
-      else {
+      } else {
         /* We found our parent; insert node into the tree */
         parent->container = node;
         node->parent = parent;

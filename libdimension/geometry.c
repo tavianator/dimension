@@ -363,6 +363,15 @@ dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs)
 dmnsn_bounding_box
 dmnsn_matrix_bounding_box_mul(dmnsn_matrix trans, dmnsn_bounding_box box)
 {
+  /* Infinite bounding box support */
+  if (isinf(box.min.x) || isinf(box.min.y) || isinf(box.min.z)
+      || isinf(box.max.x) || isinf(box.max.y) || isinf(box.max.z))
+  {
+    box.min = dmnsn_new_vector(-INFINITY, -INFINITY, -INFINITY);
+    box.max = dmnsn_new_vector(INFINITY, INFINITY, INFINITY);
+    return box;
+  }
+
   dmnsn_vector corner;
   dmnsn_bounding_box ret;
   ret.min = dmnsn_matrix_vector_mul(trans, box.min);
