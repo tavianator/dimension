@@ -25,6 +25,9 @@
 #ifndef DIMENSION_OBJECTS_H
 #define DIMENSION_OBJECTS_H
 
+/* A plane through the origin, with the given normal */
+dmnsn_object *dmnsn_new_plane(dmnsn_vector normal);
+
 /* A sphere object, of radius 1, centered at the origin. */
 dmnsn_object *dmnsn_new_sphere();
 

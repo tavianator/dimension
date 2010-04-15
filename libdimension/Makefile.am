@@ -68,6 +68,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           object.c                                             \
                           perspective.c                                        \
                           phong.c                                              \
+                          plane.c                                              \
                           point_light.c                                        \
                           progress.c                                           \
                           raytrace.c                                           \

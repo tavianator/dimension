@@ -90,6 +90,12 @@ dmnsn_new_default_scene()
   dmnsn_object *csg = dmnsn_new_csg_difference(cube, sphere);
   dmnsn_array_push(scene->objects, &csg);
 
+  dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
+  plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
+  plane->texture = dmnsn_new_texture();
+  plane->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
+  dmnsn_array_push(scene->objects, &plane);
+
   /* Now make a light */
 
   dmnsn_light *light = dmnsn_new_point_light(
