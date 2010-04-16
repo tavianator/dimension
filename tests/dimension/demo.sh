@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-demo=$(${top_builddir}/dimension/dimension --parse ${srcdir}/demo.pov)
+demo=$(${top_builddir}/dimension/dimension -w768 -h480 --parse ${srcdir}/demo.pov)
 demo_exp=$(echo -n \
 '((camera
     perspective

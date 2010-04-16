@@ -196,6 +196,8 @@ main(int argc, char **argv) {
   dmnsn_symbol_table *symtable = dmnsn_new_symbol_table();
   dmnsn_declare_symbol(symtable, "$file", dmnsn_new_ast_string(input));
   dmnsn_declare_symbol(symtable, "version", dmnsn_new_ast_float(3.6));
+  dmnsn_declare_symbol(symtable, "image_width", dmnsn_new_ast_integer(width));
+  dmnsn_declare_symbol(symtable, "image_height", dmnsn_new_ast_integer(height));
 
   /* Debugging option - output the abstract syntax tree as an S-expression */
   if (parse) {

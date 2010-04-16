@@ -22,7 +22,7 @@
 camera {
   perspective
   location -4*z
-  right    1.6*x
+  right    x*image_width/image_height
   look_at  0
 }
 

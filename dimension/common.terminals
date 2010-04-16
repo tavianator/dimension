@@ -225,10 +225,10 @@
 %token DMNSN_T_HYPERCOMPLEX
 %token DMNSN_T_HOLLOW
 %token DMNSN_T_IFF
-%token DMNSN_T_IMAGE_HEIGHT
+%token DMNSN_T_IMAGE_HEIGHT             "image_height"
 %token DMNSN_T_IMAGE_MAP                "image_map"
 %token DMNSN_T_IMAGE_PATTERN
-%token DMNSN_T_IMAGE_WIDTH
+%token DMNSN_T_IMAGE_WIDTH              "image_width"
 %token DMNSN_T_INITIAL_CLOCK
 %token DMNSN_T_INITIAL_FRAME
 %token DMNSN_T_INSIDE

@@ -19,13 +19,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-csg=$(${top_builddir}/dimension/dimension --parse ${srcdir}/csg.pov)
+csg=$(${top_builddir}/dimension/dimension -w768 -h480 --parse ${srcdir}/csg.pov)
 csg_exp="$(echo -n \
 '((camera
     perspective
     (location (vector (integer 0) (integer 0) (integer -4)
                       (integer 0) (integer 0)))
-    (right (vector (float 1.6) (float 0) (float 0) (float 0) (float 0)))
+    (right (vector (float 1.6) (integer 0) (integer 0) (integer 0) (integer 0)))
     (look_at (vector (integer 0) (integer 0) (integer 0)
                      (integer 0) (integer 0))))
   (background

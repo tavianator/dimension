@@ -22,7 +22,7 @@
 camera {
   perspective
   location <0, 0.25, -4>
-  right    <1.6, 0, 0>
+  right    x*image_width/image_height
   look_at  <0, 0, 0>
 
   rotate   53*y

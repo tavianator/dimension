@@ -669,6 +669,14 @@ ARITH_EXPR: FLOAT_LITERAL
           | "vrotate" "(" ARITH_EXPR "," ARITH_EXPR ")" {
             $$ = dmnsn_new_astnode2(DMNSN_AST_VROTATE, @$, $3, $5);
           }
+          | "image_height" {
+            $$ = dmnsn_new_astnode(DMNSN_AST_IDENTIFIER, @$);
+            $$.ptr = dmnsn_strdup("image_height");
+          }
+          | "image_width" {
+            $$ = dmnsn_new_astnode(DMNSN_AST_IDENTIFIER, @$);
+            $$.ptr = dmnsn_strdup("image_width");
+          }
           | "pi"    { $$ = dmnsn_new_astnode(DMNSN_AST_PI,    @$); }
           | "true"  { $$ = dmnsn_new_astnode(DMNSN_AST_TRUE,  @$); }
           | "on"    { $$ = dmnsn_new_astnode(DMNSN_AST_TRUE,  @$); }
