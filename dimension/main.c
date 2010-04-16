@@ -46,19 +46,21 @@ main(int argc, char **argv) {
   /* Long-only option codes */
   enum {
     DMNSN_OPT_THREADS = 256,
-    DMNSN_OPT_QUALITY
+    DMNSN_OPT_QUALITY,
+    DMNSN_OPT_RESILIENCE
   };
 
   static struct option long_options[] = {
-    { "help",     no_argument,       NULL,      '?'               },
-    { "output",   required_argument, NULL,      'o'               },
-    { "width",    required_argument, NULL,      'w'               },
-    { "height",   required_argument, NULL,      'h'               },
-    { "threads",  required_argument, NULL,      DMNSN_OPT_THREADS },
-    { "quality",  required_argument, NULL,      DMNSN_OPT_QUALITY },
-    { "tokenize", no_argument,       &tokenize, 1                 },
-    { "parse",    no_argument,       &parse,    1                 },
-    { 0,          0,                 0,         0                 }
+    { "help",       no_argument,       NULL,      '?'                  },
+    { "output",     required_argument, NULL,      'o'                  },
+    { "width",      required_argument, NULL,      'w'                  },
+    { "height",     required_argument, NULL,      'h'                  },
+    { "threads",    required_argument, NULL,      DMNSN_OPT_THREADS    },
+    { "quality",    required_argument, NULL,      DMNSN_OPT_QUALITY    },
+    { "resilience", required_argument, NULL,      DMNSN_OPT_RESILIENCE },
+    { "tokenize",   no_argument,       &tokenize, 1                    },
+    { "parse",      no_argument,       &parse,    1                    },
+    { 0,            0,                 0,         0                    }
   };
 
   int opt, opt_index;
@@ -90,8 +92,6 @@ main(int argc, char **argv) {
 
     case 'w':
       {
-        dmnsn_assert(optarg, "NULL argument.");
-
         char *endptr;
         width = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
@@ -103,8 +103,6 @@ main(int argc, char **argv) {
       }
     case 'h':
       {
-        dmnsn_assert(optarg, "NULL argument.");
-
         char *endptr;
         height = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
@@ -117,8 +115,6 @@ main(int argc, char **argv) {
 
     case DMNSN_OPT_THREADS:
       {
-        dmnsn_assert(optarg, "NULL argument.");
-
         char *endptr;
         nthreads = strtoul(optarg, &endptr, 10);
         if (*endptr != '\0' || endptr == optarg) {
@@ -130,12 +126,25 @@ main(int argc, char **argv) {
       }
     case DMNSN_OPT_QUALITY:
       {
-        dmnsn_assert(optarg, "NULL argument.");
-
         char *endptr;
         quality = strtoul(optarg, &endptr, 0);
         if (*endptr != '\0' || endptr == optarg) {
           fprintf(stderr, "Invalid argument to --quality!\n");
+          print_usage(stderr, argv[0]);
+          return EXIT_FAILURE;
+        }
+        break;
+      }
+    case DMNSN_OPT_RESILIENCE:
+      {
+        if (strcmp(optarg, "low") == 0) {
+          dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
+        } else if (strcmp(optarg, "medium") == 0) {
+          dmnsn_set_resilience(DMNSN_SEVERITY_MEDIUM);
+        } else if (strcmp(optarg, "high") == 0) {
+          dmnsn_set_resilience(DMNSN_SEVERITY_HIGH);
+        } else {
+          fprintf(stderr, "Invalid argument to --resilience!\n");
           print_usage(stderr, argv[0]);
           return EXIT_FAILURE;
         }
@@ -325,7 +334,9 @@ print_usage(FILE *file, const char *arg0)
           "  -h, --height=HEIGHT set canvas height to HEIGHT (default 480)\n\n"
           " Rendering options:\n"
           "  --threads=THREADS   render with THREADS parallel threads\n"
-          "  --quality=QUALITY   use the quality setting QUALITY\n\n"
+          "  --quality=QUALITY   use the quality setting QUALITY\n"
+          "  --resilience=RES    set error tolerance to RES (low, medium, or"
+          " high)\n\n"
           " Debugging options:\n"
           "  --tokenize          tokenize the input and print the token list\n"
           "  --parse             parse the input and print the abstract syntax"
