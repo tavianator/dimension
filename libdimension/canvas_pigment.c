@@ -44,13 +44,10 @@ dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 
   dmnsn_canvas *canvas = pigment->ptr;
 
-  int x = v.x*(canvas->x - 1) + 0.5;
-  int y = v.x*(canvas->x - 1) + 0.5;
-  if (x >= 0 && y >= 0 && x < canvas->x && y < canvas->y) {
-    return dmnsn_get_pixel(canvas, x, y);
-  } else {
-    return dmnsn_black;
-  }
+  int x = (fmod(v.x, 1.0) + 1.0)*(canvas->x - 1) + 0.5;
+  int y = (fmod(v.y, 1.0) + 1.0)*(canvas->y - 1) + 0.5;
+  dmnsn_color c = dmnsn_get_pixel(canvas, x%canvas->x, y%canvas->y);
+  return c;
 }
 
 static void
