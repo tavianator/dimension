@@ -60,6 +60,7 @@
 /* Pigments */
 %type <astnode> PIGMENT
 %type <astnode> PIGMENT_TYPE
+%type <astnode> PIGMENT_MODIFIERS
 
 /* Finishes */
 %type <astnode> FINISH

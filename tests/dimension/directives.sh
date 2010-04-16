@@ -77,20 +77,23 @@ $(echo -n \
     (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
     (integer 1)
     (object-modifiers
-      (pigment (vector (integer 1) (integer 1) (integer 1)
-                       (integer 0) (integer 0)))))
+      (pigment
+        (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
+        pigment-modifiers)))
   (sphere
     (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0))
     (integer 1)
     (object-modifiers
-      (pigment (vector (integer 1) (integer 1) (integer 1)
-                       (integer 0) (integer 0)))))
+      (pigment
+        (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
+        pigment-modifiers)))
   (box
     (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
     (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
     (object-modifiers
-      (pigment (vector (integer 1) (integer 1) (integer 1)
-                       (integer 0) (integer 0)))
+      (pigment
+        (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
+        pigment-modifiers)
       (finish
          (phong (float 0.2))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"

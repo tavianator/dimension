@@ -154,6 +154,23 @@ dmnsn_realize_translation(dmnsn_astnode astnode)
   return dmnsn_translation_matrix(trans);
 }
 
+static dmnsn_matrix
+dmnsn_realize_transformation(dmnsn_astnode astnode)
+{
+  switch (astnode.type) {
+  case DMNSN_AST_ROTATION:
+    return dmnsn_realize_rotation(astnode);
+  case DMNSN_AST_SCALE:
+    return dmnsn_realize_scale(astnode);
+  case DMNSN_AST_TRANSLATION:
+    return dmnsn_realize_translation(astnode);
+
+  default:
+    dmnsn_assert(false, "Expected a transformation.");
+    return dmnsn_identity_matrix(); // Shut up compiler
+  }
+}
+
 static void
 dmnsn_realize_global_settings(dmnsn_astnode astnode, dmnsn_scene *scene)
 {
@@ -296,13 +313,9 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
 
     /* Transformations */
     case DMNSN_AST_ROTATION:
-      trans = dmnsn_matrix_mul(dmnsn_realize_rotation(item), trans);
-      break;
     case DMNSN_AST_SCALE:
-      trans = dmnsn_matrix_mul(dmnsn_realize_scale(item), trans);
-      break;
     case DMNSN_AST_TRANSLATION:
-      trans = dmnsn_matrix_mul(dmnsn_realize_translation(item), trans);
+      trans = dmnsn_matrix_mul(dmnsn_realize_transformation(item), trans);
       break;
 
     default:
@@ -379,6 +392,33 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
   return camera;
 }
 
+static void
+dmnsn_realize_pigment_modifiers(dmnsn_astnode astnode, dmnsn_pigment *pigment)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_PIGMENT_MODIFIERS,
+               "Expected pigment modifiers.");
+
+  unsigned int i;
+  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    dmnsn_astnode modifier;
+    dmnsn_array_get(astnode.children, i, &modifier);
+
+    switch (modifier.type) {
+    case DMNSN_AST_ROTATION:
+    case DMNSN_AST_SCALE:
+    case DMNSN_AST_TRANSLATION:
+      pigment->trans = dmnsn_matrix_mul(
+        dmnsn_realize_transformation(modifier),
+        pigment->trans
+      );
+      break;
+
+    default:
+      dmnsn_assert(false, "Invalid pigment modifier.");
+    }
+  }
+}
+
 static dmnsn_pigment *
 dmnsn_realize_pigment(dmnsn_astnode astnode)
 {
@@ -402,6 +442,10 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
   default:
     dmnsn_assert(false, "Invalid pigment color.");
   }
+
+  dmnsn_astnode modifiers;
+  dmnsn_array_get(astnode.children, 1, &modifiers);
+  dmnsn_realize_pigment_modifiers(modifiers, pigment);
 
   return pigment;
 }
@@ -550,6 +594,13 @@ dmnsn_realize_texture(dmnsn_astnode astnode)
       texture->finish = dmnsn_realize_finish(item);
       break;
 
+    case DMNSN_AST_ROTATION:
+    case DMNSN_AST_SCALE:
+    case DMNSN_AST_TRANSLATION:
+      texture->trans = dmnsn_matrix_mul(dmnsn_realize_transformation(item),
+                                        texture->trans);
+      break;
+
     default:
       dmnsn_assert(false, "Invalid texture item.");
     }
@@ -597,20 +648,10 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
 
     switch (modifier.type) {
     case DMNSN_AST_ROTATION:
-      object->trans = dmnsn_matrix_mul(
-        dmnsn_realize_rotation(modifier),
-        object->trans
-      );
-      break;
     case DMNSN_AST_SCALE:
-      object->trans = dmnsn_matrix_mul(
-        dmnsn_realize_scale(modifier),
-        object->trans
-      );
-      break;
     case DMNSN_AST_TRANSLATION:
       object->trans = dmnsn_matrix_mul(
-        dmnsn_realize_translation(modifier),
+        dmnsn_realize_transformation(modifier),
         object->trans
       );
       break;

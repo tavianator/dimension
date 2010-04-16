@@ -145,7 +145,8 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
 
   dmnsn_astnode_map(DMNSN_AST_TEXTURE, "texture");
 
-  dmnsn_astnode_map(DMNSN_AST_PIGMENT, "pigment");
+  dmnsn_astnode_map(DMNSN_AST_PIGMENT,           "pigment");
+  dmnsn_astnode_map(DMNSN_AST_PIGMENT_MODIFIERS, "pigment-modifiers");
 
   dmnsn_astnode_map(DMNSN_AST_FINISH,     "finish");
   dmnsn_astnode_map(DMNSN_AST_AMBIENT,    "ambient");

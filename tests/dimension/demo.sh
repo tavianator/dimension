@@ -47,7 +47,8 @@ demo_exp=$(echo -n \
           (texture
             (pigment
               (vector (integer 0) (integer 0) (integer 1)
-                      (float 0.25) (float 0.5)))
+                      (float 0.25) (float 0.5))
+              pigment-modifiers)
             (finish
               (reflection
                 (vector (float 0.5) (float 0.5) (float 0.5)
@@ -64,7 +65,8 @@ demo_exp=$(echo -n \
           (texture
             (pigment
               (vector (integer 0) (integer 1) (integer 0)
-                      (integer 0) (integer 0)))
+                      (integer 0) (integer 0))
+              pigment-modifiers)
             (finish
               (phong (float 0.2))
               (phong_size (float 40)))))))
@@ -75,7 +77,8 @@ demo_exp=$(echo -n \
     (object-modifiers
       (pigment
         (vector (integer 1) (integer 1) (integer 1)
-                (integer 0) (integer 0))))))' \
+                (integer 0) (integer 0))
+        pigment-modifiers))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 
 if [ "$demo" != "$demo_exp" ]; then

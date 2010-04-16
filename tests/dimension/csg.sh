@@ -38,7 +38,8 @@ csg_exp="$(echo -n \
         (object-modifiers
           (pigment
             (vector (integer 1) (integer 0) (integer 0)
-                    (integer 0) (integer 0))))))
+                    (integer 0) (integer 0))
+            pigment-modifiers))))
     object-modifiers)
   (union
     (array
@@ -59,7 +60,8 @@ csg_exp="$(echo -n \
         (object-modifiers
           (pigment
             (vector (integer 0) (integer 1) (integer 0)
-                    (integer 0) (integer 0)))))
+                    (integer 0) (integer 0))
+            pigment-modifiers)))
       (light_source
         (vector (integer 15) (integer 0) (integer 0) (integer 0) (integer 0))
         (vector (float 0.5) (float 0.5) (float 0.5) (integer 0) (integer 0))
@@ -70,7 +72,8 @@ csg_exp="$(echo -n \
         (object-modifiers
           (pigment
             (vector (integer 0) (integer 0) (integer 1)
-                    (integer 0) (integer 0))))))
+                    (integer 0) (integer 0))
+            pigment-modifiers))))
     (object-modifiers
       (translate (vector (integer 0) (integer 20) (integer 0)
                          (integer 0) (integer 0))))))' \
