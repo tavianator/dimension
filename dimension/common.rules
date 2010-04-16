@@ -324,6 +324,24 @@ PIGMENT_TYPE: /* empty */ {
               $$ = dmnsn_new_astnode(DMNSN_AST_NONE, @$);
             }
             | COLOR
+            | "image_map" "{"
+                BITMAP_TYPE STRING
+              "}"
+            {
+              $$ = dmnsn_new_astnode2(DMNSN_AST_IMAGE_MAP, @$, $3, $4);
+            }
+            | "image_map" "{"
+                STRING
+              "}"
+            {
+              dmnsn_astnode type = dmnsn_new_astnode(DMNSN_AST_PNG, @$);
+              $$ = dmnsn_new_astnode2(DMNSN_AST_IMAGE_MAP, @$, type, $3);
+            }
+;
+
+BITMAP_TYPE: "png" {
+             $$ = dmnsn_new_astnode(DMNSN_AST_PNG, @$);
+           }
 ;
 
 PIGMENT_MODIFIERS: /* empty */ {

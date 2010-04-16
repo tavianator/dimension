@@ -56,6 +56,14 @@ dmnsn_realize_float(dmnsn_astnode astnode)
   }
 }
 
+/* dmnsn_realize_string is an API function, so call this dmnsn_realize_str */
+static const char*
+dmnsn_realize_str(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_STRING, "Expected a string.");
+  return astnode.ptr;
+}
+
 static dmnsn_vector
 dmnsn_realize_vector(dmnsn_astnode astnode)
 {
@@ -426,21 +434,52 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
 
   dmnsn_pigment *pigment = NULL;
 
-  dmnsn_astnode color_node;
-  dmnsn_array_get(astnode.children, 0, &color_node);
+  dmnsn_astnode type_node;
+  dmnsn_array_get(astnode.children, 0, &type_node);
 
   dmnsn_color color;
-  switch (color_node.type) {
+  switch (type_node.type) {
   case DMNSN_AST_NONE:
     break;
 
   case DMNSN_AST_VECTOR:
-    color = dmnsn_realize_color(color_node);
+    color = dmnsn_realize_color(type_node);
     pigment = dmnsn_new_solid_pigment(color);
     break;
 
+  case DMNSN_AST_IMAGE_MAP:
+    {
+      dmnsn_astnode filetype, strnode;
+      dmnsn_array_get(type_node.children, 0, &filetype);
+      dmnsn_array_get(type_node.children, 1, &strnode);
+
+      const char *path = dmnsn_realize_str(strnode);
+      FILE *file = fopen(path, "rb");
+      if (!file) {
+        dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't open image file.");
+        return NULL;
+      }
+
+      dmnsn_canvas *canvas;
+      switch (filetype.type) {
+      case DMNSN_AST_PNG:
+        canvas = dmnsn_png_read_canvas(file);
+        if (!canvas) {
+          dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Invalid PNG file.");
+          return NULL;
+        }
+        pigment = dmnsn_new_canvas_pigment(canvas);
+        break;
+
+      default:
+        dmnsn_assert(false, "Invalid image_map type.");
+        break;
+      }
+      break;
+    }
+
   default:
-    dmnsn_assert(false, "Invalid pigment color.");
+    dmnsn_assert(false, "Invalid pigment type.");
   }
 
   dmnsn_astnode modifiers;
