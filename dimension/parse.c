@@ -1343,10 +1343,14 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_integer(&ret, l*r);
       break;
     case DMNSN_AST_DIV:
-      if (l%r == 0) {
+      if (r == 0) {
+        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                         "WARNING: division by zero");
+        dmnsn_make_ast_float(&ret, (double)l/0.0);
+      } else if (l%r == 0) {
         dmnsn_make_ast_integer(&ret, l/r);
       } else {
-        dmnsn_make_ast_float(&ret, ((double)l)/r);
+        dmnsn_make_ast_float(&ret, (double)l/(double)r);
       }
       break;
 
@@ -1379,7 +1383,13 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, atan2(l, r));
       break;
     case DMNSN_AST_INT_DIV:
-      dmnsn_make_ast_integer(&ret, l/r);
+      if (r == 0) {
+        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                         "WARNING: division by zero");
+        dmnsn_make_ast_float(&ret, (double)l/0.0);
+      } else {
+        dmnsn_make_ast_integer(&ret, l/r);
+      }
       break;
     case DMNSN_AST_MAX:
       dmnsn_make_ast_integer(&ret, l > r ? l : r);
@@ -1388,7 +1398,13 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_integer(&ret, l < r ? l : r);
       break;
     case DMNSN_AST_MOD:
-      dmnsn_make_ast_float(&ret, fmod(l, r));
+      if (r == 0) {
+        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                         "WARNING: division by zero");
+        dmnsn_make_ast_float(&ret, fmod(l, 0.0));
+      } else {
+        dmnsn_make_ast_integer(&ret, l%r);
+      }
       break;
     case DMNSN_AST_POW:
       dmnsn_make_ast_float(&ret, pow(l, r));
@@ -1464,6 +1480,10 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, l*r);
       break;
     case DMNSN_AST_DIV:
+      if (r == 0.0) {
+        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                         "WARNING: division by zero");
+      }
       dmnsn_make_ast_float(&ret, l/r);
       break;
 
@@ -1498,7 +1518,11 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, atan2(l, r));
       break;
     case DMNSN_AST_INT_DIV:
-      dmnsn_make_ast_float(&ret, trunc(l/r));
+      if (r == 0.0) {
+        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                         "WARNING: division by zero");
+      }
+      dmnsn_make_ast_maybe_integer(&ret, trunc(l/r));
       break;
     case DMNSN_AST_MAX:
       if (l > r) {
@@ -1531,6 +1555,10 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       }
       break;
     case DMNSN_AST_MOD:
+      if (r == 0.0) {
+        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+                         "WARNING: division by zero");
+      }
       dmnsn_make_ast_float(&ret, fmod(l, r));
       break;
     case DMNSN_AST_POW:
@@ -1718,7 +1746,9 @@ dmnsn_astnode
 dmnsn_eval_scalar(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 {
   dmnsn_astnode ret = dmnsn_eval(astnode, symtable);
-  if (ret.type != DMNSN_AST_INTEGER && ret.type != DMNSN_AST_FLOAT) {
+  if (ret.type != DMNSN_AST_INTEGER && ret.type != DMNSN_AST_FLOAT
+      && ret.type != DMNSN_AST_NONE)
+  {
     dmnsn_diagnostic(ret.filename, ret.line, ret.col,
                      "expected %s or %s; found %s",
                      dmnsn_astnode_string(DMNSN_AST_INTEGER),
