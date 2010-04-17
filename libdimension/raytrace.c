@@ -299,7 +299,8 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
     shadow_state.reclevel     = reclevel;
 
     dmnsn_raytrace_pigment(&shadow_state);
-    if (shadow_state.pigment.filter || shadow_state.pigment.trans) {
+    if ((state->scene->quality & DMNSN_RENDER_TRANSLUCENCY)
+        && (shadow_state.pigment.filter || shadow_state.pigment.trans)) {
       color = dmnsn_color_filter(color, shadow_state.pigment);
       shadow_ray.x0 = dmnsn_line_point(shadow_ray, shadow_caster.t);
       shadow_ray.n  = dmnsn_vector_sub(light->x0, shadow_ray.x0);
