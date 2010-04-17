@@ -152,17 +152,17 @@ main()
   });
   printf("dmnsn_matrix_mul(): %ld\n", sandglass.grains);
 
-  /* dmnsn_matrix_vector_mul() */
+  /* dmnsn_transform_vector() */
   sandglass_bench_fine(&sandglass, {
-    vector = dmnsn_matrix_vector_mul(matrix, vector);
+    vector = dmnsn_transform_vector(matrix, vector);
   });
-  printf("dmnsn_matrix_vector_mul(): %ld\n", sandglass.grains);
+  printf("dmnsn_transform_vector(): %ld\n", sandglass.grains);
 
-  /* dmnsn_matrix_line_mul() */
+  /* dmnsn_transform_line() */
   sandglass_bench_fine(&sandglass, {
-    line = dmnsn_matrix_line_mul(matrix, line);
+    line = dmnsn_transform_line(matrix, line);
   });
-  printf("dmnsn_matrix_line_mul(): %ld\n", sandglass.grains);
+  printf("dmnsn_transform_line(): %ld\n", sandglass.grains);
 
   /* dmnsn_line_point() */
   sandglass_bench_fine(&sandglass, {

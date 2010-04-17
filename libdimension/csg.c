@@ -36,7 +36,7 @@ dmnsn_csg_union_intersection_fn(const dmnsn_object *csg,
                                 dmnsn_line line,
                                 dmnsn_intersection *intersection)
 {
-  dmnsn_line line_trans = dmnsn_matrix_line_mul(csg->trans_inv, line);
+  dmnsn_line line_trans = dmnsn_transform_line(csg->trans_inv, line);
 
   const dmnsn_object **params = csg->ptr;
 
@@ -71,8 +71,8 @@ dmnsn_csg_union_intersection_fn(const dmnsn_object *csg,
   }
 
   intersection->ray    = line;
-  intersection->normal = dmnsn_matrix_normal_mul(csg->trans,
-                                                 intersection->normal);
+  intersection->normal = dmnsn_transform_normal(csg->trans,
+                                                intersection->normal);
   return true;
 }
 
@@ -118,7 +118,7 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
   /* inside1 is whether the second object is allowed inside the first object;
      respectively for inside2 */
 
-  dmnsn_line line_trans = dmnsn_matrix_line_mul(csg->trans_inv, line);
+  dmnsn_line line_trans = dmnsn_transform_line(csg->trans_inv, line);
 
   const dmnsn_object **params = csg->ptr;
 
@@ -183,8 +183,8 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
   }
 
   intersection->ray    = line;
-  intersection->normal = dmnsn_matrix_normal_mul(csg->trans,
-                                                 intersection->normal);
+  intersection->normal = dmnsn_transform_normal(csg->trans,
+                                                intersection->normal);
   return true;
 }
 

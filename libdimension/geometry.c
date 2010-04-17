@@ -345,7 +345,7 @@ dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs)
 /* Affine transformation; lhs*(x,y,z,1), normalized so the fourth element is
    1 */
 dmnsn_vector
-dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs)
+dmnsn_transform_vector(dmnsn_matrix lhs, dmnsn_vector rhs)
 {
   /* 12 multiplications, 3 divisions, 12 additions */
   dmnsn_vector r;
@@ -361,7 +361,7 @@ dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs)
 
 /* Give an axis-aligned box that contains the given box transformed by `lhs' */
 dmnsn_bounding_box
-dmnsn_matrix_bounding_box_mul(dmnsn_matrix trans, dmnsn_bounding_box box)
+dmnsn_transform_bounding_box(dmnsn_matrix trans, dmnsn_bounding_box box)
 {
   /* Infinite bounding box support */
   if (isinf(box.min.x) || isinf(box.min.y) || isinf(box.min.z)
@@ -374,41 +374,41 @@ dmnsn_matrix_bounding_box_mul(dmnsn_matrix trans, dmnsn_bounding_box box)
 
   dmnsn_vector corner;
   dmnsn_bounding_box ret;
-  ret.min = dmnsn_matrix_vector_mul(trans, box.min);
+  ret.min = dmnsn_transform_vector(trans, box.min);
   ret.max = ret.min;
 
   corner  = dmnsn_new_vector(box.min.x, box.min.y, box.max.z);
-  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  corner  = dmnsn_transform_vector(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.min.x, box.max.y, box.min.z);
-  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  corner  = dmnsn_transform_vector(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.min.x, box.max.y, box.max.z);
-  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  corner  = dmnsn_transform_vector(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.max.x, box.min.y, box.min.z);
-  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  corner  = dmnsn_transform_vector(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.max.x, box.min.y, box.max.z);
-  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  corner  = dmnsn_transform_vector(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.max.x, box.max.y, box.min.z);
-  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  corner  = dmnsn_transform_vector(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.max.x, box.max.y, box.max.z);
-  corner  = dmnsn_matrix_vector_mul(trans, corner);
+  corner  = dmnsn_transform_vector(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 

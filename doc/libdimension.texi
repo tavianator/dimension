@@ -315,11 +315,11 @@ dmnsn_vector dmnsn_vector_normalize(dmnsn_vector n);
 dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
 @findex dmnsn_matrix_mul()
 dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
-@findex dmnsn_matrix_vector_mul()
-dmnsn_vector dmnsn_matrix_vector_mul(dmnsn_matrix lhs,
-                                     dmnsn_vector rhs);
-@findex dmnsn_matrix_line_mul()
-dmnsn_line   dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs);
+@findex dmnsn_transform_vector()
+dmnsn_vector dmnsn_transform_vector(dmnsn_matrix lhs,
+                                    dmnsn_vector rhs);
+@findex dmnsn_transform_line()
+dmnsn_line   dmnsn_transform_line(dmnsn_matrix lhs, dmnsn_line rhs);
 
 @findex dmnsn_line_point()
 dmnsn_vector dmnsn_line_point(dmnsn_line l, double t);
@@ -341,7 +341,7 @@ They may be easily constructed by the self-explanatory @code{dmnsn_new_vector()}
 @cindex normalization
 @cindex dot product
 @cindex cross product
-Vectors support addition and subtraction, multiplication and division by a scalar, the dot and cross products, the norm and normalization operations, and transformation by a matrix (@code{dmnsn_matrix_vector_mul()}).
+Vectors support addition and subtraction, multiplication and division by a scalar, the dot and cross products, the norm and normalization operations, and transformation by a matrix (@code{dmnsn_transform_vector()}).
 
 @cindex matrix inversion
 Matricies support matrix multiplication, and inversion.
@@ -352,7 +352,7 @@ As well, there are four special matrix constructors.
 @code{dmnsn_translate_matrix(d)} returns a matrix which translates by @code{d}.
 Finally, @code{dmnsn_rotation_matrix(theta)} returns a matrix which rotates by an angle of @code{dmnsn_vector_norm(theta)}, about the axis @code{dmnsn_vector_normalize(theta)}.
 
-Lines support transformation by a matrix (@code{dmnsn_matrix_line_mul(A, l) = dmnsn_new_line(A*l.x0, A*(l.x0 + l.n) - A*l.x0)}).
+Lines support transformation by a matrix (@code{dmnsn_transform_line(A, l) = dmnsn_new_line(A*l.x0, A*(l.x0 + l.n) - A*l.x0)}).
 Also, @code{dmnsn_line_point(l, t) = l.x0 + t*l.n} gives the point @code{t} on the line, and @code{dmnsn_line_index(l, x)} gives the @code{t} value such that @code{dmnsn_line_point(l, t) == x}.
 
 @node Color

@@ -192,19 +192,19 @@ double dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2,
 
 dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
 dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
-dmnsn_vector dmnsn_matrix_vector_mul(dmnsn_matrix lhs, dmnsn_vector rhs);
-dmnsn_bounding_box dmnsn_matrix_bounding_box_mul(dmnsn_matrix lhs,
-                                                 dmnsn_bounding_box rhs);
+dmnsn_vector dmnsn_transform_vector(dmnsn_matrix lhs, dmnsn_vector rhs);
+dmnsn_bounding_box dmnsn_transform_bounding_box(dmnsn_matrix lhs,
+                                                dmnsn_bounding_box rhs);
 
 /* Affine line transformation; n = lhs*(x0 + n) - lhs*x0, x0 *= lhs */
 DMNSN_INLINE dmnsn_line
-dmnsn_matrix_line_mul(dmnsn_matrix lhs, dmnsn_line rhs)
+dmnsn_transform_line(dmnsn_matrix lhs, dmnsn_line rhs)
 {
   /* 24 multiplications, 6 divisions, 30 additions */
   dmnsn_line l;
-  l.x0 = dmnsn_matrix_vector_mul(lhs, rhs.x0);
+  l.x0 = dmnsn_transform_vector(lhs, rhs.x0);
   l.n  = dmnsn_vector_sub(
-    dmnsn_matrix_vector_mul(lhs, dmnsn_vector_add(rhs.x0, rhs.n)),
+    dmnsn_transform_vector(lhs, dmnsn_vector_add(rhs.x0, rhs.n)),
     l.x0
   );
   return l;

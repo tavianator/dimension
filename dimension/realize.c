@@ -272,8 +272,8 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
             dmnsn_vector_normalize(direction)
           )
         );
-        up    = dmnsn_matrix_vector_mul(sky1, up);
-        right = dmnsn_matrix_vector_mul(sky1, right);
+        up    = dmnsn_transform_vector(sky1, up);
+        right = dmnsn_transform_vector(sky1, right);
 
         dmnsn_matrix sky2 = dmnsn_rotation_matrix(
           dmnsn_vector_mul(
@@ -281,8 +281,8 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
             dmnsn_vector_normalize(right)
           )
         );
-        up        = dmnsn_matrix_vector_mul(sky2, up);
-        direction = dmnsn_matrix_vector_mul(sky2, direction);
+        up        = dmnsn_transform_vector(sky2, up);
+        direction = dmnsn_transform_vector(sky2, direction);
 
         /* Line up the camera with the look_at */
 
@@ -293,8 +293,8 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
             dmnsn_vector_normalize(up)
           )
         );
-        right     = dmnsn_matrix_vector_mul(look_at1, right);
-        direction = dmnsn_matrix_vector_mul(look_at1, direction);
+        right     = dmnsn_transform_vector(look_at1, right);
+        direction = dmnsn_transform_vector(look_at1, direction);
 
         dmnsn_matrix look_at2 = dmnsn_rotation_matrix(
           dmnsn_vector_mul(
@@ -302,8 +302,8 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
             dmnsn_vector_normalize(right)
           )
         );
-        up        = dmnsn_matrix_vector_mul(look_at2, up);
-        direction = dmnsn_matrix_vector_mul(look_at2, direction);
+        up        = dmnsn_transform_vector(look_at2, up);
+        direction = dmnsn_transform_vector(look_at2, direction);
 
         break;
       }
@@ -349,8 +349,8 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
         )
       );
 
-      dmnsn_vector x = dmnsn_matrix_vector_mul(align, dmnsn_x);
-      dmnsn_vector y = dmnsn_matrix_vector_mul(align, dmnsn_y);
+      dmnsn_vector x = dmnsn_transform_vector(align, dmnsn_x);
+      dmnsn_vector y = dmnsn_transform_vector(align, dmnsn_y);
 
       align = dmnsn_matrix_mul(
         dmnsn_rotation_matrix(
@@ -736,19 +736,19 @@ dmnsn_realize_light_source_modifiers(dmnsn_astnode astnode, dmnsn_light *light)
 
     switch (modifier.type) {
     case DMNSN_AST_ROTATION:
-      light->x0 = dmnsn_matrix_vector_mul(
+      light->x0 = dmnsn_transform_vector(
         dmnsn_realize_rotation(modifier),
         light->x0
       );
       break;
     case DMNSN_AST_SCALE:
-      light->x0 = dmnsn_matrix_vector_mul(
+      light->x0 = dmnsn_transform_vector(
         dmnsn_realize_scale(modifier),
         light->x0
       );
       break;
     case DMNSN_AST_TRANSLATION:
-      light->x0 = dmnsn_matrix_vector_mul(
+      light->x0 = dmnsn_transform_vector(
         dmnsn_realize_translation(modifier),
         light->x0
       );

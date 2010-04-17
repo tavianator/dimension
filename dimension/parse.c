@@ -1164,7 +1164,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         );
 
         axis = dmnsn_vector_mul(atan(1.0)/45.0, axis);
-        r = dmnsn_matrix_vector_mul(dmnsn_rotation_matrix(axis), r);
+        r = dmnsn_transform_vector(dmnsn_rotation_matrix(axis), r);
 
         ret = dmnsn_copy_astnode(astnode);
         dmnsn_make_ast_vector(&ret, r.x, r.y, r.z, 0.0, 0.0);
@@ -1271,15 +1271,15 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
         axis = dmnsn_vector_mul(atan(1.0)/45.0, axis);
 
-        r = dmnsn_matrix_vector_mul(
+        r = dmnsn_transform_vector(
           dmnsn_rotation_matrix(dmnsn_new_vector(axis.x, 0.0, 0.0)),
           r
         );
-        r = dmnsn_matrix_vector_mul(
+        r = dmnsn_transform_vector(
           dmnsn_rotation_matrix(dmnsn_new_vector(0.0, axis.y, 0.0)),
           r
         );
-        r = dmnsn_matrix_vector_mul(
+        r = dmnsn_transform_vector(
           dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 0.0, axis.z)),
           r
         );

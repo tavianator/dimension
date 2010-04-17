@@ -40,7 +40,7 @@ dmnsn_new_canvas_pigment(dmnsn_canvas *canvas)
 static dmnsn_color
 dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
-  v = dmnsn_matrix_vector_mul(pigment->trans_inv, v);
+  v = dmnsn_transform_vector(pigment->trans_inv, v);
 
   dmnsn_canvas *canvas = pigment->ptr;
 

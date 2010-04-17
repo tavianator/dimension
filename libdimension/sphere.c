@@ -50,7 +50,7 @@ static bool
 dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
                              dmnsn_intersection *intersection)
 {
-  dmnsn_line l = dmnsn_matrix_line_mul(sphere->trans_inv, line);
+  dmnsn_line l = dmnsn_transform_line(sphere->trans_inv, line);
  
   /* Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1 */
   double a, b, c, t;
@@ -67,8 +67,8 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
     if (t >= 0.0) {
       intersection->ray      = line;
       intersection->t        = t;
-      intersection->normal   = dmnsn_matrix_normal_mul(sphere->trans,
-                                                       dmnsn_line_point(l, t));
+      intersection->normal   = dmnsn_transform_normal(sphere->trans,
+                                                      dmnsn_line_point(l, t));
       intersection->texture  = sphere->texture;
       intersection->interior = sphere->interior;
       return true;
@@ -82,6 +82,6 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
 static bool
 dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
 {
-  point = dmnsn_matrix_vector_mul(sphere->trans_inv, point);
+  point = dmnsn_transform_vector(sphere->trans_inv, point);
   return point.x*point.x + point.y*point.y + point.z*point.z < 1.0;
 }

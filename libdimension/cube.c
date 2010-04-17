@@ -49,7 +49,7 @@ static bool
 dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
                            dmnsn_intersection *intersection)
 {
-  dmnsn_line line_trans = dmnsn_matrix_line_mul(cube->trans_inv, line);
+  dmnsn_line line_trans = dmnsn_transform_line(cube->trans_inv, line);
 
   double t = -1.0, t_temp;
   dmnsn_vector p, normal;
@@ -125,7 +125,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
   if (t >= 0.0) {
     intersection->ray      = line;
     intersection->t        = t;
-    intersection->normal   = dmnsn_matrix_normal_mul(cube->trans, normal);
+    intersection->normal   = dmnsn_transform_normal(cube->trans, normal);
     intersection->texture  = cube->texture;
     intersection->interior = cube->interior;
     return true;
@@ -138,7 +138,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
 static bool
 dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
 {
-  point = dmnsn_matrix_vector_mul(cube->trans_inv, point);
+  point = dmnsn_transform_vector(cube->trans_inv, point);
   return point.x > -1.0 && point.x < 1.0
       && point.y > -1.0 && point.y < 1.0
       && point.z > -1.0 && point.z < 1.0;

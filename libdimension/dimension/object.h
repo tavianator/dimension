@@ -41,7 +41,7 @@ typedef struct dmnsn_intersection {
   const dmnsn_interior *interior;
 } dmnsn_intersection;
 
-dmnsn_vector dmnsn_matrix_normal_mul(dmnsn_matrix trans, dmnsn_vector normal);
+dmnsn_vector dmnsn_transform_normal(dmnsn_matrix trans, dmnsn_vector normal);
 
 /* Forward-declare dmnsn_object */
 typedef struct dmnsn_object dmnsn_object;
