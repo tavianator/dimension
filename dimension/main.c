@@ -30,8 +30,8 @@
 
 static char *output = NULL, *input = NULL;
 static bool free_output = false;
-static unsigned int width = 640, height = 480;
-static unsigned int nthreads = 0;
+static int width = 640, height = 480;
+static int nthreads = 0;
 static dmnsn_quality quality = DMNSN_RENDER_FULL;
 static int tokenize = 0, parse = 0;
 
@@ -93,8 +93,8 @@ main(int argc, char **argv) {
     case 'w':
       {
         char *endptr;
-        width = strtoul(optarg, &endptr, 10);
-        if (*endptr != '\0' || endptr == optarg) {
+        width = strtol(optarg, &endptr, 10);
+        if (*endptr != '\0' || endptr == optarg || width <= 0) {
           fprintf(stderr, "Invalid argument to --width!\n");
           print_usage(stderr, argv[0]);
           return EXIT_FAILURE;
@@ -104,8 +104,8 @@ main(int argc, char **argv) {
     case 'h':
       {
         char *endptr;
-        height = strtoul(optarg, &endptr, 10);
-        if (*endptr != '\0' || endptr == optarg) {
+        height = strtol(optarg, &endptr, 10);
+        if (*endptr != '\0' || endptr == optarg || height <= 0) {
           fprintf(stderr, "Invalid argument to --height!\n");
           print_usage(stderr, argv[0]);
           return EXIT_FAILURE;
@@ -116,8 +116,8 @@ main(int argc, char **argv) {
     case DMNSN_OPT_THREADS:
       {
         char *endptr;
-        nthreads = strtoul(optarg, &endptr, 10);
-        if (*endptr != '\0' || endptr == optarg) {
+        nthreads = strtol(optarg, &endptr, 10);
+        if (*endptr != '\0' || endptr == optarg || nthreads <= 0) {
           fprintf(stderr, "Invalid argument to --threads!\n");
           print_usage(stderr, argv[0]);
           return EXIT_FAILURE;
