@@ -1045,7 +1045,8 @@ dmnsn_yylex_cleanup(void *yyscanner)
     }
 
     dmnsn_token_buffer *prev = tbuffer->prev;
-    dmnsn_delete_token_buffer(tbuffer);
+    if (tbuffer->type != DMNSN_T_MACRO)
+      dmnsn_delete_token_buffer(tbuffer);
     tbuffer = prev;
   }
   dmnsn_yyset_extra(NULL, yyscanner);
