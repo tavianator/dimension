@@ -130,8 +130,13 @@ OBJECT: FINITE_SOLID_OBJECT
         } else {
           switch (object->type) {
           case DMNSN_AST_BOX:
-          case DMNSN_AST_SPHERE:
+          case DMNSN_AST_DIFFERENCE:
+          case DMNSN_AST_INTERSECTION:
           case DMNSN_AST_LIGHT_SOURCE:
+          case DMNSN_AST_MERGE:
+          case DMNSN_AST_PLANE:
+          case DMNSN_AST_SPHERE:
+          case DMNSN_AST_UNION:
             {
               dmnsn_delete_astnode($3);
 
