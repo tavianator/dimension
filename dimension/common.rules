@@ -176,6 +176,28 @@ OBJECT: FINITE_SOLID_OBJECT
           }
         }
       }
+      | "object" "{"
+          OBJECT
+          OBJECT_MODIFIERS
+        "}"
+      {
+        $$ = $3;
+
+        dmnsn_astnode modifiers;
+        dmnsn_array_get($$.children,
+                        dmnsn_array_size($$.children) - 1,
+                        &modifiers);
+
+        unsigned int i;
+        for (i = 0; i < dmnsn_array_size($4.children); ++i) {
+          dmnsn_astnode astnode;
+          dmnsn_array_get($4.children, i, &astnode);
+          ++*astnode.refcount;
+          dmnsn_array_push(modifiers.children, &astnode);
+        }
+
+        dmnsn_delete_astnode($4);
+      }
 ;
 
 FINITE_SOLID_OBJECT: BOX
