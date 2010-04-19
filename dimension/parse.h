@@ -165,8 +165,16 @@ typedef enum {
   DMNSN_AST_MACRO
 } dmnsn_astnode_type;
 
+typedef struct dmnsn_astnode dmnsn_astnode;
+
+typedef struct dmnsn_parse_location {
+  const char *first_filename, *last_filename;
+  int first_line, last_line;
+  int first_column, last_column;
+} dmnsn_parse_location;
+
 /* Abstract syntax tree node (a dmnsn_array* of these is an AST) */
-typedef struct dmnsn_astnode {
+struct dmnsn_astnode {
   dmnsn_astnode_type type;
 
   /* Child nodes */
@@ -180,9 +188,8 @@ typedef struct dmnsn_astnode {
   unsigned int *refcount;
 
   /* File name, and line and column numbers from source code */
-  const char *filename;
-  int line, col;
-} dmnsn_astnode;
+  dmnsn_parse_location location;
+};
 
 typedef dmnsn_array dmnsn_astree;
 
@@ -241,13 +248,6 @@ dmnsn_astree *dmnsn_parse_string(const char *str, dmnsn_symbol_table *symtable);
 /*
  * Parser internals
  */
-
-typedef struct dmnsn_parse_location {
-  const char *first_filename, *last_filename;
-  int first_line, last_line;
-  int first_column, last_column;
-} dmnsn_parse_location;
-
 typedef union dmnsn_parse_item {
   char *value;
   dmnsn_astnode astnode;

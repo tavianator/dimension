@@ -54,7 +54,8 @@
     lvalp->value = NULL;                                        \
     llocp->first_filename = llocp->last_filename = filename;    \
     llocp->first_line     = llocp->last_line     = yylineno;    \
-    llocp->first_column   = llocp->last_column   = yycolumn;    \
+    llocp->first_column   = yycolumn;                           \
+    llocp->last_column    = yycolumn + yyleng;                  \
   } while (0)
 
 #define CALCULATE_COLUMN() do { yycolumn += yyleng; } while (0)
@@ -296,9 +297,9 @@ unsigned long wchar;
 #[\b\r\t\v ]*while              RETURN_TOKEN(DMNSN_T_WHILE);
 #[\b\r\t\v ]*write              RETURN_TOKEN(DMNSN_T_WRITE);
 #[\b\r\t\v ]*[[:alnum:]_]*      {
-  dmnsn_diagnostic(filename, yylineno, yycolumn,
-                   "unrecognized language directive '%s'", yytext);
-  RETURN_TOKEN(DMNSN_T_LEX_ERROR);
+  NEW_TOKEN(DMNSN_T_LEX_ERROR);
+  dmnsn_diagnostic(*llocp, "unrecognized language directive '%s'", yytext);
+  RETURN();
 }
 
 (?# Identifiers)
@@ -334,8 +335,12 @@ unsigned long wchar;
   yy_pop_state(yyscanner);
 }
 <DMNSN_STRING_ESCAPE>.          {
-  dmnsn_diagnostic(filename, yylineno, yycolumn,
-                   "WARNING: unrecognised escape sequence '\\%c'",
+  dmnsn_parse_location location;
+  location.first_filename = location.last_filename = filename;
+  location.first_line     = location.last_line     = yylineno;
+  location.first_column   = yycolumn;
+  location.last_column    = yycolumn + yyleng;
+  dmnsn_diagnostic(location, "WARNING: unrecognised escape sequence '\\%c'",
                    (int)*yytext);
   STRCAT(yytext, yyleng);
   yy_pop_state(yyscanner);
@@ -347,10 +352,10 @@ unsigned long wchar;
 
 (?# Fall-through)
 .       {
-  dmnsn_diagnostic(filename, yylineno, yycolumn,
-                   "unrecognized character '%c' (0x%X)",
+  NEW_TOKEN(DMNSN_T_LEX_ERROR);
+  dmnsn_diagnostic(*llocp, "unrecognized character '%c' (0x%X)",
                    (int)*yytext, (unsigned int)(unsigned char)*yytext);
-  RETURN_TOKEN(DMNSN_T_LEX_ERROR);
+  RETURN();
 }
 
 %%

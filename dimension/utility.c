@@ -22,16 +22,24 @@
 #include <stdio.h>
 
 void
-dmnsn_diagnostic(const char *filename, int line, int col, const char *format,
-                 ...)
+dmnsn_diagnostic(dmnsn_parse_location location, const char *format, ...)
 {
   va_list ap;
   va_start(ap, format);
 
-  if (line >= 0 && col >= 0) {
-    fprintf(stderr, "%s:%d:%d: ", filename, line, col);
+  if (location.first_line >= 0 && location.first_column >= 0) {
+    if (location.first_line != location.last_line) {
+      fprintf(stderr, "%s:%d-%d: ", location.first_filename,
+              location.first_line, location.last_line);
+    } else if (location.first_column != location.last_column - 1) {
+      fprintf(stderr, "%s:%d:%d-%d: ", location.first_filename,
+              location.first_line, location.first_column, location.last_column);
+    } else {
+      fprintf(stderr, "%s:%d:%d: ", location.first_filename,
+              location.first_line, location.first_column);
+    }
   } else {
-    fprintf(stderr, "%s: ", filename);
+    fprintf(stderr, "%s: ", location.first_filename);
   }
   vfprintf(stderr, format, ap);
   fprintf(stderr, "\n");

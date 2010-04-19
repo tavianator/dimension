@@ -31,8 +31,7 @@ dmnsn_realize_integer(dmnsn_astnode astnode)
   case DMNSN_AST_INTEGER:
     return *(long *)astnode.ptr;
   case DMNSN_AST_FLOAT:
-    dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                     "WARNING: float rounded to integer");
+    dmnsn_diagnostic(astnode.location, "WARNING: float rounded to integer");
     return *(double *)astnode.ptr;
 
   default:
@@ -192,8 +191,7 @@ dmnsn_realize_global_settings(dmnsn_astnode astnode, dmnsn_scene *scene)
 
     switch (item.type) {
     case DMNSN_AST_ASSUMED_GAMMA:
-      dmnsn_diagnostic(item.filename, item.line, item.col,
-                       "WARNING: assumed_gamma not supported");
+      dmnsn_diagnostic(item.location, "WARNING: assumed_gamma not supported");
       break;
 
     case DMNSN_AST_MAX_TRACE_LEVEL:
@@ -758,7 +756,7 @@ dmnsn_realize_light_source_modifiers(dmnsn_astnode astnode, dmnsn_light *light)
     case DMNSN_AST_PIGMENT:
     case DMNSN_AST_FINISH:
     case DMNSN_AST_INTERIOR:
-      dmnsn_diagnostic(modifier.filename, modifier.line, modifier.col,
+      dmnsn_diagnostic(modifier.location,
                        "WARNING: ignoring %s applied to light source",
                        dmnsn_astnode_string(modifier.type));
       break;

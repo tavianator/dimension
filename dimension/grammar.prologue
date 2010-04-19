@@ -23,6 +23,5 @@ void
 yyerror(YYLTYPE *locp, const char *filename, void *yyscanner,
         dmnsn_astree *astree, dmnsn_symbol_table *symtable, const char *str)
 {
-  dmnsn_diagnostic(locp->first_filename, locp->first_line, locp->first_column,
-                   "%s", str);
+  dmnsn_diagnostic(*locp, "%s", str);
 }

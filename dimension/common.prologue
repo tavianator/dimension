@@ -38,12 +38,7 @@
       (Current).last_line      = YYRHSLOC(Rhs, N).last_line;            \
       (Current).last_column    = YYRHSLOC(Rhs, N).last_column;          \
     } else {                                                            \
-      (Current).first_filename = (Current).last_filename =              \
-        YYRHSLOC(Rhs, 0).last_filename;                                 \
-      (Current).first_line     = (Current).last_line     =              \
-        YYRHSLOC(Rhs, 0).last_line;                                     \
-      (Current).first_column   = (Current).last_column   =              \
-        YYRHSLOC(Rhs, 0).last_column;                                   \
+      (Current) = YYRHSLOC(Rhs, 0);                                     \
     }                                                                   \
   } while (0)
 
@@ -58,9 +53,7 @@ dmnsn_new_astnode(dmnsn_astnode_type type, YYLTYPE lloc)
     .ptr      = NULL,
     .free_fn  = NULL,
     .refcount = dmnsn_malloc(sizeof(unsigned int)),
-    .filename = lloc.first_filename,
-    .line     = lloc.first_line,
-    .col      = lloc.first_column
+    .location = lloc
   };
 
   *astnode.refcount = 1;

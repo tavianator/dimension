@@ -328,9 +328,7 @@ dmnsn_new_astnode(dmnsn_astnode_type type)
     .ptr      = NULL,
     .free_fn  = NULL,
     .refcount = dmnsn_malloc(sizeof(unsigned int)),
-    .filename = "<environment>",
-    .line     = -1,
-    .col      = -1,
+    .location = { "<environment>", "<environment>", -1, -1, -1, -1 }
   };
 
   *astnode.refcount = 0;
@@ -491,9 +489,7 @@ dmnsn_copy_astnode(dmnsn_astnode astnode)
     .children = dmnsn_new_array(sizeof(dmnsn_astnode)),
     .ptr      = NULL,
     .refcount = dmnsn_malloc(sizeof(unsigned int)),
-    .filename = astnode.filename,
-    .line     = astnode.line,
-    .col      = astnode.col
+    .location = astnode.location
   };
 
   *copy.refcount = 1;
@@ -600,8 +596,7 @@ dmnsn_eval_zeroary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     break;
 
   default:
-    dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                     "invalid constant '%s'",
+    dmnsn_diagnostic(astnode.location, "invalid constant '%s'",
                      dmnsn_astnode_string(astnode.type));
     ret.type = DMNSN_AST_NONE;
     break;
@@ -797,8 +792,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       }
 
     default:
-      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                       "invalid unary operator '%s' on %s",
+      dmnsn_diagnostic(astnode.location, "invalid unary operator '%s' on %s",
                        dmnsn_astnode_string(astnode.type),
                        dmnsn_astnode_string(rhs.type));
       ret.type = DMNSN_AST_NONE;
@@ -902,8 +896,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       }
 
     default:
-      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                       "invalid unary operator '%s' on %s",
+      dmnsn_diagnostic(astnode.location, "invalid unary operator '%s' on %s",
                        dmnsn_astnode_string(astnode.type),
                        dmnsn_astnode_string(rhs.type));
       ret.type = DMNSN_AST_NONE;
@@ -926,8 +919,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         if (*endptr != '\0' || endptr == rhs.ptr) {
           double d = strtod(rhs.ptr, &endptr);
           if (*endptr != '\0' || endptr == rhs.ptr) {
-            dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                             "invalid numeric string '%s'",
+            dmnsn_diagnostic(astnode.location, "invalid numeric string '%s'",
                              (const char *)rhs.ptr);
             ret.type = DMNSN_AST_NONE;
           } else {
@@ -940,16 +932,14 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       }
 
     default:
-      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                       "invalid unary operator '%s' on %s",
+      dmnsn_diagnostic(astnode.location, "invalid unary operator '%s' on %s",
                        dmnsn_astnode_string(astnode.type),
                        dmnsn_astnode_string(rhs.type));
       ret.type = DMNSN_AST_NONE;
       break;
     }
   } else {
-    dmnsn_diagnostic(rhs.filename, rhs.line, rhs.col,
-                     "expected %s or %s or %s; found %s",
+    dmnsn_diagnostic(rhs.location, "expected %s or %s or %s; found %s",
                      dmnsn_astnode_string(DMNSN_AST_INTEGER),
                      dmnsn_astnode_string(DMNSN_AST_FLOAT),
                      dmnsn_astnode_string(DMNSN_AST_STRING),
@@ -1134,7 +1124,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     case DMNSN_AST_LESS_EQUAL:
     case DMNSN_AST_GREATER:
     case DMNSN_AST_GREATER_EQUAL:
-      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+      dmnsn_diagnostic(astnode.location,
                        "invalid comparison operator '%s' between vectors",
                        dmnsn_astnode_string(astnode.type));
       ret = dmnsn_copy_astnode(astnode);
@@ -1317,7 +1307,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
 
     default:
-      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+      dmnsn_diagnostic(astnode.location,
                        "invalid binary operator '%s' on %s and %s",
                        dmnsn_astnode_string(astnode.type),
                        dmnsn_astnode_string(lhs.type),
@@ -1344,8 +1334,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
     case DMNSN_AST_DIV:
       if (r == 0) {
-        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                         "WARNING: division by zero");
+        dmnsn_diagnostic(astnode.location, "WARNING: division by zero");
         dmnsn_make_ast_float(&ret, (double)l/0.0);
       } else if (l%r == 0) {
         dmnsn_make_ast_integer(&ret, l/r);
@@ -1384,8 +1373,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
     case DMNSN_AST_INT_DIV:
       if (r == 0) {
-        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                         "WARNING: division by zero");
+        dmnsn_diagnostic(astnode.location, "WARNING: division by zero");
         dmnsn_make_ast_float(&ret, (double)l/0.0);
       } else {
         dmnsn_make_ast_integer(&ret, l/r);
@@ -1399,8 +1387,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
     case DMNSN_AST_MOD:
       if (r == 0) {
-        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                         "WARNING: division by zero");
+        dmnsn_diagnostic(astnode.location, "WARNING: division by zero");
         dmnsn_make_ast_float(&ret, fmod(l, 0.0));
       } else {
         dmnsn_make_ast_integer(&ret, l%r);
@@ -1424,7 +1411,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
 
     default:
-      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+      dmnsn_diagnostic(astnode.location,
                        "invalid binary operator '%s' on %s and %s",
                        dmnsn_astnode_string(astnode.type),
                        dmnsn_astnode_string(lhs.type),
@@ -1442,8 +1429,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     } else if (lhs.type == DMNSN_AST_FLOAT) {
       l = *(double *)lhs.ptr;
     } else {
-      dmnsn_diagnostic(lhs.filename, lhs.line, lhs.col,
-                       "expected %s or %s; found %s",
+      dmnsn_diagnostic(lhs.location, "expected %s or %s; found %s",
                        dmnsn_astnode_string(DMNSN_AST_INTEGER),
                        dmnsn_astnode_string(DMNSN_AST_FLOAT),
                        dmnsn_astnode_string(lhs.type));
@@ -1458,8 +1444,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     } else if (rhs.type == DMNSN_AST_FLOAT) {
       r = *(double *)rhs.ptr;
     } else {
-      dmnsn_diagnostic(rhs.filename, rhs.line, rhs.col,
-                       "expected %s or %s; found %s",
+      dmnsn_diagnostic(rhs.location, "expected %s or %s; found %s",
                        dmnsn_astnode_string(DMNSN_AST_INTEGER),
                        dmnsn_astnode_string(DMNSN_AST_FLOAT),
                        dmnsn_astnode_string(rhs.type));
@@ -1480,10 +1465,8 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, l*r);
       break;
     case DMNSN_AST_DIV:
-      if (r == 0.0) {
-        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                         "WARNING: division by zero");
-      }
+      if (r == 0.0)
+        dmnsn_diagnostic(astnode.location, "WARNING: division by zero");
       dmnsn_make_ast_float(&ret, l/r);
       break;
 
@@ -1518,10 +1501,8 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, atan2(l, r));
       break;
     case DMNSN_AST_INT_DIV:
-      if (r == 0.0) {
-        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                         "WARNING: division by zero");
-      }
+      if (r == 0.0)
+        dmnsn_diagnostic(astnode.location, "WARNING: division by zero");
       dmnsn_make_ast_maybe_integer(&ret, trunc(l/r));
       break;
     case DMNSN_AST_MAX:
@@ -1555,10 +1536,8 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       }
       break;
     case DMNSN_AST_MOD:
-      if (r == 0.0) {
-        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                         "WARNING: division by zero");
-      }
+      if (r == 0.0)
+        dmnsn_diagnostic(astnode.location, "WARNING: division by zero");
       dmnsn_make_ast_float(&ret, fmod(l, r));
       break;
     case DMNSN_AST_POW:
@@ -1579,7 +1558,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
 
     default:
-      dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+      dmnsn_diagnostic(astnode.location,
                        "invalid binary operator '%s' on %s and %s",
                        dmnsn_astnode_string(astnode.type),
                        dmnsn_astnode_string(lhs.type),
@@ -1611,8 +1590,7 @@ dmnsn_eval_ternary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     break;
 
   default:
-    dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                     "invalid ternary operator '%s'",
+    dmnsn_diagnostic(astnode.location, "invalid ternary operator '%s'",
                      dmnsn_astnode_string(astnode.type));
     ret = dmnsn_copy_astnode(astnode);
     ret.type = DMNSN_AST_NONE;
@@ -1644,13 +1622,11 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_astnode *symbol = dmnsn_find_symbol(symtable, astnode.ptr);
       if (symbol) {
         dmnsn_astnode id = *symbol;
-        id.filename = astnode.filename;
-        id.line     = astnode.line;
-        id.col      = astnode.col;
+        id.location = astnode.location;
         return dmnsn_eval(id, symtable);
       } else {
-        dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
-                         "unbound identifier '%s'", (const char *)astnode.ptr);
+        dmnsn_diagnostic(astnode.location, "unbound identifier '%s'",
+                         (const char *)astnode.ptr);
         dmnsn_astnode error = dmnsn_new_astnode(DMNSN_AST_NONE);
         ++*error.refcount;
         return error;
@@ -1731,7 +1707,7 @@ dmnsn_eval(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     return dmnsn_eval_ternary(astnode, symtable);
 
   default:
-    dmnsn_diagnostic(astnode.filename, astnode.line, astnode.col,
+    dmnsn_diagnostic(astnode.location,
                      "expected arithmetic expression; found %s",
                      dmnsn_astnode_string(astnode.type));
     dmnsn_astnode error = dmnsn_new_astnode(DMNSN_AST_NONE);
@@ -1749,8 +1725,7 @@ dmnsn_eval_scalar(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   if (ret.type != DMNSN_AST_INTEGER && ret.type != DMNSN_AST_FLOAT
       && ret.type != DMNSN_AST_NONE)
   {
-    dmnsn_diagnostic(ret.filename, ret.line, ret.col,
-                     "expected %s or %s; found %s",
+    dmnsn_diagnostic(ret.location, "expected %s or %s; found %s",
                      dmnsn_astnode_string(DMNSN_AST_INTEGER),
                      dmnsn_astnode_string(DMNSN_AST_FLOAT),
                      dmnsn_astnode_string(ret.type));

@@ -101,9 +101,7 @@ dmnsn_buffer_balanced(dmnsn_token_buffer *tbuffer, bool recursive,
     }
 
     if (buffered.type == DMNSN_T_EOF) {
-      dmnsn_diagnostic(buffered.lloc.first_filename, buffered.lloc.first_line,
-                       buffered.lloc.first_column,
-                       "syntax error, unexpected end-of-file");
+      dmnsn_diagnostic(buffered.lloc, "syntax error, unexpected end-of-file");
       return 1;
     } else if (buffered.type == DMNSN_T_LEX_ERROR) {
       return 1;
@@ -143,9 +141,7 @@ dmnsn_buffer_strexp(dmnsn_token_buffer *tbuffer, bool recursive,
   }
 
   if (buffered.type == DMNSN_T_EOF) {
-    dmnsn_diagnostic(buffered.lloc.first_filename, buffered.lloc.first_line,
-                     buffered.lloc.first_column,
-                     "syntax error, unexpected end-of-file");
+    dmnsn_diagnostic(buffered.lloc, "syntax error, unexpected end-of-file");
     return 1;
   } else if (buffered.type == DMNSN_T_LEX_ERROR) {
     return 1;
@@ -229,9 +225,7 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
 
   FILE *file = fopen(local_include, "r");
   if (!file) {
-    dmnsn_diagnostic(llocp->first_filename, llocp->first_line,
-                     llocp->first_column,
-                     "Couldn't open include file '%s'", include);
+    dmnsn_diagnostic(*llocp, "Couldn't open include file '%s'", include);
     dmnsn_undef_symbol(symtable, "$include");
     free(local_include);
     dmnsn_delete_token_buffer(tbuffer);
@@ -241,9 +235,7 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
 
   void *buffer = dmnsn_yy_make_buffer(file, yyscanner);
   if (!buffer) {
-    dmnsn_diagnostic(llocp->first_filename, llocp->first_line,
-                     llocp->first_column,
-                     "Couldn't allocate buffer for include file '%s'",
+    dmnsn_diagnostic(*llocp, "Couldn't allocate buffer for include file '%s'",
                      include);
     dmnsn_undef_symbol(symtable, "$include");
     fclose(file);
@@ -300,9 +292,7 @@ dmnsn_declaration_buffer(int token, dmnsn_token_buffer *prev,
                                 filename, symtable, yyscanner);
 
     if (buffered.type == DMNSN_T_EOF) {
-      dmnsn_diagnostic(filename, buffered.lloc.first_line,
-                       buffered.lloc.first_column,
-                       "syntax error, unexpected end-of-file");
+      dmnsn_diagnostic(buffered.lloc, "syntax error, unexpected end-of-file");
       dmnsn_delete_token_buffer(tbuffer);
       return NULL;
     } else if (buffered.type == DMNSN_T_LEX_ERROR) {
@@ -357,9 +347,7 @@ dmnsn_undef_buffer(int token, dmnsn_token_buffer *prev,
                               filename, symtable, yyscanner);
 
   if (buffered.type == DMNSN_T_EOF) {
-    dmnsn_diagnostic(filename, buffered.lloc.first_line,
-                     buffered.lloc.first_column,
-                     "syntax error, unexpected end-of-file");
+    dmnsn_diagnostic(buffered.lloc, "syntax error, unexpected end-of-file");
     dmnsn_delete_token_buffer(tbuffer);
     return NULL;
   } else if (buffered.type == DMNSN_T_LEX_ERROR) {
@@ -441,9 +429,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
                                         filename, symtable, yyscanner);
 
     if (buffered.type == DMNSN_T_EOF) {
-      dmnsn_diagnostic(filename, buffered.lloc.first_line,
-                       buffered.lloc.first_column,
-                       "syntax error, unexpected end-of-file");
+      dmnsn_diagnostic(buffered.lloc, "syntax error, unexpected end-of-file");
       dmnsn_delete_token_buffer(tbuffer);
       return NULL;
     }
@@ -472,9 +458,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
       if (else_seen
           || (tbuffer->prev && tbuffer->prev->type == DMNSN_T_WHILE))
       {
-        dmnsn_diagnostic(filename, buffered.lloc.first_line,
-                         buffered.lloc.first_column,
-                         "syntax error, unexpected #else");
+        dmnsn_diagnostic(buffered.lloc, "syntax error, unexpected #else");
         dmnsn_delete_token_buffer(tbuffer);
         return NULL;
       } else {
@@ -518,9 +502,7 @@ dmnsn_while_buffer(int token, dmnsn_token_buffer *prev,
                                         filename, symtable, yyscanner);
 
     if (buffered.type == DMNSN_T_EOF) {
-      dmnsn_diagnostic(filename, buffered.lloc.first_line,
-                       buffered.lloc.first_column,
-                       "syntax error, unexpected end-of-file");
+      dmnsn_diagnostic(buffered.lloc, "syntax error, unexpected end-of-file");
       dmnsn_delete_token_buffer(tbuffer);
       return NULL;
     }
@@ -576,9 +558,7 @@ dmnsn_version_buffer(int token, dmnsn_token_buffer *prev,
                                 filename, symtable, yyscanner);
 
     if (buffered.type == DMNSN_T_EOF) {
-      dmnsn_diagnostic(filename, buffered.lloc.first_line,
-                       buffered.lloc.first_column,
-                       "syntax error, unexpected end-of-file");
+      dmnsn_diagnostic(buffered.lloc, "syntax error, unexpected end-of-file");
       dmnsn_delete_token_buffer(tbuffer);
       return NULL;
     } else if (buffered.type == DMNSN_T_LEX_ERROR) {
@@ -688,9 +668,7 @@ dmnsn_declare_macro(int token, dmnsn_token_buffer *prev,
                                         filename, symtable, yyscanner);
 
     if (buffered.type == DMNSN_T_EOF) {
-      dmnsn_diagnostic(filename, buffered.lloc.first_line,
-                       buffered.lloc.first_column,
-                       "syntax error, unexpected end-of-file");
+      dmnsn_diagnostic(buffered.lloc, "syntax error, unexpected end-of-file");
       dmnsn_delete_token_buffer(tbuffer);
       return false;
     }

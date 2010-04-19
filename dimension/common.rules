@@ -121,10 +121,7 @@ OBJECT: FINITE_SOLID_OBJECT
       {
         dmnsn_astnode *object = dmnsn_find_symbol(symtable, $3.ptr);
         if (!object) {
-          dmnsn_diagnostic(@3.first_filename, @3.first_line,
-                           @3.first_column,
-                           "unbound identifier '%s'",
-                           (const char *)$3.ptr);
+          dmnsn_diagnostic(@3, "unbound identifier '%s'", (const char *)$3.ptr);
           dmnsn_delete_astnode($3);
           YYERROR;
         } else {
@@ -165,8 +162,7 @@ OBJECT: FINITE_SOLID_OBJECT
             }
 
           default:
-            dmnsn_diagnostic(@3.first_filename, @3.first_line,
-                             @3.first_column,
+            dmnsn_diagnostic(@3,
                              "identifier '%s' is a %s; expected an object type",
                              (const char *)$3.ptr,
                              dmnsn_astnode_string(object->type));
@@ -844,9 +840,7 @@ COLOR_KEYWORD_GROUP_INIT: /* empty */ {
 COLOR_KEYWORD_ITEM: IDENTIFIER {
                     dmnsn_astnode *symbol = dmnsn_find_symbol(symtable, $1.ptr);
                     if (!symbol) {
-                      dmnsn_diagnostic(@1.first_filename, @1.first_line,
-                                       @1.first_column,
-                                       "unbound identifier '%s'",
+                      dmnsn_diagnostic(@1, "unbound identifier '%s'",
                                        (const char *)$1.ptr);
                       dmnsn_delete_astnode($1);
                       YYERROR;

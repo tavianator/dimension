@@ -17,6 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+#ifndef UTILITY_H
+#define UTILITY_H
+
+#include "parse.h" /* For dmnsn_parse_location */
+
 #if defined(__GNUC__) || defined(__attribute__)
   #define DMNSN_PRINTF_WARN(f, a) __attribute__((format (printf, f, a)))
 #else
@@ -24,6 +29,7 @@
 #endif
 
 /* Print a parsing diagnostic to stderr */
-void dmnsn_diagnostic(const char *filename, int line, int col,
-                      const char *format, ...)
-  DMNSN_PRINTF_WARN(4, 5);
+void dmnsn_diagnostic(dmnsn_parse_location location, const char *format, ...)
+  DMNSN_PRINTF_WARN(2, 3);
+
+#endif /* UTILITY_H */
