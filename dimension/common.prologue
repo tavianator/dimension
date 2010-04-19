@@ -37,6 +37,7 @@
       (Current).last_filename  = YYRHSLOC(Rhs, N).last_filename;        \
       (Current).last_line      = YYRHSLOC(Rhs, N).last_line;            \
       (Current).last_column    = YYRHSLOC(Rhs, N).last_column;          \
+      (Current).parent         = YYRHSLOC(Rhs, 1).parent;               \
     } else {                                                            \
       (Current) = YYRHSLOC(Rhs, 0);                                     \
     }                                                                   \

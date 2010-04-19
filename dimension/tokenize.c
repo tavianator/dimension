@@ -35,6 +35,7 @@ typedef struct dmnsn_token_buffer {
   /* Indicate that the first token should be returned as-is */
   #define DMNSN_T_LEX_VERBATIM DMNSN_T_EOF
 
+  dmnsn_parse_location lloc;
   dmnsn_array *buffered;
   unsigned int i;
 
@@ -45,11 +46,13 @@ typedef struct dmnsn_token_buffer {
 } dmnsn_token_buffer;
 
 static dmnsn_token_buffer *
-dmnsn_new_token_buffer(int type, dmnsn_token_buffer *prev, const char *filename)
+dmnsn_new_token_buffer(dmnsn_parse_location lloc, int type,
+                       dmnsn_token_buffer *prev, const char *filename)
 {
   dmnsn_token_buffer *tbuffer = dmnsn_malloc(sizeof(dmnsn_token_buffer));
 
   tbuffer->type = type;
+  tbuffer->lloc = lloc;
   tbuffer->buffered = dmnsn_new_array(sizeof(dmnsn_buffered_token));
   tbuffer->i = 0;
   tbuffer->prev = prev;
@@ -175,7 +178,7 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
                      void *yyscanner)
 {
   dmnsn_token_buffer *include_buffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+    = dmnsn_new_token_buffer(*llocp, DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -208,7 +211,8 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
   dmnsn_yyset_extra(include_buffer->prev, yyscanner);
   dmnsn_delete_token_buffer(include_buffer);
 
-  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev, filename);
+  dmnsn_token_buffer *tbuffer
+    = dmnsn_new_token_buffer(*llocp, token, prev, filename);
 
   dmnsn_astnode *inode = dmnsn_find_symbol(symtable, "$include");
   dmnsn_assert(inode, "$include unset.");
@@ -273,7 +277,7 @@ dmnsn_declaration_buffer(int token, dmnsn_token_buffer *prev,
                          void *yyscanner)
 {
   dmnsn_token_buffer *tbuffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+    = dmnsn_new_token_buffer(*llocp, DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -332,7 +336,7 @@ dmnsn_undef_buffer(int token, dmnsn_token_buffer *prev,
                    void *yyscanner)
 {
   dmnsn_token_buffer *tbuffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+    = dmnsn_new_token_buffer(*llocp, DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -372,7 +376,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
                 void *yyscanner)
 {
   dmnsn_token_buffer *cond_buffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+    = dmnsn_new_token_buffer(*llocp, DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -406,7 +410,8 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
   dmnsn_yyset_extra(cond_buffer->prev, yyscanner);
   dmnsn_delete_token_buffer(cond_buffer);
 
-  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev, filename);
+  dmnsn_token_buffer *tbuffer
+    = dmnsn_new_token_buffer(*llocp, token, prev, filename);
 
   dmnsn_astnode *cnode = dmnsn_find_symbol(symtable, "$cond");
   dmnsn_assert(cnode, "$cond unset.");
@@ -484,7 +489,8 @@ dmnsn_while_buffer(int token, dmnsn_token_buffer *prev,
                    const char *filename, dmnsn_symbol_table *symtable,
                    void *yyscanner)
 {
-  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, prev, filename);
+  dmnsn_token_buffer *tbuffer
+    = dmnsn_new_token_buffer(*llocp, token, prev, filename);
 
   /* Pretend to be an if */
   dmnsn_buffered_token buffered = {
@@ -542,7 +548,7 @@ dmnsn_version_buffer(int token, dmnsn_token_buffer *prev,
                      void *yyscanner)
 {
   dmnsn_token_buffer *tbuffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+    = dmnsn_new_token_buffer(*llocp, DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -584,7 +590,7 @@ dmnsn_stream_buffer(int token, dmnsn_token_buffer *prev,
                     void *yyscanner)
 {
   dmnsn_token_buffer *tbuffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+    = dmnsn_new_token_buffer(*llocp, DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -617,7 +623,7 @@ dmnsn_declare_macro(int token, dmnsn_token_buffer *prev,
                     void *yyscanner)
 {
   dmnsn_token_buffer *decl_buffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+    = dmnsn_new_token_buffer(*llocp, DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -651,7 +657,8 @@ dmnsn_declare_macro(int token, dmnsn_token_buffer *prev,
   dmnsn_yyset_extra(decl_buffer->prev, yyscanner);
   dmnsn_delete_token_buffer(decl_buffer);
 
-  dmnsn_token_buffer *tbuffer = dmnsn_new_token_buffer(token, NULL, filename);
+  dmnsn_token_buffer *tbuffer
+    = dmnsn_new_token_buffer(*llocp, token, NULL, filename);
 
   dmnsn_astnode *mname = dmnsn_find_symbol(symtable, "$macro");
   dmnsn_assert(mname, "$macro unset.");
@@ -709,7 +716,7 @@ dmnsn_macro_buffer(int token, dmnsn_astnode *mnode, dmnsn_token_buffer *prev,
                    void *yyscanner)
 {
   dmnsn_token_buffer *invoke_buffer
-    = dmnsn_new_token_buffer(DMNSN_T_LEX_VERBATIM, prev, filename);
+    = dmnsn_new_token_buffer(*llocp, DMNSN_T_LEX_VERBATIM, prev, filename);
 
   /* Buffer the current token */
   dmnsn_buffered_token buffered = {
@@ -745,6 +752,7 @@ dmnsn_macro_buffer(int token, dmnsn_astnode *mnode, dmnsn_token_buffer *prev,
   dmnsn_delete_token_buffer(invoke_buffer);
 
   dmnsn_token_buffer *tbuffer = mnode->ptr;
+  tbuffer->lloc = *llocp;
   tbuffer->i    = 0;
   tbuffer->prev = prev;
   return tbuffer;
@@ -800,17 +808,25 @@ dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
     }
 
     *llocp = buffered.lloc;
+    if (tbuffer->type == DMNSN_T_MACRO)
+      llocp->parent = &tbuffer->lloc;
     ++tbuffer->i;
   } else {
     const char *real_filename = tbuffer ? tbuffer->filename : filename;
     token = dmnsn_yylex_impl(lvalp, llocp, real_filename, yyscanner);
-    if (token == DMNSN_T_EOF && tbuffer && tbuffer->type == DMNSN_T_INCLUDE) {
-      dmnsn_yy_pop_buffer(yyscanner);
-      fclose(tbuffer->ptr);
-      dmnsn_pop_scope(symtable);
-      dmnsn_yyset_extra(tbuffer->prev, yyscanner);
-      dmnsn_delete_token_buffer(tbuffer);
-      return dmnsn_yylex_wrapper(lvalp, llocp, filename, symtable, yyscanner);
+
+    if (tbuffer && tbuffer->type == DMNSN_T_INCLUDE) {
+      if (token == DMNSN_T_EOF) {
+        dmnsn_yy_pop_buffer(yyscanner);
+        fclose(tbuffer->ptr);
+        dmnsn_pop_scope(symtable);
+        dmnsn_yyset_extra(tbuffer->prev, yyscanner);
+        dmnsn_delete_token_buffer(tbuffer);
+        return dmnsn_yylex_wrapper(lvalp, llocp, filename, symtable,
+                                   yyscanner);
+      } else {
+        llocp->parent = &tbuffer->lloc;
+      }
     }
   }
 

@@ -45,4 +45,8 @@ dmnsn_diagnostic(dmnsn_parse_location location, const char *format, ...)
   fprintf(stderr, "\n");
 
   va_end(ap);
+
+  if (location.parent) {
+    dmnsn_diagnostic(*location.parent, "-- from here");
+  }
 }

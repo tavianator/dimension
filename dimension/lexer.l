@@ -56,6 +56,7 @@
     llocp->first_line     = llocp->last_line     = yylineno;    \
     llocp->first_column   = yycolumn;                           \
     llocp->last_column    = yycolumn + yyleng;                  \
+    llocp->parent         = NULL;                               \
   } while (0)
 
 #define CALCULATE_COLUMN() do { yycolumn += yyleng; } while (0)

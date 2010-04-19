@@ -21,6 +21,7 @@
 #include "parse.h"
 #include "utility.h"
 #include <math.h>
+#include <fenv.h>
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -31,8 +32,13 @@ dmnsn_realize_integer(dmnsn_astnode astnode)
   case DMNSN_AST_INTEGER:
     return *(long *)astnode.ptr;
   case DMNSN_AST_FLOAT:
-    dmnsn_diagnostic(astnode.location, "WARNING: float rounded to integer");
-    return *(double *)astnode.ptr;
+    {
+      feclearexcept(FE_ALL_EXCEPT);
+      long ret = lrint(*(double *)astnode.ptr);
+      if (fetestexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW))
+        dmnsn_error(DMNSN_SEVERITY_HIGH, "Float out of range of integer.");
+      return ret;
+    }
 
   default:
     dmnsn_assert(false, "Invalid integer.");
@@ -191,7 +197,7 @@ dmnsn_realize_global_settings(dmnsn_astnode astnode, dmnsn_scene *scene)
 
     switch (item.type) {
     case DMNSN_AST_ASSUMED_GAMMA:
-      dmnsn_diagnostic(item.location, "WARNING: assumed_gamma not supported");
+      /* assumed_gamma not supported */
       break;
 
     case DMNSN_AST_MAX_TRACE_LEVEL:
@@ -756,9 +762,7 @@ dmnsn_realize_light_source_modifiers(dmnsn_astnode astnode, dmnsn_light *light)
     case DMNSN_AST_PIGMENT:
     case DMNSN_AST_FINISH:
     case DMNSN_AST_INTERIOR:
-      dmnsn_diagnostic(modifier.location,
-                       "WARNING: ignoring %s applied to light source",
-                       dmnsn_astnode_string(modifier.type));
+      /* Ignore other object modifiers */
       break;
 
     default:

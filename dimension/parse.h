@@ -171,6 +171,8 @@ typedef struct dmnsn_parse_location {
   const char *first_filename, *last_filename;
   int first_line, last_line;
   int first_column, last_column;
+
+  struct dmnsn_parse_location *parent;
 } dmnsn_parse_location;
 
 /* Abstract syntax tree node (a dmnsn_array* of these is an AST) */

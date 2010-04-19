@@ -477,6 +477,14 @@ FLOAT: ARITH_EXPR {
      }
 ;
 
+INT: FLOAT {
+     $$ = $1;
+     if ($$.type == DMNSN_AST_FLOAT) {
+       dmnsn_diagnostic(@$, "WARNING: float rounded to integer");
+     }
+   }
+;
+
 FLOAT_LITERAL: "integer" {
                $$ = dmnsn_new_astnode(DMNSN_AST_INTEGER, @$);
                $$.ptr = dmnsn_malloc(sizeof(long));

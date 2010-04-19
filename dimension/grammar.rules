@@ -56,9 +56,11 @@ GLOBAL_SETTINGS_ITEMS: /* empty */ {
 ;
 
 GLOBAL_SETTINGS_ITEM: "assumed_gamma" FLOAT {
+                      dmnsn_diagnostic(@1,
+                                       "WARNING: assumed_gamma not supported");
                       $$ = dmnsn_new_astnode1(DMNSN_AST_ASSUMED_GAMMA, @$, $2);
                     }
-                    | "max_trace_level" FLOAT {
+                    | "max_trace_level" INT {
                       $$ = dmnsn_new_astnode1(DMNSN_AST_MAX_TRACE_LEVEL,
                                               @$, $2);
                     }

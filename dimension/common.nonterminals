@@ -75,6 +75,7 @@
 
 /* Floats */
 %type <astnode> FLOAT
+%type <astnode> INT
 %type <astnode> FLOAT_LITERAL
 
 /* Vectors */
