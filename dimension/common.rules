@@ -123,53 +123,55 @@ OBJECT: FINITE_SOLID_OBJECT
         if (!object) {
           dmnsn_diagnostic(@3, "unbound identifier '%s'", (const char *)$3.ptr);
           dmnsn_delete_astnode($3);
+          dmnsn_delete_astnode($4);
           YYERROR;
-        } else {
-          switch (object->type) {
-          case DMNSN_AST_BOX:
-          case DMNSN_AST_DIFFERENCE:
-          case DMNSN_AST_INTERSECTION:
-          case DMNSN_AST_LIGHT_SOURCE:
-          case DMNSN_AST_MERGE:
-          case DMNSN_AST_PLANE:
-          case DMNSN_AST_SPHERE:
-          case DMNSN_AST_UNION:
-            {
-              dmnsn_delete_astnode($3);
+        }
 
-              $$ = dmnsn_new_astnode(object->type, @$);
-              dmnsn_copy_children($$, *object);
-
-              dmnsn_astnode *modifiers, orig_modifiers;
-              modifiers = dmnsn_array_at($$.children,
-                                         dmnsn_array_size($$.children) - 1);
-              dmnsn_array_get(object->children,
-                              dmnsn_array_size(object->children) - 1,
-                              &orig_modifiers);
-              dmnsn_delete_astnode(*modifiers);
-              *modifiers = dmnsn_new_astnode(DMNSN_AST_OBJECT_MODIFIERS, @4);
-              dmnsn_copy_children(*modifiers, orig_modifiers);
-
-              unsigned int i;
-              for (i = 0; i < dmnsn_array_size($4.children); ++i) {
-                dmnsn_astnode astnode;
-                dmnsn_array_get($4.children, i, &astnode);
-                ++*astnode.refcount;
-                dmnsn_array_push(modifiers->children, &astnode);
-              }
-              dmnsn_delete_astnode($4);
-              break;
-            }
-
-          default:
-            dmnsn_diagnostic(@3,
-                             "identifier '%s' is a %s; expected an object type",
-                             (const char *)$3.ptr,
-                             dmnsn_astnode_string(object->type));
+        switch (object->type) {
+        case DMNSN_AST_BOX:
+        case DMNSN_AST_DIFFERENCE:
+        case DMNSN_AST_INTERSECTION:
+        case DMNSN_AST_LIGHT_SOURCE:
+        case DMNSN_AST_MERGE:
+        case DMNSN_AST_PLANE:
+        case DMNSN_AST_SPHERE:
+        case DMNSN_AST_UNION:
+          {
             dmnsn_delete_astnode($3);
-            YYERROR;
+
+            $$ = dmnsn_new_astnode(object->type, @$);
+            dmnsn_copy_children($$, *object);
+
+            dmnsn_astnode *modifiers, orig_modifiers;
+            modifiers = dmnsn_array_at($$.children,
+                                       dmnsn_array_size($$.children) - 1);
+            dmnsn_array_get(object->children,
+                            dmnsn_array_size(object->children) - 1,
+                            &orig_modifiers);
+            dmnsn_delete_astnode(*modifiers);
+            *modifiers = dmnsn_new_astnode(DMNSN_AST_OBJECT_MODIFIERS, @4);
+            dmnsn_copy_children(*modifiers, orig_modifiers);
+
+            unsigned int i;
+            for (i = 0; i < dmnsn_array_size($4.children); ++i) {
+              dmnsn_astnode astnode;
+              dmnsn_array_get($4.children, i, &astnode);
+              ++*astnode.refcount;
+              dmnsn_array_push(modifiers->children, &astnode);
+            }
+            dmnsn_delete_astnode($4);
             break;
           }
+
+        default:
+          dmnsn_diagnostic(@3,
+                           "identifier '%s' is a %s; expected an object type",
+                           (const char *)$3.ptr,
+                           dmnsn_astnode_string(object->type));
+          dmnsn_delete_astnode($3);
+          dmnsn_delete_astnode($4);
+          YYERROR;
+          break;
         }
       }
       | "object" "{"
@@ -279,6 +281,7 @@ OBJECTS: OBJECT {
          $$ = $1;
          dmnsn_array_push($$.children, &$2);
        }
+;
 
 LIGHT_SOURCE: "light_source" "{"
                 VECTOR "," COLOR
