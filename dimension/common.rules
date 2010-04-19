@@ -446,7 +446,7 @@ REFLECTION_ITEMS: /* empty */ {
                 }
 ;
 
-/* Interiores */
+/* Interiors */
 INTERIOR: "interior" "{"
             INTERIOR_ITEMS
           "}"
