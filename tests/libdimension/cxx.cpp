@@ -18,6 +18,7 @@
  *************************************************************************/
 
 #include "tests.h"
+#include <cstdlib>
 
 /*
  * Ensure that dimension.h can be included in a C++ program and behave properly.

@@ -22,6 +22,7 @@
 #include "utility.h"
 #include <libgen.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 typedef struct dmnsn_buffered_token {

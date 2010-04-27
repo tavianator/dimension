@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <stdlib.h>
 
 static void
 dmnsn_csg_free_fn(void *ptr)

@@ -19,8 +19,9 @@
 
 #include "parse.h"
 #include "utility.h"
-#include <math.h>
 #include <fenv.h>
+#include <math.h>
+#include <stdlib.h>
 
 /*
  * Symbol table

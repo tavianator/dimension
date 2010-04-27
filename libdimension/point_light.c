@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <stdlib.h>
 
 /*
  * Point light source

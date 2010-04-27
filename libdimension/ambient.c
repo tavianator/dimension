@@ -20,6 +20,7 @@
 
 #include "dimension.h"
 #include <math.h>
+#include <stdlib.h>
 
 /*
  * Ambient finish

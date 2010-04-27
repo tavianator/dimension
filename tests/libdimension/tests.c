@@ -18,6 +18,7 @@
  *************************************************************************/
 
 #include "tests.h"
+#include <stdlib.h>
 
 dmnsn_scene *
 dmnsn_new_default_scene()

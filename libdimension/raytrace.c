@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension_impl.h"
+#include <stdlib.h>
 
 /*
  * Boilerplate for multithreading

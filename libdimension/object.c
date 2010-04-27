@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
+#include <stdlib.h>
 
 dmnsn_vector
 dmnsn_transform_normal(dmnsn_matrix trans, dmnsn_vector normal)

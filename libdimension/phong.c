@@ -19,7 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <math.h>
+#include <stdlib.h>
 
 /*
  * Phong finish
