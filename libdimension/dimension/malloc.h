@@ -24,7 +24,7 @@
  * way except it calls dmnsn_error() on failure.
  */
 
-#include <stdlib.h> /* For size_t */
+#include <stddef.h> /* For size_t */
 
 void *dmnsn_malloc(size_t size);
 void *dmnsn_realloc(void *ptr, size_t size);

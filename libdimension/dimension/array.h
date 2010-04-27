@@ -27,9 +27,8 @@
 #ifndef DIMENSION_ARRAY_H
 #define DIMENSION_ARRAY_H
 
-#include <pthread.h> /* For pthread_rwlock_t */
-#include <stdlib.h>  /* For size_t */
-#include <string.h>  /* For memcpy */
+#include <stddef.h> /* For size_t */
+#include <string.h> /* For memcpy */
 
 typedef struct {
   void *ptr;
