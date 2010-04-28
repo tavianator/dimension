@@ -19,48 +19,33 @@
  *************************************************************************/
 
 /*
- * Bounding Volume Splay Trees for storing object bounding boxes.
- * Each node's bounding box entirely contains the bounding boxes of the nodes
- * to its left, and is entirely contained by the bounding boxes of the nodes to
- * its right.  Splay trees are used for the implementation, to bring commonly-
- * used objects (the most recent object which a ray has hit) near the root of
- * the tree for fast access.  Object's bounding boxes are expanded as needed
- * when inserted into the tree: if they intersect an existing bounding box, they
- * are expanded to contain it.
+ * Priority R-Trees for storing bounding box hierarchies.  PR-trees are a data
+ * structure introduced by Arge, de Berg, Haverkort, and Yi, which provides
+ * asymptotically optimal worst-case lookup, while remaining efficient with real-world
+ * data.  Their structure is derived from B-trees.
  */
 
-#ifndef DIMENSION_IMPL_BVST_H
-#define DIMENSION_IMPL_BVST_H
+#ifndef DIMENSION_IMPL_PRTREE_H
+#define DIMENSION_IMPL_PRTREE_H
 
-typedef struct dmnsn_bvst dmnsn_bvst;
-typedef struct dmnsn_bvst_node dmnsn_bvst_node;
+#include <stdbool.h>
 
-struct dmnsn_bvst {
-  dmnsn_bvst_node *root;
-};
+/* Number of children per node */
+#define DMNSN_PRTREE_B 6
 
-struct dmnsn_bvst_node {
-  /* Tree children */
-  dmnsn_bvst_node *contains, *container;
-
-  /* Parent node for easy backtracking */
-  dmnsn_bvst_node *parent;
+typedef struct dmnsn_prtree {
+  /* Children (objects or subtrees) */
+  void *children[DMNSN_PRTREE_B];
+  bool is_leaf;
 
   /* Bounding box */
   dmnsn_bounding_box bounding_box;
+} dmnsn_prtree;
 
-  /* Node payload */
-  dmnsn_object *object;
-};
+dmnsn_prtree *dmnsn_new_prtree(const dmnsn_array *objects);
+void dmnsn_delete_prtree(dmnsn_prtree *tree);
 
-dmnsn_bvst *dmnsn_new_bvst();
-dmnsn_bvst *dmnsn_copy_bvst(dmnsn_bvst *tree);
-void dmnsn_delete_bvst(dmnsn_bvst *tree);
+bool dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
+                         dmnsn_intersection *intersection);
 
-void dmnsn_bvst_insert(dmnsn_bvst *tree, dmnsn_object *object);
-void dmnsn_bvst_splay(dmnsn_bvst *tree, dmnsn_bvst_node *node);
-
-bool dmnsn_bvst_search(dmnsn_bvst *tree, dmnsn_line ray,
-                       dmnsn_intersection *intersection);
-
-#endif /* DIMENSION_IMPL_BVST_H */
+#endif /* DIMENSION_IMPL_PRTREE_H */

@@ -18,7 +18,7 @@
  *************************************************************************/
 
 /*
- * Basic tests of our Bounding Volume Splay Tree framework
+ * Basic tests of PR-trees
  */
 
 #include "../../libdimension/dimension_impl.h"
@@ -27,46 +27,5 @@
 int
 main()
 {
-  dmnsn_bvst *tree;
-  dmnsn_object *obj1, *obj2, *obj3;
-
-  obj1 = dmnsn_new_object();
-  obj2 = dmnsn_new_object();
-  obj3 = dmnsn_new_object();
-
-  obj1->bounding_box.min = dmnsn_new_vector(0.0, 0.0, 0.0);
-  obj1->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
-
-  obj2->bounding_box.min = dmnsn_new_vector(-2.0, -2.0, -2.0);
-  obj2->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
-
-  obj3->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
-  obj3->bounding_box.max = dmnsn_new_vector(0.0, 0.0, 0.0);
-
-  tree = dmnsn_new_bvst();
-
-  dmnsn_bvst_insert(tree, obj1);
-  if (tree->root->object != obj1) {
-    fprintf(stderr, "Wrong BVST built.\n");
-    return EXIT_FAILURE;
-  }
-
-  dmnsn_bvst_insert(tree, obj2);
-  if (tree->root->object != obj2 || tree->root->contains->object != obj1) {
-    fprintf(stderr, "Wrong BVST built.\n");
-    return EXIT_FAILURE;
-  }
-
-  dmnsn_bvst_insert(tree, obj3);
-  if (tree->root->object != obj3 || tree->root->contains->object != obj1
-      || tree->root->container->object != obj2) {
-    fprintf(stderr, "Wrong BVST built.\n");
-    return EXIT_FAILURE;
-  }
-
-  dmnsn_delete_bvst(tree);
-  dmnsn_delete_object(obj3);
-  dmnsn_delete_object(obj2);
-  dmnsn_delete_object(obj1);
   return EXIT_SUCCESS;
 }

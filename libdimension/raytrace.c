@@ -30,7 +30,7 @@
 typedef struct {
   dmnsn_progress *progress;
   dmnsn_scene *scene;
-  dmnsn_bvst *bvst;
+  dmnsn_prtree *prtree;
 
   /* For multithreading */
   unsigned int index, threads;
@@ -57,14 +57,6 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
     = dmnsn_malloc(sizeof(dmnsn_raytrace_payload));
   payload->progress = progress;
   payload->scene    = scene;
-  payload->bvst     = dmnsn_new_bvst();
-
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(payload->scene->objects); ++i) {
-    dmnsn_object *object;
-    dmnsn_array_get(payload->scene->objects, i, &object);
-    dmnsn_bvst_insert(payload->bvst, object);
-  }
 
   if (pthread_create(&progress->thread, NULL, &dmnsn_raytrace_scene_thread,
                      payload) != 0)
@@ -83,7 +75,9 @@ static void *
 dmnsn_raytrace_scene_thread(void *ptr)
 {
   dmnsn_raytrace_payload *payload = ptr;
+  payload->prtree = dmnsn_new_prtree(payload->scene->objects);
   dmnsn_raytrace_scene_multithread(payload);
+  dmnsn_delete_prtree(payload->prtree);
   dmnsn_done_progress(payload->progress);
   free(payload);
 
@@ -120,9 +114,6 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
     payloads[i] = *payload;
     payloads[i].index = i;
     payloads[i].threads = nthreads;
-    if (i > 0) {
-      payloads[i].bvst = dmnsn_copy_bvst(payloads[0].bvst);
-    }
   }
 
   /* Create the threads */
@@ -140,8 +131,6 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
     if (pthread_join(threads[i], NULL)) {
       dmnsn_error(DMNSN_SEVERITY_MEDIUM,
                   "Couldn't join worker thread in raytrace engine.");
-    } else {
-      dmnsn_delete_bvst(payloads[i].bvst);
     }
   }
 
@@ -152,7 +141,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
 /* Actual raytracing implementation */
 static void dmnsn_raytrace_scene_impl(dmnsn_progress *progress,
                                       dmnsn_scene *scene,
-                                      dmnsn_bvst *bvst,
+                                      dmnsn_prtree *prtree,
                                       unsigned int index, unsigned int threads);
 
 /* Multi-threading thread callback */
@@ -161,7 +150,7 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
 {
   dmnsn_raytrace_payload *payload = ptr;
   dmnsn_raytrace_scene_impl(payload->progress, payload->scene,
-                            payload->bvst, payload->index, payload->threads);
+                            payload->prtree, payload->index, payload->threads);
   return NULL;
 }
 
@@ -174,7 +163,7 @@ typedef struct dmnsn_raytrace_state {
 
   const dmnsn_scene *scene;
   const dmnsn_intersection *intersection;
-  dmnsn_bvst *bvst;
+  dmnsn_prtree *prtree;
   unsigned int reclevel;
 
   dmnsn_vector r;
@@ -195,13 +184,13 @@ static dmnsn_color dmnsn_raytrace_shoot(dmnsn_raytrace_state *state,
 /* Actually raytrace a scene */
 static void
 dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
-                          dmnsn_bvst *bvst,
+                          dmnsn_prtree *prtree,
                           unsigned int index, unsigned int threads)
 {
   dmnsn_raytrace_state state = {
     .parent = NULL,
     .scene  = scene,
-    .bvst   = bvst,
+    .prtree   = prtree,
     .ior    = 1.0
   };
 
@@ -289,7 +278,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
   while (reclevel) {
     dmnsn_intersection shadow_caster;
     bool shadow_casted
-      = dmnsn_bvst_search(state->bvst, shadow_ray, &shadow_caster);
+      = dmnsn_prtree_search(state->prtree, shadow_ray, &shadow_caster);
 
     if (!shadow_casted || shadow_caster.t > 1.0) {
       break;
@@ -450,7 +439,7 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
   --state->reclevel;
 
   dmnsn_intersection intersection;
-  bool intersected = dmnsn_bvst_search(state->bvst, ray, &intersection);
+  bool intersected = dmnsn_prtree_search(state->prtree, ray, &intersection);
 
   dmnsn_color color = state->scene->background;
   if (intersected) {

@@ -19,18 +19,18 @@
 
 INCLUDES = -I$(top_srcdir)/libdimension
 
-EXTRA_PROGRAMS = bench-array bench-geometry bench-bvst
+EXTRA_PROGRAMS = bench-array bench-geometry bench-prtree
 
 AM_CFLAGS = $(libsandglass_CFLAGS) -fno-inline
 AM_LDFLAGS = $(libsandglass_LIBS) $(top_builddir)/libdimension/libdimension.la
 
 bench_array_SOURCES    = array.c
 bench_geometry_SOURCES = geometry.c
-bench_bvst_SOURCES     = bvst.c
+bench_prtree_SOURCES     = prtree.c
 
-bench: bench-array$(EXEEXT) bench-geometry$(EXEEXT) bench-bvst$(EXEEXT)
+bench: bench-array$(EXEEXT) bench-geometry$(EXEEXT) bench-prtree$(EXEEXT)
 	./bench-array$(EXEEXT)
 	./bench-geometry$(EXEEXT)
-	./bench-bvst$(EXEEXT)
+	./bench-prtree$(EXEEXT)
 
 .PHONY: bench

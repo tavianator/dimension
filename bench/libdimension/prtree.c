@@ -66,17 +66,17 @@ dmnsn_randomize_bounding_box(dmnsn_object *object)
   }
 }
 
-dmnsn_bvst_node *
-dmnsn_bvst_deepest_recursive(dmnsn_bvst_node *node,
+dmnsn_prtree_node *
+dmnsn_prtree_deepest_recursive(dmnsn_prtree_node *node,
                                  unsigned int depth, unsigned int *deepest)
 {
-  dmnsn_bvst_node *left = NULL, *right = NULL;
+  dmnsn_prtree_node *left = NULL, *right = NULL;
 
   if (node->contains) {
-    left = dmnsn_bvst_deepest_recursive(node->contains, depth + 1, deepest);
+    left = dmnsn_prtree_deepest_recursive(node->contains, depth + 1, deepest);
   }
   if (node->container) {
-    right = dmnsn_bvst_deepest_recursive(node->container,
+    right = dmnsn_prtree_deepest_recursive(node->container,
                                              depth + 1, deepest);
   }
 
@@ -92,18 +92,18 @@ dmnsn_bvst_deepest_recursive(dmnsn_bvst_node *node,
   }
 }
 
-dmnsn_bvst_node *
-dmnsn_bvst_deepest(dmnsn_bvst *tree)
+dmnsn_prtree_node *
+dmnsn_prtree_deepest(dmnsn_prtree *tree)
 {
   unsigned int deepest = 0;
-  return dmnsn_bvst_deepest_recursive(tree->root, 0, &deepest);
+  return dmnsn_prtree_deepest_recursive(tree->root, 0, &deepest);
 }
 
 int
 main()
 {
-  dmnsn_bvst *tree;
-  dmnsn_bvst_node *node;
+  dmnsn_prtree *tree;
+  dmnsn_prtree_node *node;
   dmnsn_intersection intersection;
   dmnsn_line ray;
   const unsigned int nobjects = 128;
@@ -118,7 +118,7 @@ main()
     return EXIT_FAILURE;
   }
 
-  tree = dmnsn_new_bvst();
+  tree = dmnsn_new_prtree();
 
   for (i = 0; i < nobjects; ++i) {
     objects[i] = dmnsn_new_object();
@@ -128,40 +128,40 @@ main()
     objects[i]->intersection_fn = &dmnsn_fake_intersection_fn;
   }
 
-  /* dmnsn_bvst_insert() */
+  /* dmnsn_prtree_insert() */
 
   grains = 0;
   for (i = 0; i < nobjects; ++i) {
     sandglass_bench_noprecache(&sandglass,
-                               dmnsn_bvst_insert(tree, objects[i]));
+                               dmnsn_prtree_insert(tree, objects[i]));
     sandglass.grains += grains;
     grains = sandglass.grains;
   }
-  printf("dmnsn_bvst_insert(): %ld\n", sandglass.grains/nobjects);
+  printf("dmnsn_prtree_insert(): %ld\n", sandglass.grains/nobjects);
 
-  /* dmnsn_bvst_search() */
+  /* dmnsn_prtree_search() */
 
   ray.x0 = dmnsn_new_vector(0.0, 0.0, -2.0);
   ray.n  = dmnsn_new_vector(0.0, 0.0, 1.0);
 
   (*objects[0]->intersection_fn)(objects[0], ray, &intersection);
   sandglass_bench_noprecache(&sandglass, {
-    dmnsn_bvst_search(tree, ray, &intersection);
+    dmnsn_prtree_search(tree, ray, &intersection);
   });
-  printf("dmnsn_bvst_search(): %ld\n", sandglass.grains);
+  printf("dmnsn_prtree_search(): %ld\n", sandglass.grains);
 
-  /* dmnsn_bvst_splay() */
+  /* dmnsn_prtree_splay() */
   grains = 0;
   for (i = 0; i < nobjects; ++i) {
-    node = dmnsn_bvst_deepest(tree);
-    sandglass_bench_noprecache(&sandglass, dmnsn_bvst_splay(tree, node));
+    node = dmnsn_prtree_deepest(tree);
+    sandglass_bench_noprecache(&sandglass, dmnsn_prtree_splay(tree, node));
     sandglass.grains += grains;
     grains = sandglass.grains;
   }
-  printf("dmnsn_bvst_splay(): %ld\n", sandglass.grains/nobjects);
+  printf("dmnsn_prtree_splay(): %ld\n", sandglass.grains/nobjects);
 
   /* Cleanup */
-  dmnsn_delete_bvst(tree);
+  dmnsn_delete_prtree(tree);
   for (i = 0; i < nobjects; ++i) {
     dmnsn_delete_object(objects[i]);
   }

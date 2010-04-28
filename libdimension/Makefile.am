@@ -49,8 +49,8 @@ lib_LTLIBRARIES = libdimension.la
 
 libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           ambient.c                                            \
-                          bvst.c                                               \
-                          bvst.h                                               \
+                          prtree.c                                               \
+                          prtree.h                                               \
                           camera.c                                             \
                           canvas.c                                             \
                           canvas_pigment.c                                     \

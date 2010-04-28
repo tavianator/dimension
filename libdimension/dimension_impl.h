@@ -22,6 +22,6 @@
 #define DIMENSION_IMPL_H
 
 #include "dimension.h"
-#include "bvst.h"
+#include "prtree.h"
 
 #endif /* DIMENSION_IMPL_H */
