@@ -52,10 +52,12 @@ typedef enum {
 #ifdef NDEBUG
   #define dmnsn_assert(expr, str) ((void)0)
 #else
-  #define dmnsn_assert(expr, str)               \
-    if (!(expr)) {                              \
-      dmnsn_error(DMNSN_SEVERITY_HIGH, (str));  \
-    }
+  #define dmnsn_assert(expr, str)                 \
+    do {                                          \
+      if (!(expr)) {                              \
+        dmnsn_error(DMNSN_SEVERITY_HIGH, (str));  \
+      }                                           \
+    } while (0)
 #endif
 
 /* Called by dmnsn_error() - don't call directly */

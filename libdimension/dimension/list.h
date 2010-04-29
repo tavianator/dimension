@@ -95,16 +95,14 @@ dmnsn_list_last(dmnsn_list *list)
 DMNSN_INLINE dmnsn_list_iterator *
 dmnsn_list_prev(dmnsn_list_iterator *i)
 {
-  if (!i)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "NULL list iterator.");
+  dmnsn_assert(i, "NULL list iterator.");
   return i->prev;
 }
 
 DMNSN_INLINE dmnsn_list_iterator *
 dmnsn_list_next(dmnsn_list_iterator *i)
 {
-  if (!i)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "NULL list iterator.");
+  dmnsn_assert(i, "NULL list iterator.");
   return i->next;
 }
 
@@ -118,8 +116,7 @@ dmnsn_list_size(dmnsn_list *list)
 DMNSN_INLINE void
 dmnsn_list_get(const dmnsn_list_iterator *i, void *obj)
 {
-  if (!i)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "NULL list iterator.");
+  dmnsn_assert(i, "NULL list iterator.");
   memcpy(obj, i->ptr, i->obj_size);
 }
 
@@ -127,8 +124,7 @@ dmnsn_list_get(const dmnsn_list_iterator *i, void *obj)
 DMNSN_INLINE void
 dmnsn_list_set(dmnsn_list_iterator *i, const void *obj)
 {
-  if (!i)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "NULL list iterator.");
+  dmnsn_assert(i, "NULL list iterator.");
   memcpy(i->ptr, obj, i->obj_size);
 }
 
@@ -136,9 +132,8 @@ dmnsn_list_set(dmnsn_list_iterator *i, const void *obj)
 DMNSN_INLINE void
 dmnsn_list_insert(dmnsn_list *list, dmnsn_list_iterator *i, const void *obj)
 {
-  if (!i)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "NULL list iterator.");
   dmnsn_list_iterator *j = dmnsn_new_list_iterator(obj, list->obj_size);
+  dmnsn_assert(i, "NULL list iterator.");
   if (list->first == i)
     list->first = j;
   j->next = i;
@@ -151,8 +146,7 @@ dmnsn_list_insert(dmnsn_list *list, dmnsn_list_iterator *i, const void *obj)
 DMNSN_INLINE void
 dmnsn_list_remove(dmnsn_list *list, dmnsn_list_iterator *i)
 {
-  if (!i)
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "NULL list iterator.");
+  dmnsn_assert(i, "NULL list iterator.");
   if (list->first == i)
     list->first = i->next;
   if (list->last == i)
@@ -184,9 +178,7 @@ dmnsn_list_push(dmnsn_list *list, const void *obj)
 DMNSN_INLINE void
 dmnsn_list_pop(dmnsn_list *list, void *obj)
 {
-  if (!list->last) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "List is empty.");
-  }
+  dmnsn_assert(list->last, "List is empty.");
   dmnsn_list_get(list->last, obj);
   dmnsn_list_remove(list, list->last);
 }

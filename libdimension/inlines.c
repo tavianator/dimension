@@ -35,4 +35,5 @@
   #define DMNSN_INLINE static
 #endif
 
+#undef NDEBUG
 #include "dimension.h"
