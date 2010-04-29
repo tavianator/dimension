@@ -105,11 +105,11 @@ dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj)
 
 /* Element access */
 DMNSN_INLINE void *
-dmnsn_array_at(dmnsn_array *array, size_t i)
+dmnsn_array_at(const dmnsn_array *array, size_t i)
 {
   if (i >= dmnsn_array_size(array)) {
     /* Resize if i is out of range */
-    dmnsn_array_resize(array, i + 1);
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Array index out of bounds.");
   }
   return (char *)array->ptr + array->obj_size*i;
 }

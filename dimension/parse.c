@@ -683,6 +683,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         ret.type = DMNSN_AST_VECTOR;
 
         dmnsn_astnode op = dmnsn_copy_astnode(astnode);
+        dmnsn_array_resize(op.children, 1);
         for (i = 0; i < DMNSN_VECTOR_NELEM; ++i) {
           dmnsn_array_get(rhs.children, i, dmnsn_array_at(op.children, 0));
           dmnsn_astnode temp = dmnsn_eval_unary(op, symtable);
@@ -1286,6 +1287,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         ret.type = DMNSN_AST_VECTOR;
 
         dmnsn_astnode op = dmnsn_copy_astnode(astnode);
+        dmnsn_array_resize(op.children, 2);
         for (i = 0; i < DMNSN_VECTOR_NELEM; ++i) {
           dmnsn_array_get(lhs.children, i, dmnsn_array_at(op.children, 0));
           dmnsn_array_get(rhs.children, i, dmnsn_array_at(op.children, 1));
