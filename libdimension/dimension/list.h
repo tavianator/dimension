@@ -25,6 +25,7 @@
 #ifndef DIMENSION_LIST_H
 #define DIMENSION_LIST_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -128,25 +129,52 @@ dmnsn_list_set(dmnsn_list_iterator *i, const void *obj)
   memcpy(i->ptr, obj, i->obj_size);
 }
 
-/* Insert an item before `i' */
+/* Swap two iterators */
+DMNSN_INLINE void
+dmnsn_list_swap(dmnsn_list_iterator *a, dmnsn_list_iterator *b)
+{
+  dmnsn_list_iterator temp = *a;
+  *a = *b;
+  *b = temp;
+}
+
+/* Insert `j' before `i' */
+DMNSN_INLINE void
+dmnsn_list_iterator_insert(dmnsn_list *list,
+                           dmnsn_list_iterator *i, dmnsn_list_iterator *j)
+{
+  if (list->first == i)
+    list->first = j;
+
+  if (i) {
+    j->prev = i->prev;
+    i->prev = j;
+  } else {
+    if (list->last) {
+      j->prev = list->last;
+      j->prev->next = j;
+    }
+    list->last = j;
+  }
+
+  j->next = i;
+  ++list->length;
+}
+
+/* Insert an item before `i' (NULL means at the end) */
 DMNSN_INLINE void
 dmnsn_list_insert(dmnsn_list *list, dmnsn_list_iterator *i, const void *obj)
 {
   dmnsn_list_iterator *j = dmnsn_new_list_iterator(obj, list->obj_size);
-  dmnsn_assert(i, "NULL list iterator.");
-  if (list->first == i)
-    list->first = j;
-  j->next = i;
-  j->prev = i->prev;
-  i->prev = j;
-  ++list->length;
+  dmnsn_list_iterator_insert(list, i, j);
 }
 
-/* Remove the specified item */
+/* Remove the given iterator */
 DMNSN_INLINE void
-dmnsn_list_remove(dmnsn_list *list, dmnsn_list_iterator *i)
+dmnsn_list_iterator_remove(dmnsn_list *list, dmnsn_list_iterator *i)
 {
   dmnsn_assert(i, "NULL list iterator.");
+  dmnsn_assert(list->first, "List is empty.");
   if (list->first == i)
     list->first = i->next;
   if (list->last == i)
@@ -155,23 +183,22 @@ dmnsn_list_remove(dmnsn_list *list, dmnsn_list_iterator *i)
     i->prev->next = i->next;
   if (i->next)
     i->next->prev = i->prev;
-  dmnsn_delete_list_iterator(i);
   --list->length;
+}
+
+/* Remove the specified item */
+DMNSN_INLINE void
+dmnsn_list_remove(dmnsn_list *list, dmnsn_list_iterator *i)
+{
+  dmnsn_list_iterator_remove(list, i);
+  dmnsn_delete_list_iterator(i);
 }
 
 /* Push obj to the end of the list */
 DMNSN_INLINE void
 dmnsn_list_push(dmnsn_list *list, const void *obj)
 {
-  dmnsn_list_iterator *i = dmnsn_new_list_iterator(obj, list->obj_size);
-  if (!list->first) {
-    list->first = i;
-  } else {
-    i->prev = list->last;
-    i->prev->next = i;
-  }
-  list->last = i;
-  ++list->length;
+  dmnsn_list_insert(list, NULL, obj);
 }
 
 /* Pop obj from the end of the list */
@@ -182,5 +209,12 @@ dmnsn_list_pop(dmnsn_list *list, void *obj)
   dmnsn_list_get(list->last, obj);
   dmnsn_list_remove(list, list->last);
 }
+
+/* Splits a list in half, and returns the second half */
+dmnsn_list *dmnsn_list_split(dmnsn_list *list);
+/* Sort a list */
+typedef bool dmnsn_comparator_fn(dmnsn_list_iterator *l,
+                                 dmnsn_list_iterator *r);
+void dmnsn_list_sort(dmnsn_list *list, dmnsn_comparator_fn *comparator);
 
 #endif /* DIMENSION_LIST_H */

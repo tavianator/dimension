@@ -43,3 +43,60 @@ dmnsn_delete_list(dmnsn_list *list)
     free(list);
   }
 }
+
+dmnsn_list *
+dmnsn_list_split(dmnsn_list *list)
+{
+  dmnsn_list *half = dmnsn_new_list(list->obj_size);
+
+  /* Find the halfway point */
+  size_t i, max = dmnsn_list_size(list)/2;
+  dmnsn_list_iterator *ii;
+  for (i = 0, ii = dmnsn_list_last(list);
+       i < max && ii;
+       ++i, ii = dmnsn_list_prev(ii));
+
+  if (ii && ii->next) {
+    half->first = ii->next;
+    half->last = list->last;
+    list->last = ii;
+    half->first->prev = NULL;
+    list->last->next  = NULL;
+  }
+
+  list->length -= max;
+  half->length = max;
+
+  return half;
+}
+
+void
+dmnsn_list_sort(dmnsn_list *list, dmnsn_comparator_fn *comparator)
+{
+  /* Recursive merge sort */
+  if (dmnsn_list_size(list) < 2) {
+    return;
+  } else if (dmnsn_list_size(list) == 2) {
+    if ((*comparator)(list->last, list->first)) {
+      dmnsn_list_swap(list->first, list->last);
+    }
+  } else {
+    dmnsn_list *half = dmnsn_list_split(list);
+    dmnsn_list_sort(list, comparator);
+    dmnsn_list_sort(half, comparator);
+
+    dmnsn_list_iterator *i = list->first, *j = half->first;
+    while (i || j) {
+      if (!i || (*comparator)(j, i)) {
+        dmnsn_list_iterator *temp = dmnsn_list_next(j);
+        dmnsn_list_iterator_remove(half, j);
+        dmnsn_list_iterator_insert(list, i, j);
+        j = temp;
+      } else {
+        i = dmnsn_list_next(i);
+      }
+    }
+
+    dmnsn_delete_list(half);
+  }
+}
