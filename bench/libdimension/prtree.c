@@ -33,138 +33,67 @@ dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line,
 void
 dmnsn_randomize_bounding_box(dmnsn_object *object)
 {
-  double rand1, rand2;
+  dmnsn_vector a, b;
 
-  rand1 = 2.0*((double)rand())/RAND_MAX - 1.0;
-  rand2 = 2.0*((double)rand())/RAND_MAX - 1.0;
-  if (rand1 < rand2) {
-    object->bounding_box.min.x = rand1;
-    object->bounding_box.max.x = rand2;
-  } else {
-    object->bounding_box.max.x = rand1;
-    object->bounding_box.min.x = rand2;
-  }
+  a.x = 2.0*((double)rand())/RAND_MAX - 1.0;
+  a.y = 2.0*((double)rand())/RAND_MAX - 1.0;
+  a.z = 2.0*((double)rand())/RAND_MAX - 1.0;
 
-  rand1 = 2.0*((double)rand())/RAND_MAX - 1.0;
-  rand2 = 2.0*((double)rand())/RAND_MAX - 1.0;
-  if (rand1 < rand2) {
-    object->bounding_box.min.y = rand1;
-    object->bounding_box.max.y = rand2;
-  } else {
-    object->bounding_box.max.y = rand1;
-    object->bounding_box.min.y = rand2;
-  }
+  b.x = 2.0*((double)rand())/RAND_MAX - 1.0;
+  b.y = 2.0*((double)rand())/RAND_MAX - 1.0;
+  b.z = 2.0*((double)rand())/RAND_MAX - 1.0;
 
-  rand1 = 2.0*((double)rand())/RAND_MAX - 1.0;
-  rand2 = 2.0*((double)rand())/RAND_MAX - 1.0;
-  if (rand1 < rand2) {
-    object->bounding_box.min.z = rand1;
-    object->bounding_box.max.z = rand2;
-  } else {
-    object->bounding_box.max.z = rand1;
-    object->bounding_box.min.z = rand2;
-  }
-}
-
-dmnsn_prtree_node *
-dmnsn_prtree_deepest_recursive(dmnsn_prtree_node *node,
-                                 unsigned int depth, unsigned int *deepest)
-{
-  dmnsn_prtree_node *left = NULL, *right = NULL;
-
-  if (node->contains) {
-    left = dmnsn_prtree_deepest_recursive(node->contains, depth + 1, deepest);
-  }
-  if (node->container) {
-    right = dmnsn_prtree_deepest_recursive(node->container,
-                                             depth + 1, deepest);
-  }
-
-  if (right) {
-    return right;
-  } else if (left) {
-    return left;
-  } else if (depth >= *deepest) {
-    *deepest = depth;
-    return node;
-  } else {
-    return NULL;
-  }
-}
-
-dmnsn_prtree_node *
-dmnsn_prtree_deepest(dmnsn_prtree *tree)
-{
-  unsigned int deepest = 0;
-  return dmnsn_prtree_deepest_recursive(tree->root, 0, &deepest);
+  object->bounding_box.min = dmnsn_vector_min(a, b);
+  object->bounding_box.max = dmnsn_vector_max(a, b);
 }
 
 int
 main()
 {
   dmnsn_prtree *tree;
-  dmnsn_prtree_node *node;
   dmnsn_intersection intersection;
   dmnsn_line ray;
   const unsigned int nobjects = 128;
-  dmnsn_object *objects[nobjects];
+  dmnsn_array *objects;
   unsigned int i;
-  long grains;
 
   sandglass_t sandglass;
-
   if (sandglass_init_monotonic(&sandglass, SANDGLASS_CPUTIME) != 0) {
     perror("sandglass_create()");
     return EXIT_FAILURE;
   }
 
-  tree = dmnsn_new_prtree();
-
+  objects = dmnsn_new_array(sizeof(dmnsn_object *));
   for (i = 0; i < nobjects; ++i) {
-    objects[i] = dmnsn_new_object();
-
+    dmnsn_object *object = dmnsn_new_object();
     /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
-    dmnsn_randomize_bounding_box(objects[i]);
-    objects[i]->intersection_fn = &dmnsn_fake_intersection_fn;
+    dmnsn_randomize_bounding_box(object);
+    object->intersection_fn = &dmnsn_fake_intersection_fn;
+    dmnsn_array_push(objects, &object);
   }
 
-  /* dmnsn_prtree_insert() */
-
-  grains = 0;
-  for (i = 0; i < nobjects; ++i) {
-    sandglass_bench_noprecache(&sandglass,
-                               dmnsn_prtree_insert(tree, objects[i]));
-    sandglass.grains += grains;
-    grains = sandglass.grains;
-  }
-  printf("dmnsn_prtree_insert(): %ld\n", sandglass.grains/nobjects);
+  sandglass_bench_noprecache(&sandglass, {
+    tree = dmnsn_new_prtree(objects);
+  });
+  printf("dmnsn_new_prtree(): %ld\n", sandglass.grains);
 
   /* dmnsn_prtree_search() */
-
   ray.x0 = dmnsn_new_vector(0.0, 0.0, -2.0);
   ray.n  = dmnsn_new_vector(0.0, 0.0, 1.0);
 
-  (*objects[0]->intersection_fn)(objects[0], ray, &intersection);
-  sandglass_bench_noprecache(&sandglass, {
+  sandglass_bench_fine(&sandglass, {
     dmnsn_prtree_search(tree, ray, &intersection);
   });
   printf("dmnsn_prtree_search(): %ld\n", sandglass.grains);
 
-  /* dmnsn_prtree_splay() */
-  grains = 0;
-  for (i = 0; i < nobjects; ++i) {
-    node = dmnsn_prtree_deepest(tree);
-    sandglass_bench_noprecache(&sandglass, dmnsn_prtree_splay(tree, node));
-    sandglass.grains += grains;
-    grains = sandglass.grains;
-  }
-  printf("dmnsn_prtree_splay(): %ld\n", sandglass.grains/nobjects);
-
   /* Cleanup */
   dmnsn_delete_prtree(tree);
   for (i = 0; i < nobjects; ++i) {
-    dmnsn_delete_object(objects[i]);
+    dmnsn_object *object;
+    dmnsn_array_get(objects, i, &object);
+    dmnsn_delete_object(object);
   }
 
+  dmnsn_delete_array(objects);
   return EXIT_SUCCESS;
 }
