@@ -133,9 +133,9 @@ dmnsn_list_set(dmnsn_list_iterator *i, const void *obj)
 DMNSN_INLINE void
 dmnsn_list_swap(dmnsn_list_iterator *a, dmnsn_list_iterator *b)
 {
-  dmnsn_list_iterator temp = *a;
-  *a = *b;
-  *b = temp;
+  void *temp = a->ptr;
+  a->ptr = b->ptr;
+  b->ptr = temp;
 }
 
 /* Insert `j' before `i' */
@@ -150,13 +150,12 @@ dmnsn_list_iterator_insert(dmnsn_list *list,
     j->prev = i->prev;
     i->prev = j;
   } else {
-    if (list->last) {
-      j->prev = list->last;
-      j->prev->next = j;
-    }
+    j->prev = list->last;
     list->last = j;
   }
 
+  if (j->prev)
+    j->prev->next = j;
   j->next = i;
   ++list->length;
 }
@@ -183,6 +182,8 @@ dmnsn_list_iterator_remove(dmnsn_list *list, dmnsn_list_iterator *i)
     i->prev->next = i->next;
   if (i->next)
     i->next->prev = i->prev;
+  i->prev = NULL;
+  i->next = NULL;
   --list->length;
 }
 
