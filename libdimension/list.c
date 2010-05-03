@@ -83,19 +83,13 @@ dmnsn_list_sort(dmnsn_list *list, dmnsn_comparator_fn *comparator)
     dmnsn_list *half = dmnsn_list_split(list);
     dmnsn_list_sort(list, comparator);
     dmnsn_list_sort(half, comparator);
-    dmnsn_list_iterator *ii;
 
     dmnsn_list_iterator *i = list->first, *j = half->first;
     while (i || j) {
       if (!i) {
-        dmnsn_list_iterator *temp = dmnsn_list_next(j);
-        dmnsn_list_iterator_remove(half, j);
-        dmnsn_list_iterator_insert(list, i, j);
-        j = temp;
-        continue;
-
         j->prev = list->last;
-        list->last = j;
+        list->last->next = j;
+        list->last = half->last;
         list->length += half->length;
         half->first = half->last = NULL;
         half->length = 0;
