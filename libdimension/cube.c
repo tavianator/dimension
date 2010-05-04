@@ -19,7 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <math.h>  /* For sqrt */
+#include <math.h>
 
 /*
  * Cube
@@ -49,83 +49,106 @@ static bool
 dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
                            dmnsn_intersection *intersection)
 {
+  /* Clip the given line against the X, Y, and Z slabs */
+
   dmnsn_line line_trans = dmnsn_transform_line(cube->trans_inv, line);
 
-  double t = -1.0, t_temp;
-  dmnsn_vector p, normal;
-
-  /* Six ray-plane intersection tests (x, y, z) = +/- 1.0 */
+  dmnsn_vector nmin, nmax;
+  double tmin = -INFINITY, tmax = INFINITY;
 
   if (line_trans.n.x != 0.0) {
-    /* x = -1.0 */
-    t_temp = (-1.0 - line_trans.x0.x)/line_trans.n.x;
-    p = dmnsn_line_point(line_trans, t_temp);
-    if (p.y >= -1.0 && p.y <= 1.0 && p.z >= -1.0 && p.z <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-      normal = dmnsn_new_vector(-1.0, 0.0, 0.0);
+    double tx1 = (-1.0 - line_trans.x0.x)/line_trans.n.x;
+    double tx2 = (+1.0 - line_trans.x0.x)/line_trans.n.x;
+
+    if (tx1 < tx2) {
+      if (tx1 > tmin) {
+        tmin = tx1;
+        nmin = dmnsn_new_vector(-1.0, 0.0, 0.0);
+      }
+      if (tx2 < tmax) {
+        tmax = tx2;
+        nmax = dmnsn_new_vector(+1.0, 0.0, 0.0);
+      }
+    } else {
+      if (tx2 > tmin) {
+        tmin = tx2;
+        nmin = dmnsn_new_vector(+1.0, 0.0, 0.0);
+      }
+      if (tx1 < tmax) {
+        tmax = tx1;
+        nmax = dmnsn_new_vector(-1.0, 0.0, 0.0);
+      }
     }
 
-    /* x = 1.0 */
-    t_temp = (1.0 - line_trans.x0.x)/line_trans.n.x;
-    p = dmnsn_line_point(line_trans, t_temp);
-    if (p.y >= -1.0 && p.y <= 1.0 && p.z >= -1.0 && p.z <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-      normal = dmnsn_new_vector(1.0, 0.0, 0.0);
-    }
+    if (tmin > tmax)
+      return false;
   }
 
   if (line_trans.n.y != 0.0) {
-    /* y = -1.0 */
-    t_temp = (-1.0 - line_trans.x0.y)/line_trans.n.y;
-    p = dmnsn_line_point(line_trans, t_temp);
-    if (p.x >= -1.0 && p.x <= 1.0 && p.z >= -1.0 && p.z <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-      normal = dmnsn_new_vector(0.0, -1.0, 0.0);
+    double ty1 = (-1.0 - line_trans.x0.y)/line_trans.n.y;
+    double ty2 = (+1.0 - line_trans.x0.y)/line_trans.n.y;
+
+    if (ty1 < ty2) {
+      if (ty1 > tmin) {
+        tmin = ty1;
+        nmin = dmnsn_new_vector(0.0, -1.0, 0.0);
+      }
+      if (ty2 < tmax) {
+        tmax = ty2;
+        nmax = dmnsn_new_vector(0.0, +1.0, 0.0);
+      }
+    } else {
+      if (ty2 > tmin) {
+        tmin = ty2;
+        nmin = dmnsn_new_vector(0.0, +1.0, 0.0);
+      }
+      if (ty1 < tmax) {
+        tmax = ty1;
+        nmax = dmnsn_new_vector(0.0, -1.0, 0.0);
+      }
     }
 
-    /* y = 1.0 */
-    t_temp = (1.0 - line_trans.x0.y)/line_trans.n.y;
-    p = dmnsn_line_point(line_trans, t_temp);
-    if (p.x >= -1.0 && p.x <= 1.0 && p.z >= -1.0 && p.z <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-      normal = dmnsn_new_vector(0.0, 1.0, 0.0);
-    }
+    if (tmin > tmax)
+      return false;
   }
 
   if (line_trans.n.z != 0.0) {
-    /* z = -1.0 */
-    t_temp = (-1.0 - line_trans.x0.z)/line_trans.n.z;
-    p = dmnsn_line_point(line_trans, t_temp);
-    if (p.x >= -1.0 && p.x <= 1.0 && p.y >= -1.0 && p.y <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-      normal = dmnsn_new_vector(0.0, 0.0, -1.0);
+    double tz1 = (-1.0 - line_trans.x0.z)/line_trans.n.z;
+    double tz2 = (+1.0 - line_trans.x0.z)/line_trans.n.z;
+
+    if (tz1 < tz2) {
+      if (tz1 > tmin) {
+        tmin = tz1;
+        nmin = dmnsn_new_vector(0.0, 0.0, -1.0);
+      }
+      if (tz2 < tmax) {
+        tmax = tz2;
+        nmax = dmnsn_new_vector(0.0, 0.0, +1.0);
+      }
+    } else {
+      if (tz2 > tmin) {
+        tmin = tz2;
+        nmin = dmnsn_new_vector(0.0, 0.0, +1.0);
+      }
+      if (tz1 < tmax) {
+        tmax = tz1;
+        nmax = dmnsn_new_vector(0.0, 0.0, -1.0);
+      }
     }
 
-    /* z = 1.0 */
-    t_temp = (1.0 - line_trans.x0.z)/line_trans.n.z;
-    p = dmnsn_line_point(line_trans, t_temp);
-    if (p.x >= -1.0 && p.x <= 1.0 && p.y >= -1.0 && p.y <= 1.0
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-    {
-      t = t_temp;
-      normal = dmnsn_new_vector(0.0, 0.0, 1.0);
-    }
+    if (tmin > tmax)
+      return false;
   }
 
-  if (t >= 0.0) {
+  if (tmin < 0.0) {
+    tmin = tmax;
+    nmin = nmax;
+  }
+
+  if (tmin >= 0.0) {
     intersection->ray      = line;
-    intersection->t        = t;
-    intersection->normal   = dmnsn_transform_normal(cube->trans, normal);
+    intersection->t        = tmin;
+    intersection->normal   = dmnsn_transform_normal(cube->trans, nmin);
     intersection->texture  = cube->texture;
     intersection->interior = cube->interior;
     return true;
