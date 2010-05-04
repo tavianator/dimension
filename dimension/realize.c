@@ -915,7 +915,8 @@ dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
     }
   }
 
-  dmnsn_realize_object_modifiers(modifiers, csg);
+  if (csg)
+    dmnsn_realize_object_modifiers(modifiers, csg);
   return csg;
 }
 
