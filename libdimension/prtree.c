@@ -418,6 +418,12 @@ dmnsn_pseudo_prtree_leaves(const dmnsn_pseudo_prtree *pseudo)
 {
   dmnsn_list *leaves = dmnsn_new_list(sizeof(dmnsn_prtree *));
   dmnsn_pseudo_prtree_leaves_recursive(pseudo, leaves);
+
+  if (dmnsn_list_size(leaves) == 0) {
+    dmnsn_prtree *prnode = dmnsn_new_prtree_node(&pseudo->leaf);
+    dmnsn_list_push(leaves, &prnode);
+  }
+
   return leaves;
 }
 
