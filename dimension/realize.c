@@ -684,6 +684,9 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
   dmnsn_assert(astnode.type == DMNSN_AST_OBJECT_MODIFIERS,
                "Expected object modifiers.");
 
+  /* Save the pre-existing transformations */
+  dmnsn_matrix existing_trans = dmnsn_matrix_inverse(object->trans);
+
   unsigned int i;
   for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
     dmnsn_astnode modifier;
@@ -724,6 +727,16 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
     default:
       dmnsn_assert(false, "Invalid object modifier.");
     }
+  }
+
+  if (object->texture) {
+    /* Right-multiply to counteract any pre-existing transformations -- this
+       means, for example, that the transformation that makes a sphere have
+       radius 2 doesn't scale the texture by a factor of 2 */
+    object->texture->trans = dmnsn_matrix_mul(
+      object->texture->trans,
+      existing_trans
+    );
   }
 }
 
