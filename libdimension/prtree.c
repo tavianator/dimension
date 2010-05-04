@@ -516,65 +516,43 @@ dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
 static bool
 dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 {
-  if (dmnsn_bounding_box_contains(box, line.x0))
-    return true;
-
-  double t_temp;
-  dmnsn_vector p;
+  double tmin = -INFINITY, tmax = INFINITY;
 
   if (line.n.x != 0.0) {
-    /* x == box.min.x */
-    t_temp = (box.min.x - line.x0.x)/line.n.x;
-    p = dmnsn_line_point(line, t_temp);
-    if (p.y >= box.min.y && p.y <= box.max.y
-        && p.z >= box.min.z && p.z <= box.max.z
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return true;
+    double tx1 = (box.min.x - line.x0.x)/line.n.x;
+    double tx2 = (box.max.x - line.x0.x)/line.n.x;
 
-    /* x == box.max.x */
-    t_temp = (box.max.x - line.x0.x)/line.n.x;
-    p = dmnsn_line_point(line, t_temp);
-    if (p.y >= box.min.y && p.y <= box.max.y
-        && p.z >= box.min.z && p.z <= box.max.z
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return true;
+    tmin = dmnsn_max(tmin, dmnsn_min(tx1, tx2));
+    tmax = dmnsn_min(tmax, dmnsn_max(tx1, tx2));
+
+    if (tmin > tmax)
+      return false;
   }
 
   if (line.n.y != 0.0) {
-    /* y == box.min.y */
-    t_temp = (box.min.y - line.x0.y)/line.n.y;
-    p = dmnsn_line_point(line, t_temp);
-    if (p.x >= box.min.x && p.x <= box.max.x
-        && p.z >= box.min.z && p.z <= box.max.z
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return true;
+    double ty1 = (box.min.y - line.x0.y)/line.n.y;
+    double ty2 = (box.max.y - line.x0.y)/line.n.y;
 
-    /* y == box.max.y */
-    t_temp = (box.max.y - line.x0.y)/line.n.y;
-    p = dmnsn_line_point(line, t_temp);
-    if (p.x >= box.min.x && p.x <= box.max.x
-        && p.z >= box.min.z && p.z <= box.max.z
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return true;
+    tmin = dmnsn_max(tmin, dmnsn_min(ty1, ty2));
+    tmax = dmnsn_min(tmax, dmnsn_max(ty1, ty2));
+
+    if (tmin > tmax)
+      return false;
   }
 
   if (line.n.z != 0.0) {
-    /* z == box.min.z */
-    t_temp = (box.min.z - line.x0.z)/line.n.z;
-    p = dmnsn_line_point(line, t_temp);
-    if (p.x >= box.min.x && p.x <= box.max.x
-        && p.y >= box.min.y && p.y <= box.max.y
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return true;
+    double tz1 = (box.min.z - line.x0.z)/line.n.z;
+    double tz2 = (box.max.z - line.x0.z)/line.n.z;
 
-    /* z == box.max.z */
-    t_temp = (box.max.z - line.x0.z)/line.n.z;
-    p = dmnsn_line_point(line, t_temp);
-    if (p.x >= box.min.x && p.x <= box.max.x
-        && p.y >= box.min.y && p.y <= box.max.y
-        && t_temp >= 0.0 && (t < 0.0 || t_temp < t))
-      return true;
+    tmin = dmnsn_max(tmin, dmnsn_min(tz1, tz2));
+    tmax = dmnsn_min(tmax, dmnsn_max(tz1, tz2));
+
+    if (tmin > tmax)
+      return false;
   }
 
-  return false;
+  if (tmax < 0.0)
+    return false;
+
+  return t < 0.0 || tmin < t;
 }
