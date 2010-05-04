@@ -52,6 +52,20 @@ static const dmnsn_vector dmnsn_x    = { 1.0, 0.0, 0.0 };
 static const dmnsn_vector dmnsn_y    = { 0.0, 1.0, 0.0 };
 static const dmnsn_vector dmnsn_z    = { 0.0, 0.0, 1.0 };
 
+/* Min/max macros */
+
+DMNSN_INLINE double
+dmnsn_min(double a, double b)
+{
+  return a < b ? a : b;
+}
+
+DMNSN_INLINE double
+dmnsn_max(double a, double b)
+{
+  return a > b ? a : b;
+}
+
 /* Shorthand for vector/matrix construction */
 
 DMNSN_INLINE dmnsn_vector
