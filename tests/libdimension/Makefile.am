@@ -22,9 +22,10 @@ INCLUDES = -I$(top_srcdir)/libdimension
 check_LTLIBRARIES = libdimension-tests.la
 check_PROGRAMS    = error-test                                                 \
                     warning-test                                               \
-                    prtree-test                                                  \
+                    prtree-test                                                \
                     png-test                                                   \
                     gl-test                                                    \
+                    render-test                                                \
                     cxx-test
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = error-test
@@ -36,9 +37,6 @@ endif
 if !GL
 XFAIL_TESTS += gl-test
 endif
-
-.PHONY: clean-local-png-test
-clean-local: clean-local-png-test
 
 libdimension_tests_la_SOURCES = tests.c tests.h
 
@@ -61,11 +59,15 @@ prtree_test_LDADD   = libdimension-tests.la
 
 png_test_SOURCES = png.c
 png_test_LDADD   = libdimension-tests.la
-clean-local-png-test:
-	rm -f *.png
 
 gl_test_SOURCES = gl.c
 gl_test_LDADD   = libdimension-tests.la
 
+render_test_SOURCES = render.c
+render_test_LDADD   = libdimension-tests.la
+
 cxx_test_SOURCES = cxx.cpp
 cxx_test_LDADD   = libdimension-tests.la
+
+clean-local:
+	rm -f *.png

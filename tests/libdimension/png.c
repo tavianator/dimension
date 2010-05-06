@@ -23,51 +23,41 @@
 
 int
 main() {
-  FILE *ifile, *ofile;
-  dmnsn_scene *scene;
-  dmnsn_canvas *canvas;
-
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
-  /*
-   * Render the scene
-   */
-
-  /* Allocate our default scene */
-  scene = dmnsn_new_default_scene();
+  /* Allocate our canvas */
+  dmnsn_canvas *canvas = dmnsn_new_canvas(768, 480);
 
   /* Optimize the canvas for PNG export */
-  if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
-    dmnsn_delete_scene(scene);
+  if (dmnsn_png_optimize_canvas(canvas) != 0) {
+    dmnsn_delete_canvas(canvas);
     fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
     return EXIT_FAILURE;
   }
 
-  /* Render scene */
-
-  printf("Rendering scene\n");
-  dmnsn_raytrace_scene(scene);
+  /* Paint the canvas blue */
+  dmnsn_clear_canvas(canvas, dmnsn_blue);
 
   /* Write the image to PNG */
 
   printf("Writing scene to PNG\n");
-  ofile = fopen("png1.png", "wb");
+  FILE *ofile = fopen("png1.png", "wb");
   if (!ofile) {
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_canvas(canvas);
     fprintf(stderr, "--- Couldn't open 'png1.png' for writing! ---\n");
     return EXIT_FAILURE;
   }
 
-  if (dmnsn_png_write_canvas(scene->canvas, ofile) != 0) {
+  if (dmnsn_png_write_canvas(canvas, ofile) != 0) {
     fclose(ofile);
-    dmnsn_delete_scene(scene);
+    dmnsn_delete_canvas(canvas);
     fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
     return EXIT_FAILURE;
   }
 
   fclose(ofile);
-  dmnsn_delete_scene(scene);
+  dmnsn_delete_canvas(canvas);
 
   /*
    * Now test PNG import/export
@@ -76,7 +66,7 @@ main() {
   /* Read the image back from PNG */
 
   printf("Reading scene from PNG\n");
-  ifile = fopen("png1.png", "rb");
+  FILE *ifile = fopen("png1.png", "rb");
   if (!ifile) {
     fprintf(stderr, "--- Couldn't open 'png1.png' for reading! ---\n");
     return EXIT_FAILURE;
