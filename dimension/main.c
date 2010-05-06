@@ -21,7 +21,7 @@
 #include "parse.h"
 #include "realize.h"
 #include "progressbar.h"
-#include "../libdimension/dimension.h"
+#include "dimension.h"
 #include <libgen.h>
 #include <stdbool.h>
 #include <stdlib.h>

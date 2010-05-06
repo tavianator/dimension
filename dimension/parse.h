@@ -20,7 +20,7 @@
 #ifndef PARSE_H
 #define PARSE_H
 
-#include "../libdimension/dimension.h"
+#include "dimension.h"
 
 /*
  * Abstract syntax tree

@@ -21,7 +21,7 @@
  * Basic tests of PR-trees
  */
 
-#include "../../libdimension/dimension_impl.h"
+#include "dimension_impl.h"
 #include <stdio.h>
 #include <stdlib.h>
 

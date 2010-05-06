@@ -20,7 +20,7 @@
 #ifndef TESTS_H
 #define TESTS_H
 
-#include "../libdimension/dimension.h"
+#include "dimension.h"
 #include <GL/glx.h>
 #include <GL/gl.h>
 #include <unistd.h>

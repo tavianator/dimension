@@ -20,7 +20,7 @@
 #ifndef PROGRESSBAR_H
 #define PROGRESSBAR_H
 
-#include "../libdimension/dimension.h"
+#include "dimension.h"
 #include "utility.h" /* For DMNSN_PRINTF_WARN */
 
 /* Print a progress bar of the progress of `progress' */

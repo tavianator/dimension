@@ -20,7 +20,7 @@
 #ifndef REALIZE_H
 #define REALIZE_H
 
-#include "../libdimension/dimension.h"
+#include "dimension.h"
 #include "parse.h"
 
 dmnsn_scene *dmnsn_realize(FILE *file, dmnsn_symbol_table *symtable);

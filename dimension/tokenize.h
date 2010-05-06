@@ -20,7 +20,7 @@
 #ifndef TOKENIZE_H
 #define TOKENIZE_H
 
-#include "../libdimension/dimension.h"
+#include "dimension.h"
 #include "parse.h"
 
 #define yytokentype dmnsn_yytokentype
