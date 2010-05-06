@@ -22,10 +22,72 @@
  */
 
 #include "../../libdimension/dimension_impl.h"
+#include <stdio.h>
 #include <stdlib.h>
+
+unsigned int calls = 0;
+
+bool
+dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line,
+                           dmnsn_intersection *intersection)
+{
+  intersection->t = (object->bounding_box.min.z - line.x0.z)/line.n.z;
+  ++calls;
+  return true;
+}
+
+void
+dmnsn_randomize_bounding_box(dmnsn_object *object)
+{
+  dmnsn_vector a, b;
+
+  a.x = 2.0*((double)rand())/RAND_MAX - 1.0;
+  a.y = 2.0*((double)rand())/RAND_MAX - 1.0;
+  a.z = 2.0*((double)rand())/RAND_MAX - 1.0;
+
+  b.x = 2.0*((double)rand())/RAND_MAX - 1.0;
+  b.y = 2.0*((double)rand())/RAND_MAX - 1.0;
+  b.z = 2.0*((double)rand())/RAND_MAX - 1.0;
+
+  object->bounding_box.min = dmnsn_vector_min(a, b);
+  object->bounding_box.max = dmnsn_vector_max(a, b);
+}
 
 int
 main()
 {
+  const size_t nobjects = 128;
+  dmnsn_scene *scene = dmnsn_new_scene();
+
+  size_t i;
+  for (i = 0; i < nobjects; ++i) {
+    dmnsn_object *object = dmnsn_new_object();
+    dmnsn_randomize_bounding_box(object);
+    object->intersection_fn = &dmnsn_fake_intersection_fn;
+    dmnsn_array_push(scene->objects, &object);
+  }
+
+  dmnsn_prtree *prtree = dmnsn_new_prtree(scene->objects);
+
+  dmnsn_intersection intersection;
+  dmnsn_line ray = dmnsn_new_line(
+    dmnsn_new_vector(0.0, 0.0, -2.0),
+    dmnsn_new_vector(0.0, 0.0, 1.0)
+  );
+
+  if (!dmnsn_prtree_search(prtree, ray, &intersection)) {
+    fprintf(stderr, "--- Didn't find intersection! ---\n");
+    return EXIT_FAILURE;
+  }
+
+  if (calls > DMNSN_PRTREE_B) {
+    fprintf(stderr,
+            "--- Too many intersection function calls: %u! ---\n",
+            calls);
+    return EXIT_FAILURE;
+  }
+
+  dmnsn_delete_prtree(prtree);
+  dmnsn_delete_scene(scene);
   return EXIT_SUCCESS;
 }
