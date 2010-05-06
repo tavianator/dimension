@@ -29,7 +29,6 @@ main()
   uint32_t object = 1;
   void *ptr;
   size_t size;
-  unsigned int i;
   const unsigned int count = 32;
 
   sandglass_t sandglass;
@@ -53,7 +52,7 @@ main()
 
   printf("dmnsn_array_push():");
 
-  for (i = 0; i < count; ++i) {
+  for (unsigned int i = 0; i < count; ++i) {
     sandglass_bench_noprecache(&sandglass, dmnsn_array_push(array, &object));
     printf(" %ld", sandglass.grains);
   }
@@ -87,7 +86,7 @@ main()
 
   printf("dmnsn_array_insert():");
 
-  for (i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     sandglass_bench_noprecache(&sandglass,
                                dmnsn_array_insert(array, count/2, &object));
     printf(" %ld", sandglass.grains);
@@ -98,7 +97,7 @@ main()
 
   printf("dmnsn_array_remove():");
 
-  for (i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     sandglass_bench_noprecache(&sandglass,
                                dmnsn_array_remove(array, count/2));
     printf(" %ld", sandglass.grains);
@@ -109,7 +108,7 @@ main()
 
   printf("dmnsn_array_pop():");
 
-  for (i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     sandglass_bench_noprecache(&sandglass, dmnsn_array_pop(array, &object));
     printf(" %ld", sandglass.grains);
   }

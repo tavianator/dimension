@@ -65,8 +65,7 @@ dmnsn_new_astnode(dmnsn_astnode_type type, YYLTYPE lloc)
 static void
 dmnsn_copy_children(dmnsn_astnode dest, dmnsn_astnode src)
 {
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(src.children); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(src.children); ++i) {
     dmnsn_astnode node;
     dmnsn_array_get(src.children, i, &node);
     ++*node.refcount;

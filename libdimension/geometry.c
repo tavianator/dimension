@@ -244,24 +244,23 @@ dmnsn_matrix_inverse_generic(dmnsn_matrix A)
    */
   dmnsn_matrix inv;
   double det = 0.0, C;
-  unsigned int i, j;
 
   /* Perform a Laplace expansion along the first row to give us the adjugate's
      first column and the determinant */
-  for (j = 0; j < 4; ++j) {
+  for (size_t j = 0; j < 4; ++j) {
     C = dmnsn_matrix_cofactor(A, 0, j);
     det += A.n[0][j]*C;
     inv.n[j][0] = C;
   }
 
   /* Divide the first column by the determinant */
-  for (j = 0; j < 4; ++j) {
+  for (size_t j = 0; j < 4; ++j) {
     inv.n[j][0] /= det;
   }
 
   /* Find columns 2 through 4 */
-  for (i = 1; i < 4; ++i) {
-    for (j = 0; j < 4; ++j) {
+  for (size_t i = 1; i < 4; ++i) {
+    for (size_t j = 0; j < 4; ++j) {
       inv.n[j][i] = dmnsn_matrix_cofactor(A, i, j)/det;
     }
   }
@@ -276,10 +275,10 @@ dmnsn_matrix_cofactor(dmnsn_matrix A, unsigned int row, unsigned int col)
 {
   /* 9 multiplications, 5 additions */
   double n[9], C;
-  unsigned int i, j, k = 0;
+  unsigned int k = 0;
 
-  for (i = 0; i < 4; ++i) {
-    for (j = 0; j < 4; ++j) {
+  for (size_t i = 0; i < 4; ++i) {
+    for (size_t j = 0; j < 4; ++j) {
       if (i != row && j != col) {
         n[k] = A.n[i][j];
         ++k;

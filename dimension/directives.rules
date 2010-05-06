@@ -77,19 +77,18 @@ LANGUAGE_DIRECTIVE: "#include" STRING {
                                  "Attempt to expand non-macro.");
                     dmnsn_delete_astnode($1);
 
-                    unsigned int nparams = dmnsn_array_size(node->children);
-                    unsigned int nparams_given = dmnsn_array_size($3.children);
+                    size_t nparams = dmnsn_array_size(node->children);
+                    size_t nparams_given = dmnsn_array_size($3.children);
 
                     if (nparams_given != nparams) {
                       dmnsn_diagnostic(@$, "wrong number of macro arguments"
-                                           " (%u; should be %u)",
+                                           " (%zu; should be %zu)",
                                        nparams_given, nparams);
                       dmnsn_delete_astnode($3);
                       YYERROR;
                     }
 
-                    unsigned int i;
-                    for (i = 0; i < nparams; ++i) {
+                    for (size_t i = 0; i < nparams; ++i) {
                       dmnsn_astnode id, param;
                       dmnsn_array_get(node->children, i, &id);
                       dmnsn_array_get($3.children, i, &param);

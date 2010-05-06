@@ -52,9 +52,8 @@ main()
   dmnsn_prtree *tree;
   dmnsn_intersection intersection;
   dmnsn_line ray;
-  const unsigned int nobjects = 128;
+  const size_t nobjects = 128;
   dmnsn_array *objects;
-  unsigned int i;
 
   sandglass_t sandglass;
   if (sandglass_init_monotonic(&sandglass, SANDGLASS_CPUTIME) != 0) {
@@ -63,7 +62,7 @@ main()
   }
 
   objects = dmnsn_new_array(sizeof(dmnsn_object *));
-  for (i = 0; i < nobjects; ++i) {
+  for (size_t i = 0; i < nobjects; ++i) {
     dmnsn_object *object = dmnsn_new_object();
     /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
     dmnsn_randomize_bounding_box(object);
@@ -87,7 +86,7 @@ main()
 
   /* Cleanup */
   dmnsn_delete_prtree(tree);
-  for (i = 0; i < nobjects; ++i) {
+  for (size_t i = 0; i < nobjects; ++i) {
     dmnsn_object *object;
     dmnsn_array_get(objects, i, &object);
     dmnsn_delete_object(object);

@@ -152,8 +152,7 @@ OBJECT: FINITE_SOLID_OBJECT
             *modifiers = dmnsn_new_astnode(DMNSN_AST_OBJECT_MODIFIERS, @4);
             dmnsn_copy_children(*modifiers, orig_modifiers);
 
-            unsigned int i;
-            for (i = 0; i < dmnsn_array_size($4.children); ++i) {
+            for (size_t i = 0; i < dmnsn_array_size($4.children); ++i) {
               dmnsn_astnode astnode;
               dmnsn_array_get($4.children, i, &astnode);
               ++*astnode.refcount;
@@ -186,8 +185,7 @@ OBJECT: FINITE_SOLID_OBJECT
                         dmnsn_array_size($$.children) - 1,
                         &modifiers);
 
-        unsigned int i;
-        for (i = 0; i < dmnsn_array_size($4.children); ++i) {
+        for (size_t i = 0; i < dmnsn_array_size($4.children); ++i) {
           dmnsn_astnode astnode;
           dmnsn_array_get($4.children, i, &astnode);
           ++*astnode.refcount;

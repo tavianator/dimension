@@ -24,7 +24,7 @@
 
 /* Allocate a new canvas, of width x and height y */
 dmnsn_canvas *
-dmnsn_new_canvas(unsigned int x, unsigned int y)
+dmnsn_new_canvas(size_t x, size_t y)
 {
   /* Allocate the dmnsn_canvas struct */
   dmnsn_canvas *canvas = dmnsn_malloc(sizeof(dmnsn_canvas));
@@ -46,12 +46,10 @@ dmnsn_new_canvas(unsigned int x, unsigned int y)
 void
 dmnsn_delete_canvas(dmnsn_canvas *canvas)
 {
-  unsigned int i;
-  dmnsn_canvas_optimizer optimizer;
-
   if (canvas) {
     /* Free the optimizers */
-    for (i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
+    for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
+      dmnsn_canvas_optimizer optimizer;
       dmnsn_array_get(canvas->optimizers, i, &optimizer);
       if (optimizer.free_fn) {
         (*optimizer.free_fn)(optimizer.ptr);
@@ -74,17 +72,16 @@ dmnsn_optimize_canvas(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer)
 
 /* Set the color of a pixel */
 void
-dmnsn_set_pixel(dmnsn_canvas *canvas, unsigned int x, unsigned int y,
+dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
                 dmnsn_color color)
 {
-  unsigned int i;
   dmnsn_canvas_optimizer optimizer;
 
   /* Set the pixel */
   canvas->pixels[y*canvas->x + x] = color;
 
   /* Call the optimizers */
-  for (i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
     dmnsn_array_get(canvas->optimizers, i, &optimizer);
     (*optimizer.optimizer_fn)(canvas, optimizer, x, y);
   }
@@ -94,10 +91,8 @@ dmnsn_set_pixel(dmnsn_canvas *canvas, unsigned int x, unsigned int y,
 void
 dmnsn_clear_canvas(dmnsn_canvas *canvas, dmnsn_color color)
 {
-  unsigned int x;
-  for (x = 0; x < canvas->x; ++x) {
-    unsigned int y;
-    for (y = 0; y < canvas->y; ++y) {
+  for (size_t x = 0; x < canvas->x; ++x) {
+    for (size_t y = 0; y < canvas->y; ++y) {
       dmnsn_set_pixel(canvas, x, y, color);
     }
   }

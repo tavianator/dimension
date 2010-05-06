@@ -30,17 +30,16 @@
 /* PNG optimizer callback */
 static void dmnsn_png_optimizer_fn(dmnsn_canvas *canvas,
                                    dmnsn_canvas_optimizer optimizer,
-                                   unsigned int x, unsigned int y);
+                                   size_t x, size_t y);
 
 /* Optimize canvas for PNG exporting */
 int
 dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
 {
   dmnsn_canvas_optimizer optimizer;
-  unsigned int i;
 
   /* Check if we've already optimized this canvas */
-  for (i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
     dmnsn_array_get(canvas->optimizers, i, &optimizer);
     if (optimizer.optimizer_fn == &dmnsn_png_optimizer_fn) {
       return 0;
@@ -59,7 +58,7 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
 /* PNG optimizer callback */
 static void
 dmnsn_png_optimizer_fn(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer,
-                       unsigned int x, unsigned int y)
+                       size_t x, size_t y)
 {
   dmnsn_color color;
   dmnsn_sRGB sRGB;
@@ -231,7 +230,6 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   png_structp png_ptr;
   png_infop info_ptr;
   png_uint_32 width, height;
-  unsigned int i, x, y;
   uint16_t *row = NULL;
   dmnsn_color color;
   dmnsn_sRGB sRGB;
@@ -289,10 +287,10 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   }
 
   /* Check if we can optimize this */
-  for (i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
     dmnsn_array_get(canvas->optimizers, i, &optimizer);
     if (optimizer.optimizer_fn == &dmnsn_png_optimizer_fn) {
-      for (y = 0; y < height; ++y) {
+      for (size_t y = 0; y < height; ++y) {
         /* Invert the rows.  PNG coordinates are fourth quadrant. */
         uint16_t *row = (uint16_t *)optimizer.ptr + 4*(height - y - 1)*width;
         png_write_row(png_ptr, (png_bytep)row);
@@ -310,8 +308,8 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   row = dmnsn_malloc(4*sizeof(uint16_t)*width);
 
   /* Write the pixels */
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x) {
+  for (size_t y = 0; y < height; ++y) {
+    for (size_t x = 0; x < width; ++x) {
       /* Invert the rows.  PNG coordinates are fourth quadrant. */
       color = dmnsn_get_pixel(canvas, x, height - y - 1);
       sRGB = dmnsn_sRGB_from_color(color);
@@ -388,7 +386,6 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
     number_of_passes;
   png_bytep image = NULL;
   png_bytep *row_pointers = NULL;
-  unsigned int x, y;
   dmnsn_color color;
   dmnsn_sRGB sRGB;
   png_bytep png_pixel;
@@ -500,7 +497,7 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
   /* Allocate and set an array of pointers to rows in image */
   row_pointers = dmnsn_malloc(sizeof(png_bytep)*height);
 
-  for (y = 0; y < height; ++y) {
+  for (size_t y = 0; y < height; ++y) {
     row_pointers[y] = image + y*rowbytes;
   }
 
@@ -517,8 +514,8 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
      loops, although that doesn't really matter for a decent compiler. */
   if (bit_depth == 16) {
     if (color_type & PNG_COLOR_MASK_ALPHA) {
-      for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
+      for (size_t y = 0; y < height; ++y) {
+        for (size_t x = 0; x < width; ++x) {
           png_pixel = image + 8*(y*width + x);
 
           sRGB.R = ((double)((png_pixel[0] << UINT16_C(8)) + png_pixel[1]))
@@ -536,8 +533,8 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
         dmnsn_increment_progress(progress);
       }
     } else {
-      for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
+      for (size_t y = 0; y < height; ++y) {
+        for (size_t x = 0; x < width; ++x) {
           png_pixel = image + 6*(y*width + x);
 
           sRGB.R = ((double)((png_pixel[0] << UINT16_C(8)) + png_pixel[1]))
@@ -556,8 +553,8 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
   } else {
     /* Bit depth is 8 */
     if (color_type & PNG_COLOR_MASK_ALPHA) {
-      for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
+      for (size_t y = 0; y < height; ++y) {
+        for (size_t x = 0; x < width; ++x) {
           png_pixel = image + 4*(y*width + x);
 
           sRGB.R = ((double)png_pixel[0])/UINT8_MAX;
@@ -571,8 +568,8 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
         dmnsn_increment_progress(progress);
       }
     } else {
-      for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
+      for (size_t y = 0; y < height; ++y) {
+        for (size_t x = 0; x < width; ++x) {
           png_pixel = image + 3*(y*width + x);
 
           sRGB.R = ((double)png_pixel[0])/UINT8_MAX;

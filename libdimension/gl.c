@@ -26,17 +26,16 @@
 /* GL optimizer callback */
 static void dmnsn_gl_optimizer_fn(dmnsn_canvas *canvas,
                                   dmnsn_canvas_optimizer optimizer,
-                                  unsigned int x, unsigned int y);
+                                  size_t x, size_t y);
 
 /* Optimize canvas for GL drawing */
 int
 dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 {
   dmnsn_canvas_optimizer optimizer;
-  unsigned int i;
 
   /* Check if we've already optimized this canvas */
-  for (i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
     dmnsn_array_get(canvas->optimizers, i, &optimizer);
     if (optimizer.optimizer_fn == &dmnsn_gl_optimizer_fn) {
       return 0;
@@ -63,13 +62,12 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   GLushort *pixel;
   dmnsn_sRGB sRGB;
   dmnsn_color color;
-  unsigned int i, x, y, width, height;
 
-  width = canvas->x;
-  height = canvas->y;
+  size_t width = canvas->x;
+  size_t height = canvas->y;
 
   /* Check if we can optimize this */
-  for (i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
     dmnsn_array_get(canvas->optimizers, i, &optimizer);
     if (optimizer.optimizer_fn == &dmnsn_gl_optimizer_fn) {
       glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT, optimizer.ptr);
@@ -80,8 +78,8 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   /* We couldn't, so transform the canvas to RGB now */
   pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
 
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x) {
+  for (size_t y = 0; y < height; ++y) {
+    for (size_t x = 0; x < width; ++x) {
       pixel = pixels + 4*(y*width + x);
 
       color = dmnsn_get_pixel(canvas, x, y);
@@ -126,15 +124,14 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 
 /* Read a canvas from a GL framebuffer.  Returns NULL on failure. */
 dmnsn_canvas *
-dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
-                     unsigned int width, unsigned int height)
+dmnsn_gl_read_canvas(size_t x0, size_t y0,
+                     size_t width, size_t height)
 {
   dmnsn_canvas *canvas;
   GLushort *pixels; /* Array of 16-bit ints in RGBA order */
   GLushort *pixel;
   dmnsn_sRGB sRGB;
   dmnsn_color color;
-  unsigned int x, y;
 
   canvas = dmnsn_new_canvas(width, height);
   pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
@@ -147,8 +144,8 @@ dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
     return NULL;
   }
 
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x) {
+  for (size_t y = 0; y < height; ++y) {
+    for (size_t x = 0; x < width; ++x) {
       pixel = pixels + 4*(y*width + x);
 
       sRGB.R = ((double)pixel[0])/UINT16_MAX;
@@ -168,7 +165,7 @@ dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
 /* GL optimizer callback */
 static void
 dmnsn_gl_optimizer_fn(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer,
-                      unsigned int x, unsigned int y)
+                      size_t x, size_t y)
 {
   dmnsn_color color;
   dmnsn_sRGB sRGB;

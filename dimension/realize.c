@@ -190,8 +190,7 @@ dmnsn_realize_global_settings(dmnsn_astnode astnode, dmnsn_scene *scene)
   dmnsn_assert(astnode.type == DMNSN_AST_GLOBAL_SETTINGS,
                "Expected global settings.");
 
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
     dmnsn_astnode item, child;
     dmnsn_array_get(astnode.children, i, &item);
 
@@ -228,8 +227,7 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
 
   dmnsn_camera *camera = NULL;
 
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
     dmnsn_astnode item;
     dmnsn_array_get(astnode.children, i, &item);
 
@@ -410,8 +408,7 @@ dmnsn_realize_pigment_modifiers(dmnsn_astnode astnode, dmnsn_pigment *pigment)
   dmnsn_assert(astnode.type == DMNSN_AST_PIGMENT_MODIFIERS,
                "Expected pigment modifiers.");
 
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
     dmnsn_astnode modifier;
     dmnsn_array_get(astnode.children, i, &modifier);
 
@@ -510,8 +507,7 @@ dmnsn_realize_reflection(dmnsn_astnode astnode)
   dmnsn_astnode items;
   dmnsn_array_get(astnode.children, 2, &items);
 
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(items.children); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(items.children); ++i) {
     dmnsn_astnode item, child;
     dmnsn_array_get(items.children, i, &item);
 
@@ -549,8 +545,7 @@ dmnsn_realize_finish(dmnsn_astnode astnode)
 
   dmnsn_finish *reflection = NULL;
 
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
     dmnsn_astnode item, child;
     dmnsn_array_get(astnode.children, i, &item);
 
@@ -621,8 +616,7 @@ dmnsn_realize_texture(dmnsn_astnode astnode)
 
   dmnsn_texture *texture = dmnsn_new_texture();
 
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
     dmnsn_astnode item;
     dmnsn_array_get(astnode.children, i, &item);
 
@@ -659,8 +653,7 @@ dmnsn_realize_interior(dmnsn_astnode astnode)
 
   dmnsn_interior *interior = dmnsn_new_interior();
 
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
     dmnsn_astnode item, child;
     dmnsn_array_get(astnode.children, i, &item);
 
@@ -687,8 +680,7 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
   /* Save the pre-existing transformations */
   dmnsn_matrix existing_trans = dmnsn_matrix_inverse(object->trans);
 
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
     dmnsn_astnode modifier;
     dmnsn_array_get(astnode.children, i, &modifier);
 
@@ -746,8 +738,7 @@ dmnsn_realize_light_source_modifiers(dmnsn_astnode astnode, dmnsn_light *light)
   dmnsn_assert(astnode.type == DMNSN_AST_OBJECT_MODIFIERS,
                "Expected object modifiers.");
 
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
     dmnsn_astnode modifier;
     dmnsn_array_get(astnode.children, i, &modifier);
 
@@ -899,7 +890,7 @@ dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
   dmnsn_array_get(astnode.children, 0, &objects);
   dmnsn_array_get(astnode.children, 1, &modifiers);
 
-  unsigned int i;
+  size_t i;
   dmnsn_object *csg = NULL;
   for (i = 0; i < dmnsn_array_size(objects.children) && !csg; ++i) {
     dmnsn_astnode onode;
@@ -1019,9 +1010,7 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
    */
 
   dmnsn_astnode astnode;
-  unsigned int i;
-
-  for (i = 0; i < dmnsn_array_size(astree); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(astree); ++i) {
     dmnsn_array_get(astree, i, &astnode);
 
     dmnsn_light  *light;

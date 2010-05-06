@@ -422,8 +422,7 @@ void
 dmnsn_delete_tokens(dmnsn_array *tokens)
 {
   dmnsn_token token;
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(tokens); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(tokens); ++i) {
     dmnsn_array_get(tokens, i, &token);
     dmnsn_delete_token(token);
   }
@@ -455,7 +454,6 @@ void
 dmnsn_print_token_sexpr(FILE *file, const dmnsn_array *tokens)
 {
   dmnsn_token token;
-  unsigned int i;
 
   if (dmnsn_array_size(tokens) == 0) {
     fprintf(file, "()");
@@ -464,7 +462,7 @@ dmnsn_print_token_sexpr(FILE *file, const dmnsn_array *tokens)
     dmnsn_array_get(tokens, 0, &token);
     dmnsn_print_token(file, token);
 
-    for (i = 1; i < dmnsn_array_size(tokens); ++i) {
+    for (size_t i = 1; i < dmnsn_array_size(tokens); ++i) {
       fprintf(file, " ");
       dmnsn_array_get(tokens, i, &token);
       dmnsn_print_token(file, token);

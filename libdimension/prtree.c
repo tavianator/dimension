@@ -219,8 +219,10 @@ dmnsn_priority_search(dmnsn_list *leaves, bool are_objects, int comparator)
   if (i) {
     double candidate = dmnsn_priority_get(i, are_objects, comparator);
 
-    dmnsn_list_iterator *j;
-    for (j = dmnsn_list_next(i); j != NULL; j = dmnsn_list_next(j)) {
+    for (dmnsn_list_iterator *j = dmnsn_list_next(i);
+         j != NULL;
+         j = dmnsn_list_next(j))
+    {
       double new_candidate = dmnsn_priority_get(j, are_objects, comparator);
       if (new_candidate < candidate) {
         candidate = new_candidate;
@@ -286,13 +288,12 @@ dmnsn_new_pseudo_prtree(dmnsn_list *leaves, bool are_objects, int comparator)
   } else {
     /* Make an internal node */
     pseudo->is_leaf = false;
-    size_t i;
-    for (i = 0; i < 6; ++i) {
+    for (size_t i = 0; i < 6; ++i) {
       pseudo->node.children[i].is_leaf = are_objects;
     }
 
     /* Fill the priority leaves */
-    size_t j;
+    size_t i, j;
     for (i = 0; i < DMNSN_PRTREE_B; ++i) {
       for (j = 0; j < 6; ++j) {
         dmnsn_list_iterator *k = dmnsn_priority_search(leaves, are_objects, j);
@@ -377,8 +378,7 @@ dmnsn_new_prtree_node(const dmnsn_pseudo_prleaf *leaf)
   node->is_leaf      = leaf->is_leaf;
   node->bounding_box = leaf->bounding_box;
 
-  size_t i;
-  for (i = 0; i < DMNSN_PRTREE_B; ++i) {
+  for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
     node->children[i] = leaf->children[i];
   }
 
@@ -403,8 +403,7 @@ dmnsn_pseudo_prtree_leaves_recursive(const dmnsn_pseudo_prtree *node,
   if (node->is_leaf) {
     dmnsn_pseudo_prtree_add_leaf(&node->leaf, leaves);
   } else {
-    size_t i;
-    for (i = 0; i < 6; ++i) {
+    for (size_t i = 0; i < 6; ++i) {
       dmnsn_pseudo_prtree_add_leaf(&node->node.children[i], leaves);
     }
     dmnsn_pseudo_prtree_leaves_recursive(node->node.left, leaves);
@@ -431,8 +430,7 @@ dmnsn_pseudo_prtree_leaves(const dmnsn_pseudo_prtree *pseudo)
 dmnsn_prtree *
 dmnsn_new_prtree(const dmnsn_array *objects)
 {
-  size_t i;
-  for (i = 0; i < dmnsn_array_size(objects); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(objects); ++i) {
     dmnsn_object *object;
     dmnsn_array_get(objects, i, &object);
     dmnsn_object_precompute(object);
@@ -463,8 +461,7 @@ dmnsn_delete_prtree(dmnsn_prtree *tree)
 {
   if (tree) {
     if (!tree->is_leaf) {
-      size_t i;
-      for (i = 0; i < DMNSN_PRTREE_B; ++i) {
+      for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
         dmnsn_delete_prtree(tree->children[i]);
       }
     }
@@ -480,8 +477,7 @@ dmnsn_prtree_search_recursive(const dmnsn_prtree *node, dmnsn_line ray,
                               dmnsn_intersection *intersection, double *t)
 {
   if (dmnsn_ray_box_intersection(ray, node->bounding_box, *t)) {
-    size_t i;
-    for (i = 0; i < DMNSN_PRTREE_B; ++i) {
+    for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
       if (!node->children[i])
         break;
 

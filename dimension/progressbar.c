@@ -45,8 +45,8 @@ dmnsn_progressbar(const char *format, const dmnsn_progress *progress, ...)
     width = ws.ws_col;
   }
 
-  unsigned int i, increments = width - (len % width);
-  for (i = 0; i < increments; ++i) {
+  unsigned int increments = width - (len % width);
+  for (unsigned int i = 0; i < increments; ++i) {
     dmnsn_wait_progress(progress, ((double)(i + 1))/increments);
 
     printf(".");

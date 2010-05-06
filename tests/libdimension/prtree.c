@@ -59,8 +59,7 @@ main()
   const size_t nobjects = 128;
   dmnsn_scene *scene = dmnsn_new_scene();
 
-  size_t i;
-  for (i = 0; i < nobjects; ++i) {
+  for (size_t i = 0; i < nobjects; ++i) {
     dmnsn_object *object = dmnsn_new_object();
     dmnsn_randomize_bounding_box(object);
     object->intersection_fn = &dmnsn_fake_intersection_fn;

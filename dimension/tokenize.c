@@ -38,7 +38,7 @@ typedef struct dmnsn_token_buffer {
 
   dmnsn_parse_location lloc;
   dmnsn_array *buffered;
-  unsigned int i;
+  size_t i;
 
   struct dmnsn_token_buffer *prev;
 
@@ -67,8 +67,7 @@ dmnsn_delete_token_buffer(void *ptr)
 {
   dmnsn_token_buffer *tbuffer = ptr;
   if (tbuffer) {
-    unsigned int i;
-    for (i = 0; i < dmnsn_array_size(tbuffer->buffered); ++i) {
+    for (size_t i = 0; i < dmnsn_array_size(tbuffer->buffered); ++i) {
       dmnsn_buffered_token buffered;
       dmnsn_array_get(tbuffer->buffered, i, &buffered);
       free(buffered.lval.value);

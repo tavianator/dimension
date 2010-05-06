@@ -108,11 +108,10 @@ dmnsn_get_progress(const dmnsn_progress *progress)
 {
   dmnsn_progress_element *element;
   double prog = 0.0;
-  unsigned int i, size;
 
   dmnsn_progress_rdlock(progress);
-    size = dmnsn_array_size(progress->elements);
-    for (i = 0; i < size; ++i) {
+    size_t size = dmnsn_array_size(progress->elements);
+    for (size_t i = 0; i < size; ++i) {
       element = dmnsn_array_at(progress->elements, size - i - 1);
       prog += element->progress;
       prog /= element->total;

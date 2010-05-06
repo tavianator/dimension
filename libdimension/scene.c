@@ -50,16 +50,15 @@ void
 dmnsn_delete_scene(dmnsn_scene *scene)
 {
   if (scene) {
-    unsigned int i;
     dmnsn_light *light;
     dmnsn_object *object;
 
-    for (i = 0; i < dmnsn_array_size(scene->lights); ++i) {
+    for (size_t i = 0; i < dmnsn_array_size(scene->lights); ++i) {
       dmnsn_array_get(scene->lights, i, &light);
       dmnsn_delete_light(light);
     }
 
-    for (i = 0; i < dmnsn_array_size(scene->objects); ++i) {
+    for (size_t i = 0; i < dmnsn_array_size(scene->objects); ++i) {
       dmnsn_array_get(scene->objects, i, &object);
       dmnsn_delete_object(object);
     }

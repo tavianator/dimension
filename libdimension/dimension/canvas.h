@@ -25,9 +25,11 @@
 #ifndef DIMENSION_CANVAS_H
 #define DIMENSION_CANVAS_H
 
+#include <stddef.h>
+
 typedef struct {
   /* width, height */
-  unsigned int x, y;
+  size_t x, y;
 
   /* An array of dmnsn_canvas_optimizer's */
   dmnsn_array *optimizers;
@@ -45,7 +47,7 @@ typedef struct dmnsn_canvas_optimizer dmnsn_canvas_optimizer;
 /* Canvas optimizer callback types */
 typedef void dmnsn_canvas_optimizer_fn(dmnsn_canvas *canvas,
                                        dmnsn_canvas_optimizer optimizer,
-                                       unsigned int x, unsigned int y);
+                                       size_t x, size_t y);
 
 /* Canvas optimizer */
 struct dmnsn_canvas_optimizer {
@@ -58,7 +60,7 @@ struct dmnsn_canvas_optimizer {
 };
 
 /* Allocate and free a canvas */
-dmnsn_canvas *dmnsn_new_canvas(unsigned int x, unsigned int y);
+dmnsn_canvas *dmnsn_new_canvas(size_t x, size_t y);
 void dmnsn_delete_canvas(dmnsn_canvas *canvas);
 
 /* Set a canvas optimizer */
@@ -68,12 +70,12 @@ void dmnsn_optimize_canvas(dmnsn_canvas *canvas,
 /* Pixel accessors */
 
 DMNSN_INLINE dmnsn_color
-dmnsn_get_pixel(const dmnsn_canvas *canvas, unsigned int x, unsigned int y)
+dmnsn_get_pixel(const dmnsn_canvas *canvas, size_t x, size_t y)
 {
   return canvas->pixels[y*canvas->x + x];
 }
 
-void dmnsn_set_pixel(dmnsn_canvas *canvas, unsigned int x, unsigned int y,
+void dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
                      dmnsn_color color);
 void dmnsn_clear_canvas(dmnsn_canvas *canvas, dmnsn_color color);
 

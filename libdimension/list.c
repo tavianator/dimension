@@ -25,8 +25,7 @@ dmnsn_list_from_array(const dmnsn_array *array)
 {
   dmnsn_list *list = dmnsn_new_list(array->obj_size);
 
-  size_t i;
-  for (i = 0; i < dmnsn_array_size(array); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(array); ++i) {
     dmnsn_list_push(list, dmnsn_array_at(array, i));
   }
 

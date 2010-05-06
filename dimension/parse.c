@@ -44,8 +44,7 @@ dmnsn_delete_patricia_trie(dmnsn_patricia_trie *trie)
     if (trie->leaf)
       dmnsn_delete_astnode(trie->value);
 
-    unsigned int i;
-    for (i = 0; i < dmnsn_array_size(trie->children); ++i) {
+    for (size_t i = 0; i < dmnsn_array_size(trie->children); ++i) {
       dmnsn_patricia_trie *subtrie;
       dmnsn_array_get(trie->children, i, &subtrie);
       dmnsn_delete_patricia_trie(subtrie);
@@ -289,8 +288,7 @@ dmnsn_declare_symbol(dmnsn_symbol_table *symtable,
 void
 dmnsn_undef_symbol(dmnsn_symbol_table *symtable, const char *id)
 {
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(symtable); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(symtable); ++i) {
     dmnsn_patricia_trie *trie;
     dmnsn_array_get(symtable, dmnsn_array_size(symtable) - i - 1, &trie);
     if (dmnsn_patricia_remove(trie, id))
@@ -303,8 +301,7 @@ dmnsn_find_symbol(dmnsn_symbol_table *symtable, const char *id)
 {
   dmnsn_astnode *symbol = NULL;
 
-  unsigned int i;
-  for (i = 0; i < dmnsn_array_size(symtable); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(symtable); ++i) {
     dmnsn_patricia_trie *trie;
     dmnsn_array_get(symtable, dmnsn_array_size(symtable) - i - 1, &trie);
 
@@ -472,8 +469,7 @@ void
 dmnsn_delete_astree(dmnsn_astree *astree)
 {
   if (astree) {
-    unsigned int i;
-    for (i = 0; i < dmnsn_array_size(astree); ++i) {
+    for (size_t i = 0; i < dmnsn_array_size(astree); ++i) {
       dmnsn_astnode node;
       dmnsn_array_get(astree, i, &node);
       dmnsn_delete_astnode(node);
@@ -518,8 +514,7 @@ dmnsn_vector_promote(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
   if (astnode.type == DMNSN_AST_VECTOR) {
     dmnsn_astnode component;
-    unsigned int i;
-    for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
       dmnsn_array_get(astnode.children, i, &component);
       component = dmnsn_eval_scalar(component, symtable);
 
@@ -609,8 +604,6 @@ dmnsn_eval_zeroary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 static dmnsn_astnode
 dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 {
-  unsigned int i;
-
   dmnsn_astnode rhs;
   dmnsn_array_get(astnode.children, 0, &rhs);
   rhs = dmnsn_eval(rhs, symtable);
@@ -684,7 +677,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
         dmnsn_astnode op = dmnsn_copy_astnode(astnode);
         dmnsn_array_resize(op.children, 1);
-        for (i = 0; i < DMNSN_VECTOR_NELEM; ++i) {
+        for (size_t i = 0; i < DMNSN_VECTOR_NELEM; ++i) {
           dmnsn_array_get(rhs.children, i, dmnsn_array_at(op.children, 0));
           dmnsn_astnode temp = dmnsn_eval_unary(op, symtable);
           dmnsn_array_set(ret.children, i, &temp);
@@ -957,8 +950,6 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 static dmnsn_astnode
 dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 {
-  unsigned int i;
-
   dmnsn_astnode lhs, rhs;
   dmnsn_array_get(astnode.children, 0, &lhs);
   dmnsn_array_get(astnode.children, 1, &rhs);
@@ -998,7 +989,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         dmnsn_array_push(rewrite.children, &l);
         dmnsn_array_push(rewrite.children, &r);
 
-        for (i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
+        for (size_t i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
           dmnsn_astnode temp = dmnsn_copy_astnode(astnode);
           dmnsn_array_get(lhs.children, i, &l);
           dmnsn_array_get(rhs.children, i, &r);
@@ -1031,7 +1022,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         dmnsn_array_push(rewrite.children, &l);
         dmnsn_array_push(rewrite.children, &r);
 
-        for (i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
+        for (size_t i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
           dmnsn_astnode temp = dmnsn_copy_astnode(astnode);
           dmnsn_array_get(lhs.children, i, &l);
           dmnsn_array_get(rhs.children, i, &r);
@@ -1065,7 +1056,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         dmnsn_array_push(rewrite.children, &l);
         dmnsn_array_push(rewrite.children, &r);
 
-        for (i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
+        for (size_t i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
           dmnsn_astnode temp = dmnsn_copy_astnode(astnode);
           temp.type = DMNSN_AST_OR;
           dmnsn_array_get(lhs.children, i, &l);
@@ -1100,7 +1091,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         dmnsn_array_push(rewrite.children, &l);
         dmnsn_array_push(rewrite.children, &r);
 
-        for (i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
+        for (size_t i = 1; i < DMNSN_VECTOR_NELEM; ++i) {
           dmnsn_astnode temp = dmnsn_copy_astnode(astnode);
           temp.type = DMNSN_AST_OR;
           dmnsn_array_get(lhs.children, i, &l);
@@ -1218,7 +1209,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
         dmnsn_array_push(rewrite.children, &l);
         dmnsn_array_push(rewrite.children, &r);
 
-        for (i = 1; i < 3; ++i) {
+        for (size_t i = 1; i < 3; ++i) {
           dmnsn_astnode temp = dmnsn_copy_astnode(astnode);
           temp.type = DMNSN_AST_MUL;
           dmnsn_array_get(lhs.children, i, &l);
@@ -1288,7 +1279,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
         dmnsn_astnode op = dmnsn_copy_astnode(astnode);
         dmnsn_array_resize(op.children, 2);
-        for (i = 0; i < DMNSN_VECTOR_NELEM; ++i) {
+        for (size_t i = 0; i < DMNSN_VECTOR_NELEM; ++i) {
           dmnsn_array_get(lhs.children, i, dmnsn_array_at(op.children, 0));
           dmnsn_array_get(rhs.children, i, dmnsn_array_at(op.children, 1));
           dmnsn_astnode temp = dmnsn_eval_binary(op, symtable);
@@ -1780,13 +1771,12 @@ dmnsn_print_astnode(FILE *file, dmnsn_astnode astnode)
 static void
 dmnsn_print_astree(FILE *file, dmnsn_astnode astnode)
 {
-  unsigned int i;
   dmnsn_astnode child;
 
   if (astnode.children && dmnsn_array_size(astnode.children) > 0) {
     fprintf(file, "(");
     dmnsn_print_astnode(file, astnode);
-    for (i = 0; i < dmnsn_array_size(astnode.children); ++i) {
+    for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
       dmnsn_array_get(astnode.children, i, &child);
       fprintf(file, " ");
       dmnsn_print_astree(file, child);
@@ -1801,7 +1791,6 @@ void
 dmnsn_print_astree_sexpr(FILE *file, const dmnsn_astree *astree)
 {
   dmnsn_astnode astnode;
-  unsigned int i;
 
   if (dmnsn_array_size(astree) == 0) {
     fprintf(file, "()");
@@ -1810,7 +1799,7 @@ dmnsn_print_astree_sexpr(FILE *file, const dmnsn_astree *astree)
     dmnsn_array_get(astree, 0, &astnode);
     dmnsn_print_astree(file, astnode);
 
-    for (i = 1; i < dmnsn_array_size(astree); ++i) {
+    for (size_t i = 1; i < dmnsn_array_size(astree); ++i) {
       fprintf(file, " ");
       dmnsn_array_get(astree, i, &astnode);
       dmnsn_print_astree(file, astnode);

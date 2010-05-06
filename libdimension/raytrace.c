@@ -96,7 +96,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
   dmnsn_raytrace_payload *payloads;
   pthread_t *threads;
 
-  unsigned int nthreads = payload->scene->nthreads;
+  int nthreads = payload->scene->nthreads;
   /* Sanity check */
   if (nthreads < 1)
     nthreads = 1;
@@ -109,15 +109,14 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
                              payload->scene->canvas->y);
 
   /* Create the payloads */
-  unsigned int i;
-  for (i = 0; i < nthreads; ++i) {
+  for (int i = 0; i < nthreads; ++i) {
     payloads[i] = *payload;
     payloads[i].index = i;
     payloads[i].threads = nthreads;
   }
 
   /* Create the threads */
-  for (i = 0; i < nthreads; ++i) {
+  for (int i = 0; i < nthreads; ++i) {
     if (pthread_create(&threads[i], NULL,
                        &dmnsn_raytrace_scene_multithread_thread,
                        &payloads[i]) != 0)
@@ -127,7 +126,7 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
     }
   }
 
-  for (i = 0; i < nthreads; ++i) {
+  for (int i = 0; i < nthreads; ++i) {
     if (pthread_join(threads[i], NULL)) {
       dmnsn_error(DMNSN_SEVERITY_MEDIUM,
                   "Couldn't join worker thread in raytrace engine.");
@@ -194,14 +193,12 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
     .ior    = 1.0
   };
 
-  unsigned int width  = scene->canvas->x;
-  unsigned int height = scene->canvas->y;
+  size_t width  = scene->canvas->x;
+  size_t height = scene->canvas->y;
 
   /* Iterate through each pixel */
-  unsigned int y;
-  for (y = index; y < height; y += threads) {
-    unsigned int x;
-    for (x = 0; x < width; ++x) {
+  for (size_t y = index; y < height; y += threads) {
+    for (size_t x = 0; x < width; ++x) {
       /* Set the pixel to the background color */
       dmnsn_color color = scene->background;
 
@@ -319,10 +316,9 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
   }
 
   const dmnsn_light *light;
-  unsigned int i;
 
   /* Iterate over each light */
-  for (i = 0; i < dmnsn_array_size(state->scene->lights); ++i) {
+  for (size_t i = 0; i < dmnsn_array_size(state->scene->lights); ++i) {
     dmnsn_array_get(state->scene->lights, i, &light);
 
     dmnsn_color light_color = dmnsn_raytrace_light_ray(state, light);

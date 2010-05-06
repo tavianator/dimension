@@ -20,6 +20,9 @@ AC_INIT(Dimension, 0.0.0, tavianator@gmail.com, dimension,
         [http://dmnsn.googlecode.com])
 AM_INIT_AUTOMAKE([parallel-tests])
 
+dnl Use C99 mode with GNU extensions
+CFLAGS="-std=gnu99 $CFLAGS"
+
 dnl Programs
 AC_PROG_CC
 AM_PROG_CC_C_O

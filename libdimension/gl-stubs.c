@@ -38,8 +38,8 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 }
 
 dmnsn_canvas *
-dmnsn_gl_read_canvas(unsigned int x0, unsigned int y0,
-                     unsigned int width, unsigned int height)
+dmnsn_gl_read_canvas(size_t x0, size_t y0,
+                     size_t width, size_t height)
 {
   errno = ENOTSUP;
   return NULL;
