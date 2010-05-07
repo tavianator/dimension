@@ -482,7 +482,7 @@ dmnsn_new_prtree(const dmnsn_array *objects)
     dmnsn_delete_pseudo_prtree(pseudo);
   }
 
-  dmnsn_prtree *prtree = dmnsn_malloc(sizeof(dmnsn_prtree *));
+  dmnsn_prtree *prtree = dmnsn_malloc(sizeof(dmnsn_prtree));
   dmnsn_list_get(dmnsn_list_first(leaves), &prtree->root);
   prtree->unbounded = dmnsn_array_from_list(unbounded);
 
