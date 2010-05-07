@@ -1754,8 +1754,10 @@ dmnsn_print_astnode(FILE *file, dmnsn_astnode astnode)
   case DMNSN_AST_FLOAT:
     dvalue = *(double *)astnode.ptr;
     /* Don't print -0 */
-    if (dvalue == 0.0) dvalue = 0.0;
-    fprintf(file, "(%s %g)", dmnsn_astnode_string(astnode.type), dvalue);
+    if (dvalue == 0.0)
+      fprintf(file, "(%s 0)", dmnsn_astnode_string(astnode.type));
+    else
+      fprintf(file, "(%s %g)", dmnsn_astnode_string(astnode.type), dvalue);
     break;
 
   case DMNSN_AST_STRING:
