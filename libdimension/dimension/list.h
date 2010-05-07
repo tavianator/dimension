@@ -76,39 +76,41 @@ dmnsn_new_list(size_t obj_size)
   return list;
 }
 
-/* Construction from arrays */
-dmnsn_list *dmnsn_list_from_array(const dmnsn_array *array);
+/* Construction to/from arrays */
+dmnsn_list  *dmnsn_list_from_array(const dmnsn_array *array);
+dmnsn_array *dmnsn_array_from_list(const dmnsn_list *list);
+
 /* Delete a list */
 void dmnsn_delete_list(dmnsn_list *list);
 
 DMNSN_INLINE dmnsn_list_iterator *
-dmnsn_list_first(dmnsn_list *list)
+dmnsn_list_first(const dmnsn_list *list)
 {
   return list->first;
 }
 
 DMNSN_INLINE dmnsn_list_iterator *
-dmnsn_list_last(dmnsn_list *list)
+dmnsn_list_last(const dmnsn_list *list)
 {
   return list->last;
 }
 
 DMNSN_INLINE dmnsn_list_iterator *
-dmnsn_list_prev(dmnsn_list_iterator *i)
+dmnsn_list_prev(const dmnsn_list_iterator *i)
 {
   dmnsn_assert(i, "NULL list iterator.");
   return i->prev;
 }
 
 DMNSN_INLINE dmnsn_list_iterator *
-dmnsn_list_next(dmnsn_list_iterator *i)
+dmnsn_list_next(const dmnsn_list_iterator *i)
 {
   dmnsn_assert(i, "NULL list iterator.");
   return i->next;
 }
 
 DMNSN_INLINE size_t
-dmnsn_list_size(dmnsn_list *list)
+dmnsn_list_size(const dmnsn_list *list)
 {
   return list->length;
 }
