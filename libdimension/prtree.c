@@ -70,7 +70,7 @@ dmnsn_priority_get(dmnsn_list_iterator *i, bool is_object, int comparator)
     dmnsn_list_get(i, &object);
     box = object->bounding_box;
   } else {
-    dmnsn_prtree *prnode;
+    dmnsn_prtree_node *prnode;
     dmnsn_list_get(i, &prnode);
     box = prnode->bounding_box;
   }
@@ -270,7 +270,7 @@ dmnsn_new_pseudo_prtree(dmnsn_list *leaves, bool are_objects, int comparator)
            ii != NULL;
            ++i, ii = dmnsn_list_next(ii))
       {
-        dmnsn_prtree *prnode;
+        dmnsn_prtree_node *prnode;
         dmnsn_list_get(ii, &prnode);
 
         pseudo->leaf.children[i] = prnode;
@@ -311,7 +311,7 @@ dmnsn_new_pseudo_prtree(dmnsn_list *leaves, bool are_objects, int comparator)
                                         object->bounding_box);
           }
         } else {
-          dmnsn_prtree *prnode;
+          dmnsn_prtree_node *prnode;
           dmnsn_list_get(k, &prnode);
           pseudo->node.children[j].children[i] = prnode;
           if (i == 0) {
@@ -371,10 +371,10 @@ dmnsn_delete_pseudo_prtree(dmnsn_pseudo_prtree *pseudo)
 }
 
 /* Construct a node from a pseudo leaf */
-static dmnsn_prtree *
+static dmnsn_prtree_node *
 dmnsn_new_prtree_node(const dmnsn_pseudo_prleaf *leaf)
 {
-  dmnsn_prtree *node = dmnsn_malloc(sizeof(dmnsn_prtree));
+  dmnsn_prtree_node *node = dmnsn_malloc(sizeof(dmnsn_prtree_node));
   node->is_leaf      = leaf->is_leaf;
   node->bounding_box = leaf->bounding_box;
 
@@ -391,7 +391,7 @@ dmnsn_pseudo_prtree_add_leaf(const dmnsn_pseudo_prleaf *leaf,
 {
   /* Don't add empty leaves */
   if (leaf->children[0]) {
-    dmnsn_prtree *prnode = dmnsn_new_prtree_node(leaf);
+    dmnsn_prtree_node *prnode = dmnsn_new_prtree_node(leaf);
     dmnsn_list_push(leaves, &prnode);
   }
 }
@@ -415,28 +415,61 @@ dmnsn_pseudo_prtree_leaves_recursive(const dmnsn_pseudo_prtree *node,
 static dmnsn_list *
 dmnsn_pseudo_prtree_leaves(const dmnsn_pseudo_prtree *pseudo)
 {
-  dmnsn_list *leaves = dmnsn_new_list(sizeof(dmnsn_prtree *));
+  dmnsn_list *leaves = dmnsn_new_list(sizeof(dmnsn_prtree_node *));
   dmnsn_pseudo_prtree_leaves_recursive(pseudo, leaves);
 
   if (dmnsn_list_size(leaves) == 0) {
-    dmnsn_prtree *prnode = dmnsn_new_prtree_node(&pseudo->leaf);
+    dmnsn_prtree_node *prnode = dmnsn_new_prtree_node(&pseudo->leaf);
     dmnsn_list_push(leaves, &prnode);
   }
 
   return leaves;
 }
 
-/* Construct a PR-tree from a bulk of objects */
-dmnsn_prtree *
-dmnsn_new_prtree(const dmnsn_array *objects)
+/* Pre-calculate bounding box transformations, etc. */
+static void
+dmnsn_precompute_objects(const dmnsn_array *objects)
 {
   for (size_t i = 0; i < dmnsn_array_size(objects); ++i) {
     dmnsn_object *object;
     dmnsn_array_get(objects, i, &object);
     dmnsn_object_precompute(object);
   }
+}
+
+/* Split the unbounded objects into a new list */
+static dmnsn_list *
+dmnsn_split_unbounded(dmnsn_list *objects)
+{
+  dmnsn_list *unbounded = dmnsn_new_list(sizeof(dmnsn_object *));
+
+  dmnsn_list_iterator *i = dmnsn_list_first(objects);
+  while (i) {
+    dmnsn_object *object;
+    dmnsn_list_get(i, &object);
+
+    if (isinf(object->bounding_box.min.x)) {
+      dmnsn_list_iterator *next = dmnsn_list_next(i);
+      dmnsn_list_iterator_remove(objects, i);
+      dmnsn_list_iterator_insert(unbounded, NULL, i);
+      i = next;
+    } else {
+      i = dmnsn_list_next(i);
+    }
+  }
+
+  return unbounded;
+}
+
+/* Construct a PR-tree from a bulk of objects */
+dmnsn_prtree *
+dmnsn_new_prtree(const dmnsn_array *objects)
+{
+  dmnsn_precompute_objects(objects);
 
   dmnsn_list *leaves = dmnsn_list_from_array(objects);
+  dmnsn_list *unbounded = dmnsn_split_unbounded(leaves);
+
   dmnsn_pseudo_prtree *pseudo = dmnsn_new_pseudo_prtree(leaves, true, 0);
   dmnsn_delete_list(leaves);
   leaves = dmnsn_pseudo_prtree_leaves(pseudo);
@@ -449,10 +482,27 @@ dmnsn_new_prtree(const dmnsn_array *objects)
     dmnsn_delete_pseudo_prtree(pseudo);
   }
 
-  dmnsn_prtree *root;
-  dmnsn_list_get(dmnsn_list_first(leaves), &root);
+  dmnsn_prtree *prtree = dmnsn_malloc(sizeof(dmnsn_prtree *));
+  dmnsn_list_get(dmnsn_list_first(leaves), &prtree->root);
+  prtree->unbounded = dmnsn_array_from_list(unbounded);
+
+  dmnsn_delete_list(unbounded);
   dmnsn_delete_list(leaves);
-  return root;
+  return prtree;
+}
+
+/* Free a PR-tree node */
+void
+dmnsn_delete_prtree_node(dmnsn_prtree_node *node)
+{
+  if (node) {
+    if (!node->is_leaf) {
+      for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
+        dmnsn_delete_prtree_node(node->children[i]);
+      }
+    }
+    free(node);
+  }
 }
 
 /* Free a PR-tree */
@@ -460,20 +510,18 @@ void
 dmnsn_delete_prtree(dmnsn_prtree *tree)
 {
   if (tree) {
-    if (!tree->is_leaf) {
-      for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
-        dmnsn_delete_prtree(tree->children[i]);
-      }
-    }
+    dmnsn_delete_prtree_node(tree->root);
+    dmnsn_delete_array(tree->unbounded);
     free(tree);
   }
 }
 
+/* Ray-AABB intersection test */
 static bool dmnsn_ray_box_intersection(dmnsn_line ray, dmnsn_bounding_box box,
                                        double t);
 
 static void
-dmnsn_prtree_search_recursive(const dmnsn_prtree *node, dmnsn_line ray,
+dmnsn_prtree_search_recursive(const dmnsn_prtree_node *node, dmnsn_line ray,
                               dmnsn_intersection *intersection, double *t)
 {
   if (dmnsn_ray_box_intersection(ray, node->bounding_box, *t)) {
@@ -505,7 +553,24 @@ dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
                     dmnsn_intersection *intersection)
 {
   double t = -1;
-  dmnsn_prtree_search_recursive(tree, ray, intersection, &t);
+
+  /* Search the unbounded objects */
+  for (size_t i = 0; i < dmnsn_array_size(tree->unbounded); ++i) {
+    dmnsn_object *object;
+    dmnsn_array_get(tree->unbounded, i, &object);
+
+    dmnsn_intersection local_intersection;
+    if ((*object->intersection_fn)(object, ray, &local_intersection)) {
+      if (t < 0.0 || local_intersection.t < t) {
+        *intersection = local_intersection;
+        t = local_intersection.t;
+      }
+    }
+  }
+
+  /* Search the bounded objects */
+  dmnsn_prtree_search_recursive(tree->root, ray, intersection, &t);
+
   return t >= 0.0;
 }
 

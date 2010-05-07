@@ -21,8 +21,8 @@
 /*
  * Priority R-Trees for storing bounding box hierarchies.  PR-trees are a data
  * structure introduced by Arge, de Berg, Haverkort, and Yi, which provides
- * asymptotically optimal worst-case lookup, while remaining efficient with real-world
- * data.  Their structure is derived from B-trees.
+ * asymptotically optimal worst-case lookup, while remaining efficient with
+ * real-world data.  Their structure is derived from B-trees.
  */
 
 #ifndef DIMENSION_IMPL_PRTREE_H
@@ -33,13 +33,18 @@
 /* Number of children per node */
 #define DMNSN_PRTREE_B 6
 
-typedef struct dmnsn_prtree {
+typedef struct dmnsn_prtree_node {
   /* Children (objects or subtrees) */
   void *children[DMNSN_PRTREE_B];
   bool is_leaf;
 
   /* Bounding box */
   dmnsn_bounding_box bounding_box;
+} dmnsn_prtree_node;
+
+typedef struct dmnsn_prtree {
+  dmnsn_prtree_node *root;
+  dmnsn_array *unbounded;
 } dmnsn_prtree;
 
 dmnsn_prtree *dmnsn_new_prtree(const dmnsn_array *objects);
