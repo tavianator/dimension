@@ -552,7 +552,7 @@ bool
 dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
                     dmnsn_intersection *intersection)
 {
-  double t = -1;
+  double t = -1.0;
 
   /* Search the unbounded objects */
   for (size_t i = 0; i < dmnsn_array_size(tree->unbounded); ++i) {
@@ -588,6 +588,9 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 
     if (tmin > tmax)
       return false;
+  } else {
+    if (line.x0.x < box.min.x || line.x0.x > box.max.x)
+      return false;
   }
 
   if (line.n.y != 0.0) {
@@ -599,6 +602,9 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 
     if (tmin > tmax)
       return false;
+  } else {
+    if (line.x0.y < box.min.y || line.x0.y > box.max.y)
+      return false;
   }
 
   if (line.n.z != 0.0) {
@@ -609,6 +615,9 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
     tmax = dmnsn_min(tmax, dmnsn_max(tz1, tz2));
 
     if (tmin > tmax)
+      return false;
+  } else {
+    if (line.x0.z < box.min.z || line.x0.z > box.max.z)
       return false;
   }
 

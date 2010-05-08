@@ -82,6 +82,9 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
 
     if (tmin > tmax)
       return false;
+  } else {
+    if (line_trans.x0.x < -1.0 || line_trans.x0.x > 1.0)
+      return false;
   }
 
   if (line_trans.n.y != 0.0) {
@@ -110,6 +113,9 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
 
     if (tmin > tmax)
       return false;
+  } else {
+    if (line_trans.x0.y < -1.0 || line_trans.x0.y > 1.0)
+      return false;
   }
 
   if (line_trans.n.z != 0.0) {
@@ -137,6 +143,9 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
     }
 
     if (tmin > tmax)
+      return false;
+  } else {
+    if (line_trans.x0.z < -1.0 || line_trans.x0.z > 1.0)
       return false;
   }
 
