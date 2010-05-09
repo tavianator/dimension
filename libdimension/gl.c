@@ -55,7 +55,6 @@ dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 int
 dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 {
-  dmnsn_canvas_optimizer optimizer;
   GLushort *pixels; /* Array of 16-bit ints in RGBA order */
   GLushort *pixel;
   dmnsn_sRGB sRGB;

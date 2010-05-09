@@ -36,8 +36,6 @@ static void dmnsn_png_optimizer_fn(dmnsn_canvas *canvas,
 int
 dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
 {
-  dmnsn_canvas_optimizer optimizer;
-
   /* Check if we've already optimized this canvas */
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
     if (i->optimizer_fn == &dmnsn_png_optimizer_fn) {
@@ -45,6 +43,7 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
     }
   }
 
+  dmnsn_canvas_optimizer optimizer;
   optimizer.optimizer_fn = &dmnsn_png_optimizer_fn;
   optimizer.free_fn = &free;
 
@@ -225,7 +224,6 @@ static int
 dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
                             const dmnsn_canvas *canvas, FILE *file)
 {
-  dmnsn_canvas_optimizer optimizer;
   png_structp png_ptr;
   png_infop info_ptr;
   png_uint_32 width, height;
