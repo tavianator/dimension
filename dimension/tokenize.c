@@ -67,10 +67,8 @@ dmnsn_delete_token_buffer(void *ptr)
 {
   dmnsn_token_buffer *tbuffer = ptr;
   if (tbuffer) {
-    for (size_t i = 0; i < dmnsn_array_size(tbuffer->buffered); ++i) {
-      dmnsn_buffered_token buffered;
-      dmnsn_array_get(tbuffer->buffered, i, &buffered);
-      free(buffered.lval.value);
+    DMNSN_ARRAY_FOREACH (dmnsn_buffered_token *, buffered, tbuffer->buffered) {
+      free(buffered->lval.value);
     }
 
     dmnsn_delete_array(tbuffer->buffered);

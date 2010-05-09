@@ -100,7 +100,21 @@ dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj)
   memcpy((char *)array->ptr + array->obj_size*i, obj, array->obj_size);
 }
 
-/* Element access */
+/* First element */
+DMNSN_INLINE void *
+dmnsn_array_first(const dmnsn_array *array)
+{
+  return array->ptr;
+}
+
+/* Last element */
+DMNSN_INLINE void *
+dmnsn_array_last(const dmnsn_array *array)
+{
+  return (char *)array->ptr + array->obj_size*(array->length - 1);
+}
+
+/* Arbitrary element access */
 DMNSN_INLINE void *
 dmnsn_array_at(const dmnsn_array *array, size_t i)
 {
@@ -155,5 +169,11 @@ dmnsn_array_remove(dmnsn_array *array, size_t i)
   /* Decrease the size by 1 */
   dmnsn_array_resize(array, size - 1);
 }
+
+/* Macro to shorten array iteration */
+#define DMNSN_ARRAY_FOREACH(type, i, array)     \
+  for (type i = dmnsn_array_first(array);       \
+       i <= (type)dmnsn_array_last(array);      \
+       ++i)
 
 #endif /* DIMENSION_ARRAY_H */

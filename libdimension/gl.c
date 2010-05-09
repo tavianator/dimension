@@ -32,16 +32,14 @@ static void dmnsn_gl_optimizer_fn(dmnsn_canvas *canvas,
 int
 dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 {
-  dmnsn_canvas_optimizer optimizer;
-
   /* Check if we've already optimized this canvas */
-  for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
-    dmnsn_array_get(canvas->optimizers, i, &optimizer);
-    if (optimizer.optimizer_fn == &dmnsn_gl_optimizer_fn) {
+  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
+    if (i->optimizer_fn == &dmnsn_gl_optimizer_fn) {
       return 0;
     }
   }
 
+  dmnsn_canvas_optimizer optimizer;
   optimizer.optimizer_fn = &dmnsn_gl_optimizer_fn;
   optimizer.free_fn = &free;
 
@@ -67,10 +65,9 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   size_t height = canvas->y;
 
   /* Check if we can optimize this */
-  for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
-    dmnsn_array_get(canvas->optimizers, i, &optimizer);
-    if (optimizer.optimizer_fn == &dmnsn_gl_optimizer_fn) {
-      glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT, optimizer.ptr);
+  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
+    if (i->optimizer_fn == &dmnsn_gl_optimizer_fn) {
+      glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT, i->ptr);
       return glGetError() == GL_NO_ERROR ? 0 : 1;
     }
   }

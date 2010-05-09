@@ -190,17 +190,16 @@ dmnsn_realize_global_settings(dmnsn_astnode astnode, dmnsn_scene *scene)
   dmnsn_assert(astnode.type == DMNSN_AST_GLOBAL_SETTINGS,
                "Expected global settings.");
 
-  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-    dmnsn_astnode item, child;
-    dmnsn_array_get(astnode.children, i, &item);
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, item, astnode.children) {
+    dmnsn_astnode child;
 
-    switch (item.type) {
+    switch (item->type) {
     case DMNSN_AST_ASSUMED_GAMMA:
       /* assumed_gamma not supported */
       break;
 
     case DMNSN_AST_MAX_TRACE_LEVEL:
-      dmnsn_array_get(item.children, 0, &child);
+      dmnsn_array_get(item->children, 0, &child);
       scene->reclimit = dmnsn_realize_integer(child);
       break;
 
@@ -227,44 +226,43 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
 
   dmnsn_camera *camera = NULL;
 
-  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-    dmnsn_astnode item;
-    dmnsn_array_get(astnode.children, i, &item);
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, item, astnode.children) {
+    dmnsn_astnode child;
 
-    switch (item.type) {
+    switch (item->type) {
     /* Camera types */
     case DMNSN_AST_PERSPECTIVE:
-      camera_type = item.type;
+      camera_type = item->type;
       break;
 
     /* Camera vectors */
     case DMNSN_AST_LOCATION:
-      dmnsn_array_get(item.children, 0, &item);
-      location = dmnsn_realize_vector(item);
+      dmnsn_array_get(item->children, 0, &child);
+      location = dmnsn_realize_vector(child);
       break;
     case DMNSN_AST_RIGHT:
-      dmnsn_array_get(item.children, 0, &item);
-      right = dmnsn_realize_vector(item);
+      dmnsn_array_get(item->children, 0, &child);
+      right = dmnsn_realize_vector(child);
       break;
     case DMNSN_AST_UP:
-      dmnsn_array_get(item.children, 0, &item);
-      right = dmnsn_realize_vector(item);
+      dmnsn_array_get(item->children, 0, &child);
+      right = dmnsn_realize_vector(child);
       break;
     case DMNSN_AST_SKY:
-      dmnsn_array_get(item.children, 0, &item);
-      sky = dmnsn_realize_vector(item);
+      dmnsn_array_get(item->children, 0, &child);
+      sky = dmnsn_realize_vector(child);
       break;
     case DMNSN_AST_DIRECTION:
-      dmnsn_array_get(item.children, 0, &item);
-      direction = dmnsn_realize_vector(item);
+      dmnsn_array_get(item->children, 0, &child);
+      direction = dmnsn_realize_vector(child);
       break;
 
     /* Camera modifiers */
 
     case DMNSN_AST_LOOK_AT:
       {
-        dmnsn_array_get(item.children, 0, &item);
-        dmnsn_vector look_at = dmnsn_realize_vector(item);
+        dmnsn_array_get(item->children, 0, &child);
+        dmnsn_vector look_at = dmnsn_realize_vector(child);
 
         /* Line the camera up with the sky */
 
@@ -312,8 +310,8 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
 
     case DMNSN_AST_ANGLE:
       {
-        dmnsn_array_get(item.children, 0, &item);
-        double angle = deg2rad*dmnsn_realize_float(item);
+        dmnsn_array_get(item->children, 0, &child);
+        double angle = deg2rad*dmnsn_realize_float(child);
         direction = dmnsn_vector_mul(
           0.5*dmnsn_vector_norm(right)/tan(angle/2.0),
           dmnsn_vector_normalize(direction)
@@ -325,7 +323,7 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
     case DMNSN_AST_ROTATION:
     case DMNSN_AST_SCALE:
     case DMNSN_AST_TRANSLATION:
-      trans = dmnsn_matrix_mul(dmnsn_realize_transformation(item), trans);
+      trans = dmnsn_matrix_mul(dmnsn_realize_transformation(*item), trans);
       break;
 
     default:
@@ -408,16 +406,13 @@ dmnsn_realize_pigment_modifiers(dmnsn_astnode astnode, dmnsn_pigment *pigment)
   dmnsn_assert(astnode.type == DMNSN_AST_PIGMENT_MODIFIERS,
                "Expected pigment modifiers.");
 
-  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-    dmnsn_astnode modifier;
-    dmnsn_array_get(astnode.children, i, &modifier);
-
-    switch (modifier.type) {
+  DMNSN_ARRAY_FOREACH(dmnsn_astnode *, modifier, astnode.children) {
+    switch (modifier->type) {
     case DMNSN_AST_ROTATION:
     case DMNSN_AST_SCALE:
     case DMNSN_AST_TRANSLATION:
       pigment->trans = dmnsn_matrix_mul(
-        dmnsn_realize_transformation(modifier),
+        dmnsn_realize_transformation(*modifier),
         pigment->trans
       );
       break;
@@ -507,13 +502,12 @@ dmnsn_realize_reflection(dmnsn_astnode astnode)
   dmnsn_astnode items;
   dmnsn_array_get(astnode.children, 2, &items);
 
-  for (size_t i = 0; i < dmnsn_array_size(items.children); ++i) {
-    dmnsn_astnode item, child;
-    dmnsn_array_get(items.children, i, &item);
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, item, items.children) {
+    dmnsn_astnode child;
 
-    switch (item.type) {
+    switch (item->type) {
     case DMNSN_AST_FALLOFF:
-      dmnsn_array_get(item.children, 0, &child);
+      dmnsn_array_get(item->children, 0, &child);
       falloff = dmnsn_realize_float(child);
       break;
 
@@ -545,35 +539,34 @@ dmnsn_realize_finish(dmnsn_astnode astnode)
 
   dmnsn_finish *reflection = NULL;
 
-  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-    dmnsn_astnode item, child;
-    dmnsn_array_get(astnode.children, i, &item);
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, item, astnode.children) {
+    dmnsn_astnode child;
 
-    switch (item.type) {
+    switch (item->type) {
     case DMNSN_AST_AMBIENT:
-      dmnsn_array_get(item.children, 0, &child);
+      dmnsn_array_get(item->children, 0, &child);
       ambient = dmnsn_realize_color(child);
       ambient_set = true;
       break;
 
     case DMNSN_AST_DIFFUSE:
-      dmnsn_array_get(item.children, 0, &child);
+      dmnsn_array_get(item->children, 0, &child);
       diffuse = dmnsn_realize_float(child);
       diffuse_set = true;
       break;
 
     case DMNSN_AST_PHONG:
-      dmnsn_array_get(item.children, 0, &child);
+      dmnsn_array_get(item->children, 0, &child);
       phong = dmnsn_realize_float(child);
       break;
     case DMNSN_AST_PHONG_SIZE:
-      dmnsn_array_get(item.children, 0, &child);
+      dmnsn_array_get(item->children, 0, &child);
       phong_size = dmnsn_realize_float(child);
       break;
 
     case DMNSN_AST_REFLECTION:
       dmnsn_delete_finish(reflection);
-      reflection = dmnsn_realize_reflection(item);
+      reflection = dmnsn_realize_reflection(*item);
       break;
 
     default:
@@ -616,26 +609,25 @@ dmnsn_realize_texture(dmnsn_astnode astnode)
 
   dmnsn_texture *texture = dmnsn_new_texture();
 
-  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-    dmnsn_astnode item;
-    dmnsn_array_get(astnode.children, i, &item);
-
-    switch (item.type) {
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, item, astnode.children) {
+    switch (item->type) {
     case DMNSN_AST_PIGMENT:
       dmnsn_delete_pigment(texture->pigment);
-      texture->pigment = dmnsn_realize_pigment(item);
+      texture->pigment = dmnsn_realize_pigment(*item);
       break;
 
     case DMNSN_AST_FINISH:
       dmnsn_delete_finish(texture->finish);
-      texture->finish = dmnsn_realize_finish(item);
+      texture->finish = dmnsn_realize_finish(*item);
       break;
 
     case DMNSN_AST_ROTATION:
     case DMNSN_AST_SCALE:
     case DMNSN_AST_TRANSLATION:
-      texture->trans = dmnsn_matrix_mul(dmnsn_realize_transformation(item),
-                                        texture->trans);
+      texture->trans = dmnsn_matrix_mul(
+        dmnsn_realize_transformation(*item),
+        texture->trans
+      );
       break;
 
     default:
@@ -653,13 +645,12 @@ dmnsn_realize_interior(dmnsn_astnode astnode)
 
   dmnsn_interior *interior = dmnsn_new_interior();
 
-  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-    dmnsn_astnode item, child;
-    dmnsn_array_get(astnode.children, i, &item);
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, item, astnode.children) {
+    dmnsn_astnode child;
 
-    switch (item.type) {
+    switch (item->type) {
     case DMNSN_AST_IOR:
-      dmnsn_array_get(item.children, 0, &child);
+      dmnsn_array_get(item->children, 0, &child);
       interior->ior = dmnsn_realize_float(child);
       break;
 
@@ -680,40 +671,37 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
   /* Save the pre-existing transformations */
   dmnsn_matrix existing_trans = dmnsn_matrix_inverse(object->trans);
 
-  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-    dmnsn_astnode modifier;
-    dmnsn_array_get(astnode.children, i, &modifier);
-
-    switch (modifier.type) {
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, modifier, astnode.children) {
+    switch (modifier->type) {
     case DMNSN_AST_ROTATION:
     case DMNSN_AST_SCALE:
     case DMNSN_AST_TRANSLATION:
       object->trans = dmnsn_matrix_mul(
-        dmnsn_realize_transformation(modifier),
+        dmnsn_realize_transformation(*modifier),
         object->trans
       );
       break;
 
     case DMNSN_AST_TEXTURE:
       dmnsn_delete_texture(object->texture);
-      object->texture = dmnsn_realize_texture(modifier);
+      object->texture = dmnsn_realize_texture(*modifier);
       break;
     case DMNSN_AST_PIGMENT:
       if (!object->texture)
         object->texture = dmnsn_new_texture();
       dmnsn_delete_pigment(object->texture->pigment);
-      object->texture->pigment = dmnsn_realize_pigment(modifier);
+      object->texture->pigment = dmnsn_realize_pigment(*modifier);
       break;
     case DMNSN_AST_FINISH:
       if (!object->texture)
         object->texture = dmnsn_new_texture();
       dmnsn_delete_finish(object->texture->finish);
-      object->texture->finish = dmnsn_realize_finish(modifier);
+      object->texture->finish = dmnsn_realize_finish(*modifier);
       break;
 
     case DMNSN_AST_INTERIOR:
       dmnsn_delete_interior(object->interior);
-      object->interior = dmnsn_realize_interior(modifier);
+      object->interior = dmnsn_realize_interior(*modifier);
       break;
 
     default:
@@ -738,26 +726,13 @@ dmnsn_realize_light_source_modifiers(dmnsn_astnode astnode, dmnsn_light *light)
   dmnsn_assert(astnode.type == DMNSN_AST_OBJECT_MODIFIERS,
                "Expected object modifiers.");
 
-  for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-    dmnsn_astnode modifier;
-    dmnsn_array_get(astnode.children, i, &modifier);
-
-    switch (modifier.type) {
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, modifier, astnode.children) {
+    switch (modifier->type) {
     case DMNSN_AST_ROTATION:
-      light->x0 = dmnsn_transform_vector(
-        dmnsn_realize_rotation(modifier),
-        light->x0
-      );
-      break;
     case DMNSN_AST_SCALE:
-      light->x0 = dmnsn_transform_vector(
-        dmnsn_realize_scale(modifier),
-        light->x0
-      );
-      break;
     case DMNSN_AST_TRANSLATION:
       light->x0 = dmnsn_transform_vector(
-        dmnsn_realize_translation(modifier),
+        dmnsn_realize_transformation(*modifier),
         light->x0
       );
       break;
@@ -890,31 +865,32 @@ dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
   dmnsn_array_get(astnode.children, 0, &objects);
   dmnsn_array_get(astnode.children, 1, &modifiers);
 
-  size_t i;
   dmnsn_object *csg = NULL;
-  for (i = 0; i < dmnsn_array_size(objects.children) && !csg; ++i) {
-    dmnsn_astnode onode;
-    dmnsn_array_get(objects.children, i, &onode);
-
-    if (onode.type == DMNSN_AST_LIGHT_SOURCE) {
-      dmnsn_light *light = dmnsn_realize_light_source(onode);
+  dmnsn_astnode *onode;
+  for (onode = dmnsn_array_first(objects.children);
+       onode <= (dmnsn_astnode *)dmnsn_array_last(objects.children);
+       ++onode)
+  {
+    if (onode->type == DMNSN_AST_LIGHT_SOURCE) {
+      dmnsn_light *light = dmnsn_realize_light_source(*onode);
       dmnsn_realize_light_source_modifiers(modifiers, light);
       dmnsn_array_push(lights, &light);
     } else {
-      csg = dmnsn_realize_object(onode, lights);
+      csg = dmnsn_realize_object(*onode, lights);
+      break;
     }
   }
 
-  for (; i < dmnsn_array_size(objects.children); ++i) {
-    dmnsn_astnode onode;
-    dmnsn_array_get(objects.children, i, &onode);
-
-    if (onode.type == DMNSN_AST_LIGHT_SOURCE) {
-      dmnsn_light *light = dmnsn_realize_light_source(onode);
+  for (++onode;
+       onode <= (dmnsn_astnode *)dmnsn_array_last(objects.children);
+       ++onode)
+  {
+    if (onode->type == DMNSN_AST_LIGHT_SOURCE) {
+      dmnsn_light *light = dmnsn_realize_light_source(*onode);
       dmnsn_realize_light_source_modifiers(modifiers, light);
       dmnsn_array_push(lights, &light);
     } else {
-      dmnsn_object *object = dmnsn_realize_object(onode, lights);
+      dmnsn_object *object = dmnsn_realize_object(*onode, lights);
       csg = (*csg_object_fn)(csg, object);
     }
   }
@@ -1009,25 +985,24 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
    * Now parse the abstract syntax tree
    */
 
-  dmnsn_astnode astnode;
-  for (size_t i = 0; i < dmnsn_array_size(astree); ++i) {
-    dmnsn_array_get(astree, i, &astnode);
-
-    dmnsn_light  *light;
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, astnode, astree) {
+    dmnsn_astnode child;
+    dmnsn_light *light;
     dmnsn_object *object;
-    switch (astnode.type) {
+
+    switch (astnode->type) {
     case DMNSN_AST_GLOBAL_SETTINGS:
-      dmnsn_realize_global_settings(astnode, scene);
+      dmnsn_realize_global_settings(*astnode, scene);
       break;
 
     case DMNSN_AST_BACKGROUND:
-      dmnsn_array_get(astnode.children, 0, &astnode);
-      scene->background = dmnsn_realize_color(astnode);
+      dmnsn_array_get(astnode->children, 0, &child);
+      scene->background = dmnsn_realize_color(child);
       break;
 
     case DMNSN_AST_CAMERA:
       dmnsn_delete_camera(scene->camera);
-      scene->camera = dmnsn_realize_camera(astnode);
+      scene->camera = dmnsn_realize_camera(*astnode);
       break;
 
     case DMNSN_AST_BOX:
@@ -1037,13 +1012,13 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
     case DMNSN_AST_PLANE:
     case DMNSN_AST_SPHERE:
     case DMNSN_AST_UNION:
-      object = dmnsn_realize_object(astnode, scene->lights);
+      object = dmnsn_realize_object(*astnode, scene->lights);
       if (object)
         dmnsn_array_push(scene->objects, &object);
       break;
 
     case DMNSN_AST_LIGHT_SOURCE:
-      light = dmnsn_realize_light_source(astnode);
+      light = dmnsn_realize_light_source(*astnode);
       dmnsn_array_push(scene->lights, &light);
       break;
 

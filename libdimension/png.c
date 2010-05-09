@@ -39,9 +39,8 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
   dmnsn_canvas_optimizer optimizer;
 
   /* Check if we've already optimized this canvas */
-  for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
-    dmnsn_array_get(canvas->optimizers, i, &optimizer);
-    if (optimizer.optimizer_fn == &dmnsn_png_optimizer_fn) {
+  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
+    if (i->optimizer_fn == &dmnsn_png_optimizer_fn) {
       return 0;
     }
   }
@@ -287,12 +286,11 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   }
 
   /* Check if we can optimize this */
-  for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
-    dmnsn_array_get(canvas->optimizers, i, &optimizer);
-    if (optimizer.optimizer_fn == &dmnsn_png_optimizer_fn) {
+  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
+    if (i->optimizer_fn == &dmnsn_png_optimizer_fn) {
       for (size_t y = 0; y < height; ++y) {
         /* Invert the rows.  PNG coordinates are fourth quadrant. */
-        uint16_t *row = (uint16_t *)optimizer.ptr + 4*(height - y - 1)*width;
+        uint16_t *row = (uint16_t *)i->ptr + 4*(height - y - 1)*width;
         png_write_row(png_ptr, (png_bytep)row);
         dmnsn_increment_progress(progress);
       }

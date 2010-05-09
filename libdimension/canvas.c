@@ -48,11 +48,9 @@ dmnsn_delete_canvas(dmnsn_canvas *canvas)
 {
   if (canvas) {
     /* Free the optimizers */
-    for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
-      dmnsn_canvas_optimizer optimizer;
-      dmnsn_array_get(canvas->optimizers, i, &optimizer);
-      if (optimizer.free_fn) {
-        (*optimizer.free_fn)(optimizer.ptr);
+    DMNSN_ARRAY_FOREACH(dmnsn_canvas_optimizer *, i, canvas->optimizers) {
+      if (i->free_fn) {
+        (*i->free_fn)(i->ptr);
       }
     }
     dmnsn_delete_array(canvas->optimizers);
@@ -75,15 +73,12 @@ void
 dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
                 dmnsn_color color)
 {
-  dmnsn_canvas_optimizer optimizer;
-
   /* Set the pixel */
   canvas->pixels[y*canvas->x + x] = color;
 
   /* Call the optimizers */
-  for (size_t i = 0; i < dmnsn_array_size(canvas->optimizers); ++i) {
-    dmnsn_array_get(canvas->optimizers, i, &optimizer);
-    (*optimizer.optimizer_fn)(canvas, optimizer, x, y);
+  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
+    (*i->optimizer_fn)(canvas, *i, x, y);
   }
 }
 

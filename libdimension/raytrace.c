@@ -315,17 +315,13 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
     return;
   }
 
-  const dmnsn_light *light;
-
   /* Iterate over each light */
-  for (size_t i = 0; i < dmnsn_array_size(state->scene->lights); ++i) {
-    dmnsn_array_get(state->scene->lights, i, &light);
-
-    dmnsn_color light_color = dmnsn_raytrace_light_ray(state, light);
+  DMNSN_ARRAY_FOREACH (dmnsn_light **, light, state->scene->lights) {
+    dmnsn_color light_color = dmnsn_raytrace_light_ray(state, *light);
     if (!dmnsn_color_is_black(light_color)) {
       if (state->scene->quality & DMNSN_RENDER_FINISH) {
         dmnsn_vector ray = dmnsn_vector_normalize(
-          dmnsn_vector_sub(light->x0, state->r)
+          dmnsn_vector_sub((*light)->x0, state->r)
         );
 
         /* Get this light's color contribution to the object */

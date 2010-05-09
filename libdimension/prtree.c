@@ -430,10 +430,8 @@ dmnsn_pseudo_prtree_leaves(const dmnsn_pseudo_prtree *pseudo)
 static void
 dmnsn_precompute_objects(const dmnsn_array *objects)
 {
-  for (size_t i = 0; i < dmnsn_array_size(objects); ++i) {
-    dmnsn_object *object;
-    dmnsn_array_get(objects, i, &object);
-    dmnsn_object_precompute(object);
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
+    dmnsn_object_precompute(*object);
   }
 }
 
@@ -555,12 +553,9 @@ dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
   double t = -1.0;
 
   /* Search the unbounded objects */
-  for (size_t i = 0; i < dmnsn_array_size(tree->unbounded); ++i) {
-    dmnsn_object *object;
-    dmnsn_array_get(tree->unbounded, i, &object);
-
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, tree->unbounded) {
     dmnsn_intersection local_intersection;
-    if ((*object->intersection_fn)(object, ray, &local_intersection)) {
+    if ((*(*object)->intersection_fn)(*object, ray, &local_intersection)) {
       if (t < 0.0 || local_intersection.t < t) {
         *intersection = local_intersection;
         t = local_intersection.t;

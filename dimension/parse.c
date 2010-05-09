@@ -288,10 +288,8 @@ dmnsn_declare_symbol(dmnsn_symbol_table *symtable,
 void
 dmnsn_undef_symbol(dmnsn_symbol_table *symtable, const char *id)
 {
-  for (size_t i = 0; i < dmnsn_array_size(symtable); ++i) {
-    dmnsn_patricia_trie *trie;
-    dmnsn_array_get(symtable, dmnsn_array_size(symtable) - i - 1, &trie);
-    if (dmnsn_patricia_remove(trie, id))
+  DMNSN_ARRAY_FOREACH (dmnsn_patricia_trie **, trie, symtable) {
+    if (dmnsn_patricia_remove(*trie, id))
       break;
   }
 }
@@ -301,11 +299,11 @@ dmnsn_find_symbol(dmnsn_symbol_table *symtable, const char *id)
 {
   dmnsn_astnode *symbol = NULL;
 
-  for (size_t i = 0; i < dmnsn_array_size(symtable); ++i) {
-    dmnsn_patricia_trie *trie;
-    dmnsn_array_get(symtable, dmnsn_array_size(symtable) - i - 1, &trie);
-
-    symbol = dmnsn_patricia_find(trie, id);
+  for (dmnsn_patricia_trie **trie = dmnsn_array_last(symtable);
+       trie >= (dmnsn_patricia_trie **)dmnsn_array_first(symtable);
+       --trie)
+  {
+    symbol = dmnsn_patricia_find(*trie, id);
     if (symbol)
       break;
   }
@@ -469,10 +467,8 @@ void
 dmnsn_delete_astree(dmnsn_astree *astree)
 {
   if (astree) {
-    for (size_t i = 0; i < dmnsn_array_size(astree); ++i) {
-      dmnsn_astnode node;
-      dmnsn_array_get(astree, i, &node);
-      dmnsn_delete_astnode(node);
+    DMNSN_ARRAY_FOREACH (dmnsn_astnode *, node, astree) {
+      dmnsn_delete_astnode(*node);
     }
     dmnsn_delete_array(astree);
   }
@@ -514,9 +510,8 @@ dmnsn_vector_promote(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
   if (astnode.type == DMNSN_AST_VECTOR) {
     dmnsn_astnode component;
-    for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-      dmnsn_array_get(astnode.children, i, &component);
-      component = dmnsn_eval_scalar(component, symtable);
+    DMNSN_ARRAY_FOREACH (dmnsn_astnode *, i, astnode.children) {
+      component = dmnsn_eval_scalar(*i, symtable);
 
       if (component.type == DMNSN_AST_NONE) {
         dmnsn_delete_astnode(promoted);
@@ -1773,15 +1768,12 @@ dmnsn_print_astnode(FILE *file, dmnsn_astnode astnode)
 static void
 dmnsn_print_astree(FILE *file, dmnsn_astnode astnode)
 {
-  dmnsn_astnode child;
-
   if (astnode.children && dmnsn_array_size(astnode.children) > 0) {
     fprintf(file, "(");
     dmnsn_print_astnode(file, astnode);
-    for (size_t i = 0; i < dmnsn_array_size(astnode.children); ++i) {
-      dmnsn_array_get(astnode.children, i, &child);
+    DMNSN_ARRAY_FOREACH (dmnsn_astnode *, child, astnode.children) {
       fprintf(file, " ");
-      dmnsn_print_astree(file, child);
+      dmnsn_print_astree(file, *child);
     }
     fprintf(file, ")");
   } else {
@@ -1792,19 +1784,19 @@ dmnsn_print_astree(FILE *file, dmnsn_astnode astnode)
 void
 dmnsn_print_astree_sexpr(FILE *file, const dmnsn_astree *astree)
 {
-  dmnsn_astnode astnode;
-
   if (dmnsn_array_size(astree) == 0) {
     fprintf(file, "()");
   } else {
     fprintf(file, "(");
-    dmnsn_array_get(astree, 0, &astnode);
-    dmnsn_print_astree(file, astnode);
+    dmnsn_astnode *astnode = dmnsn_array_first(astree);
+    dmnsn_print_astree(file, *astnode);
 
-    for (size_t i = 1; i < dmnsn_array_size(astree); ++i) {
+    for (++astnode;
+         astnode <= (dmnsn_astnode *)dmnsn_array_last(astree);
+         ++astnode)
+    {
       fprintf(file, " ");
-      dmnsn_array_get(astree, i, &astnode);
-      dmnsn_print_astree(file, astnode);
+      dmnsn_print_astree(file, *astnode);
     }
 
     fprintf(file, ")");
