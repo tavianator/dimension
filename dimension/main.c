@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
+ * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
  * This file is part of Dimension.                                       *
  *                                                                       *
@@ -345,7 +345,7 @@ print_usage(FILE *file, const char *arg0)
           "  --                  indicates the end of the argument list\n\n"
           "%s\n"
           "%s\n"
-          "Copyright (C) 2009-10 Tavian Barnes, <%s>\n"
+          "Copyright (C) 2009-2010 Tavian Barnes, <%s>\n"
           "Licensed under the GNU General Public License\n",
           arg0,
           PACKAGE_STRING,
