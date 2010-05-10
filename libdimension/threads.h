@@ -18,11 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_IMPL_H
-#define DIMENSION_IMPL_H
+#ifndef DIMENSION_IMPL_THREADS_H
+#define DIMENSION_IMPL_THREADS_H
 
-#include "dimension.h"
-#include "threads.h"
-#include "prtree.h"
+#include <pthread.h>
 
-#endif /* DIMENSION_IMPL_H */
+typedef int dmnsn_thread_fn(void *ptr);
+
+/* Creates a thread that cleans up after itself on errors */
+int dmnsn_new_thread(dmnsn_progress *progress, const pthread_attr_t *attr,
+                     dmnsn_thread_fn *thread_fn, void *arg);
+
+#endif /* DIMENSION_IMPL_THREADS_H */

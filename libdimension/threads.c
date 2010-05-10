@@ -18,11 +18,41 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_IMPL_H
-#define DIMENSION_IMPL_H
+#include "dimension_impl.h"
 
-#include "dimension.h"
-#include "threads.h"
-#include "prtree.h"
+typedef struct dmnsn_thread_payload {
+  dmnsn_thread_fn *thread_fn;
+  void *arg;
+  dmnsn_progress *progress;
+} dmnsn_thread_payload;
 
-#endif /* DIMENSION_IMPL_H */
+static void
+dmnsn_thread_cleanup(void *arg)
+{
+  dmnsn_progress *progress = arg;
+  dmnsn_done_progress(progress);
+}
+
+static void *
+dmnsn_thread(void *arg)
+{
+  dmnsn_thread_payload *payload = arg;
+  int *ret;
+  pthread_cleanup_push(&dmnsn_thread_cleanup, payload->progress);
+  ret  = dmnsn_malloc(sizeof(ret));
+  *ret = (*payload->thread_fn)(payload->arg);
+  pthread_cleanup_pop(1);
+  return ret;
+}
+
+int
+dmnsn_new_thread(dmnsn_progress *progress, const pthread_attr_t *attr,
+                 dmnsn_thread_fn *thread_fn, void *arg)
+{
+  dmnsn_thread_payload *payload = dmnsn_malloc(sizeof(dmnsn_thread_payload));
+  payload->thread_fn = thread_fn;
+  payload->arg       = arg;
+  payload->progress  = progress;
+
+  return pthread_create(&progress->thread, attr, &dmnsn_thread, payload);
+}

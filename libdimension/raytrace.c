@@ -37,7 +37,7 @@ typedef struct {
 } dmnsn_raytrace_payload;
 
 /* Thread callback */
-static void *dmnsn_raytrace_scene_thread(void *ptr);
+static int dmnsn_raytrace_scene_thread(void *ptr);
 
 /* Raytrace a scene */
 void
@@ -58,8 +58,8 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
   payload->progress = progress;
   payload->scene    = scene;
 
-  if (pthread_create(&progress->thread, NULL, &dmnsn_raytrace_scene_thread,
-                     payload) != 0)
+  if (dmnsn_new_thread(progress, NULL, &dmnsn_raytrace_scene_thread, payload)
+      != 0)
   {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start worker thread.");
   }
@@ -67,32 +67,16 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
   return progress;
 }
 
-/* Start the multi-threaded implementation */
-static void dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload);
-
 /* Thread callback */
-static void *
+static void *dmnsn_raytrace_scene_multithread_thread(void *ptr);
+
+/* Thread callback -- set up the multithreaded engine */
+static int
 dmnsn_raytrace_scene_thread(void *ptr)
 {
   dmnsn_raytrace_payload *payload = ptr;
   payload->prtree = dmnsn_new_prtree(payload->scene->objects);
-  dmnsn_raytrace_scene_multithread(payload);
-  dmnsn_delete_prtree(payload->prtree);
-  dmnsn_done_progress(payload->progress);
-  free(payload);
 
-  int *retval = dmnsn_malloc(sizeof(int));
-  *retval = 0;
-  return retval;
-}
-
-/* Thread callback */
-static void *dmnsn_raytrace_scene_multithread_thread(void *ptr);
-
-/* Set up the multi-threaded engine */
-static void
-dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
-{
   dmnsn_raytrace_payload *payloads;
   pthread_t *threads;
 
@@ -135,6 +119,10 @@ dmnsn_raytrace_scene_multithread(dmnsn_raytrace_payload *payload)
 
   free(threads);
   free(payloads);
+  dmnsn_delete_prtree(payload->prtree);
+  free(payload);
+
+  return 0;
 }
 
 /* Actual raytracing implementation */

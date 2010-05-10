@@ -49,8 +49,8 @@ lib_LTLIBRARIES = libdimension.la
 
 libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           ambient.c                                            \
-                          prtree.c                                               \
-                          prtree.h                                               \
+                          prtree.c                                             \
+                          prtree.h                                             \
                           camera.c                                             \
                           canvas.c                                             \
                           canvas_pigment.c                                     \
@@ -78,9 +78,12 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           scene.c                                              \
                           solid_pigment.c                                      \
                           sphere.c                                             \
-                          texture.c
+                          texture.c                                            \
+                          threads.c                                            \
+                          threads.h
+libdimension_la_CFLAGS  = $(AM_CFLAGS) -pthread
 libdimension_la_LDFLAGS = -version-info 0:0:0 $(AM_LDFLAGS)
-libdimension_la_LIBADD  = -lm -lpthread
+libdimension_la_LIBADD  = -lm
 
 if PNG
 libdimension_la_SOURCES += png.c
@@ -101,9 +104,9 @@ if PGO
 noinst_LTLIBRARIES = libdimension-pgo.la
 libdimension_pgo_la_SOURCES = $(libdimension_la_SOURCES)
 libdimension_pgo_la_LIBADD  = $(libdimension_la_LIBADD) -lgcov
-libdimension_pgo_la_CFLAGS  = -fprofile-generate=$$(readlink -f $(builddir))/pgo
+libdimension_pgo_la_CFLAGS  = $(libdimension_la_CFLAGS) -fprofile-generate=$$(readlink -f $(builddir))/pgo
 
-libdimension_la_CFLAGS = -fprofile-correction -fprofile-use=./pgo
+libdimension_la_CFLAGS += -fprofile-correction -fprofile-use=./pgo
 
 all-local: libdimension.la
 	@for Plo in .deps/libdimension_la*.Plo; do \

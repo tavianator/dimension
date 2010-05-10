@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
+#include "dimension_impl.h"
 #include <pthread.h>
 #include <png.h>
 #include <arpa/inet.h>
@@ -116,8 +116,8 @@ typedef struct {
 } dmnsn_png_read_payload;
 
 /* Thread callbacks */
-static void *dmnsn_png_write_canvas_thread(void *ptr);
-static void *dmnsn_png_read_canvas_thread(void *ptr);
+static int dmnsn_png_write_canvas_thread(void *ptr);
+static int dmnsn_png_read_canvas_thread(void *ptr);
 
 /* Write a canvas to a png file, using libpng.  Return 0 on success, nonzero on
    failure. */
@@ -141,12 +141,10 @@ dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
   payload->file     = file;
 
   /* Create the worker thread */
-  if (pthread_create(&progress->thread, NULL, &dmnsn_png_write_canvas_thread,
-                     payload) != 0)
+  if (dmnsn_new_thread(progress, NULL, &dmnsn_png_write_canvas_thread, payload)
+      != 0)
   {
-    free(payload);
-    dmnsn_delete_progress(progress);
-    return NULL;
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start worker thread.");
   }
 
   return progress;
@@ -175,8 +173,8 @@ dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
   payload->file     = file;
 
   /* Create the worker thread */
-  if (pthread_create(&progress->thread, NULL, &dmnsn_png_read_canvas_thread,
-                     payload) != 0)
+  if (dmnsn_new_thread(progress, NULL, &dmnsn_png_read_canvas_thread, payload)
+      != 0)
   {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start worker thread.");
   }
@@ -184,87 +182,56 @@ dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
   return progress;
 }
 
-/* Actual implementations */
-static int dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
-                                       const dmnsn_canvas *canvas, FILE *file);
-static dmnsn_canvas *dmnsn_png_read_canvas_impl(dmnsn_progress *progress,
-                                                FILE *file);
+/*
+ * Thread callbacks
+ */
 
-/* Thread callbacks */
-
-static void *
+/* Write a PNG file */
+static int
 dmnsn_png_write_canvas_thread(void *ptr)
 {
   dmnsn_png_write_payload *payload = ptr;
-  int *retval = dmnsn_malloc(sizeof(int));
-  *retval = dmnsn_png_write_canvas_impl(payload->progress,
-                                        payload->canvas, payload->file);
-  dmnsn_done_progress(payload->progress);
-  free(payload);
-  return retval;
-}
 
-static void *
-dmnsn_png_read_canvas_thread(void *ptr)
-{
-  dmnsn_png_read_payload *payload = ptr;
-  *payload->canvas = dmnsn_png_read_canvas_impl(payload->progress,
-                                                payload->file);
-
-  int *retval = dmnsn_malloc(sizeof(int));
-  *retval = *payload->canvas ? 0 : -1; /* Fail if it returned NULL */
-
-  dmnsn_done_progress(payload->progress);
-  free(payload);
-  return retval;
-}
-
-/* Actually write the PNG file */
-static int
-dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
-                            const dmnsn_canvas *canvas, FILE *file)
-{
-  png_structp png_ptr;
-  png_infop info_ptr;
-  png_uint_32 width, height;
-  uint16_t *row = NULL;
-  dmnsn_color color;
-  dmnsn_sRGB sRGB;
-
-  if (!file) {
+  if (!payload->file) {
     /* file was NULL */
     errno = EINVAL;
+    free(payload);
     return -1;
   }
 
-  width = canvas->x;
-  height = canvas->y;
+  png_uint_32 width = payload->canvas->x;
+  png_uint_32 height = payload->canvas->y;
 
-  dmnsn_new_progress_element(progress, height);
+  dmnsn_new_progress_element(payload->progress, height);
 
-  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  png_structp png_ptr
+    = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (!png_ptr) {
     /* Couldn't create libpng write struct */
+    free(payload);
     return -1;
   }
 
-  info_ptr = png_create_info_struct(png_ptr);
+  png_infop info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr) {
     /* Couldn't create libpng info struct */
     png_destroy_write_struct(&png_ptr, NULL);
+    free(payload);
     return -1;
   }
 
   /* libpng will longjmp here if it encounters an error from here on */
+  uint16_t *row = NULL;
   if (setjmp(png_jmpbuf(png_ptr))) {
     /* libpng error */
     free(row);
     png_destroy_write_struct(&png_ptr, &info_ptr);
+    free(payload);
     return -1;
   }
 
   /* Associate file with the libpng write struct */
-  png_init_io(png_ptr, file);
+  png_init_io(png_ptr, payload->file);
 
   /* Set header correctly for 16-bit sRGB image */
   png_set_IHDR(png_ptr, info_ptr, width, height, 16,
@@ -284,18 +251,21 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   }
 
   /* Check if we can optimize this */
-  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
+  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i,
+                       payload->canvas->optimizers)
+  {
     if (i->optimizer_fn == &dmnsn_png_optimizer_fn) {
       for (size_t y = 0; y < height; ++y) {
         /* Invert the rows.  PNG coordinates are fourth quadrant. */
         uint16_t *row = (uint16_t *)i->ptr + 4*(height - y - 1)*width;
         png_write_row(png_ptr, (png_bytep)row);
-        dmnsn_increment_progress(progress);
+        dmnsn_increment_progress(payload->progress);
       }
 
       /* Finish the PNG file */
       png_write_end(png_ptr, info_ptr);
       png_destroy_write_struct(&png_ptr, &info_ptr);
+      free(payload);
       return 0;
     }
   }
@@ -307,8 +277,8 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
       /* Invert the rows.  PNG coordinates are fourth quadrant. */
-      color = dmnsn_get_pixel(canvas, x, height - y - 1);
-      sRGB = dmnsn_sRGB_from_color(color);
+      dmnsn_color color = dmnsn_get_pixel(payload->canvas, x, height - y - 1);
+      dmnsn_sRGB sRGB = dmnsn_sRGB_from_color(color);
 
       /* Saturate R, G, and B to [0, UINT16_MAX] */
 
@@ -348,7 +318,7 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
 
     /* Write the row */
     png_write_row(png_ptr, (png_bytep)row);
-    dmnsn_increment_progress(progress);
+    dmnsn_increment_progress(payload->progress);
   }
 
   /* Finish the PNG file */
@@ -356,6 +326,7 @@ dmnsn_png_write_canvas_impl(dmnsn_progress *progress,
 
   free(row);
   png_destroy_write_struct(&png_ptr, &info_ptr);
+  free(payload);
   return 0;
 }
 
@@ -366,25 +337,20 @@ static pthread_mutex_t progress_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int progress_key_init = 0;
 
 /* Callback to increment the progress after a row has been read */
-static void dmnsn_png_read_row_callback(png_structp png_ptr, png_uint_32 row,
-                                        int pass);
-
-/* Actually read a PNG file */
-static dmnsn_canvas *
-dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
+static void
+dmnsn_png_read_row_callback(png_structp png_ptr, png_uint_32 row, int pass)
 {
-  dmnsn_canvas *canvas;
-  png_byte header[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-  png_structp png_ptr;
-  png_infop info_ptr;
-  png_uint_32 width, height, rowbytes;
-  int bit_depth, color_type, interlace_type, compression_type, filter_method,
-    number_of_passes;
-  png_bytep image = NULL;
-  png_bytep *row_pointers = NULL;
-  dmnsn_color color;
-  dmnsn_sRGB sRGB;
-  png_bytep png_pixel;
+  dmnsn_progress *progress = pthread_getspecific(progress_key);
+  if (progress) {
+    dmnsn_increment_progress(progress);
+  }
+}
+
+/* Read a PNG file */
+static int
+dmnsn_png_read_canvas_thread(void *ptr)
+{
+  dmnsn_png_read_payload *payload = ptr;
 
   /* Initialize/set progress_key */
 
@@ -402,7 +368,7 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
     progress_key_init = 1;
   }
 
-  if (pthread_setspecific(progress_key, progress) != 0) {
+  if (pthread_setspecific(progress_key, payload->progress) != 0) {
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't set thread-specific pointer.");
   }
 
@@ -411,55 +377,61 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
                 "Couldn't unlock thread-specific pointer mutex.");
   }
 
-  if (!file) {
+  if (!payload->file) {
     /* file was NULL */
     errno = EINVAL;
-    return NULL;
+    return -1;
   }
 
-  fread(header, 1, 8, file);
+  png_byte header[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  fread(header, 1, 8, payload->file);
   if (png_sig_cmp(header, 0, 8)) {
-    /* file is not a PNG file, or the read failed */
+    /* payload->file is not a PNG file, or the read failed */
     errno = EINVAL;
-    return NULL;
+    return -1;
   }
 
   /* Create the libpng read struct */
-  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  png_structp png_ptr
+    = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (!png_ptr) {
-    return NULL;
+    return -1;
   }
 
   /* Create the libpng info struct */
-  info_ptr = png_create_info_struct(png_ptr);
+  png_infop info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr) {
     png_destroy_read_struct(&png_ptr, NULL, NULL);
-    return NULL;
+    return -1;
   }
 
   /* libpng will longjmp here if it encounters an error from here on */
+  png_bytep image = NULL;
+  png_bytep *row_pointers = NULL;
   if (setjmp(png_jmpbuf(png_ptr))) {
     /* libpng error */
     free(row_pointers);
     free(image);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    return NULL;
+    return -1;
   }
 
   /* Associate the read struct with the file, and tell it we've already checked
      8 bytes of signature */
-  png_init_io(png_ptr, file);
+  png_init_io(png_ptr, payload->file);
   png_set_sig_bytes(png_ptr, 8);
 
   /* Read the PNG header into info struct */
   png_read_info(png_ptr, info_ptr);
 
   /* Get useful information from the info struct */
+  png_uint_32 width, height;
+  int bit_depth, color_type, interlace_type, compression_type, filter_method;
   png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
                &interlace_type, &compression_type, &filter_method);
-  number_of_passes = png_set_interlace_handling(png_ptr);
+  int number_of_passes = png_set_interlace_handling(png_ptr);
 
-  dmnsn_new_progress_element(progress, (number_of_passes + 1)*height);
+  dmnsn_new_progress_element(payload->progress, (number_of_passes + 1)*height);
   png_set_read_status_fn(png_ptr, &dmnsn_png_read_row_callback);
 
   /*
@@ -485,7 +457,7 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
   png_read_update_info(png_ptr, info_ptr);
 
   /* Get bytes/image row */
-  rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+  png_uint_32 rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
   /* Allocate the temporary image buffer */
   image = dmnsn_malloc(rowbytes*height);
@@ -502,7 +474,7 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
   png_read_image(png_ptr, row_pointers);
 
   /* Allocate the canvas */
-  canvas = dmnsn_new_canvas(width, height);
+  *payload->canvas = dmnsn_new_canvas(width, height);
 
   /* Now we convert the image to our canvas format.  This depends on the image
      bit depth (which has been scaled up to at least 8 or 16), and the presence
@@ -512,38 +484,42 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
     if (color_type & PNG_COLOR_MASK_ALPHA) {
       for (size_t y = 0; y < height; ++y) {
         for (size_t x = 0; x < width; ++x) {
-          png_pixel = image + 8*(y*width + x);
+          png_bytep png_pixel = image + 8*(y*width + x);
 
-          sRGB.R = ((double)((png_pixel[0] << UINT16_C(8)) + png_pixel[1]))
-            /UINT16_MAX;
-          sRGB.G = ((double)((png_pixel[2] << UINT16_C(8)) + png_pixel[3]))
-            /UINT16_MAX;
-          sRGB.B = ((double)((png_pixel[4] << UINT16_C(8)) + png_pixel[5]))
-            /UINT16_MAX;
+          dmnsn_sRGB sRGB = {
+            .R = ((double)((png_pixel[0] << UINT16_C(8)) + png_pixel[1]))
+                 /UINT16_MAX,
+            .G = ((double)((png_pixel[2] << UINT16_C(8)) + png_pixel[3]))
+                 /UINT16_MAX,
+            .B = ((double)((png_pixel[4] << UINT16_C(8)) + png_pixel[5]))
+                 /UINT16_MAX
+          };
 
-          color       = dmnsn_color_from_sRGB(sRGB);
+          dmnsn_color color = dmnsn_color_from_sRGB(sRGB);
           color.trans = ((double)((png_pixel[6] << UINT16_C(8))
                                   + png_pixel[7]))/UINT16_MAX;
-          dmnsn_set_pixel(canvas, x, height - y - 1, color);
+          dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
         }
-        dmnsn_increment_progress(progress);
+        dmnsn_increment_progress(payload->progress);
       }
     } else {
       for (size_t y = 0; y < height; ++y) {
         for (size_t x = 0; x < width; ++x) {
-          png_pixel = image + 6*(y*width + x);
+          png_bytep png_pixel = image + 6*(y*width + x);
 
-          sRGB.R = ((double)((png_pixel[0] << UINT16_C(8)) + png_pixel[1]))
-            /UINT16_MAX;
-          sRGB.G = ((double)((png_pixel[2] << UINT16_C(8)) + png_pixel[3]))
-            /UINT16_MAX;
-          sRGB.B = ((double)((png_pixel[4] << UINT16_C(8)) + png_pixel[5]))
-            /UINT16_MAX;
+          dmnsn_sRGB sRGB = {
+            .R = ((double)((png_pixel[0] << UINT16_C(8)) + png_pixel[1]))
+                 /UINT16_MAX,
+            .G = ((double)((png_pixel[2] << UINT16_C(8)) + png_pixel[3]))
+                 /UINT16_MAX,
+            .B = ((double)((png_pixel[4] << UINT16_C(8)) + png_pixel[5]))
+                 /UINT16_MAX
+          };
 
-          color = dmnsn_color_from_sRGB(sRGB);
-          dmnsn_set_pixel(canvas, x, height - y - 1, color);
+          dmnsn_color color = dmnsn_color_from_sRGB(sRGB);
+          dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
         }
-        dmnsn_increment_progress(progress);
+        dmnsn_increment_progress(payload->progress);
       }
     }
   } else {
@@ -551,31 +527,35 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
     if (color_type & PNG_COLOR_MASK_ALPHA) {
       for (size_t y = 0; y < height; ++y) {
         for (size_t x = 0; x < width; ++x) {
-          png_pixel = image + 4*(y*width + x);
+          png_bytep png_pixel = image + 4*(y*width + x);
 
-          sRGB.R = ((double)png_pixel[0])/UINT8_MAX;
-          sRGB.G = ((double)png_pixel[1])/UINT8_MAX;
-          sRGB.B = ((double)png_pixel[2])/UINT8_MAX;
+          dmnsn_sRGB sRGB = {
+            .R = ((double)png_pixel[0])/UINT8_MAX,
+            .G = ((double)png_pixel[1])/UINT8_MAX,
+            .B = ((double)png_pixel[2])/UINT8_MAX
+          };
 
-          color       = dmnsn_color_from_sRGB(sRGB);
+          dmnsn_color color = dmnsn_color_from_sRGB(sRGB);
           color.trans = ((double)png_pixel[3])/UINT8_MAX;
-          dmnsn_set_pixel(canvas, x, height - y - 1, color);
+          dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
         }
-        dmnsn_increment_progress(progress);
+        dmnsn_increment_progress(payload->progress);
       }
     } else {
       for (size_t y = 0; y < height; ++y) {
         for (size_t x = 0; x < width; ++x) {
-          png_pixel = image + 3*(y*width + x);
+          png_bytep png_pixel = image + 3*(y*width + x);
 
-          sRGB.R = ((double)png_pixel[0])/UINT8_MAX;
-          sRGB.G = ((double)png_pixel[1])/UINT8_MAX;
-          sRGB.B = ((double)png_pixel[2])/UINT8_MAX;
+          dmnsn_sRGB sRGB = {
+            sRGB.R = ((double)png_pixel[0])/UINT8_MAX,
+            sRGB.G = ((double)png_pixel[1])/UINT8_MAX,
+            sRGB.B = ((double)png_pixel[2])/UINT8_MAX
+          };
 
-          color = dmnsn_color_from_sRGB(sRGB);
-          dmnsn_set_pixel(canvas, x, height - y - 1, color);
+          dmnsn_color color = dmnsn_color_from_sRGB(sRGB);
+          dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
         }
-        dmnsn_increment_progress(progress);
+        dmnsn_increment_progress(payload->progress);
       }
     }
   }
@@ -584,14 +564,6 @@ dmnsn_png_read_canvas_impl(dmnsn_progress *progress, FILE *file)
   free(image);
   png_read_end(png_ptr, NULL);
   png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-  return canvas;
-}
-
-static void
-dmnsn_png_read_row_callback(png_structp png_ptr, png_uint_32 row, int pass)
-{
-  dmnsn_progress *progress = pthread_getspecific(progress_key);
-  if (progress) {
-    dmnsn_increment_progress(progress);
-  }
+  free(payload);
+  return 0;
 }
