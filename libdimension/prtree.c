@@ -194,7 +194,7 @@ dmnsn_zmax_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
   return lval < rval;
 }
 
-static dmnsn_comparator_fn *dmnsn_object_comparators[6] = {
+static dmnsn_list_comparator_fn *dmnsn_object_comparators[6] = {
   [DMNSN_XMIN] = &dmnsn_xmin_object_comp,
   [DMNSN_YMIN] = &dmnsn_ymin_object_comp,
   [DMNSN_ZMIN] = &dmnsn_zmin_object_comp,
@@ -203,7 +203,7 @@ static dmnsn_comparator_fn *dmnsn_object_comparators[6] = {
   [DMNSN_ZMAX] = &dmnsn_zmax_object_comp
 };
 
-static dmnsn_comparator_fn *dmnsn_prnode_comparators[6] = {
+static dmnsn_list_comparator_fn *dmnsn_prnode_comparators[6] = {
   [DMNSN_XMIN] = &dmnsn_xmin_prnode_comp,
   [DMNSN_YMIN] = &dmnsn_ymin_prnode_comp,
   [DMNSN_ZMIN] = &dmnsn_zmin_prnode_comp,

@@ -48,7 +48,7 @@ dmnsn_delete_canvas(dmnsn_canvas *canvas)
 {
   if (canvas) {
     /* Free the optimizers */
-    DMNSN_ARRAY_FOREACH(dmnsn_canvas_optimizer *, i, canvas->optimizers) {
+    DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
       if (i->free_fn) {
         (*i->free_fn)(i->ptr);
       }

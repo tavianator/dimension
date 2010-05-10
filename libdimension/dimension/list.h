@@ -216,8 +216,8 @@ dmnsn_list_pop(dmnsn_list *list, void *obj)
 /* Splits a list in half, and returns the second half */
 dmnsn_list *dmnsn_list_split(dmnsn_list *list);
 /* Sort a list */
-typedef bool dmnsn_comparator_fn(dmnsn_list_iterator *l,
-                                 dmnsn_list_iterator *r);
-void dmnsn_list_sort(dmnsn_list *list, dmnsn_comparator_fn *comparator);
+typedef bool dmnsn_list_comparator_fn(dmnsn_list_iterator *l,
+                                      dmnsn_list_iterator *r);
+void dmnsn_list_sort(dmnsn_list *list, dmnsn_list_comparator_fn *comparator);
 
 #endif /* DIMENSION_LIST_H */

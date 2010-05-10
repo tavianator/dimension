@@ -84,7 +84,7 @@ dmnsn_list_split(dmnsn_list *list)
 }
 
 void
-dmnsn_list_sort(dmnsn_list *list, dmnsn_comparator_fn *comparator)
+dmnsn_list_sort(dmnsn_list *list, dmnsn_list_comparator_fn *comparator)
 {
   /* Recursive merge sort */
   if (dmnsn_list_size(list) < 2) {

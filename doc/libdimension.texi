@@ -33,6 +33,7 @@ Copyright @copyright{} 2010 Tavian Barnes
 * Introduction:: An introduction to the Dimension Library
 * Error Handling:: How libdimension handles warnings and errors
 * Arrays:: A generic interface for arrays of arbitrary objects
+* Lists:: A generic interface for lists of arbitrary objects
 * Asynchronicity:: An interface for controlling background tasks
 * Geometry:: Geometric types like vectors, transformation matricies, and lines
 * Color:: Correct color handling
@@ -60,8 +61,8 @@ This documentation gives a bottom-up overview of the Dimension Library, to allow
 
 @menu
 * Common Definitions:: Definitions used across the Dimension Library
+* Memory Allocation:: Wrappers for malloc() and friends
 @end menu
-
 
 @node Common Definitions
 @section Common Definitions
@@ -72,6 +73,22 @@ typedef void dmnsn_free_fn(void *ptr);
 @end example
 
 @code{dmnsn_free_fn} is a type whose signature matches that of @code{free()}, and which is used as a destructor callback type across the Dimension Library.
+
+@node Memory Allocation
+@section Memory Allocation
+@example
+@findex dmnsn_malloc()
+void *dmnsn_malloc(size_t size);
+@findex dmnsn_realloc()
+void *dmnsn_realloc(void *ptr, size_t size);
+@findex dmnsn_strdup()
+char *dmnsn_strdup(const char *s);
+@end example
+
+@code{dmnsn_malloc()} is a wrapper for @code{malloc()} which is guaranteed to have succeeded if it returns, hence eliminating the need for checking its return value for @code{NULL}.
+If @code{malloc()} should fail, @code{dmnsn_malloc()} reports an error with @code{dmnsn_error()}, which cancels the calling thread (@pxref{Error Handling}).
+@code{dmnsn_realloc()} and @code{dmnsn_strdup()} behave similarly, wrapping @code{realloc()} and @code{strdup()} respectively.
+
 
 @node Error Handling
 @chapter Error Handling
@@ -90,6 +107,9 @@ typedef enum @{
 @findex dmnsn_error()
 #define dmnsn_error(severity, str) /* ... */
 
+@findex dmnsn_assert()
+#define dmnsn_assert(expression, str) /* ... */
+
 @findex dmnsn_get_resilience()
 dmnsn_severity dmnsn_get_resilience();
 @findex dmnsn_set_resilience()
@@ -104,9 +124,13 @@ However, when errors are not severe, when said function should not fail, or when
 The macro will conveniently report the description, as well as the function name and code line where the error occured, to standard error.
 The severity can be either @code{DMNSN_SEVERITY_LOW}, @code{DMNSN_SEVERITY_MEDIUM}, or @code{DMNSN_SEVERITY_HIGH}.
 
+@code{dmnsn_assert()} is used for checking invariants.
+Like @code{assert()}, when @code{NDEBUG} is defined, this macro generates no code.
+However, when @code{NDEBUG} is not defined and @code{expression} evaluates to @code{false}, @code{dmnsn_assert()} will terminate the current thread with @code{dmnsn_error(DMNSN_SEVERITY_HIGH, str)}.
+
 @cindex resilience
 The Dimension Library has also has a user-settable resilience.
-The resilience controls the minimum severity at which the library considers an error to be fatal, and calls @code{exit(EXIT_FAILURE)}.
+The resilience controls the minimum severity at which the library considers an error to be fatal, and terminates the calling thread.
 As such, errors of severity @code{DMNSN_SEVERITY_HIGH} are always fatal.
 libdimension's resilience defaults to @code{DMNSN_SEVERITY_MEDIUM}, but can be inspected or changed thread-safely by @code{dmnsn_get_resilience()} or @code{dmnsn_set_resilience()}, respectively.
 Warnings (non-fatal errors) are formatted like this:
@@ -120,6 +144,8 @@ Dimension WARNING: <function>, <file>:<line>: <description>
 @example
 Dimension ERROR: <function>, <file>:<line>: <description>
 @end example
+
+@noindent possibly followed by a backtrace.
 
 
 @node Arrays
@@ -145,8 +171,13 @@ void dmnsn_array_pop(dmnsn_array *array, void *obj);
 void dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj);
 @findex dmnsn_array_set()
 void dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj);
+
+@findex dmnsn_array_first()
+void *dmnsn_array_first(const dmnsn_array *array);
+@findex dmnsn_array_last()
+void *dmnsn_array_last(const dmnsn_array *array);
 @findex dmnsn_array_at()
-void *dmnsn_array_at(dmnsn_array *array, size_t i);
+void *dmnsn_array_at(const dmnsn_array *array, size_t i);
 
 @findex dmnsn_array_insert()
 void dmnsn_array_insert(dmnsn_array *array, size_t i, const void *obj)
@@ -157,6 +188,9 @@ void dmnsn_array_remove(dmnsn_array *array, size_t i)
 size_t dmnsn_array_size(const dmnsn_array *array);
 @findex dmnsn_array_resize()
 void   dmnsn_array_resize(dmnsn_array *array, size_t length);
+
+@findex DMNSN_ARRAY_FOREACH ()
+#define DMNSN_ARRAY_FOREACH (type, i, array) /* ... */
 @end example
 
 @cindex array
@@ -164,12 +198,114 @@ The Dimension Library often has cause to work with adjustable-size arrays.
 It provides an interface for dynamically-allocated arrays of arbitrary objects.
 Arrays are allocated with the @code{dmnsn_new_array()} function, and freed with the @code{dmnsn_delete_array()} function, a pattern common in libdimension.
 @code{dmnsn_new_array()} takes the size of the new array's elements as its parameter.
-Unlike other allocation functions throughout libdimension, @code{dmnsn_new_array()} cannot fail if it returns (other allocators may return NULL).
-In fact, all array operations are guaranteed to either succeed or report a fatal error, which may happen if memory allocation fails.
 
 Arrays support the push, pop, get, set, insert, and remove operations for arrays, taking a pointer to an object to read or write as their last parameter, the array index (when applicable) as the second-last parameter, and the @code{dmnsn_array *} as the first parameter.
 The get, remove, and pop operations are bounds-checked; other operations dynamically resize the array as needed.
-The array's length may be queried with @code{dmnsn_array_size()}, or set with @code{dmnsn_array_resize()}, and a pointer to the @code{i}'th object may be obtained with @code{dmnsn_array_at()}.
+The array's length may be queried with @code{dmnsn_array_size()}, or set with @code{dmnsn_array_resize()}.
+A pointer to the first object is returned by @code{dmnsn_array_first()}, the last object by @code{dmnsn_array_last()}, and a pointer to the @code{i}'th object may be obtained with @code{dmnsn_array_at()}.
+
+The @code{DMNSN_ARRAY_FOREACH ()} macro expands to an appropriate for loop iterating over an array.
+@code{type} should be a type that points to the type of objects in the array, @code{i} will be the name of the pointer which iterates over the array, and @code{array} is the array to iterate over.  For example:
+
+@example
+DMNSN_ARRAY_FOREACH (int *, i, array) @{
+  printf("%d\n", *i);
+@}
+@end example
+
+
+@node Lists
+@chapter Lists
+
+@example
+@tindex dmnsn_list *
+typedef struct @{
+  /* ... */
+@} dmnsn_list;
+
+@tindex dmnsn_list_iterator *
+typedef struct @{
+  /* ... */
+@} dmnsn_list_iterator;
+
+/* List allocation */
+@findex dmnsn_new_list()
+dmnsn_array *dmnsn_new_list(size_t obj_size);
+@findex dmnsn_delete_list()
+void dmnsn_delete_list(dmnsn_array *array);
+
+/* Construction to/from arrays */
+@findex dmnsn_list_from_array()
+dmnsn_list  *dmnsn_list_from_array(const dmnsn_array *array);
+@findex dmnsn_array_from_list()
+dmnsn_array *dmnsn_array_from_list(const dmnsn_list *list);
+
+/* Iteration */
+
+@findex dmnsn_list_first()
+dmnsn_list_iterator *dmnsn_list_first(const dmnsn_list *list);
+@findex dmnsn_list_last()
+dmnsn_list_iterator *dmnsn_list_last(const dmnsn_list *list);
+@findex dmnsn_list_size()
+size_t dmnsn_list_size(const dmnsn_list *list);
+
+@findex dmnsn_list_prev()
+dmnsn_list_iterator *dmnsn_list_prev(const dmnsn_list_iterator *i);
+@findex dmnsn_list_next()
+dmnsn_list_iterator *dmnsn_list_next(const dmnsn_list_iterator *i);
+
+/* Element access */
+@findex dmnsn_list_get()
+void dmnsn_list_get(const dmnsn_list_iterator *i, void *obj);
+@findex dmnsn_list_set()
+void dmnsn_list_set(dmnsn_list_iterator *i, const void *obj);
+@findex dmnsn_list_swap()
+void dmnsn_list_swap(dmnsn_list_iterator *a, dmnsn_list_iterator *b);
+
+/* Insertion/removal */
+@findex dmnsn_list_push()
+void dmnsn_list_push(dmnsn_list *list, const void *obj);
+@findex dmnsn_list_pop()
+void dmnsn_list_pop(dmnsn_list *list, void *obj);
+@findex dmnsn_list_insert()
+void dmnsn_list_insert(dmnsn_list *list, dmnsn_list_iterator *i,
+                       const void *obj)
+@findex dmnsn_list_remove()
+void dmnsn_list_remove(dmnsn_list *list, dmnsn_list_iterator *i)
+
+/* Splits a list in half, and returns the second half */
+@findex dmnsn_list_split()
+dmnsn_list *dmnsn_list_split(dmnsn_list *list);
+
+/* Sort a list */
+@tindex dmnsn_list_comparator_fn
+typedef bool dmnsn_list_comparator_fn(dmnsn_list_iterator *l,
+                                      dmnsn_list_iterator *r);
+@findex dmnsn_list_sort()
+void dmnsn_list_sort(dmnsn_list *list,
+                     dmnsn_list_comparator_fn *comparator);
+@end example
+
+@cindex list
+Generic doubly-linked lists are also provided by the Dimension Library.
+They are allocated and freed by @code{dmnsn_new_list()} and @code{dmnsn_delete_list()}, respectively.
+They can also be constructed from @code{dmnsn_array *}'s by @code{dmnsn_list_from_array()}, and converted to @code{dmnsn_array *}'s by @code{dmnsn_array_from_list()}.
+
+List elements are accessed with an iterator type, @code{dmnsn_list_iterator *}.
+The previous or next list element is found with @code{dmnsn_list_prev()} or @code{dmnsn_list_next()}, respectively.
+@code{NULL} indicates that you've fallen off the beginning or end of the list.
+An iterator to the first or last element of a list is obtained with @code{dmnsn_list_first()} or @code{dmnsn_list_last()}.
+The size of a list is given by @code{dmnsn_list_size()}.
+
+An object can be retrieved from a @code{dmnsn_list_iterator *} with @code{dmnsn_list_get()}, and set with @code{dmnsn_list_set()}.  The objects of two list iterators can be swapped with @code{dmnsn_list_swap()}.
+
+Objects can be added or removed from the end of a list with @code{dmnsn_list_push()} and @code{dmnsn_list_pop()}.
+Elements can be added at arbitrary locations with @code{dmnsn_list_insert()}, which inserts the object before the iterator @code{i} (pass NULL to insert it at the end).
+The element at @code{i} can be removed with @code{dmnsn_list_remove()}.
+
+@code{dmnsn_list_split()} splits the given list in half, and returns the second, possibly smaller half.
+
+@code{dmnsn_list_sort()} sorts a given list, using a comparison function matching the signature of the @code{dmnsn_list_comparator_fn} type.
 
 
 @node Asynchronicity
@@ -191,13 +327,13 @@ void dmnsn_delete_progress(dmnsn_progress *progress);
 @findex dmnsn_finish_progress()
 int dmnsn_finish_progress(dmnsn_progress *progress);
 
-/* Routines for user */
+/* Routines for users */
 @findex dmnsn_get_progress()
 double dmnsn_get_progress(const dmnsn_progress *progress);
 @findex dmnsn_wait_progress()
 void dmnsn_wait_progress(const dmnsn_progress *progress, double prog);
 
-/* Routines for worker thread */
+/* Routines for worker threads */
 @findex dmnsn_new_progress_element()
 void dmnsn_new_progress_element(dmnsn_progress *progress,
                                 unsigned int total);
@@ -266,6 +402,12 @@ typedef struct @{
   dmnsn_vector n;  /* A normal vector; the direction of the line */
 @} dmnsn_line;
 
+@tindex dmnsn_bounding_box
+typedef struct @{
+  dmnsn_vector min;
+  dmnsn_vector max;
+@} dmnsn_bounding_box;
+
 /* Vector/matrix construction */
 
 @findex dmnsn_new_vector()
@@ -318,6 +460,9 @@ dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
 @findex dmnsn_transform_vector()
 dmnsn_vector dmnsn_transform_vector(dmnsn_matrix lhs,
                                     dmnsn_vector rhs);
+@findex dmnsn_transform_bounding_box()
+dmnsn_bounding_box dmnsn_transform_bounding_box(dmnsn_matrix lhs,
+                                                dmnsn_bounding_box rhs);
 @findex dmnsn_transform_line()
 dmnsn_line   dmnsn_transform_line(dmnsn_matrix lhs, dmnsn_line rhs);
 
@@ -354,6 +499,12 @@ Finally, @code{dmnsn_rotation_matrix(theta)} returns a matrix which rotates by a
 
 Lines support transformation by a matrix (@code{dmnsn_transform_line(A, l) = dmnsn_new_line(A*l.x0, A*(l.x0 + l.n) - A*l.x0)}).
 Also, @code{dmnsn_line_point(l, t) = l.x0 + t*l.n} gives the point @code{t} on the line, and @code{dmnsn_line_index(l, x)} gives the @code{t} value such that @code{dmnsn_line_point(l, t) == x}.
+
+@cindex bounding boxes
+@cindex axis-aligned bounding boxes
+Axis-aligned bounding boxes are represented by the @code{dmnsn_bounding_box} type, with their minimum extent in the @code{.min} field, and their maximum extent in the @code{.max} field.
+They may be transformed by a matrix with @code{dmnsn_transform_bounding_box()}.
+
 
 @node Color
 @chapter Color
