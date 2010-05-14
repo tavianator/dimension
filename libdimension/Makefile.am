@@ -117,3 +117,6 @@ all-local: libdimension.la
 clean-local:
 	rm -rf pgo
 endif
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libdimension.pc
