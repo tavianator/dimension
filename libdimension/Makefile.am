@@ -104,7 +104,7 @@ if PGO
 noinst_LTLIBRARIES = libdimension-pgo.la
 libdimension_pgo_la_SOURCES = $(libdimension_la_SOURCES)
 libdimension_pgo_la_LIBADD  = $(libdimension_la_LIBADD) -lgcov
-libdimension_pgo_la_CFLAGS  = $(libdimension_la_CFLAGS) -fprofile-generate=$$(readlink -f $(builddir))/pgo
+libdimension_pgo_la_CFLAGS  = $(AM_CFLAGS) -pthread -fprofile-generate=$$(readlink -f $(builddir))/pgo
 
 libdimension_la_CFLAGS += -fprofile-correction -fprofile-use=./pgo
 
