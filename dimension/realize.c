@@ -180,7 +180,7 @@ dmnsn_realize_transformation(dmnsn_astnode astnode)
 
   default:
     dmnsn_assert(false, "Expected a transformation.");
-    return dmnsn_identity_matrix(); // Shut up compiler
+    return dmnsn_identity_matrix(); /* Shut up compiler */
   }
 }
 
@@ -958,7 +958,7 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
 
   default:
     dmnsn_assert(false, "Expected an object.");
-    return NULL; // Shut up compiler
+    return NULL; /* Shut up compiler */
   }
 }
 
