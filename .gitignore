@@ -38,6 +38,9 @@ Makefile.in
 /doc/*.vrs
 /doc/texinfo.tex
 
+# pkg-config files
+*.pc
+
 # Files created by `make'
 /dimension/dimension
 /dimension/directives.c
