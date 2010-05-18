@@ -101,6 +101,31 @@ dmnsn_new_line(dmnsn_vector x0, dmnsn_vector n)
   return l;
 }
 
+/* Vector element access */
+
+enum {
+  DMNSN_X,
+  DMNSN_Y,
+  DMNSN_Z
+};
+
+DMNSN_INLINE double
+dmnsn_vector_element(dmnsn_vector n, int elem)
+{
+  switch (elem) {
+  case DMNSN_X:
+    return n.x;
+  case DMNSN_Y:
+    return n.y;
+  case DMNSN_Z:
+    return n.z;
+
+  default:
+    dmnsn_assert(false, "Wrong vector element requested.");
+    return 0.0; /* Shut up compiler */
+  }
+}
+
 /* Vector and matrix arithmetic */
 
 DMNSN_INLINE dmnsn_vector
