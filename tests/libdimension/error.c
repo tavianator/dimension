@@ -19,7 +19,7 @@
 
 /* Make sure that errors terminate us - this test should fail */
 
-#include <dimension.h>
+#include "dimension.h"
 #include <stdlib.h>
 
 int
