@@ -36,6 +36,7 @@ static dmnsn_quality quality = DMNSN_RENDER_FULL;
 static int tokenize = 0, parse = 0;
 
 static void print_usage(FILE *file, const char *arg0);
+static void print_version(FILE *file);
 
 int
 main(int argc, char **argv) {
@@ -45,13 +46,15 @@ main(int argc, char **argv) {
 
   /* Long-only option codes */
   enum {
-    DMNSN_OPT_THREADS = 256,
+    DMNSN_OPT_VERSION = 256,
+    DMNSN_OPT_THREADS,
     DMNSN_OPT_QUALITY,
     DMNSN_OPT_RESILIENCE
   };
 
   static struct option long_options[] = {
     { "help",       no_argument,       NULL,      '?'                  },
+    { "version",    no_argument,       NULL,      DMNSN_OPT_VERSION    },
     { "output",     required_argument, NULL,      'o'                  },
     { "width",      required_argument, NULL,      'w'                  },
     { "height",     required_argument, NULL,      'h'                  },
@@ -78,6 +81,9 @@ main(int argc, char **argv) {
 
     case '?':
       print_usage(stdout, argv[0]);
+      return EXIT_SUCCESS;
+    case DMNSN_OPT_VERSION:
+      print_version(stdout);
       return EXIT_SUCCESS;
 
     case 'o':
@@ -328,6 +334,7 @@ print_usage(FILE *file, const char *arg0)
           "Usage: %s [OPTIONS...] INPUT_FILE\n\n"
           " Main options:\n"
           "  -?, --help          show this help\n"
+          "  --version           show the version of %s\n"
           "  -o, --output=FILE   output to FILE\n\n"
           " Output options:\n"
           "  -w, --width=WIDTH   set canvas width to WIDTH (default 640)\n"
@@ -348,7 +355,14 @@ print_usage(FILE *file, const char *arg0)
           "Copyright (C) 2009-2010 Tavian Barnes, <%s>\n"
           "Licensed under the GNU General Public License\n",
           arg0,
+          PACKAGE_NAME,
           PACKAGE_STRING,
           PACKAGE_URL,
           PACKAGE_BUGREPORT);
+}
+
+static void
+print_version(FILE *file)
+{
+  fprintf(file, "%s\n", PACKAGE_STRING);
 }

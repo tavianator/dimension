@@ -19,7 +19,7 @@ dnl Initialization
 AC_PREREQ(2.65)
 AC_INIT(Dimension, 0.0.0, tavianator@gmail.com, dimension,
         [http://dmnsn.googlecode.com])
-AM_INIT_AUTOMAKE([parallel-tests color-tests])
+AM_INIT_AUTOMAKE([parallel-tests color-tests std-options])
 AM_SILENT_RULES([yes])
 
 dnl Use C99 mode with GNU extensions
