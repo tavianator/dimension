@@ -34,12 +34,12 @@
 #define DMNSN_PRTREE_B 6
 
 typedef struct dmnsn_prtree_node {
-  /* Children (objects or subtrees) */
-  void *children[DMNSN_PRTREE_B];
-  bool is_leaf;
-
-  /* Bounding box */
   dmnsn_bounding_box bounding_box;
+
+  /* Children (objects or subtrees) */
+  bool is_leaf;
+  void *children[DMNSN_PRTREE_B];
+  dmnsn_bounding_box bounding_boxes[DMNSN_PRTREE_B];
 } dmnsn_prtree_node;
 
 typedef struct dmnsn_prtree {

@@ -379,7 +379,17 @@ dmnsn_new_prtree_node(const dmnsn_pseudo_prleaf *leaf)
   node->bounding_box = leaf->bounding_box;
 
   for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
-    node->children[i] = leaf->children[i];
+    if (!leaf->children[i]) {
+      node->children[i] = NULL;
+    } else if (leaf->is_leaf) {
+      dmnsn_object *object = leaf->children[i];
+      node->children[i] = object;
+      node->bounding_boxes[i] = object->bounding_box;
+    } else {
+      dmnsn_prtree_node *child = leaf->children[i];
+      node->children[i] = child;
+      node->bounding_boxes[i] = child->bounding_box;
+    }
   }
 
   return node;
@@ -515,61 +525,7 @@ dmnsn_delete_prtree(dmnsn_prtree *tree)
 }
 
 /* Ray-AABB intersection test */
-static bool dmnsn_ray_box_intersection(dmnsn_line ray, dmnsn_bounding_box box,
-                                       double t);
-
-static void
-dmnsn_prtree_search_recursive(const dmnsn_prtree_node *node, dmnsn_line ray,
-                              dmnsn_intersection *intersection, double *t)
-{
-  if (dmnsn_ray_box_intersection(ray, node->bounding_box, *t)) {
-    for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
-      if (!node->children[i])
-        break;
-
-      if (node->is_leaf) {
-        dmnsn_object *object = node->children[i];
-
-        dmnsn_intersection local_intersection;
-        if (dmnsn_ray_box_intersection(ray, object->bounding_box, *t)) {
-          if ((*object->intersection_fn)(object, ray, &local_intersection)) {
-            if (*t < 0.0 || local_intersection.t < *t) {
-              *intersection = local_intersection;
-              *t = local_intersection.t;
-            }
-          }
-        }
-      } else {
-        dmnsn_prtree_search_recursive(node->children[i], ray, intersection, t);
-      }
-    }
-  }
-}
-
-bool
-dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
-                    dmnsn_intersection *intersection)
-{
-  double t = -1.0;
-
-  /* Search the unbounded objects */
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, tree->unbounded) {
-    dmnsn_intersection local_intersection;
-    if ((*(*object)->intersection_fn)(*object, ray, &local_intersection)) {
-      if (t < 0.0 || local_intersection.t < t) {
-        *intersection = local_intersection;
-        t = local_intersection.t;
-      }
-    }
-  }
-
-  /* Search the bounded objects */
-  dmnsn_prtree_search_recursive(tree->root, ray, intersection, &t);
-
-  return t >= 0.0;
-}
-
-static bool
+static inline bool
 dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 {
   double tmin = -INFINITY, tmax = INFINITY;
@@ -620,4 +576,55 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
     return false;
 
   return t < 0.0 || tmin < t;
+}
+
+static void
+dmnsn_prtree_search_recursive(const dmnsn_prtree_node *node, dmnsn_line ray,
+                              dmnsn_intersection *intersection, double *t)
+{
+  for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
+    if (!node->children[i])
+      break;
+
+    if (dmnsn_ray_box_intersection(ray, node->bounding_boxes[i], *t)) {
+      if (node->is_leaf) {
+        dmnsn_object *object = node->children[i];
+
+        dmnsn_intersection local_intersection;
+        if ((*object->intersection_fn)(object, ray, &local_intersection)) {
+          if (*t < 0.0 || local_intersection.t < *t) {
+            *intersection = local_intersection;
+            *t = local_intersection.t;
+          }
+        }
+      } else {
+        dmnsn_prtree_search_recursive(node->children[i], ray, intersection, t);
+      }
+    }
+  }
+}
+
+bool
+dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
+                    dmnsn_intersection *intersection)
+{
+  double t = -1.0;
+
+  /* Search the unbounded objects */
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, tree->unbounded) {
+    dmnsn_intersection local_intersection;
+    if ((*(*object)->intersection_fn)(*object, ray, &local_intersection)) {
+      if (t < 0.0 || local_intersection.t < t) {
+        *intersection = local_intersection;
+        t = local_intersection.t;
+      }
+    }
+  }
+
+  /* Search the bounded objects */
+  if (dmnsn_ray_box_intersection(ray, tree->root->bounding_box, t)) {
+    dmnsn_prtree_search_recursive(tree->root, ray, intersection, &t);
+  }
+
+  return t >= 0.0;
 }
