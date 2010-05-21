@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include <dimension.h>
+#include "dimension.h"
 #include <sandglass.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -25,20 +25,17 @@
 int
 main()
 {
-  dmnsn_array *array;
-  uint32_t object = 1;
-  void *ptr;
-  size_t size;
   const unsigned int count = 32;
+  uint32_t object = 1;
 
   sandglass_t sandglass;
-
   if (sandglass_init_monotonic(&sandglass, SANDGLASS_CPUTIME) != 0) {
     perror("sandglass_create()");
     return EXIT_FAILURE;
   }
 
   /* Benchmark allocation and deallocation */
+  dmnsn_array *array;
   sandglass_bench_fine(&sandglass, {
     array = dmnsn_new_array(sizeof(object));
     dmnsn_delete_array(array);
@@ -67,10 +64,12 @@ main()
   printf("dmnsn_array_set(): %ld\n", sandglass.grains);
 
   /* dmnsn_array_at() */
+  void *ptr;
   sandglass_bench_fine(&sandglass, ptr = dmnsn_array_at(array, count/2));
   printf("dmnsn_array_at(): %ld\n", sandglass.grains);
 
   /* dmnsn_array_size() */
+  size_t size;
   sandglass_bench_fine(&sandglass, size = dmnsn_array_size(array));
   printf("dmnsn_array_size(): %ld\n", sandglass.grains);
 
