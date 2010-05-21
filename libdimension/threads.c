@@ -39,9 +39,10 @@ dmnsn_thread(void *arg)
   dmnsn_thread_payload *payload = arg;
   int *ret;
   pthread_cleanup_push(&dmnsn_thread_cleanup, payload->progress);
-  ret  = dmnsn_malloc(sizeof(ret));
+  ret  = dmnsn_malloc(sizeof(int));
   *ret = (*payload->thread_fn)(payload->arg);
   pthread_cleanup_pop(1);
+  free(payload);
   return ret;
 }
 
