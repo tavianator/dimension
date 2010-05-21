@@ -42,22 +42,22 @@ EXTRA_DIST = common.prologue                                                   \
              grammar.epilogue
 
 grammar.y: grammar.prologue grammar.declarations grammar.nonterminals grammar.rules grammar.epilogue common.prologue common.declarations common.terminals common.nonterminals common.rules
-	echo "%{" >$@
-	cat {common,grammar}.prologue >>$@
-	echo "%}" >>$@
-	cat common.terminals {grammar,common}.{declarations,nonterminals} >>$@
-	echo "%%" >>$@
-	cat grammar.rules common.rules >>$@
-	echo "%%" >>$@
-	cat grammar.epilogue >>$@
+	@echo "%{" >$@
+	@cat {common,grammar}.prologue >>$@
+	@echo "%}" >>$@
+	@cat common.terminals {grammar,common}.{declarations,nonterminals} >>$@
+	@echo "%%" >>$@
+	@cat grammar.rules common.rules >>$@
+	@echo "%%" >>$@
+	@cat grammar.epilogue >>$@
 
 directives.y: directives.prologue directives.declarations directives.nonterminals directives.rules common.prologue common.declarations common.terminals common.nonterminals common.rules
-	echo "%{" >$@
-	cat {common,directives}.prologue >>$@
-	echo "%}" >>$@
-	cat common.terminals {directives,common}.{declarations,nonterminals} >>$@
-	echo "%%" >>$@
-	cat directives.rules common.rules >>$@
+	@echo "%{" >$@
+	@cat {common,directives}.prologue >>$@
+	@echo "%}" >>$@
+	@cat common.terminals {directives,common}.{declarations,nonterminals} >>$@
+	@echo "%%" >>$@
+	@cat directives.rules common.rules >>$@
 
 dimension_SOURCES = directives.y                                               \
                     grammar.y                                                  \

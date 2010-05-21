@@ -15,10 +15,12 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+dnl Initialization
 AC_PREREQ(2.65)
 AC_INIT(Dimension, 0.0.0, tavianator@gmail.com, dimension,
         [http://dmnsn.googlecode.com])
-AM_INIT_AUTOMAKE([parallel-tests])
+AM_INIT_AUTOMAKE([parallel-tests color-tests])
+AM_SILENT_RULES([yes])
 
 dnl Use C99 mode with GNU extensions
 CFLAGS="-std=gnu99 $CFLAGS"
