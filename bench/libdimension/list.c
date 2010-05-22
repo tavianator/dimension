@@ -129,6 +129,7 @@ main()
   }
   printf("\n");
 
+  dmnsn_delete_list(split);
   dmnsn_delete_list(list);
   return EXIT_SUCCESS;
 }
