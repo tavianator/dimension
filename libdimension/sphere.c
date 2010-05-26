@@ -54,14 +54,14 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
  
   /* Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1 */
   double a, b, c, t;
-  a = l.n.x*l.n.x + l.n.y*l.n.y + l.n.z*l.n.z;
-  b = 2.0*(l.n.x*l.x0.x + l.n.y*l.x0.y + l.n.z*l.x0.z);
-  c = l.x0.x*l.x0.x + l.x0.y*l.x0.y + l.x0.z*l.x0.z - 1.0;
+  a = dmnsn_vector_dot(l.n, l.n);
+  b = 2.0*dmnsn_vector_dot(l.n, l.x0);
+  c = dmnsn_vector_dot(l.x0, l.x0) - 1.0;
 
-  if (b*b - 4.0*a*c >= 0) {
-    t = (-b - sqrt(b*b - 4.0*a*c))/(2*a);
+  if (b*b - 4.0*a*c >= 0.0) {
+    t = (-b - sqrt(b*b - 4.0*a*c))/(2.0*a);
     if (t < 0.0) {
-      t = (-b + sqrt(b*b - 4.0*a*c))/(2*a);
+      t = (-b + sqrt(b*b - 4.0*a*c))/(2.0*a);
     }
 
     if (t >= 0.0) {
