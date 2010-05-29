@@ -575,7 +575,7 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
   if (tmax < 0.0)
     return false;
 
-  return t < 0.0 || tmin < t;
+  return tmin < t;
 }
 
 static void
@@ -592,7 +592,7 @@ dmnsn_prtree_search_recursive(const dmnsn_prtree_node *node, dmnsn_line ray,
 
         dmnsn_intersection local_intersection;
         if ((*object->intersection_fn)(object, ray, &local_intersection)) {
-          if (*t < 0.0 || local_intersection.t < *t) {
+          if (local_intersection.t < *t) {
             *intersection = local_intersection;
             *t = local_intersection.t;
           }
@@ -608,13 +608,13 @@ bool
 dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
                     dmnsn_intersection *intersection)
 {
-  double t = -1.0;
+  double t = INFINITY;
 
   /* Search the unbounded objects */
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, tree->unbounded) {
     dmnsn_intersection local_intersection;
     if ((*(*object)->intersection_fn)(*object, ray, &local_intersection)) {
-      if (t < 0.0 || local_intersection.t < t) {
+      if (local_intersection.t < t) {
         *intersection = local_intersection;
         t = local_intersection.t;
       }
@@ -626,5 +626,5 @@ dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
     dmnsn_prtree_search_recursive(tree->root, ray, intersection, &t);
   }
 
-  return t >= 0.0;
+  return !isinf(t);
 }
