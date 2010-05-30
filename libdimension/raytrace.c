@@ -75,6 +75,12 @@ static int
 dmnsn_raytrace_scene_thread(void *ptr)
 {
   dmnsn_raytrace_payload *payload = ptr;
+
+  /* Pre-calculate bounding box transformations, etc. */
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, payload->scene->objects) {
+    dmnsn_object_precompute(*object);
+  }
+
   payload->prtree = dmnsn_new_prtree(payload->scene->objects);
 
   dmnsn_raytrace_payload *payloads;

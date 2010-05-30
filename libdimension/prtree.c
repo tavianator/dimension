@@ -436,15 +436,6 @@ dmnsn_pseudo_prtree_leaves(const dmnsn_pseudo_prtree *pseudo)
   return leaves;
 }
 
-/* Pre-calculate bounding box transformations, etc. */
-static void
-dmnsn_precompute_objects(const dmnsn_array *objects)
-{
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
-    dmnsn_object_precompute(*object);
-  }
-}
-
 /* Split the unbounded objects into a new list */
 static dmnsn_list *
 dmnsn_split_unbounded(dmnsn_list *objects)
@@ -473,8 +464,6 @@ dmnsn_split_unbounded(dmnsn_list *objects)
 dmnsn_prtree *
 dmnsn_new_prtree(const dmnsn_array *objects)
 {
-  dmnsn_precompute_objects(objects);
-
   dmnsn_list *leaves = dmnsn_list_from_array(objects);
   dmnsn_list *unbounded = dmnsn_split_unbounded(leaves);
 

@@ -25,6 +25,8 @@
 #ifndef DIMENSION_SCENE_H
 #define DIMENSION_SCENE_H
 
+#include <stdbool.h>
+
 enum {
   DMNSN_RENDER_NONE         = 0,
   DMNSN_RENDER_PIGMENT      = 1 << 0,
