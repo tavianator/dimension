@@ -52,7 +52,7 @@ struct dmnsn_pigment {
 dmnsn_pigment *dmnsn_new_pigment();
 void dmnsn_delete_pigment(dmnsn_pigment *pigment);
 
-void dmnsn_pigment_precompute(dmnsn_pigment *pigment);
+void dmnsn_pigment_init(dmnsn_pigment *pigment);
 
 /*
  * Finishes
@@ -110,6 +110,6 @@ typedef struct {
 dmnsn_texture *dmnsn_new_texture();
 void dmnsn_delete_texture(dmnsn_texture *texture);
 
-void dmnsn_texture_precompute(dmnsn_texture *texture);
+void dmnsn_texture_init(dmnsn_texture *texture);
 
 #endif /* DIMENSION_TEXTURE_H */

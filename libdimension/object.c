@@ -37,11 +37,11 @@ dmnsn_object *
 dmnsn_new_object()
 {
   dmnsn_object *object = dmnsn_malloc(sizeof(dmnsn_object));
-  object->texture       = NULL;
-  object->interior      = NULL;
-  object->trans         = dmnsn_identity_matrix();
-  object->precompute_fn = NULL;
-  object->free_fn       = NULL;
+  object->texture  = NULL;
+  object->interior = NULL;
+  object->trans    = dmnsn_identity_matrix();
+  object->init_fn  = NULL;
+  object->free_fn  = NULL;
   return object;
 }
 
@@ -61,10 +61,10 @@ dmnsn_delete_object(dmnsn_object *object)
 
 /* Precompute object properties */
 void
-dmnsn_object_precompute(dmnsn_object *object)
+dmnsn_object_init(dmnsn_object *object)
 {
-  if (object->precompute_fn) {
-    (*object->precompute_fn)(object);
+  if (object->init_fn) {
+    (*object->init_fn)(object);
   }
 
   object->bounding_box
@@ -74,6 +74,6 @@ dmnsn_object_precompute(dmnsn_object *object)
   if (object->texture) {
     object->texture->trans
       = dmnsn_matrix_mul(object->trans, object->texture->trans);
-    dmnsn_texture_precompute(object->texture);
+    dmnsn_texture_init(object->texture);
   }
 }

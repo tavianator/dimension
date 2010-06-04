@@ -48,7 +48,7 @@ typedef struct dmnsn_object dmnsn_object;
 
 /* Object callback types */
 
-typedef void dmnsn_object_precompute_fn(dmnsn_object *object);
+typedef void dmnsn_object_init_fn(dmnsn_object *object);
 typedef bool dmnsn_object_intersection_fn(const dmnsn_object *object,
                                           dmnsn_line line,
                                           dmnsn_intersection *intersection);
@@ -70,7 +70,7 @@ struct dmnsn_object {
   dmnsn_bounding_box bounding_box;
 
   /* Callback functions */
-  dmnsn_object_precompute_fn   *precompute_fn;
+  dmnsn_object_init_fn         *init_fn;
   dmnsn_object_intersection_fn *intersection_fn;
   dmnsn_object_inside_fn       *inside_fn;
   dmnsn_free_fn                *free_fn;
@@ -84,6 +84,6 @@ dmnsn_object *dmnsn_new_object();
 /* Free an object */
 void dmnsn_delete_object(dmnsn_object *object);
 
-void dmnsn_object_precompute(dmnsn_object *object);
+void dmnsn_object_init(dmnsn_object *object);
 
 #endif /* DIMENSION_OBJECT_H */
