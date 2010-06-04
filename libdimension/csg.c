@@ -21,6 +21,24 @@
 #include "dimension.h"
 #include <stdlib.h>
 
+/* Apply the properties of `csg' to its children */
+static void
+dmnsn_csg_cascade(const dmnsn_object *csg, dmnsn_object *object)
+{
+  if (!object->texture && csg->texture) {
+    object->texture = csg->texture;
+    ++*object->texture->refcount;
+  }
+
+  if (!object->interior && csg->interior) {
+    object->interior = csg->interior;
+    ++*object->interior->refcount;
+  }
+
+  object->trans = dmnsn_matrix_mul(csg->trans, object->trans);
+}
+
+/* Generic CSG free function */
 static void
 dmnsn_csg_free_fn(void *ptr)
 {
@@ -37,38 +55,24 @@ dmnsn_csg_union_intersection_fn(const dmnsn_object *csg,
                                 dmnsn_line line,
                                 dmnsn_intersection *intersection)
 {
-  dmnsn_line line_trans = dmnsn_transform_line(csg->trans_inv, line);
-
   const dmnsn_object **params = csg->ptr;
 
   dmnsn_intersection i1, i2;
-  bool is_i1 = (*params[0]->intersection_fn)(params[0], line_trans, &i1);
-  bool is_i2 = (*params[1]->intersection_fn)(params[1], line_trans, &i2);
+  bool is_i1 = (*params[0]->intersection_fn)(params[0], line, &i1);
+  bool is_i2 = (*params[1]->intersection_fn)(params[1], line, &i2);
 
-  if (is_i1) {
-    if (!i1.texture)
-      i1.texture = csg->texture;
-    if (!i1.interior)
-      i1.interior = csg->interior;
-  }
-
-  if (is_i2) {
-    if (!i2.texture)
-      i2.texture = csg->texture;
-    if (!i2.interior)
-      i2.interior = csg->interior;
-  }
-
-  if (!is_i1 && !is_i2) {
-    return false;
-  } else if (is_i1 && !is_i2) {
+  if (is_i1 && is_i2) {
+    if (i1.t < i2.t) {
+      *intersection = i1;
+    } else {
+      *intersection = i2;
+    }
+  } else if (is_i1) {
     *intersection = i1;
-  } else if (!is_i1 && is_i2) {
+  } else if (is_i2) {
     *intersection = i2;
-  } else if (i1.t < i2.t) {
-    *intersection = i1;
   } else {
-    *intersection = i2;
+    return false;
   }
 
   intersection->ray    = line;
@@ -85,12 +89,29 @@ dmnsn_csg_union_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
       || (*params[1]->inside_fn)(params[1], point);
 }
 
-dmnsn_object *
-dmnsn_new_csg_union(dmnsn_object *A, dmnsn_object *B)
+static void
+dmnsn_csg_union_precompute_fn(dmnsn_object *csg)
 {
+  dmnsn_object **params = csg->ptr;
+  dmnsn_object *A = params[0];
+  dmnsn_object *B = params[1];
+
+  dmnsn_csg_cascade(csg, A);
+  dmnsn_csg_cascade(csg, B);
+
   dmnsn_object_precompute(A);
   dmnsn_object_precompute(B);
 
+  csg->trans = dmnsn_identity_matrix();
+  csg->bounding_box.min
+    = dmnsn_vector_min(A->bounding_box.min, B->bounding_box.min);
+  csg->bounding_box.max
+    = dmnsn_vector_max(A->bounding_box.max, B->bounding_box.max);
+}
+
+dmnsn_object *
+dmnsn_new_csg_union(dmnsn_object *A, dmnsn_object *B)
+{
   dmnsn_object *csg = dmnsn_new_object();
 
   dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
@@ -100,12 +121,8 @@ dmnsn_new_csg_union(dmnsn_object *A, dmnsn_object *B)
   csg->ptr             = params;
   csg->intersection_fn = &dmnsn_csg_union_intersection_fn;
   csg->inside_fn       = &dmnsn_csg_union_inside_fn;
+  csg->precompute_fn   = &dmnsn_csg_union_precompute_fn;
   csg->free_fn         = &dmnsn_csg_free_fn;
-
-  csg->bounding_box.min
-    = dmnsn_vector_min(A->bounding_box.min, B->bounding_box.min);
-  csg->bounding_box.max
-    = dmnsn_vector_max(A->bounding_box.max, B->bounding_box.max);
 
   return csg;
 }
@@ -119,29 +136,22 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
   /* inside1 is whether the second object is allowed inside the first object;
      respectively for inside2 */
 
-  dmnsn_line line_trans = dmnsn_transform_line(csg->trans_inv, line);
-
   const dmnsn_object **params = csg->ptr;
 
   dmnsn_intersection i1, i2;
-  bool is_i1 = (*params[0]->intersection_fn)(params[0], line_trans, &i1);
-  bool is_i2 = (*params[1]->intersection_fn)(params[1], line_trans, &i2);
+  bool is_i1 = (*params[0]->intersection_fn)(params[0], line, &i1);
+  bool is_i2 = (*params[1]->intersection_fn)(params[1], line, &i2);
 
   double oldt = 0.0;
   while (is_i1) {
-    i1.ray = line_trans;
+    i1.ray = line;
     i1.t += oldt;
     oldt = i1.t + dmnsn_epsilon;
 
-    if (!i1.texture)
-      i1.texture = csg->texture;
-    if (!i1.interior)
-      i1.interior = csg->interior;
-
     dmnsn_vector point = dmnsn_line_point(i1.ray, i1.t);
     if (inside2 ^ (*params[1]->inside_fn)(params[1], point)) {
-      dmnsn_line newline = line_trans;
-      newline.x0 = dmnsn_line_point(line_trans, i1.t);
+      dmnsn_line newline = line;
+      newline.x0 = dmnsn_line_point(line, i1.t);
       newline    = dmnsn_line_add_epsilon(newline);
       is_i1 = (*params[0]->intersection_fn)(params[0], newline, &i1);
     } else {
@@ -151,19 +161,14 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
 
   oldt = 0.0;
   while (is_i2) {
-    i2.ray = line_trans;
+    i2.ray = line;
     i2.t += oldt;
     oldt = i2.t + dmnsn_epsilon;
 
-    if (!i2.texture)
-      i2.texture = csg->texture;
-    if (!i2.interior)
-      i2.interior = csg->interior;
-
     dmnsn_vector point = dmnsn_line_point(i2.ray, i2.t);
     if (inside1 ^ (*params[0]->inside_fn)(params[0], point)) {
-      dmnsn_line newline = line_trans;
-      newline.x0 = dmnsn_line_point(line_trans, i2.t);
+      dmnsn_line newline = line;
+      newline.x0 = dmnsn_line_point(line, i2.t);
       newline    = dmnsn_line_add_epsilon(newline);
       is_i2 = (*params[1]->intersection_fn)(params[1], newline, &i2);
     } else {
@@ -171,16 +176,18 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
     }
   }
 
-  if (!is_i1 && !is_i2) {
-    return false;
-  } else if (is_i1 && !is_i2) {
+  if (is_i1 && is_i2) {
+    if (i1.t < i2.t) {
+      *intersection = i1;
+    } else {
+      *intersection = i2;
+    }
+  } else if (is_i1) {
     *intersection = i1;
-  } else if (!is_i1 && is_i2) {
+  } else if (is_i2) {
     *intersection = i2;
-  } else if (i1.t < i2.t) {
-    *intersection = i1;
   } else {
-    *intersection = i2;
+    return false;
   }
 
   intersection->ray    = line;
@@ -207,12 +214,29 @@ dmnsn_csg_intersection_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
       && (*params[1]->inside_fn)(params[1], point);
 }
 
-dmnsn_object *
-dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
+static void
+dmnsn_csg_intersection_precompute_fn(dmnsn_object *csg)
 {
+  dmnsn_object **params = csg->ptr;
+  dmnsn_object *A = params[0];
+  dmnsn_object *B = params[1];
+
+  dmnsn_csg_cascade(csg, A);
+  dmnsn_csg_cascade(csg, B);
+
   dmnsn_object_precompute(A);
   dmnsn_object_precompute(B);
 
+  csg->trans = dmnsn_identity_matrix();
+  csg->bounding_box.min
+    = dmnsn_vector_max(A->bounding_box.min, B->bounding_box.min);
+  csg->bounding_box.max
+    = dmnsn_vector_min(A->bounding_box.max, B->bounding_box.max);
+}
+
+dmnsn_object *
+dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
+{
   dmnsn_object *csg = dmnsn_new_object();
 
   dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
@@ -222,12 +246,8 @@ dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
   csg->ptr             = params;
   csg->intersection_fn = &dmnsn_csg_intersection_intersection_fn;
   csg->inside_fn       = &dmnsn_csg_intersection_inside_fn;
+  csg->precompute_fn   = &dmnsn_csg_intersection_precompute_fn;
   csg->free_fn         = &dmnsn_csg_free_fn;
-
-  csg->bounding_box.min
-    = dmnsn_vector_max(A->bounding_box.min, B->bounding_box.min);
-  csg->bounding_box.max
-    = dmnsn_vector_min(A->bounding_box.max, B->bounding_box.max);
 
   return csg;
 }
@@ -250,12 +270,26 @@ dmnsn_csg_difference_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
      && !(*params[1]->inside_fn)(params[1], point);
 }
 
-dmnsn_object *
-dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
+static void
+dmnsn_csg_difference_precompute_fn(dmnsn_object *csg)
 {
+  dmnsn_object **params = csg->ptr;
+  dmnsn_object *A = params[0];
+  dmnsn_object *B = params[1];
+
+  dmnsn_csg_cascade(csg, A);
+  dmnsn_csg_cascade(csg, B);
+
   dmnsn_object_precompute(A);
   dmnsn_object_precompute(B);
 
+  csg->trans = dmnsn_identity_matrix();
+  csg->bounding_box = A->bounding_box;
+}
+
+dmnsn_object *
+dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
+{
   dmnsn_object *csg = dmnsn_new_object();
 
   dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
@@ -265,8 +299,8 @@ dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
   csg->ptr             = params;
   csg->intersection_fn = &dmnsn_csg_difference_intersection_fn;
   csg->inside_fn       = &dmnsn_csg_difference_inside_fn;
+  csg->precompute_fn   = &dmnsn_csg_difference_precompute_fn;
   csg->free_fn         = &dmnsn_csg_free_fn;
-  csg->bounding_box    = A->bounding_box;
 
   return csg;
 }
@@ -289,12 +323,29 @@ dmnsn_csg_merge_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
       || (*params[1]->inside_fn)(params[1], point);
 }
 
-dmnsn_object *
-dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B)
+static void
+dmnsn_csg_merge_precompute_fn(dmnsn_object *csg)
 {
+  dmnsn_object **params = csg->ptr;
+  dmnsn_object *A = params[0];
+  dmnsn_object *B = params[1];
+
+  dmnsn_csg_cascade(csg, A);
+  dmnsn_csg_cascade(csg, B);
+
   dmnsn_object_precompute(A);
   dmnsn_object_precompute(B);
 
+  csg->trans = dmnsn_identity_matrix();
+  csg->bounding_box.min
+    = dmnsn_vector_min(A->bounding_box.min, B->bounding_box.min);
+  csg->bounding_box.max
+    = dmnsn_vector_max(A->bounding_box.max, B->bounding_box.max);
+}
+
+dmnsn_object *
+dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B)
+{
   dmnsn_object *csg = dmnsn_new_object();
 
   dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
@@ -304,12 +355,8 @@ dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B)
   csg->ptr             = params;
   csg->intersection_fn = &dmnsn_csg_merge_intersection_fn;
   csg->inside_fn       = &dmnsn_csg_merge_inside_fn;
+  csg->precompute_fn   = &dmnsn_csg_merge_precompute_fn;
   csg->free_fn         = &dmnsn_csg_free_fn;
-
-  csg->bounding_box.min
-    = dmnsn_vector_min(A->bounding_box.min, B->bounding_box.min);
-  csg->bounding_box.max
-    = dmnsn_vector_max(A->bounding_box.max, B->bounding_box.max);
 
   return csg;
 }
