@@ -102,6 +102,9 @@ typedef struct {
 
   /* Transformation matrix */
   dmnsn_matrix trans, trans_inv;
+
+  /* Reference count */
+  unsigned int *refcount;
 } dmnsn_texture;
 
 dmnsn_texture *dmnsn_new_texture();

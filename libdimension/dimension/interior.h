@@ -34,6 +34,9 @@ typedef struct dmnsn_interior {
 
   /* Generic pointer */
   void *ptr;
+
+  /* Reference count */
+  unsigned int *refcount;
 } dmnsn_interior;
 
 dmnsn_interior *dmnsn_new_interior();
