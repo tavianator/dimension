@@ -69,6 +69,9 @@ struct dmnsn_object {
   /* Bounding box */
   dmnsn_bounding_box bounding_box;
 
+  /* Child objects */
+  dmnsn_array *children;
+
   /* Callback functions */
   dmnsn_object_init_fn         *init_fn;
   dmnsn_object_intersection_fn *intersection_fn;

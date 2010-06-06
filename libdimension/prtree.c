@@ -436,6 +436,30 @@ dmnsn_pseudo_prtree_leaves(const dmnsn_pseudo_prtree *pseudo)
   return leaves;
 }
 
+/* Add objects from an array to a list, splitting unions etc. */
+
+static void
+dmnsn_list_add_object(dmnsn_list *objects, const dmnsn_object *object)
+{
+  if (dmnsn_array_size(object->children) == 0) {
+    dmnsn_list_push(objects, &object);
+  } else {
+    DMNSN_ARRAY_FOREACH (const dmnsn_object **, child, object->children) {
+      dmnsn_list_add_object(objects, *child);
+    }
+  }
+}
+
+static dmnsn_list *
+dmnsn_object_list(const dmnsn_array *objects)
+{
+  dmnsn_list *list = dmnsn_new_list(sizeof(dmnsn_object *));
+  DMNSN_ARRAY_FOREACH (const dmnsn_object **, object, objects) {
+    dmnsn_list_add_object(list, *object);
+  }
+  return list;
+}
+
 /* Split the unbounded objects into a new list */
 static dmnsn_list *
 dmnsn_split_unbounded(dmnsn_list *objects)
@@ -464,7 +488,7 @@ dmnsn_split_unbounded(dmnsn_list *objects)
 dmnsn_prtree *
 dmnsn_new_prtree(const dmnsn_array *objects)
 {
-  dmnsn_list *leaves = dmnsn_list_from_array(objects);
+  dmnsn_list *leaves = dmnsn_object_list(objects);
   dmnsn_list *unbounded = dmnsn_split_unbounded(leaves);
 
   dmnsn_pseudo_prtree *pseudo = dmnsn_new_pseudo_prtree(leaves, true, 0);

@@ -75,7 +75,7 @@ dmnsn_plane_intersection_fn(const dmnsn_object *plane, dmnsn_line line,
   return false;
 }
 
-/* Return whether a point is inside a plane (x**2 + y**2 + z**2 < 1.0) */
+/* Return whether a point is inside a plane */
 static bool
 dmnsn_plane_inside_fn(const dmnsn_object *plane, dmnsn_vector point)
 {

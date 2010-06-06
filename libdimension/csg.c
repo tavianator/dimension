@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
+#include "dimension_impl.h"
 #include <stdlib.h>
 
 /* Apply the properties of `csg' to its children */
@@ -38,6 +38,62 @@ dmnsn_csg_cascade(const dmnsn_object *csg, dmnsn_object *object)
   object->trans = dmnsn_matrix_mul(csg->trans, object->trans);
 }
 
+/* Unions */
+
+static bool
+dmnsn_csg_union_intersection_fn(const dmnsn_object *csg,
+                                dmnsn_line line,
+                                dmnsn_intersection *intersection)
+{
+  dmnsn_prtree *prtree = csg->ptr;
+  return dmnsn_prtree_search(prtree, line, intersection);
+}
+
+static bool
+dmnsn_csg_union_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
+{
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, child, csg->children) {
+    if (((*child)->inside_fn)(*child, point))
+      return true;
+  }
+  return false;
+}
+
+static void
+dmnsn_csg_union_init_fn(dmnsn_object *csg)
+{
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, child, csg->children) {
+    dmnsn_csg_cascade(csg, *child);
+    dmnsn_object_init(*child);
+  }
+  csg->trans = dmnsn_identity_matrix();
+
+  dmnsn_prtree *prtree = dmnsn_new_prtree(csg->children);
+  csg->ptr = prtree;
+  csg->bounding_box = prtree->root->bounding_box;
+}
+
+static void
+dmnsn_csg_union_free_fn(void *ptr)
+{
+  dmnsn_delete_prtree(ptr);
+}
+
+dmnsn_object *
+dmnsn_new_csg_union(dmnsn_object *A, dmnsn_object *B)
+{
+  dmnsn_object *csg = dmnsn_new_object();
+
+  dmnsn_array_push(csg->children, &A);
+  dmnsn_array_push(csg->children, &B);
+  csg->intersection_fn = &dmnsn_csg_union_intersection_fn;
+  csg->inside_fn       = &dmnsn_csg_union_inside_fn;
+  csg->init_fn         = &dmnsn_csg_union_init_fn;
+  csg->free_fn         = &dmnsn_csg_union_free_fn;
+
+  return csg;
+}
+
 /* Generic CSG free function */
 static void
 dmnsn_csg_free_fn(void *ptr)
@@ -46,85 +102,6 @@ dmnsn_csg_free_fn(void *ptr)
   dmnsn_delete_object(params[1]);
   dmnsn_delete_object(params[0]);
   free(ptr);
-}
-
-/* Unions */
-
-static bool
-dmnsn_csg_union_intersection_fn(const dmnsn_object *csg,
-                                dmnsn_line line,
-                                dmnsn_intersection *intersection)
-{
-  const dmnsn_object **params = csg->ptr;
-
-  dmnsn_intersection i1, i2;
-  bool is_i1 = (*params[0]->intersection_fn)(params[0], line, &i1);
-  bool is_i2 = (*params[1]->intersection_fn)(params[1], line, &i2);
-
-  if (is_i1 && is_i2) {
-    if (i1.t < i2.t) {
-      *intersection = i1;
-    } else {
-      *intersection = i2;
-    }
-  } else if (is_i1) {
-    *intersection = i1;
-  } else if (is_i2) {
-    *intersection = i2;
-  } else {
-    return false;
-  }
-
-  intersection->ray    = line;
-  intersection->normal = dmnsn_transform_normal(csg->trans,
-                                                intersection->normal);
-  return true;
-}
-
-static bool
-dmnsn_csg_union_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
-{
-  dmnsn_object **params = csg->ptr;
-  return (*params[0]->inside_fn)(params[0], point)
-      || (*params[1]->inside_fn)(params[1], point);
-}
-
-static void
-dmnsn_csg_union_init_fn(dmnsn_object *csg)
-{
-  dmnsn_object **params = csg->ptr;
-  dmnsn_object *A = params[0];
-  dmnsn_object *B = params[1];
-
-  dmnsn_csg_cascade(csg, A);
-  dmnsn_csg_cascade(csg, B);
-
-  dmnsn_object_init(A);
-  dmnsn_object_init(B);
-
-  csg->trans = dmnsn_identity_matrix();
-  csg->bounding_box.min
-    = dmnsn_vector_min(A->bounding_box.min, B->bounding_box.min);
-  csg->bounding_box.max
-    = dmnsn_vector_max(A->bounding_box.max, B->bounding_box.max);
-}
-
-dmnsn_object *
-dmnsn_new_csg_union(dmnsn_object *A, dmnsn_object *B)
-{
-  dmnsn_object *csg = dmnsn_new_object();
-
-  dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
-  params[0] = A;
-  params[1] = B;
-
-  csg->ptr             = params;
-  csg->intersection_fn = &dmnsn_csg_union_intersection_fn;
-  csg->inside_fn       = &dmnsn_csg_union_inside_fn;
-  csg->init_fn         = &dmnsn_csg_union_init_fn;
-  csg->free_fn         = &dmnsn_csg_free_fn;
-
-  return csg;
 }
 
 /* Generic CSG intersection function */
@@ -190,9 +167,6 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
     return false;
   }
 
-  intersection->ray    = line;
-  intersection->normal = dmnsn_transform_normal(csg->trans,
-                                                intersection->normal);
   return true;
 }
 

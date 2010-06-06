@@ -40,6 +40,7 @@ dmnsn_new_object()
   object->texture  = NULL;
   object->interior = NULL;
   object->trans    = dmnsn_identity_matrix();
+  object->children = dmnsn_new_array(sizeof(dmnsn_object *));
   object->init_fn  = NULL;
   object->free_fn  = NULL;
   return object;
@@ -50,6 +51,10 @@ void
 dmnsn_delete_object(dmnsn_object *object)
 {
   if (object) {
+    DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
+      dmnsn_delete_object(*child);
+    }
+    dmnsn_delete_array(object->children);
     dmnsn_delete_interior(object->interior);
     dmnsn_delete_texture(object->texture);
     if (object->free_fn) {
