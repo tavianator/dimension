@@ -101,6 +101,26 @@ dmnsn_new_line(dmnsn_vector x0, dmnsn_vector n)
   return l;
 }
 
+DMNSN_INLINE dmnsn_bounding_box
+dmnsn_zero_bounding_box()
+{
+  dmnsn_bounding_box box = {
+    {  INFINITY,  INFINITY,  INFINITY },
+    { -INFINITY, -INFINITY, -INFINITY }
+  };
+  return box;
+}
+
+DMNSN_INLINE dmnsn_bounding_box
+dmnsn_infinite_bounding_box()
+{
+  dmnsn_bounding_box box = {
+    { -INFINITY, -INFINITY, -INFINITY },
+    {  INFINITY,  INFINITY,  INFINITY }
+  };
+  return box;
+}
+
 /* Vector element access */
 
 enum {

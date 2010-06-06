@@ -46,8 +46,7 @@ dmnsn_new_plane(dmnsn_vector normal)
   plane->intersection_fn  = &dmnsn_plane_intersection_fn;
   plane->inside_fn        = &dmnsn_plane_inside_fn;
   plane->free_fn          = &free;
-  plane->bounding_box.min = dmnsn_new_vector(-INFINITY, -INFINITY, -INFINITY);
-  plane->bounding_box.max = dmnsn_new_vector(INFINITY, INFINITY, INFINITY);
+  plane->bounding_box     = dmnsn_infinite_bounding_box();
   plane->ptr              = param;
   return plane;
 }

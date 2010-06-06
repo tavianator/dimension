@@ -67,7 +67,7 @@ dmnsn_csg_union_init_fn(dmnsn_object *csg)
 
   dmnsn_prtree *prtree = dmnsn_new_prtree(csg->children);
   csg->ptr = prtree;
-  csg->bounding_box = prtree->root->bounding_box;
+  csg->bounding_box = prtree->bounding_box;
 }
 
 static void
