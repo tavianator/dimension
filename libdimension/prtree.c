@@ -451,7 +451,7 @@ dmnsn_split_unbounded(dmnsn_list *objects)
     dmnsn_object *object;
     dmnsn_list_get(i, &object);
 
-    if (isinf(object->bounding_box.min.x)) {
+    if (dmnsn_bounding_box_is_infinite(object->bounding_box)) {
       dmnsn_list_iterator *next = dmnsn_list_next(i);
       dmnsn_list_iterator_remove(objects, i);
       dmnsn_list_iterator_insert(unbounded, NULL, i);

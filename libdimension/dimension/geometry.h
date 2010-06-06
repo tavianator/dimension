@@ -300,4 +300,11 @@ dmnsn_bounding_box_contains(dmnsn_bounding_box box, dmnsn_vector p)
       && (p.x <= box.max.x && p.y <= box.max.y && p.z <= box.max.z);
 }
 
+/* Return whether `box' is infinite */
+DMNSN_INLINE bool
+dmnsn_bounding_box_is_infinite(dmnsn_bounding_box box)
+{
+  return box.min.x == -INFINITY;
+}
+
 #endif /* DIMENSION_GEOMETRY_H */
