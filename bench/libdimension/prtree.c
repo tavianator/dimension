@@ -75,14 +75,14 @@ main()
   });
   printf("dmnsn_new_prtree(): %ld\n", sandglass.grains);
 
-  /* dmnsn_prtree_search() */
+  /* dmnsn_prtree_intersection() */
   ray.x0 = dmnsn_new_vector(0.0, 0.0, -2.0);
   ray.n  = dmnsn_new_vector(0.0, 0.0, 1.0);
 
   sandglass_bench_fine(&sandglass, {
-    dmnsn_prtree_search(tree, ray, &intersection);
+    dmnsn_prtree_intersection(tree, ray, &intersection);
   });
-  printf("dmnsn_prtree_search(): %ld\n", sandglass.grains);
+  printf("dmnsn_prtree_intersection(): %ld\n", sandglass.grains);
 
   /* Cleanup */
   dmnsn_delete_prtree(tree);

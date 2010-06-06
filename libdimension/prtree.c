@@ -592,8 +592,9 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 }
 
 static void
-dmnsn_prtree_search_recursive(const dmnsn_prtree_node *node, dmnsn_line ray,
-                              dmnsn_intersection *intersection, double *t)
+dmnsn_prtree_intersection_recursive(const dmnsn_prtree_node *node,
+                                    dmnsn_line ray,
+                                    dmnsn_intersection *intersection, double *t)
 {
   for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
     if (!node->children[i])
@@ -611,15 +612,16 @@ dmnsn_prtree_search_recursive(const dmnsn_prtree_node *node, dmnsn_line ray,
           }
         }
       } else {
-        dmnsn_prtree_search_recursive(node->children[i], ray, intersection, t);
+        dmnsn_prtree_intersection_recursive(node->children[i], ray,
+                                            intersection, t);
       }
     }
   }
 }
 
 bool
-dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
-                    dmnsn_intersection *intersection)
+dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
+                          dmnsn_intersection *intersection)
 {
   double t = INFINITY;
 
@@ -636,8 +638,46 @@ dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
 
   /* Search the bounded objects */
   if (dmnsn_ray_box_intersection(ray, tree->root->bounding_box, t)) {
-    dmnsn_prtree_search_recursive(tree->root, ray, intersection, &t);
+    dmnsn_prtree_intersection_recursive(tree->root, ray, intersection, &t);
   }
 
   return !isinf(t);
+}
+
+static bool
+dmnsn_prtree_inside_recursive(const dmnsn_prtree_node *node, dmnsn_vector point)
+{
+  for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
+    if (!node->children[i])
+      break;
+
+    if (dmnsn_bounding_box_contains(node->bounding_boxes[i], point)) {
+      if (node->is_leaf) {
+        dmnsn_object *object = node->children[i];
+        if ((*object->inside_fn)(object, point))
+          return true;
+      } else {
+        if (dmnsn_prtree_inside_recursive(node->children[i], point))
+          return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool
+dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point)
+{
+  /* Search the unbounded objects */
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, tree->unbounded) {
+    if ((*(*object)->inside_fn)(*object, point))
+      return true;
+  }
+
+  /* Search the bounded objects */
+  if (dmnsn_bounding_box_contains(tree->root->bounding_box, point))
+    return dmnsn_prtree_inside_recursive(tree->root, point);
+
+  return false;
 }

@@ -50,7 +50,8 @@ typedef struct dmnsn_prtree {
 dmnsn_prtree *dmnsn_new_prtree(const dmnsn_array *objects);
 void dmnsn_delete_prtree(dmnsn_prtree *tree);
 
-bool dmnsn_prtree_search(const dmnsn_prtree *tree, dmnsn_line ray,
-                         dmnsn_intersection *intersection);
+bool dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
+                               dmnsn_intersection *intersection);
+bool dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point);
 
 #endif /* DIMENSION_IMPL_PRTREE_H */
