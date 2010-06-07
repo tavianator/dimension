@@ -29,6 +29,12 @@ dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line,
   return true;
 }
 
+bool
+dmnsn_fake_inside_fn(const dmnsn_object *object, dmnsn_vector point)
+{
+  return true;
+}
+
 void
 dmnsn_randomize_bounding_box(dmnsn_object *object)
 {
@@ -46,14 +52,21 @@ dmnsn_randomize_bounding_box(dmnsn_object *object)
   object->bounding_box.max = dmnsn_vector_max(a, b);
 }
 
+static dmnsn_object *
+dmnsn_new_fake_object()
+{
+  dmnsn_object *object = dmnsn_new_object();
+  /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
+  dmnsn_randomize_bounding_box(object);
+  object->intersection_fn = &dmnsn_fake_intersection_fn;
+  object->inside_fn       = &dmnsn_fake_inside_fn;
+  return object;
+}
+
 int
 main()
 {
-  dmnsn_prtree *tree;
-  dmnsn_intersection intersection;
-  dmnsn_line ray;
   const size_t nobjects = 128;
-  dmnsn_array *objects;
 
   sandglass_t sandglass;
   if (sandglass_init_monotonic(&sandglass, SANDGLASS_CPUTIME) != 0) {
@@ -61,28 +74,36 @@ main()
     return EXIT_FAILURE;
   }
 
-  objects = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_array *objects = dmnsn_new_array(sizeof(dmnsn_object *));
   for (size_t i = 0; i < nobjects; ++i) {
-    dmnsn_object *object = dmnsn_new_object();
-    /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
-    dmnsn_randomize_bounding_box(object);
-    object->intersection_fn = &dmnsn_fake_intersection_fn;
+    dmnsn_object *object = dmnsn_new_fake_object();
+    dmnsn_object_init(object);
     dmnsn_array_push(objects, &object);
   }
 
+  dmnsn_prtree *tree;
   sandglass_bench_noprecache(&sandglass, {
     tree = dmnsn_new_prtree(objects);
   });
   printf("dmnsn_new_prtree(): %ld\n", sandglass.grains);
 
   /* dmnsn_prtree_intersection() */
-  ray.x0 = dmnsn_new_vector(0.0, 0.0, -2.0);
-  ray.n  = dmnsn_new_vector(0.0, 0.0, 1.0);
+  dmnsn_line ray = dmnsn_new_line(
+    dmnsn_new_vector(0.0, 0.0, -2.0),
+    dmnsn_new_vector(0.0, 0.0, 1.0)
+  );
+  dmnsn_intersection intersection;
 
   sandglass_bench_fine(&sandglass, {
     dmnsn_prtree_intersection(tree, ray, &intersection);
   });
   printf("dmnsn_prtree_intersection(): %ld\n", sandglass.grains);
+
+  /* dmnsn_prtree_inside() */
+  sandglass_bench_fine(&sandglass, {
+    dmnsn_prtree_inside(tree, dmnsn_zero);
+  });
+  printf("dmnsn_prtree_inside(): %ld\n", sandglass.grains);
 
   /* Cleanup */
   dmnsn_delete_prtree(tree);
