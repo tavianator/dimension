@@ -854,6 +854,39 @@ dmnsn_realize_plane(dmnsn_astnode astnode)
   return plane;
 }
 
+/* Bulk-load a union */
+static dmnsn_object *
+dmnsn_realize_union(dmnsn_astnode astnode, dmnsn_array *lights)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_UNION, "Expected a union.");
+
+  dmnsn_astnode objects, modifiers;
+  dmnsn_array_get(astnode.children, 0, &objects);
+  dmnsn_array_get(astnode.children, 1, &modifiers);
+
+  dmnsn_array *children = dmnsn_new_array(sizeof(dmnsn_object *));
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, onode, objects.children) {
+    if (onode->type == DMNSN_AST_LIGHT_SOURCE) {
+      dmnsn_light *light = dmnsn_realize_light_source(*onode);
+      dmnsn_realize_light_source_modifiers(modifiers, light);
+      dmnsn_array_push(lights, &light);
+    } else {
+      dmnsn_object *object = dmnsn_realize_object(*onode, lights);
+      if (object)
+        dmnsn_array_push(children, &object);
+    }
+  }
+
+  dmnsn_object *csg = NULL;
+  if (dmnsn_array_size(children) > 0) {
+    csg = dmnsn_new_csg_union(children);
+    dmnsn_realize_object_modifiers(modifiers, csg);
+  }
+
+  dmnsn_delete_array(children);
+  return csg;
+}
+
 typedef dmnsn_object *dmnsn_csg_object_fn(dmnsn_object *a, dmnsn_object *b);
 
 /* Generalized CSG realizer */
@@ -898,13 +931,6 @@ dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
   if (csg)
     dmnsn_realize_object_modifiers(modifiers, csg);
   return csg;
-}
-
-static dmnsn_object *
-dmnsn_realize_union(dmnsn_astnode astnode, dmnsn_array *lights)
-{
-  dmnsn_assert(astnode.type == DMNSN_AST_UNION, "Expected a union.");
-  return dmnsn_realize_csg(astnode, lights, &dmnsn_new_csg_union);
 }
 
 static dmnsn_object *

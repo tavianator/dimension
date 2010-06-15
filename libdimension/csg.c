@@ -76,13 +76,16 @@ dmnsn_csg_union_free_fn(void *ptr)
   dmnsn_delete_prtree(ptr);
 }
 
+/* Bulk-load a union */
 dmnsn_object *
-dmnsn_new_csg_union(dmnsn_object *A, dmnsn_object *B)
+dmnsn_new_csg_union(dmnsn_array *objects)
 {
   dmnsn_object *csg = dmnsn_new_object();
 
-  dmnsn_array_push(csg->children, &A);
-  dmnsn_array_push(csg->children, &B);
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
+    dmnsn_array_push(csg->children, object);
+  }
+
   csg->intersection_fn = &dmnsn_csg_union_intersection_fn;
   csg->inside_fn       = &dmnsn_csg_union_inside_fn;
   csg->init_fn         = &dmnsn_csg_union_init_fn;

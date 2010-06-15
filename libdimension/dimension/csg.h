@@ -25,7 +25,7 @@
 #ifndef DIMENSION_CSG_H
 #define DIMENSION_CSG_H
 
-dmnsn_object *dmnsn_new_csg_union(dmnsn_object *A, dmnsn_object *B);
+dmnsn_object *dmnsn_new_csg_union(dmnsn_array *objects);
 dmnsn_object *dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B);
 dmnsn_object *dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B);
 dmnsn_object *dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B);
