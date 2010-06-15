@@ -26,13 +26,13 @@
 #include <string.h>
 
 typedef struct dmnsn_buffered_token {
-  int type;
+  dmnsn_token_type type;
   dmnsn_parse_item lval;
   dmnsn_parse_location lloc;
 } dmnsn_buffered_token;
 
 typedef struct dmnsn_token_buffer {
-  int type;
+  dmnsn_token_type type;
   /* Indicate that the first token should be returned as-is */
   #define DMNSN_T_LEX_VERBATIM DMNSN_T_EOF
 
@@ -47,7 +47,7 @@ typedef struct dmnsn_token_buffer {
 } dmnsn_token_buffer;
 
 static dmnsn_token_buffer *
-dmnsn_new_token_buffer(dmnsn_parse_location lloc, int type,
+dmnsn_new_token_buffer(dmnsn_parse_location lloc, dmnsn_token_type type,
                        dmnsn_token_buffer *prev, const char *filename)
 {
   dmnsn_token_buffer *tbuffer = dmnsn_malloc(sizeof(dmnsn_token_buffer));

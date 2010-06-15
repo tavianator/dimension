@@ -324,7 +324,7 @@ dmnsn_new_astnode(dmnsn_astnode_type type)
     .ptr      = NULL,
     .free_fn  = NULL,
     .refcount = dmnsn_malloc(sizeof(unsigned int)),
-    .location = { "<environment>", "<environment>", -1, -1, -1, -1 }
+    .location = { "<environment>", "<environment>", -1, -1, -1, -1, NULL }
   };
 
   *astnode.refcount = 0;
