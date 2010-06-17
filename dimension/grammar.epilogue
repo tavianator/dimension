@@ -163,9 +163,12 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_INTERIOR, "interior");
   dmnsn_astnode_map(DMNSN_AST_IOR,      "ior");
 
-  dmnsn_astnode_map(DMNSN_AST_ROTATION,    "rotate");
-  dmnsn_astnode_map(DMNSN_AST_SCALE,       "scale");
-  dmnsn_astnode_map(DMNSN_AST_TRANSLATION, "translate");
+  dmnsn_astnode_map(DMNSN_AST_TRANSFORMATION, "transformation");
+  dmnsn_astnode_map(DMNSN_AST_ROTATION,       "rotation");
+  dmnsn_astnode_map(DMNSN_AST_SCALE,          "scale");
+  dmnsn_astnode_map(DMNSN_AST_TRANSLATION,    "translation");
+  dmnsn_astnode_map(DMNSN_AST_MATRIX,         "matrix");
+  dmnsn_astnode_map(DMNSN_AST_INVERSE,        "inverse");
 
   dmnsn_astnode_map(DMNSN_AST_FLOAT, "float");
   dmnsn_astnode_map(DMNSN_AST_INTEGER, "integer");

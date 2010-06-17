@@ -43,14 +43,116 @@ STRING: "string" {
 /* Transformations */
 
 TRANSFORMATION: "rotate" VECTOR {
-                $$ = dmnsn_new_astnode1(DMNSN_AST_ROTATION, @$, $2);
+                dmnsn_astnode rotation
+                  = dmnsn_new_astnode1(DMNSN_AST_ROTATION, @$, $2);
+                $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSFORMATION, @$, rotation);
               }
               | "scale" VECTOR {
-                $$ = dmnsn_new_astnode1(DMNSN_AST_SCALE, @$, $2);
+                dmnsn_astnode scale
+                  = dmnsn_new_astnode1(DMNSN_AST_SCALE, @$, $2);
+                $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSFORMATION, @$, scale);
               }
               | "translate" VECTOR {
-                $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSLATION, @$, $2);
+                dmnsn_astnode translation
+                  = dmnsn_new_astnode1(DMNSN_AST_TRANSLATION, @$, $2);
+                $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSFORMATION, @$,
+                                        translation);
               }
+              | "matrix" "<" FLOAT "," FLOAT "," FLOAT ","
+                             FLOAT "," FLOAT "," FLOAT ","
+                             FLOAT "," FLOAT "," FLOAT ","
+                             FLOAT "," FLOAT "," FLOAT ">"
+              {
+                dmnsn_astnode matrix = dmnsn_new_astnode(DMNSN_AST_MATRIX, @$);
+
+                dmnsn_array_push(matrix.children, &$3);
+                dmnsn_array_push(matrix.children, &$5);
+                dmnsn_array_push(matrix.children, &$7);
+
+                dmnsn_array_push(matrix.children, &$9);
+                dmnsn_array_push(matrix.children, &$11);
+                dmnsn_array_push(matrix.children, &$13);
+
+                dmnsn_array_push(matrix.children, &$15);
+                dmnsn_array_push(matrix.children, &$17);
+                dmnsn_array_push(matrix.children, &$19);
+
+                dmnsn_array_push(matrix.children, &$21);
+                dmnsn_array_push(matrix.children, &$23);
+                dmnsn_array_push(matrix.children, &$25);
+
+                $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSFORMATION, @$, matrix);
+              }
+              | "transform" IDENTIFIER {
+                dmnsn_astnode *trans = dmnsn_find_symbol(symtable, $2.ptr);
+                if (!trans) {
+                  dmnsn_diagnostic(@2, "unbound identifier '%s'",
+                                   (const char *)$2.ptr);
+                  dmnsn_delete_astnode($2);
+                  YYERROR;
+                }
+                if (trans->type != DMNSN_AST_TRANSFORMATION) {
+                  dmnsn_diagnostic(
+                    @2, "identifier '%s' is a %s; expected a %s",
+                    (const char *)$2.ptr,
+                    dmnsn_astnode_string(trans->type),
+                    dmnsn_astnode_string(DMNSN_AST_TRANSFORMATION)
+                  );
+                  dmnsn_delete_astnode($2);
+                  YYERROR;
+                }
+
+                $$ = dmnsn_new_astnode(DMNSN_AST_TRANSFORMATION, @$);
+                dmnsn_copy_children($$, *trans);
+                dmnsn_delete_astnode($2);
+              }
+              | "transform" "{"
+                  TRANSFORMATION_ITEMS
+                "}"
+              {
+                $$ = $3;
+              }
+;
+
+TRANSFORMATION_ITEMS: TRANSFORMATION_ITEM {
+                      $$ = dmnsn_new_astnode1(DMNSN_AST_TRANSFORMATION, @$, $1);
+                    }
+                    | TRANSFORMATION_ITEMS TRANSFORMATION_ITEM {
+                      $$ = $1;
+                      dmnsn_array_push($$.children, &$2);
+                    }
+;
+
+TRANSFORMATION_ITEM: IDENTIFIER {
+                     dmnsn_astnode *trans = dmnsn_find_symbol(symtable, $1.ptr);
+                     if (!trans) {
+                       dmnsn_diagnostic(@1, "unbound identifier '%s'",
+                                        (const char *)$1.ptr);
+                       dmnsn_delete_astnode($1);
+                       YYERROR;
+                     }
+                     if (trans->type != DMNSN_AST_TRANSFORMATION) {
+                       dmnsn_diagnostic(
+                         @1, "identifier '%s' is a %s; expected a %s",
+                         (const char *)$1.ptr,
+                         dmnsn_astnode_string(trans->type),
+                         dmnsn_astnode_string(DMNSN_AST_TRANSFORMATION)
+                       );
+                       dmnsn_delete_astnode($1);
+                       YYERROR;
+                     }
+
+                     dmnsn_array_get(trans->children, 0, &$$);
+                     ++*$$.refcount;
+                   }
+                   | TRANSFORMATION {
+                     dmnsn_array_get($1.children, 0, &$$);
+                     ++*$$.refcount;
+                     dmnsn_delete_astnode($1);
+                   }
+                   | "inverse" {
+                     $$ = dmnsn_new_astnode(DMNSN_AST_INVERSE, @$);
+                   }
 ;
 
 /* Cameras */

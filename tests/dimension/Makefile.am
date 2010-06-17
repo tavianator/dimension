@@ -25,6 +25,7 @@ TESTS = punctuation.sh                                                         \
         labels.sh                                                              \
         directives.sh                                                          \
         arithexp.sh                                                            \
+        transformations.sh                                                     \
         csg.sh                                                                 \
         demo.sh
 TESTS_ENVIRONMENT = top_builddir=$(top_builddir)
@@ -40,6 +41,7 @@ EXTRA_DIST = $(TESTS)                                                          \
              directives.inc                                                    \
              directives.pov                                                    \
              arithexp.pov                                                      \
+             transformations.pov                                               \
              csg.pov                                                           \
              demo.pov
 

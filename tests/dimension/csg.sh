@@ -75,8 +75,9 @@ csg_exp="$(echo -n \
                     (integer 0) (integer 0))
             pigment-modifiers))))
     (object-modifiers
-      (translate (vector (integer 0) (integer 20) (integer 0)
-                         (integer 0) (integer 0))))))' \
+      (transformation
+        (translation (vector (integer 0) (integer 20) (integer 0)
+                             (integer 0) (integer 0)))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"
 
 if [ "$csg" != "$csg_exp" ]; then

@@ -240,7 +240,7 @@
 %token DMNSN_T_INTERPOLATE
 %token DMNSN_T_INTERSECTION             "intersection"
 %token DMNSN_T_INTERVALS
-%token DMNSN_T_INVERSE
+%token DMNSN_T_INVERSE                  "inverse"
 %token DMNSN_T_IOR                      "ior"
 %token DMNSN_T_IRID
 %token DMNSN_T_IRID_WAVELENGTH
@@ -270,7 +270,7 @@
 %token DMNSN_T_MARBLE
 %token DMNSN_T_MATERIAL
 %token DMNSN_T_MATERIAL_MAP
-%token DMNSN_T_MATRIX
+%token DMNSN_T_MATRIX                   "matrix"
 %token DMNSN_T_MAX                      "max"
 %token DMNSN_T_MAX_EXTENT
 %token DMNSN_T_MAX_GRADIENT
@@ -445,7 +445,7 @@
 %token DMNSN_T_TOROIDAL
 %token DMNSN_T_TORUS
 %token DMNSN_T_TRACE
-%token DMNSN_T_TRANSFORM
+%token DMNSN_T_TRANSFORM                "transform"
 %token DMNSN_T_TRANSLATE                "translate"
 %token DMNSN_T_TRANSMIT                 "transmit"
 %token DMNSN_T_TRIANGLE

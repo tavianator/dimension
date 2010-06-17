@@ -115,7 +115,12 @@ RVALUE: ARITH_EXPR ";" %dprec 2 {
       | FINISH
       | INTERIOR
       | CAMERA
-      | TRANSFORMATION
+      | "transform" "{"
+          TRANSFORMATION_ITEMS
+        "}"
+      {
+        $$ = $3;
+      }
 ;
 
 DECL_PARAMS: /* empty */ {

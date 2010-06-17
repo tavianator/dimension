@@ -25,6 +25,8 @@
 
 /* Transformations */
 %type <astnode> TRANSFORMATION
+%type <astnode> TRANSFORMATION_ITEMS
+%type <astnode> TRANSFORMATION_ITEM
 
 /* The camera */
 %type <astnode> CAMERA

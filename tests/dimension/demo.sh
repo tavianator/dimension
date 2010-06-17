@@ -28,8 +28,9 @@ demo_exp=$(echo -n \
     (right (vector (float 1.6) (integer 0) (integer 0) (integer 0) (integer 0)))
     (look_at (vector (integer 0) (integer 0) (integer 0)
                      (integer 0) (integer 0)))
-    (rotate (vector (integer 0) (integer 53) (integer 0)
-                    (integer 0) (integer 0))))
+    (transformation
+      (rotation (vector (integer 0) (integer 53) (integer 0)
+                        (integer 0) (integer 0)))))
   (background
     (vector (integer 0) (float 0.1) (float 0.2) (float 0.1) (integer 0)))
   (light_source
@@ -42,8 +43,9 @@ demo_exp=$(echo -n \
         (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
         (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
         (object-modifiers
-          (rotate (vector (integer 45) (integer 0) (integer 0)
-                          (integer 0) (integer 0)))
+          (transformation
+            (rotation (vector (integer 45) (integer 0) (integer 0)
+                              (integer 0) (integer 0))))
           (texture
             (pigment
               (vector (integer 0) (integer 0) (integer 1)

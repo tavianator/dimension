@@ -113,6 +113,31 @@ dmnsn_realize_color(dmnsn_astnode astnode)
 }
 
 static dmnsn_matrix
+dmnsn_realize_translation(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_TRANSLATION,
+               "Expected a translation.");
+
+  dmnsn_astnode trans_node;
+  dmnsn_array_get(astnode.children, 0, &trans_node);
+  dmnsn_vector trans = dmnsn_realize_vector(trans_node);
+
+  return dmnsn_translation_matrix(trans);
+}
+
+static dmnsn_matrix
+dmnsn_realize_scale(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_SCALE, "Expected a scale.");
+
+  dmnsn_astnode scale_node;
+  dmnsn_array_get(astnode.children, 0, &scale_node);
+  dmnsn_vector scale = dmnsn_realize_vector(scale_node);
+
+  return dmnsn_scale_matrix(scale);
+}
+
+static dmnsn_matrix
 dmnsn_realize_rotation(dmnsn_astnode astnode)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_ROTATION, "Expected a rotation.");
@@ -143,45 +168,72 @@ dmnsn_realize_rotation(dmnsn_astnode astnode)
 }
 
 static dmnsn_matrix
-dmnsn_realize_scale(dmnsn_astnode astnode)
+dmnsn_realize_matrix(dmnsn_astnode astnode)
 {
-  dmnsn_assert(astnode.type == DMNSN_AST_SCALE, "Expected a scale.");
+  dmnsn_assert(astnode.type == DMNSN_AST_MATRIX, "Expected a matrix.");
 
-  dmnsn_astnode scale_node;
-  dmnsn_array_get(astnode.children, 0, &scale_node);
-  dmnsn_vector scale = dmnsn_realize_vector(scale_node);
+  dmnsn_astnode *children = dmnsn_array_first(astnode.children);
+  dmnsn_matrix trans;
 
-  return dmnsn_scale_matrix(scale);
-}
+  trans.n[0][0] = dmnsn_realize_float(children[0]);
+  trans.n[0][1] = dmnsn_realize_float(children[1]);
+  trans.n[0][2] = dmnsn_realize_float(children[2]);
+  trans.n[0][3] = dmnsn_realize_float(children[9]);
 
-static dmnsn_matrix
-dmnsn_realize_translation(dmnsn_astnode astnode)
-{
-  dmnsn_assert(astnode.type == DMNSN_AST_TRANSLATION,
-               "Expected a translation.");
+  trans.n[1][0] = dmnsn_realize_float(children[3]);
+  trans.n[1][1] = dmnsn_realize_float(children[4]);
+  trans.n[1][2] = dmnsn_realize_float(children[5]);
+  trans.n[1][3] = dmnsn_realize_float(children[10]);
 
-  dmnsn_astnode trans_node;
-  dmnsn_array_get(astnode.children, 0, &trans_node);
-  dmnsn_vector trans = dmnsn_realize_vector(trans_node);
+  trans.n[2][0] = dmnsn_realize_float(children[6]);
+  trans.n[2][1] = dmnsn_realize_float(children[7]);
+  trans.n[2][2] = dmnsn_realize_float(children[8]);
+  trans.n[2][3] = dmnsn_realize_float(children[11]);
 
-  return dmnsn_translation_matrix(trans);
+  trans.n[3][0] = 0.0;
+  trans.n[3][1] = 0.0;
+  trans.n[3][2] = 0.0;
+  trans.n[3][3] = 1.0;
+
+  return trans;
 }
 
 static dmnsn_matrix
 dmnsn_realize_transformation(dmnsn_astnode astnode)
 {
-  switch (astnode.type) {
-  case DMNSN_AST_ROTATION:
-    return dmnsn_realize_rotation(astnode);
-  case DMNSN_AST_SCALE:
-    return dmnsn_realize_scale(astnode);
-  case DMNSN_AST_TRANSLATION:
-    return dmnsn_realize_translation(astnode);
+  dmnsn_assert(astnode.type == DMNSN_AST_TRANSFORMATION,
+               "Expected a transformation.");
 
-  default:
-    dmnsn_assert(false, "Expected a transformation.");
-    return dmnsn_identity_matrix(); /* Shut up compiler */
+  dmnsn_matrix trans = dmnsn_identity_matrix();
+
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, child, astnode.children) {
+    switch (child->type) {
+    case DMNSN_AST_TRANSLATION:
+      trans = dmnsn_matrix_mul(trans, dmnsn_realize_translation(*child));
+      break;
+    case DMNSN_AST_SCALE:
+      trans = dmnsn_matrix_mul(trans, dmnsn_realize_scale(*child));
+      break;
+    case DMNSN_AST_ROTATION:
+      trans = dmnsn_matrix_mul(trans, dmnsn_realize_rotation(*child));
+      break;
+    case DMNSN_AST_MATRIX:
+      trans = dmnsn_matrix_mul(trans, dmnsn_realize_matrix(*child));
+      break;
+    case DMNSN_AST_INVERSE:
+      trans = dmnsn_matrix_inverse(trans);
+      break;
+    case DMNSN_AST_TRANSFORMATION:
+      trans = dmnsn_matrix_mul(trans, dmnsn_realize_transformation(*child));
+      break;
+
+    default:
+      dmnsn_assert(false, "Invalid transformation type.");
+      break;
+    }
   }
+
+  return trans;
 }
 
 static void
@@ -320,9 +372,7 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
       }
 
     /* Transformations */
-    case DMNSN_AST_ROTATION:
-    case DMNSN_AST_SCALE:
-    case DMNSN_AST_TRANSLATION:
+    case DMNSN_AST_TRANSFORMATION:
       trans = dmnsn_matrix_mul(dmnsn_realize_transformation(*item), trans);
       break;
 
@@ -408,9 +458,7 @@ dmnsn_realize_pigment_modifiers(dmnsn_astnode astnode, dmnsn_pigment *pigment)
 
   DMNSN_ARRAY_FOREACH(dmnsn_astnode *, modifier, astnode.children) {
     switch (modifier->type) {
-    case DMNSN_AST_ROTATION:
-    case DMNSN_AST_SCALE:
-    case DMNSN_AST_TRANSLATION:
+    case DMNSN_AST_TRANSFORMATION:
       pigment->trans = dmnsn_matrix_mul(
         dmnsn_realize_transformation(*modifier),
         pigment->trans
@@ -621,9 +669,7 @@ dmnsn_realize_texture(dmnsn_astnode astnode)
       texture->finish = dmnsn_realize_finish(*item);
       break;
 
-    case DMNSN_AST_ROTATION:
-    case DMNSN_AST_SCALE:
-    case DMNSN_AST_TRANSLATION:
+    case DMNSN_AST_TRANSFORMATION:
       texture->trans = dmnsn_matrix_mul(
         dmnsn_realize_transformation(*item),
         texture->trans
@@ -673,9 +719,7 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
 
   DMNSN_ARRAY_FOREACH (dmnsn_astnode *, modifier, astnode.children) {
     switch (modifier->type) {
-    case DMNSN_AST_ROTATION:
-    case DMNSN_AST_SCALE:
-    case DMNSN_AST_TRANSLATION:
+    case DMNSN_AST_TRANSFORMATION:
       object->trans = dmnsn_matrix_mul(
         dmnsn_realize_transformation(*modifier),
         object->trans
@@ -728,9 +772,7 @@ dmnsn_realize_light_source_modifiers(dmnsn_astnode astnode, dmnsn_light *light)
 
   DMNSN_ARRAY_FOREACH (dmnsn_astnode *, modifier, astnode.children) {
     switch (modifier->type) {
-    case DMNSN_AST_ROTATION:
-    case DMNSN_AST_SCALE:
-    case DMNSN_AST_TRANSLATION:
+    case DMNSN_AST_TRANSFORMATION:
       light->x0 = dmnsn_transform_vector(
         dmnsn_realize_transformation(*modifier),
         light->x0
