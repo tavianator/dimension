@@ -843,10 +843,6 @@ dmnsn_realize_box(dmnsn_astnode astnode)
     box->trans
   );
 
-  dmnsn_astnode modifiers;
-  dmnsn_array_get(astnode.children, 2, &modifiers);
-  dmnsn_realize_object_modifiers(modifiers, box);
-
   return box;
 }
 
@@ -863,14 +859,8 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
   double r = dmnsn_realize_float(radius);
 
   dmnsn_object *sphere = dmnsn_new_sphere();
-
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(r, r, r));
   sphere->trans = dmnsn_matrix_mul(dmnsn_translation_matrix(x0), sphere->trans);
-
-  dmnsn_astnode modifiers;
-  dmnsn_array_get(astnode.children, 2, &modifiers);
-  dmnsn_realize_object_modifiers(modifiers, sphere);
-
   return sphere;
 }
 
@@ -888,11 +878,6 @@ dmnsn_realize_plane(dmnsn_astnode astnode)
 
   dmnsn_object *plane = dmnsn_new_plane(n);
   plane->trans = dmnsn_translation_matrix(dmnsn_vector_mul(d, n));
-
-  dmnsn_astnode modifiers;
-  dmnsn_array_get(astnode.children, 2, &modifiers);
-  dmnsn_realize_object_modifiers(modifiers, plane);
-
   return plane;
 }
 
@@ -902,15 +887,10 @@ dmnsn_realize_union(dmnsn_astnode astnode, dmnsn_array *lights)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_UNION, "Expected a union.");
 
-  dmnsn_astnode objects, modifiers;
-  dmnsn_array_get(astnode.children, 0, &objects);
-  dmnsn_array_get(astnode.children, 1, &modifiers);
-
   dmnsn_array *children = dmnsn_new_array(sizeof(dmnsn_object *));
-  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, onode, objects.children) {
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, onode, astnode.children) {
     if (onode->type == DMNSN_AST_LIGHT_SOURCE) {
       dmnsn_light *light = dmnsn_realize_light_source(*onode);
-      dmnsn_realize_light_source_modifiers(modifiers, light);
       dmnsn_array_push(lights, &light);
     } else {
       dmnsn_object *object = dmnsn_realize_object(*onode, lights);
@@ -920,11 +900,8 @@ dmnsn_realize_union(dmnsn_astnode astnode, dmnsn_array *lights)
   }
 
   dmnsn_object *csg = NULL;
-  if (dmnsn_array_size(children) > 0) {
+  if (dmnsn_array_size(children) > 0)
     csg = dmnsn_new_csg_union(children);
-    dmnsn_realize_object_modifiers(modifiers, csg);
-  }
-
   dmnsn_delete_array(children);
   return csg;
 }
@@ -936,19 +913,14 @@ static dmnsn_object *
 dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
                   dmnsn_csg_object_fn *csg_object_fn)
 {
-  dmnsn_astnode objects, modifiers;
-  dmnsn_array_get(astnode.children, 0, &objects);
-  dmnsn_array_get(astnode.children, 1, &modifiers);
-
   dmnsn_object *csg = NULL;
   dmnsn_astnode *onode;
-  for (onode = dmnsn_array_first(objects.children);
-       onode <= (dmnsn_astnode *)dmnsn_array_last(objects.children);
+  for (onode = dmnsn_array_first(astnode.children);
+       onode <= (dmnsn_astnode *)dmnsn_array_last(astnode.children);
        ++onode)
   {
     if (onode->type == DMNSN_AST_LIGHT_SOURCE) {
       dmnsn_light *light = dmnsn_realize_light_source(*onode);
-      dmnsn_realize_light_source_modifiers(modifiers, light);
       dmnsn_array_push(lights, &light);
     } else {
       csg = dmnsn_realize_object(*onode, lights);
@@ -957,12 +929,11 @@ dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
   }
 
   for (++onode;
-       onode <= (dmnsn_astnode *)dmnsn_array_last(objects.children);
+       onode <= (dmnsn_astnode *)dmnsn_array_last(astnode.children);
        ++onode)
   {
     if (onode->type == DMNSN_AST_LIGHT_SOURCE) {
       dmnsn_light *light = dmnsn_realize_light_source(*onode);
-      dmnsn_realize_light_source_modifiers(modifiers, light);
       dmnsn_array_push(lights, &light);
     } else {
       dmnsn_object *object = dmnsn_realize_object(*onode, lights);
@@ -970,8 +941,6 @@ dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
     }
   }
 
-  if (csg)
-    dmnsn_realize_object_modifiers(modifiers, csg);
   return csg;
 }
 
@@ -1001,21 +970,37 @@ dmnsn_realize_merge(dmnsn_astnode astnode, dmnsn_array *lights)
 static dmnsn_object *
 dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
 {
-  switch (astnode.type) {
+  dmnsn_assert(astnode.type == DMNSN_AST_OBJECT
+               || astnode.type == DMNSN_AST_LIGHT_SOURCE,
+               "Expected an object.");
+
+  dmnsn_astnode onode;
+  dmnsn_array_get(astnode.children, 0, &onode);
+
+  dmnsn_object *object = NULL;
+
+  switch (onode.type) {
   case DMNSN_AST_BOX:
-    return dmnsn_realize_box(astnode);
+    object = dmnsn_realize_box(onode);
+    break;
   case DMNSN_AST_DIFFERENCE:
-    return dmnsn_realize_difference(astnode, lights);
+    object = dmnsn_realize_difference(onode, lights);
+    break;
   case DMNSN_AST_INTERSECTION:
-    return dmnsn_realize_intersection(astnode, lights);
+    object = dmnsn_realize_intersection(onode, lights);
+    break;
   case DMNSN_AST_MERGE:
-    return dmnsn_realize_merge(astnode, lights);
+    object = dmnsn_realize_merge(onode, lights);
+    break;
   case DMNSN_AST_PLANE:
-    return dmnsn_realize_plane(astnode);
+    object = dmnsn_realize_plane(onode);
+    break;
   case DMNSN_AST_SPHERE:
-    return dmnsn_realize_sphere(astnode);
+    object = dmnsn_realize_sphere(onode);
+    break;
   case DMNSN_AST_UNION:
-    return dmnsn_realize_union(astnode, lights);
+    object = dmnsn_realize_union(onode, lights);
+    break;
 
   case DMNSN_AST_LIGHT_SOURCE:
     {
@@ -1025,9 +1010,15 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
     }
 
   default:
-    dmnsn_assert(false, "Expected an object.");
-    return NULL; /* Shut up compiler */
+    dmnsn_assert(false, "Expected an object type.");
   }
+
+  if (object) {
+    dmnsn_astnode modifiers;
+    dmnsn_array_get(astnode.children, 1, &modifiers);
+    dmnsn_realize_object_modifiers(modifiers, object);
+  }
+  return object;
 }
 
 static dmnsn_scene *
@@ -1073,13 +1064,7 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
       scene->camera = dmnsn_realize_camera(*astnode);
       break;
 
-    case DMNSN_AST_BOX:
-    case DMNSN_AST_DIFFERENCE:
-    case DMNSN_AST_INTERSECTION:
-    case DMNSN_AST_MERGE:
-    case DMNSN_AST_PLANE:
-    case DMNSN_AST_SPHERE:
-    case DMNSN_AST_UNION:
+    case DMNSN_AST_OBJECT:
       object = dmnsn_realize_object(*astnode, scene->lights);
       if (object)
         dmnsn_array_push(scene->objects, &object);

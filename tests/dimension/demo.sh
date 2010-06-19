@@ -37,11 +37,13 @@ demo_exp=$(echo -n \
     (vector (integer -15) (integer 20) (integer 10) (integer 0) (integer 0))
     (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
     object-modifiers)
-  (difference
-    (array
-      (box
-        (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
-        (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
+  (object
+    (difference
+      (object
+        (box
+          (vector (integer -1) (integer -1) (integer -1)
+                  (integer 0) (integer 0))
+          (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)))
         (object-modifiers
           (transformation
             (rotation (vector (integer 45) (integer 0) (integer 0)
@@ -60,9 +62,10 @@ demo_exp=$(echo -n \
                 reflection-items)))
           (interior
             (ior (float 1.1)))))
-      (sphere
-        (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
-        (float 1.25)
+      (object
+        (sphere
+          (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
+          (float 1.25))
         (object-modifiers
           (texture
             (pigment
@@ -73,9 +76,10 @@ demo_exp=$(echo -n \
               (phong (float 0.2))
               (phong_size (float 40)))))))
       object-modifiers)
-  (plane
-    (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0))
-    (integer -2)
+  (object
+    (plane
+      (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0))
+      (integer -2))
     (object-modifiers
       (pigment
         (vector (integer 1) (integer 1) (integer 1)

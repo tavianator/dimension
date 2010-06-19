@@ -21,9 +21,10 @@
 
 transformations=$(${top_builddir}/dimension/dimension --parse ${srcdir}/transformations.pov)
 transformations_exp="$(echo -n \
-'((sphere
-    (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
-    (integer 0)
+'((object
+    (sphere
+      (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
+      (integer 0))
     (object-modifiers
       (transformation
         (translation

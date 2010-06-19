@@ -229,48 +229,35 @@ OBJECT: FINITE_SOLID_OBJECT
           YYERROR;
         }
 
-        switch (object->type) {
-        case DMNSN_AST_BOX:
-        case DMNSN_AST_DIFFERENCE:
-        case DMNSN_AST_INTERSECTION:
-        case DMNSN_AST_LIGHT_SOURCE:
-        case DMNSN_AST_MERGE:
-        case DMNSN_AST_PLANE:
-        case DMNSN_AST_SPHERE:
-        case DMNSN_AST_UNION:
-          {
-            dmnsn_delete_astnode($3);
+        if (object->type == DMNSN_AST_OBJECT) {
+          dmnsn_delete_astnode($3);
 
-            $$ = dmnsn_new_astnode(object->type, @$);
-            dmnsn_copy_children($$, *object);
+          $$ = dmnsn_new_astnode(object->type, @$);
+          dmnsn_copy_children($$, *object);
 
-            dmnsn_astnode *modifiers, orig_modifiers;
-            modifiers = dmnsn_array_at($$.children,
-                                       dmnsn_array_size($$.children) - 1);
-            dmnsn_array_get(object->children,
-                            dmnsn_array_size(object->children) - 1,
-                            &orig_modifiers);
-            dmnsn_delete_astnode(*modifiers);
-            *modifiers = dmnsn_new_astnode(DMNSN_AST_OBJECT_MODIFIERS, @4);
-            dmnsn_copy_children(*modifiers, orig_modifiers);
+          dmnsn_astnode *modifiers, orig_modifiers;
+          modifiers = dmnsn_array_at($$.children, 1);
+          dmnsn_array_get(object->children,
+                          dmnsn_array_size(object->children) - 1,
+                          &orig_modifiers);
+          dmnsn_delete_astnode(*modifiers);
+          *modifiers = dmnsn_new_astnode(DMNSN_AST_OBJECT_MODIFIERS, @4);
+          dmnsn_copy_children(*modifiers, orig_modifiers);
 
-            DMNSN_ARRAY_FOREACH (dmnsn_astnode *, astnode, $4.children) {
-              ++*astnode->refcount;
-              dmnsn_array_push(modifiers->children, astnode);
-            }
-            dmnsn_delete_astnode($4);
-            break;
+          DMNSN_ARRAY_FOREACH (dmnsn_astnode *, astnode, $4.children) {
+            ++*astnode->refcount;
+            dmnsn_array_push(modifiers->children, astnode);
           }
-
-        default:
+          dmnsn_delete_astnode($4);
+        } else {
           dmnsn_diagnostic(@3,
-                           "identifier '%s' is a %s; expected an object type",
+                           "identifier '%s' is a %s; expected an %s",
                            (const char *)$3.ptr,
-                           dmnsn_astnode_string(object->type));
+                           dmnsn_astnode_string(object->type),
+                           dmnsn_astnode_string(DMNSN_AST_OBJECT));
           dmnsn_delete_astnode($3);
           dmnsn_delete_astnode($4);
           YYERROR;
-          break;
         }
       }
       | "object" "{"
@@ -303,7 +290,8 @@ BOX: "box" "{"
        OBJECT_MODIFIERS
      "}"
    {
-     $$ = dmnsn_new_astnode3(DMNSN_AST_BOX, @$, $3, $5, $6);
+     dmnsn_astnode object = dmnsn_new_astnode2(DMNSN_AST_BOX, @$, $3, $5);
+     $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, object, $6);
    }
 ;
 
@@ -312,7 +300,8 @@ SPHERE: "sphere" "{"
           OBJECT_MODIFIERS
         "}"
       {
-        $$ = dmnsn_new_astnode3(DMNSN_AST_SPHERE, @$, $3, $5, $6);
+        dmnsn_astnode object = dmnsn_new_astnode2(DMNSN_AST_SPHERE, @$, $3, $5);
+        $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, object, $6);
       }
 ;
 
@@ -324,7 +313,8 @@ PLANE: "plane" "{"
          OBJECT_MODIFIERS
        "}"
      {
-       $$ = dmnsn_new_astnode3(DMNSN_AST_PLANE, @$, $3, $5, $6);
+       dmnsn_astnode object = dmnsn_new_astnode2(DMNSN_AST_PLANE, @$, $3, $5);
+       $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, object, $6);
      }
 ;
 
@@ -339,7 +329,9 @@ UNION: "union" "{"
          OBJECT_MODIFIERS
        "}"
      {
-       $$ = dmnsn_new_astnode2(DMNSN_AST_UNION, @$, $3, $4);
+       dmnsn_astnode csg_union = $3;
+       csg_union.type = DMNSN_AST_UNION;
+       $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, csg_union, $4);
      }
 ;
 
@@ -348,7 +340,9 @@ INTERSECTION: "intersection" "{"
                 OBJECT_MODIFIERS
               "}"
             {
-              $$ = dmnsn_new_astnode2(DMNSN_AST_INTERSECTION, @$, $3, $4);
+              dmnsn_astnode intersection = $3;
+              intersection.type = DMNSN_AST_INTERSECTION;
+              $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, intersection, $4);
             }
 ;
 
@@ -357,7 +351,9 @@ DIFFERENCE: "difference" "{"
               OBJECT_MODIFIERS
             "}"
           {
-            $$ = dmnsn_new_astnode2(DMNSN_AST_DIFFERENCE, @$, $3, $4);
+            dmnsn_astnode difference = $3;
+            difference.type = DMNSN_AST_DIFFERENCE;
+            $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, difference, $4);
           }
 ;
 
@@ -366,7 +362,9 @@ MERGE: "merge" "{"
          OBJECT_MODIFIERS
        "}"
      {
-       $$ = dmnsn_new_astnode2(DMNSN_AST_MERGE, @$, $3, $4);
+       dmnsn_astnode merge = $3;
+       merge.type = DMNSN_AST_MERGE;
+       $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, merge, $4);
      }
 ;
 

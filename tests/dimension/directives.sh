@@ -73,23 +73,26 @@ directives_exp="$(echo -n \
   })' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 $(echo -n \
-'((sphere
-    (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
-    (integer 1)
+'((object
+    (sphere
+      (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
+      (integer 1))
     (object-modifiers
       (pigment
         (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
         pigment-modifiers)))
-  (sphere
-    (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0))
-    (integer 1)
+  (object
+    (sphere
+      (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0))
+      (integer 1))
     (object-modifiers
       (pigment
         (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
-        pigment-modifiers)))
-  (box
-    (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
-    (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
+         pigment-modifiers)))
+  (object
+    (box
+      (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))
+      (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0)))
     (object-modifiers
       (pigment
         (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))

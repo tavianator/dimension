@@ -21,10 +21,11 @@
 
 arithexp=$(${top_builddir}/dimension/dimension --parse ${srcdir}/arithexp.pov)
 arithexp_exp="$(echo -n \
-'((sphere
-    (vector (float 2) (float 2) (float 3) (integer 0) (integer 0))
-    (float 0.718282)
-    object-modifiers))' \
+'((object
+    (sphere
+      (vector (float 2) (float 2) (float 3) (integer 0) (integer 0))
+      (float 0.718282))
+  object-modifiers))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')"
 
 if [ "$arithexp" != "$arithexp_exp" ]; then

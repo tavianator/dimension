@@ -30,33 +30,35 @@ csg_exp="$(echo -n \
                      (integer 0) (integer 0))))
   (background
     (vector (integer 0) (float 0.1) (float 0.2) (float 0.1) (integer 0)))
-  (union
-    (array
-      (sphere
-        (vector (float -1.5) (float 0) (float 0) (float 0) (float 0))
-        (integer 1)
+  (object
+    (union
+      (object
+        (sphere
+          (vector (float -1.5) (float 0) (float 0) (float 0) (float 0))
+          (integer 1))
         (object-modifiers
           (pigment
             (vector (integer 1) (integer 0) (integer 0)
                     (integer 0) (integer 0))
             pigment-modifiers))))
     object-modifiers)
-  (union
-    (array
+  (object
+    (union
       (light_source
         (vector (integer 0) (integer 20) (integer 0) (integer 0) (integer 0))
         (vector (float 0.5) (float 0.5) (float 0.5) (integer 0) (integer 0))
         object-modifiers))
     object-modifiers)
-  (difference
-    (array
+  (object
+    (difference
       (light_source
         (vector (integer -15) (integer 0) (integer 0) (integer 0) (integer 0))
         (vector (float 0.5) (float 0.5) (float 0.5) (integer 0) (integer 0))
         object-modifiers)
-      (sphere
-        (vector (float 1.5) (float -20) (float 0) (float 0) (float 0))
-        (integer 1)
+      (object
+        (sphere
+          (vector (float 1.5) (float -20) (float 0) (float 0) (float 0))
+          (integer 1))
         (object-modifiers
           (pigment
             (vector (integer 0) (integer 1) (integer 0)
@@ -66,9 +68,12 @@ csg_exp="$(echo -n \
         (vector (integer 15) (integer 0) (integer 0) (integer 0) (integer 0))
         (vector (float 0.5) (float 0.5) (float 0.5) (integer 0) (integer 0))
         object-modifiers)
-      (box
-        (vector (float 0.7) (float -20.8) (float -0.8) (integer 0) (integer 0))
-        (vector (float 2.3) (float -19.2) (float 0.8) (integer 0) (integer 0))
+      (object
+        (box
+          (vector (float 0.7) (float -20.8) (float -0.8)
+                  (integer 0) (integer 0))
+          (vector (float 2.3) (float -19.2) (float 0.8)
+                  (integer 0) (integer 0)))
         (object-modifiers
           (pigment
             (vector (integer 0) (integer 0) (integer 1)

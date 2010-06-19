@@ -132,6 +132,7 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_LOOK_AT,     "look_at");
   dmnsn_astnode_map(DMNSN_AST_DIRECTION,   "direction");
 
+  dmnsn_astnode_map(DMNSN_AST_OBJECT,       "object");
   dmnsn_astnode_map(DMNSN_AST_BOX,          "box");
   dmnsn_astnode_map(DMNSN_AST_DIFFERENCE,   "difference");
   dmnsn_astnode_map(DMNSN_AST_INTERSECTION, "intersection");
