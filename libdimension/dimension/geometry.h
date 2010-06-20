@@ -31,17 +31,35 @@
 /* Vector and matrix types */
 
 typedef struct dmnsn_vector { double x, y, z; } dmnsn_vector;
+#define DMNSN_VECTOR_FORMAT "<%g, %g, %g>"
+#define DMNSN_VECTOR_PRINTF(v) (v).x, (v).y, (v).z
 
 typedef struct dmnsn_matrix { double n[4][4]; } dmnsn_matrix;
+#define DMNSN_MATRIX_FORMAT                     \
+  "[%g\t%g\t%g\t%g]\n"                          \
+  "[%g\t%g\t%g\t%g]\n"                          \
+  "[%g\t%g\t%g\t%g]\n"                          \
+  "[%g\t%g\t%g\t%g]"
+#define DMNSN_MATRIX_PRINTF(m)                          \
+  (m).n[0][0], (m).n[0][1], (m).n[0][2], (m).n[0][3],   \
+  (m).n[1][0], (m).n[1][1], (m).n[1][2], (m).n[1][3],   \
+  (m).n[2][0], (m).n[2][1], (m).n[2][2], (m).n[2][3],   \
+  (m).n[3][0], (m).n[3][1], (m).n[3][2], (m).n[3][3]
 
 /* A line, or ray */
 typedef struct dmnsn_line {
   dmnsn_vector x0; /* A point on the line */
   dmnsn_vector n;  /* A normal vector; the direction of the line */
 } dmnsn_line;
+#define DMNSN_LINE_FORMAT "(<%g, %g, %g> + t*<%g, %g, %g>)"
+#define DMNSN_LINE_PRINTF(l)                                    \
+  DMNSN_VECTOR_PRINTF((l).x0), DMNSN_VECTOR_PRINTF((l).n)
 
 /* A bounding box */
 typedef struct dmnsn_bounding_box { dmnsn_vector min, max; } dmnsn_bounding_box;
+#define DMNSN_BOUNDING_BOX_FORMAT "(<%g, %g, %g> ==> <%g, %g, %g>)"
+#define DMNSN_BOUNDING_BOX_PRINTF(box)                                  \
+  DMNSN_VECTOR_PRINTF((box).min), DMNSN_VECTOR_PRINTF((box).max)
 
 /* Constants */
 
