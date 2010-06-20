@@ -183,7 +183,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   dmnsn_raytrace_state state = {
     .parent = NULL,
     .scene  = scene,
-    .prtree   = prtree,
+    .prtree = prtree,
     .ior    = 1.0
   };
 
