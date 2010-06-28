@@ -22,7 +22,7 @@
 #declare Trans = transform { translate 1*z }
 
 sphere {
-  0, 0
+  0, 1
   translate -1*x
   rotate 90*y
   scale 2

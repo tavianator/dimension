@@ -24,7 +24,7 @@ transformations_exp="$(echo -n \
 '((object
     (sphere
       (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
-      (integer 0))
+      (integer 1))
     (object-modifiers
       (transformation
         (translation

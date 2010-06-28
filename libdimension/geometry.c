@@ -140,11 +140,11 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
 
   if (Pdet == 0.0) {
     /* If we can't invert P, try a more generic algorithm; this is very
-       unlikely, but not impossible, eg.
-         ( 1 1 0 0 )
-         ( 1 1 1 0 )
-         ( 0 1 1 0 )
-         ( 0 0 0 1 )
+     * unlikely, but not impossible, eg.
+     *   [ 1 1 0 0 ]
+     *   [ 1 1 1 0 ]
+     *   [ 0 1 1 0 ]
+     *   [ 0 0 0 1 ]
      */
     return dmnsn_matrix_inverse_generic(A);
   }
