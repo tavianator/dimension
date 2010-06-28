@@ -21,7 +21,9 @@
 #ifndef DIMENSION_IMPL_H
 #define DIMENSION_IMPL_H
 
+#define _GNU_SOURCE
 #include "dimension.h"
+#include "platform.h"
 #include "threads.h"
 #include "prtree.h"
 

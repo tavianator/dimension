@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -18,44 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension_impl.h"
-#include <stdlib.h>
+#ifndef DIMENSION_IMPL_UTILITIES_H
+#define DIMENSION_IMPL_UTILITIES_H
 
-/* Allocate an empty scene */
-dmnsn_scene *
-dmnsn_new_scene()
-{
-  dmnsn_scene *scene = dmnsn_malloc(sizeof(dmnsn_scene));
+#include <stddef.h>
 
-  scene->default_texture = dmnsn_new_texture();
-  scene->camera          = NULL;
-  scene->canvas          = NULL;
-  scene->objects         = dmnsn_new_array(sizeof(dmnsn_object *));
-  scene->lights          = dmnsn_new_array(sizeof(dmnsn_light *));
-  scene->quality         = DMNSN_RENDER_FULL;
-  scene->reclimit        = 5;
-  scene->nthreads        = dmnsn_ncpus();
+/* Return the number of CPUs available to dimension */
+size_t dmnsn_ncpus();
 
-  return scene;
-}
-
-/* Free a scene */
-void
-dmnsn_delete_scene(dmnsn_scene *scene)
-{
-  if (scene) {
-    DMNSN_ARRAY_FOREACH (dmnsn_light **, light, scene->lights) {
-      dmnsn_delete_light(*light);
-    }
-    DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
-      dmnsn_delete_object(*object);
-    }
-
-    dmnsn_delete_array(scene->lights);
-    dmnsn_delete_array(scene->objects);
-    dmnsn_delete_canvas(scene->canvas);
-    dmnsn_delete_camera(scene->camera);
-    dmnsn_delete_texture(scene->default_texture);
-    free(scene);
-  }
-}
+#endif /* DIMENSION_IMPL_UTILITIES_H */

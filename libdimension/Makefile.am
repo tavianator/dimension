@@ -49,8 +49,6 @@ lib_LTLIBRARIES = libdimension.la
 
 libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           ambient.c                                            \
-                          prtree.c                                             \
-                          prtree.h                                             \
                           camera.c                                             \
                           canvas.c                                             \
                           canvas_pigment.c                                     \
@@ -71,8 +69,12 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           perspective.c                                        \
                           phong.c                                              \
                           plane.c                                              \
+                          platform.c                                           \
+                          platform.h                                           \
                           point_light.c                                        \
                           progress.c                                           \
+                          prtree.c                                             \
+                          prtree.h                                             \
                           raytrace.c                                           \
                           reflective.c                                         \
                           scene.c                                              \
