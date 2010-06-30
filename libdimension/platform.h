@@ -21,7 +21,18 @@
 #ifndef DIMENSION_IMPL_UTILITIES_H
 #define DIMENSION_IMPL_UTILITIES_H
 
+#include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
+
+/* Provide a stack trace if possible */
+void dmnsn_backtrace(FILE *file);
+
+/* Return whether this is the main execution thread, if we can tell */
+bool dmnsn_is_main_thread();
+
+/* Return true if we are little-endian */
+bool dmnsn_is_little_endian();
 
 /* Return the number of CPUs available to dimension */
 size_t dmnsn_ncpus();

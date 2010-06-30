@@ -21,7 +21,6 @@
 #include "dimension_impl.h"
 #include <pthread.h>
 #include <png.h>
-#include <arpa/inet.h>
 #include <errno.h>
 #include <setjmp.h>
 #include <stdlib.h>
@@ -245,7 +244,7 @@ dmnsn_png_write_canvas_thread(void *ptr)
   /* Write the info struct */
   png_write_info(png_ptr, info_ptr);
 
-  if (htonl(1) != 1) {
+  if (dmnsn_is_little_endian()) {
     /* We are little-endian; swap the byte order of the pixels */
     png_set_swap(png_ptr);
   }

@@ -19,8 +19,37 @@
  *************************************************************************/
 
 #include "dimension_impl.h"
-#include <unistd.h> /* For sysconf() */
-#include <sched.h>  /* For sched_getaffinity() */
+#include <unistd.h>      /* For sysconf() */
+#include <arpa/inet.h>   /* For htonl() */
+#include <execinfo.h>    /* For backtrace() etc. */
+#include <sys/syscall.h> /* For gettid() where supported */
+#include <sched.h>       /* For sched_getaffinity() */
+
+void
+dmnsn_backtrace(FILE *file)
+{
+  const size_t size = 128;
+  void *buffer[size];
+
+  int nptrs = backtrace(buffer, size);
+  backtrace_symbols_fd(buffer, nptrs, fileno(file));
+}
+
+bool
+dmnsn_is_main_thread()
+{
+#ifdef SYS_gettid
+  return getpid() == syscall(SYS_gettid);
+#else
+  return true;
+#endif
+}
+
+bool
+dmnsn_is_little_endian()
+{
+  return htonl(1) != 1;
+}
 
 size_t
 dmnsn_ncpus()
