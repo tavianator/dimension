@@ -19,26 +19,35 @@
  *************************************************************************/
 
 #include "dimension_impl.h"
-#include <unistd.h>      /* For sysconf() */
-#include <arpa/inet.h>   /* For htonl() */
-#include <execinfo.h>    /* For backtrace() etc. */
-#include <sys/syscall.h> /* For gettid() where supported */
-#include <sched.h>       /* For sched_getaffinity() */
+#if HAVE_UNISTD_H
+  #include <unistd.h>
+#endif
+#if DMNSN_BACKTRACE
+  #include <execinfo.h>    /* For backtrace() etc. */
+#endif
+#if DMNSN_GETTID
+  #include <sys/syscall.h> /* For gettid() where supported */
+#endif
+#if DMNSN_SCHED_GETAFFINITY
+  #include <sched.h>       /* For sched_getaffinity() */
+#endif
 
 void
 dmnsn_backtrace(FILE *file)
 {
+#if DMNSN_BACKTRACE
   const size_t size = 128;
   void *buffer[size];
 
   int nptrs = backtrace(buffer, size);
   backtrace_symbols_fd(buffer, nptrs, fileno(file));
+#endif
 }
 
 bool
 dmnsn_is_main_thread()
 {
-#ifdef SYS_gettid
+#if DMNSN_GETTID
   return getpid() == syscall(SYS_gettid);
 #else
   return true;
@@ -48,12 +57,18 @@ dmnsn_is_main_thread()
 bool
 dmnsn_is_little_endian()
 {
-  return htonl(1) != 1;
+  /* Undefined behaviour, but quite portable */
+  union {
+    unsigned int i;
+    unsigned char c;
+  } u = { .i = 1 };
+  return u.c == 1;
 }
 
 size_t
 dmnsn_ncpus()
 {
+#if DMNSN_SCHED_GETAFFINITY
   cpu_set_t cpuset;
   if (sched_getaffinity(0, sizeof(cpuset), &cpuset) == 0) {
     return CPU_COUNT(&cpuset);
@@ -61,4 +76,15 @@ dmnsn_ncpus()
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sched_getaffinity() failed.");
     return 1;
   }
+#elif DMNSN_SC_NPROCESSORS_ONLN
+  long nprocs = sysconf(_SC_NPROCESSORS_ONLN);
+  if (nprocs > 0) {
+    return nprocs;
+  } else {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sysconf(_SC_NPROCESSORS_ONLN) failed.");
+    return 1;
+  }
+#else
+  return 1;
+#endif
 }

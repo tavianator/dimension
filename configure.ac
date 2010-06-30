@@ -68,8 +68,61 @@ PKG_CHECK_MODULES([libsandglass], [libsandglass >= 0.2],
 AC_SUBST(libsandglass_CFLAGS)
 AC_SUBST(libsandglass_LIBS)
 
-dnl Ensure compilation in C99 mode
-AC_DEFINE([_XOPEN_SOURCE], [600])
+dnl Platform feature tests
+
+AC_MSG_CHECKING([for sched_getaffinity()])
+AC_LINK_IFELSE(
+  AC_LANG_PROGRAM(
+    [
+      #define _GNU_SOURCE
+      #include <sched.h>
+    ],
+    [
+      cpu_set_t cpuset;
+      sched_getaffinity(0, sizeof(cpuset), &cpuset);
+    ]
+  ),
+  [AC_DEFINE([DMNSN_SCHED_GETAFFINITY], [1])
+   AC_MSG_RESULT([yes])],
+  [AC_DEFINE([DMNSN_SCHED_GETAFFINITY], [0])
+   AC_MSG_RESULT([no])]
+)
+
+AC_MSG_CHECKING([for sysconf(_SC_NPROCESSORS_ONLN)])
+AC_COMPILE_IFELSE(
+  AC_LANG_PROGRAM(
+    [ #include <unistd.h> ],
+    [ sysconf(_SC_NPROCESSORS_ONLN); ]
+  ),
+  [AC_DEFINE([DMNSN_SC_NPROCESSORS_ONLN], [1])
+   AC_MSG_RESULT([yes])],
+  [AC_DEFINE([DMNSN_SC_NPROCESSORS_ONLN], [0])
+   AC_MSG_RESULT([no])]
+)
+
+AC_MSG_CHECKING([for backtrace()])
+AC_LINK_IFELSE(
+  AC_LANG_PROGRAM(
+    [ #include <execinfo.h> ],
+    [ backtrace(0, 0); ]
+  ),
+  [AC_DEFINE([DMNSN_BACKTRACE], [1])
+   AC_MSG_RESULT([yes])],
+  [AC_DEFINE([DMNSN_BACKTRACE], [0])
+   AC_MSG_RESULT([no])]
+)
+
+AC_MSG_CHECKING([for gettid()])
+AC_COMPILE_IFELSE(
+  AC_LANG_PROGRAM(
+    [ #include <sys/syscall.h> ],
+    [ syscall(SYS_gettid); ]
+  ),
+  [AC_DEFINE([DMNSN_GETTID], [1])
+   AC_MSG_RESULT([yes])],
+  [AC_DEFINE([DMNSN_GETTID], [0])
+   AC_MSG_RESULT([no])]
+)
 
 dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])
