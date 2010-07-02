@@ -23,7 +23,8 @@
 #include <stdio.h>
 
 int
-main() {
+main()
+{
   bool have_png = true, have_gl = true;
 
   /* Set the resilience low for tests */

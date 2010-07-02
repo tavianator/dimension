@@ -39,7 +39,8 @@ static void print_usage(FILE *file, const char *arg0);
 static void print_version(FILE *file);
 
 int
-main(int argc, char **argv) {
+main(int argc, char **argv)
+{
   /*
    * Parse the command-line options
    */

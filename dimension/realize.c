@@ -456,7 +456,7 @@ dmnsn_realize_pigment_modifiers(dmnsn_astnode astnode, dmnsn_pigment *pigment)
   dmnsn_assert(astnode.type == DMNSN_AST_PIGMENT_MODIFIERS,
                "Expected pigment modifiers.");
 
-  DMNSN_ARRAY_FOREACH(dmnsn_astnode *, modifier, astnode.children) {
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, modifier, astnode.children) {
     switch (modifier->type) {
     case DMNSN_AST_TRANSFORMATION:
       pigment->trans = dmnsn_matrix_mul(

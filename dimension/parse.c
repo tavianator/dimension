@@ -562,7 +562,7 @@ dmnsn_eval_zeroary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 {
   dmnsn_astnode ret = dmnsn_copy_astnode(astnode);
 
-  switch(astnode.type) {
+  switch (astnode.type) {
   case DMNSN_AST_PI:
     dmnsn_make_ast_float(&ret, 4*atan(1.0));
     break;
@@ -688,7 +688,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     long n = *(long *)rhs.ptr;
     ret = dmnsn_copy_astnode(astnode);
 
-    switch(astnode.type) {
+    switch (astnode.type) {
     case DMNSN_AST_DOT_X:
     case DMNSN_AST_DOT_Y:
     case DMNSN_AST_DOT_Z:
@@ -792,7 +792,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
     double n = *(double *)rhs.ptr;
     ret = dmnsn_copy_astnode(astnode);
 
-    switch(astnode.type) {
+    switch (astnode.type) {
     case DMNSN_AST_DOT_X:
     case DMNSN_AST_DOT_Y:
     case DMNSN_AST_DOT_Z:
@@ -895,7 +895,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   } else if (rhs.type == DMNSN_AST_STRING) {
     ret = dmnsn_copy_astnode(astnode);
 
-    switch(astnode.type) {
+    switch (astnode.type) {
     case DMNSN_AST_ASC:
       dmnsn_make_ast_integer(&ret, ((char *)rhs.ptr)[0]);
       break;
@@ -1571,7 +1571,7 @@ dmnsn_eval_ternary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
   dmnsn_array_get(astnode.children, 2, &iffalse);
   test = dmnsn_eval_scalar(test, symtable);
 
-  switch(astnode.type) {
+  switch (astnode.type) {
   case DMNSN_AST_TERNARY:
     dmnsn_assert(test.type == DMNSN_AST_INTEGER,
                  "Conditional expression evaluated to non-integer.");

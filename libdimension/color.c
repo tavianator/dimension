@@ -91,7 +91,9 @@ dmnsn_color_is_black(dmnsn_color color)
 }
 
 /* sRGB's `C' function */
-static double dmnsn_sRGB_C(double Clinear) {
+static double
+dmnsn_sRGB_C(double Clinear)
+{
   /*
    * If C represents R, G, and B, then the sRGB values are now found as follows:
    *
@@ -136,7 +138,9 @@ dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY)
 }
 
 /* Inverse function of CIE L*a*b*'s `f' function, for the reverse conversion */
-static double dmnsn_Lab_finv(double t) {
+static double
+dmnsn_Lab_finv(double t)
+{
   if (t > 6.0/29.0) {
     return t*t*t;
   } else {
@@ -199,7 +203,9 @@ dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
 }
 
 /* Inverse function of sRGB's `C' function, for the reverse conversion */
-static double dmnsn_sRGB_Cinv(double CsRGB) {
+static double
+dmnsn_sRGB_Cinv(double CsRGB)
+{
   /*
    * If C represents R, G, and B, then the Clinear values are now found as
    * follows:
@@ -248,7 +254,9 @@ dmnsn_xyY_from_color(dmnsn_color color)
 }
 
 /* CIE L*a*b*'s `f' function */
-static double dmnsn_Lab_f(double t) {
+static double
+dmnsn_Lab_f(double t)
+{
   if (t > 216.0/24389.0) {
     return pow(t, 1.0/3.0);
   } else {
