@@ -321,6 +321,7 @@ main(int argc, char **argv)
     fclose(output_file);
     dmnsn_delete_scene(scene);
     fprintf(stderr, "Couldn't write output!\n");
+    return EXIT_FAILURE;
   }
   fclose(output_file);
 
