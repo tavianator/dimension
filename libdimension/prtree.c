@@ -529,7 +529,7 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 {
   double tmin = -INFINITY, tmax = INFINITY;
 
-  if (line.n.x != 0.0) {
+  if (line.n.x != 0.0 && box.min.x < box.max.x) {
     double tx1 = (box.min.x - line.x0.x)/line.n.x;
     double tx2 = (box.max.x - line.x0.x)/line.n.x;
 
@@ -543,7 +543,7 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
       return false;
   }
 
-  if (line.n.y != 0.0) {
+  if (line.n.y != 0.0 && box.min.y < box.max.y) {
     double ty1 = (box.min.y - line.x0.y)/line.n.y;
     double ty2 = (box.max.y - line.x0.y)/line.n.y;
 
@@ -557,7 +557,7 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
       return false;
   }
 
-  if (line.n.z != 0.0) {
+  if (line.n.z != 0.0 && box.min.z < box.max.z) {
     double tz1 = (box.min.z - line.x0.z)/line.n.z;
     double tz2 = (box.max.z - line.x0.z)/line.n.z;
 
