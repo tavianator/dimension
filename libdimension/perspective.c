@@ -30,7 +30,7 @@ static dmnsn_line dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
                                                   double x, double y);
 
 /* Create a new perspective camera.  Rays are aimed from the origin to a screen
-   located on the z = 1 frame, from (-0.5, -0.5) to (0.5, 0.5).  Rays are then
+   located on the z = 1 plane, from (-0.5, -0.5) to (0.5, 0.5).  Rays are then
    transformed by the camera's transformation matrix. */
 dmnsn_camera *
 dmnsn_new_perspective_camera()
@@ -69,13 +69,9 @@ dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
                                 double x, double y)
 {
   dmnsn_matrix *trans = camera->ptr;
-  dmnsn_line l;
-
-  /* Rays originate at the origin, oddly enough */
-  l.x0 = dmnsn_new_vector(0.0, 0.0, 0.0);
-
-  /* Aim at the z = 1 plane */
-  l.n  = dmnsn_new_vector(x - 0.5, y - 0.5, 1.0);
-
+  dmnsn_line l = dmnsn_new_line(
+    dmnsn_zero,
+    dmnsn_new_vector(x - 0.5, y - 0.5, 1.0)
+  );
   return dmnsn_transform_line(*trans, l);
 }
