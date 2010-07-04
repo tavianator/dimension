@@ -22,6 +22,93 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/*
+ * Test scene -- code version of tests/dimension/demo.pov
+ */
+dmnsn_scene *
+dmnsn_new_test_scene()
+{
+  /* Allocate a new scene */
+  dmnsn_scene *scene = dmnsn_new_scene();
+
+  /* Default finish */
+  scene->default_texture->finish = dmnsn_new_finish_combination(
+    dmnsn_new_ambient_finish(
+      dmnsn_color_mul(0.1, dmnsn_white)
+    ),
+    dmnsn_new_diffuse_finish(0.6)
+  );
+
+  /* Allocate a canvas */
+  scene->canvas = dmnsn_new_canvas(768, 480);
+
+  /* Set up the transformation matrix for the perspective camera */
+  dmnsn_matrix trans = dmnsn_scale_matrix(
+    dmnsn_new_vector(
+      ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
+    )
+  );
+  trans = dmnsn_matrix_mul(
+    dmnsn_translation_matrix(dmnsn_new_vector(0.0, 0.0, -4.0)),
+    trans
+  );
+  trans = dmnsn_matrix_mul(
+    dmnsn_rotation_matrix(dmnsn_new_vector(0.0, dmnsn_radians(53.0), 0.0)),
+    trans
+  );
+
+  /* Create a perspective camera */
+  scene->camera = dmnsn_new_perspective_camera();
+  dmnsn_set_perspective_camera_trans(scene->camera, trans);
+
+  /* Background color */
+  scene->background = dmnsn_color_from_sRGB((dmnsn_sRGB){ 0.0, 0.1, 0.2 });
+  scene->background.filter = 0.1;
+
+  /* Light source */
+  dmnsn_light *light = dmnsn_new_point_light(
+    dmnsn_new_vector(-15.0, 20.0, 10.0),
+    dmnsn_white
+  );
+  dmnsn_array_push(scene->lights, &light);
+
+  /* Now make our objects */
+
+  dmnsn_object *cube = dmnsn_new_cube();
+  cube->trans = dmnsn_rotation_matrix(
+    dmnsn_new_vector(dmnsn_radians(45.0), 0.0, 0.0)
+  );
+  cube->texture = dmnsn_new_texture();
+
+  dmnsn_color cube_color = dmnsn_blue;
+  cube_color.filter = 0.25;
+  cube_color.trans  = 0.5;
+  cube->texture->pigment = dmnsn_new_solid_pigment(cube_color);
+
+  dmnsn_color reflect = dmnsn_color_mul(0.5, dmnsn_white);
+  cube->texture->finish = dmnsn_new_reflective_finish(reflect, reflect, 1.0);
+
+  cube->interior = dmnsn_new_interior();
+  cube->interior->ior = 1.1;
+
+  dmnsn_object *sphere = dmnsn_new_sphere();
+  sphere->texture = dmnsn_new_texture();
+  sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_green);
+  sphere->texture->finish  = dmnsn_new_phong_finish(0.2, 40.0);
+  sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.25, 1.25, 1.25));
+
+  dmnsn_object *csg = dmnsn_new_csg_difference(cube, sphere);
+  dmnsn_array_push(scene->objects, &csg);
+
+  dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
+  plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
+  plane->texture = dmnsn_new_texture();
+  plane->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
+  dmnsn_array_push(scene->objects, &plane);
+
+  return scene;
+}
+
 int
 main()
 {
@@ -30,8 +117,8 @@ main()
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
-  /* Create the default test scene */
-  dmnsn_scene *scene = dmnsn_new_default_scene();
+  /* Create the test scene */
+  dmnsn_scene *scene = dmnsn_new_test_scene();
 
   /* Optimize the canvas for PNG export */
   errno = 0;

@@ -32,12 +32,6 @@ extern "C" {
 #endif
 
 /*
- * Convenience
- */
-
-dmnsn_scene *dmnsn_new_default_scene();
-
-/*
  * Windowing
  */
 
