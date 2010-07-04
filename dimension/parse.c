@@ -564,7 +564,7 @@ dmnsn_eval_zeroary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
   switch (astnode.type) {
   case DMNSN_AST_PI:
-    dmnsn_make_ast_float(&ret, 4*atan(1.0));
+    dmnsn_make_ast_float(&ret, M_PI);
     break;
   case DMNSN_AST_TRUE:
     dmnsn_make_ast_integer(&ret, 1);
@@ -736,7 +736,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, cosh(n));
       break;
     case DMNSN_AST_DEGREES:
-      dmnsn_make_ast_float(&ret, n*45.0/atan(1.0));
+      dmnsn_make_ast_float(&ret, dmnsn_degrees(n));
       break;
     case DMNSN_AST_EXP:
       dmnsn_make_ast_float(&ret, exp(n));
@@ -754,7 +754,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, log(n)/log(10.0));
       break;
     case DMNSN_AST_RADIANS:
-      dmnsn_make_ast_float(&ret, n*atan(1.0)/45.0);
+      dmnsn_make_ast_float(&ret, dmnsn_radians(n));
       break;
     case DMNSN_AST_SIN:
       dmnsn_make_ast_float(&ret, sin(n));
@@ -840,7 +840,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, cosh(n));
       break;
     case DMNSN_AST_DEGREES:
-      dmnsn_make_ast_float(&ret, n*45.0/atan(1.0));
+      dmnsn_make_ast_float(&ret, dmnsn_degrees(n));
       break;
     case DMNSN_AST_EXP:
       dmnsn_make_ast_float(&ret, exp(n));
@@ -858,7 +858,7 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, log(n)/log(10.0));
       break;
     case DMNSN_AST_RADIANS:
-      dmnsn_make_ast_float(&ret, n*atan(1.0)/45.0);
+      dmnsn_make_ast_float(&ret, dmnsn_radians(n));
       break;
     case DMNSN_AST_SIN:
       dmnsn_make_ast_float(&ret, sin(n));
@@ -1141,7 +1141,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
           az.type == DMNSN_AST_INTEGER ? *(long *)az.ptr : *(double *)az.ptr
         );
 
-        axis = dmnsn_vector_mul(atan(1.0)/45.0, axis);
+        axis = dmnsn_vector_mul(dmnsn_radians(1.0), axis);
         r = dmnsn_transform_vector(dmnsn_rotation_matrix(axis), r);
 
         ret = dmnsn_copy_astnode(astnode);
@@ -1247,7 +1247,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
           az.type == DMNSN_AST_INTEGER ? *(long *)az.ptr : *(double *)az.ptr
         );
 
-        axis = dmnsn_vector_mul(atan(1.0)/45.0, axis);
+        axis = dmnsn_vector_mul(dmnsn_radians(1.0), axis);
 
         r = dmnsn_transform_vector(
           dmnsn_rotation_matrix(dmnsn_new_vector(axis.x, 0.0, 0.0)),

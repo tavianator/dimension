@@ -70,7 +70,7 @@ static const dmnsn_vector dmnsn_x    = { 1.0, 0.0, 0.0 };
 static const dmnsn_vector dmnsn_y    = { 0.0, 1.0, 0.0 };
 static const dmnsn_vector dmnsn_z    = { 0.0, 0.0, 1.0 };
 
-/* Min/max macros */
+/* Scalar functions */
 
 DMNSN_INLINE double
 dmnsn_min(double a, double b)
@@ -82,6 +82,18 @@ DMNSN_INLINE double
 dmnsn_max(double a, double b)
 {
   return a > b ? a : b;
+}
+
+DMNSN_INLINE double
+dmnsn_radians(double degrees)
+{
+  return degrees*M_PI/180.0;
+}
+
+DMNSN_INLINE double
+dmnsn_degrees(double radians)
+{
+  return radians*180.0/M_PI;
 }
 
 /* Shorthand for vector/matrix construction */

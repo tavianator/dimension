@@ -142,13 +142,11 @@ dmnsn_realize_rotation(dmnsn_astnode astnode)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_ROTATION, "Expected a rotation.");
 
-  const double deg2rad = atan(1.0)/45.0;
-
   dmnsn_astnode angle_node;
   dmnsn_array_get(astnode.children, 0, &angle_node);
 
   dmnsn_vector angle = dmnsn_vector_mul(
-    deg2rad,
+    dmnsn_radians(1.0),
     dmnsn_realize_vector(angle_node)
   );
 
@@ -266,8 +264,6 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_CAMERA, "Expected a camera.");
 
-  const double deg2rad = atan(1.0)/45.0;
-
   dmnsn_astnode_type camera_type = DMNSN_AST_PERSPECTIVE;
   dmnsn_vector location  = dmnsn_new_vector(0.0, 0.0, 0.0);
   dmnsn_vector direction = dmnsn_new_vector(0.0, 0.0, 1.0);
@@ -363,7 +359,7 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
     case DMNSN_AST_ANGLE:
       {
         dmnsn_array_get(item->children, 0, &child);
-        double angle = deg2rad*dmnsn_realize_float(child);
+        double angle = dmnsn_radians(dmnsn_realize_float(child));
         direction = dmnsn_vector_mul(
           0.5*dmnsn_vector_norm(right)/tan(angle/2.0),
           dmnsn_vector_normalize(direction)

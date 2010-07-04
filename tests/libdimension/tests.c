@@ -57,7 +57,7 @@ dmnsn_new_default_scene()
     trans
   );
   trans = dmnsn_matrix_mul(
-    dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0)),
+    dmnsn_rotation_matrix(dmnsn_new_vector(0.0, dmnsn_radians(53.0), 0.0)),
     trans
   );
 
@@ -86,7 +86,9 @@ dmnsn_new_default_scene()
   cube->interior = dmnsn_new_interior();
   cube->interior->ior = 1.1;
 
-  cube->trans = dmnsn_rotation_matrix(dmnsn_new_vector(0.75, 0.0, 0.0));
+  cube->trans = dmnsn_rotation_matrix(
+    dmnsn_new_vector(dmnsn_radians(45.0), 0.0, 0.0)
+  );
 
   dmnsn_object *csg = dmnsn_new_csg_difference(cube, sphere);
   dmnsn_array_push(scene->objects, &csg);
