@@ -144,6 +144,7 @@ TRANSFORMATION_ITEM: IDENTIFIER {
 
                      dmnsn_array_get(trans->children, 0, &$$);
                      ++*$$.refcount;
+                     dmnsn_delete_astnode($1);
                    }
                    | TRANSFORMATION {
                      dmnsn_array_get($1.children, 0, &$$);
