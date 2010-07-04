@@ -26,6 +26,7 @@ TESTS = punctuation.sh                                                         \
         directives.sh                                                          \
         arithexp.sh                                                            \
         transformations.sh                                                     \
+        tbuffer-overlap.sh                                                     \
         csg.sh                                                                 \
         demo.sh
 TESTS_ENVIRONMENT = top_builddir=$(top_builddir)
@@ -42,6 +43,7 @@ EXTRA_DIST = $(TESTS)                                                          \
              directives.pov                                                    \
              arithexp.pov                                                      \
              transformations.pov                                               \
+             tbuffer-overlap.pov                                               \
              csg.pov                                                           \
              demo.pov
 
