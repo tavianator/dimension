@@ -33,8 +33,11 @@ typedef struct dmnsn_buffered_token {
 
 typedef struct dmnsn_token_buffer {
   dmnsn_token_type type;
-  /* Indicate that the first token should be returned as-is */
+  /* To indicate that the first token should be returned as-is */
   #define DMNSN_T_LEX_VERBATIM DMNSN_T_EOF
+
+  /* Whether to automatically delete this buffer if we reach its end */
+  bool auto_delete;
 
   dmnsn_parse_location lloc;
   dmnsn_array *buffered;
@@ -51,14 +54,14 @@ dmnsn_new_token_buffer(dmnsn_parse_location lloc, dmnsn_token_type type,
                        dmnsn_token_buffer *prev, const char *filename)
 {
   dmnsn_token_buffer *tbuffer = dmnsn_malloc(sizeof(dmnsn_token_buffer));
-
-  tbuffer->type = type;
-  tbuffer->lloc = lloc;
-  tbuffer->buffered = dmnsn_new_array(sizeof(dmnsn_buffered_token));
-  tbuffer->i = 0;
-  tbuffer->prev = prev;
-  tbuffer->filename = filename;
-  tbuffer->ptr = NULL;
+  tbuffer->type        = type;
+  tbuffer->auto_delete = true;
+  tbuffer->lloc        = lloc;
+  tbuffer->buffered    = dmnsn_new_array(sizeof(dmnsn_buffered_token));
+  tbuffer->i           = 0;
+  tbuffer->prev        = prev;
+  tbuffer->filename    = filename;
+  tbuffer->ptr         = NULL;
   return tbuffer;
 }
 
@@ -90,6 +93,9 @@ dmnsn_buffer_balanced(dmnsn_token_buffer *tbuffer, bool recursive,
                       void *yyscanner)
 {
   dmnsn_buffered_token buffered;
+
+  if (tbuffer->prev)
+    tbuffer->prev->auto_delete = false;
 
   int nesting = -1;
   while (1) {
@@ -123,6 +129,9 @@ dmnsn_buffer_balanced(dmnsn_token_buffer *tbuffer, bool recursive,
     }
   }
 
+  if (tbuffer->prev)
+    tbuffer->prev->auto_delete = true;
+
   return 0;
 }
 
@@ -132,6 +141,9 @@ dmnsn_buffer_strexp(dmnsn_token_buffer *tbuffer, bool recursive,
                     void *yyscanner)
 {
   dmnsn_buffered_token buffered;
+
+  if (tbuffer->prev)
+    tbuffer->prev->auto_delete = false;
 
   if (recursive) {
     buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
@@ -165,6 +177,9 @@ dmnsn_buffer_strexp(dmnsn_token_buffer *tbuffer, bool recursive,
                                  DMNSN_T_LPAREN, DMNSN_T_RPAREN,
                                  filename, symtable, yyscanner);
   }
+
+  if (tbuffer->prev)
+    tbuffer->prev->auto_delete = true;
 
   return 0;
 }
@@ -285,11 +300,14 @@ dmnsn_declaration_buffer(int token, dmnsn_token_buffer *prev,
   };
   dmnsn_array_push(tbuffer->buffered, &buffered);
 
+  if (prev)
+    prev->auto_delete = false;
+
   /* Grab all the tokens belonging to the #declare/#local, i.e. until the braces
      balance or we hit a semicolon */
   int bracelevel = -1;
   while (1) {
-    /* Recursive call - permit other directives inside the declaration */
+    /* Recursive call -- permit other directives inside the declaration */
     buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
                                 filename, symtable, yyscanner);
 
@@ -319,6 +337,9 @@ dmnsn_declaration_buffer(int token, dmnsn_token_buffer *prev,
     }
   }
 
+  if (prev)
+    prev->auto_delete = true;
+
   /* Fake EOF */
   buffered.type = DMNSN_T_EOF;
   buffered.lval.value = NULL;
@@ -344,9 +365,13 @@ dmnsn_undef_buffer(int token, dmnsn_token_buffer *prev,
   };
   dmnsn_array_push(tbuffer->buffered, &buffered);
 
+  if (prev)
+    prev->auto_delete = false;
   /* Recursive call */
   buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
                               filename, symtable, yyscanner);
+  if (prev)
+    prev->auto_delete = true;
 
   if (buffered.type == DMNSN_T_EOF) {
     dmnsn_diagnostic(buffered.lloc, "syntax error, unexpected end-of-file");
@@ -425,6 +450,9 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
 
   dmnsn_undef_symbol(symtable, "$cond");
 
+  if (prev)
+    prev->auto_delete = false;
+
   int nesting = 1, else_seen = 0;
   while (1) {
     /* Non-recursive call */
@@ -478,6 +506,9 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
     }
   }
 
+  if (prev)
+    prev->auto_delete = true;
+
   return tbuffer;
 }
 
@@ -497,6 +528,9 @@ dmnsn_while_buffer(int token, dmnsn_token_buffer *prev,
     .lloc = *llocp
   };
   dmnsn_array_push(tbuffer->buffered, &buffered);
+
+  if (prev)
+    prev->auto_delete = false;
 
   /* Grab all the tokens belonging to the #while ... #end */
   int nesting = 1;
@@ -536,6 +570,9 @@ dmnsn_while_buffer(int token, dmnsn_token_buffer *prev,
     }
   }
 
+  if (prev)
+    prev->auto_delete = true;
+
   return tbuffer;
 }
 
@@ -556,6 +593,9 @@ dmnsn_version_buffer(int token, dmnsn_token_buffer *prev,
   };
   dmnsn_array_push(tbuffer->buffered, &buffered);
 
+  if (prev)
+    prev->auto_delete = false;
+
   while (buffered.type != DMNSN_T_SEMICOLON) {
     /* Recursive call */
     buffered.type = dmnsn_yylex(&buffered.lval, &buffered.lloc,
@@ -572,6 +612,9 @@ dmnsn_version_buffer(int token, dmnsn_token_buffer *prev,
 
     dmnsn_array_push(tbuffer->buffered, &buffered);
   }
+
+  if (prev)
+    prev->auto_delete = true;
 
   /* Fake EOF */
   buffered.type = DMNSN_T_EOF;
@@ -666,6 +709,9 @@ dmnsn_declare_macro(int token, dmnsn_token_buffer *prev,
   dmnsn_assert(mnode->type == DMNSN_AST_MACRO, "#macro has wrong type.");
   dmnsn_undef_symbol(symtable, "$macro");
 
+  if (prev)
+    prev->auto_delete = false;
+
   int nesting = 1;
   while (1) {
     /* Non-recursive call */
@@ -701,6 +747,9 @@ dmnsn_declare_macro(int token, dmnsn_token_buffer *prev,
 
     dmnsn_array_push(tbuffer->buffered, &buffered);
   }
+
+  if (prev)
+    prev->auto_delete = true;
 
   mnode->ptr     = tbuffer;
   mnode->free_fn = &dmnsn_delete_token_buffer;
@@ -772,6 +821,10 @@ dmnsn_yylex_wrapper(dmnsn_parse_item *lvalp, dmnsn_parse_location *llocp,
     if (tbuffer->type == DMNSN_T_WHILE) {
       tbuffer->i = 0;
     } else {
+      if (!tbuffer->auto_delete) {
+        return DMNSN_T_EOF;
+      }
+
       if (dmnsn_array_size(tbuffer->buffered) == 0
           && tbuffer->prev && tbuffer->prev->type == DMNSN_T_WHILE)
       {
