@@ -26,6 +26,7 @@ TESTS = punctuation.sh                                                         \
         directives.sh                                                          \
         arithexp.sh                                                            \
         transformations.sh                                                     \
+        invalid-macro.sh                                                       \
         tbuffer-overlap.sh                                                     \
         csg.sh                                                                 \
         demo.sh
@@ -43,6 +44,7 @@ EXTRA_DIST = $(TESTS)                                                          \
              directives.pov                                                    \
              arithexp.pov                                                      \
              transformations.pov                                               \
+             invalid-macro.pov                                                 \
              tbuffer-overlap.pov                                               \
              csg.pov                                                           \
              demo.pov
