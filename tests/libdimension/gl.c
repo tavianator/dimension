@@ -80,11 +80,8 @@ main()
     fprintf(stderr, "--- Drawing to OpenGL failed! ---\n");
     return EXIT_FAILURE;
   }
+
   dmnsn_display_flush(display);
   dmnsn_delete_canvas(canvas);
-
-  /* Show the image on the screen for a bit */
-  sleep(1);
-
   return EXIT_SUCCESS;
 }
