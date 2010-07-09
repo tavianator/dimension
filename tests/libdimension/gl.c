@@ -82,6 +82,7 @@ main()
   }
 
   dmnsn_display_flush(display);
+  dmnsn_delete_display(display);
   dmnsn_delete_canvas(canvas);
   return EXIT_SUCCESS;
 }
