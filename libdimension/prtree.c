@@ -529,7 +529,11 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 {
   double tmin = -INFINITY, tmax = INFINITY;
 
-  if (line.n.x != 0.0 && box.min.x < box.max.x) {
+  /* Detenerate box test */
+  if (box.min.x >= box.max.x)
+    return false;
+
+  if (line.n.x != 0.0) {
     double tx1 = (box.min.x - line.x0.x)/line.n.x;
     double tx2 = (box.max.x - line.x0.x)/line.n.x;
 
@@ -538,12 +542,11 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 
     if (tmin > tmax)
       return false;
-  } else {
-    if (line.x0.x < box.min.x || line.x0.x > box.max.x)
-      return false;
+  } else if (line.x0.x < box.min.x || line.x0.x > box.max.x) {
+    return false;
   }
 
-  if (line.n.y != 0.0 && box.min.y < box.max.y) {
+  if (line.n.y != 0.0) {
     double ty1 = (box.min.y - line.x0.y)/line.n.y;
     double ty2 = (box.max.y - line.x0.y)/line.n.y;
 
@@ -552,12 +555,11 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 
     if (tmin > tmax)
       return false;
-  } else {
-    if (line.x0.y < box.min.y || line.x0.y > box.max.y)
-      return false;
+  } else if (line.x0.y < box.min.y || line.x0.y > box.max.y) {
+    return false;
   }
 
-  if (line.n.z != 0.0 && box.min.z < box.max.z) {
+  if (line.n.z != 0.0) {
     double tz1 = (box.min.z - line.x0.z)/line.n.z;
     double tz2 = (box.max.z - line.x0.z)/line.n.z;
 
@@ -566,15 +568,11 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 
     if (tmin > tmax)
       return false;
-  } else {
-    if (line.x0.z < box.min.z || line.x0.z > box.max.z)
-      return false;
+  } else if (line.x0.z < box.min.z || line.x0.z > box.max.z) {
+    return false;
   }
 
-  if (tmax < 0.0)
-    return false;
-
-  return tmin < t;
+  return tmax >= 0.0 && tmin < t;
 }
 
 static void
