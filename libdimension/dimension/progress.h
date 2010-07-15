@@ -28,29 +28,7 @@
 #ifndef DIMENSION_PROGRESS_H
 #define DIMENSION_PROGRESS_H
 
-#include <pthread.h>
-
-/* A single element in an array for dmnsn_progress.  Progress of this item is
-   progress/total. */
-typedef struct {
-  unsigned int progress, total;
-} dmnsn_progress_element;
-
-typedef struct {
-  /* Array of progress elements.  Progress is given by P(0), where
-     P(i) = (elements[i].progress + P(i + 1))/elements[i].total. */
-  dmnsn_array *elements;
-
-  /* The worker thread */
-  pthread_t thread;
-
-  /* Read-write synchronization */
-  pthread_rwlock_t *rwlock;
-
-  /* Condition variable for waiting for a particular amount of progress */
-  pthread_cond_t  *cond;
-  pthread_mutex_t *mutex;
-} dmnsn_progress;
+typedef struct dmnsn_progress dmnsn_progress;
 
 /* Allocate a new progress object */
 dmnsn_progress *dmnsn_new_progress();

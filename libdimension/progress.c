@@ -18,8 +18,14 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
+#include "dimension_impl.h"
 #include <pthread.h>
+
+/* A single element in an array for dmnsn_progress.  Progress of this item is
+   progress/total. */
+typedef struct {
+  unsigned int progress, total;
+} dmnsn_progress_element;
 
 /* For thread synchronization */
 static void dmnsn_progress_rdlock(const dmnsn_progress *progress);

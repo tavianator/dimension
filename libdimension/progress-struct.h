@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -18,14 +18,23 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_IMPL_H
-#define DIMENSION_IMPL_H
+#ifndef DIMENSION_IMPL_PROGRESS_STRUCT_H
+#define DIMENSION_IMPL_PROGRESS_STRUCT_H
 
-#define _GNU_SOURCE
-#include "dimension.h"
-#include "progress-struct.h"
-#include "platform.h"
-#include "threads.h"
-#include "prtree.h"
+struct dmnsn_progress {
+  /* Array of progress elements.  Progress is given by P(0), where
+     P(i) = (elements[i].progress + P(i + 1))/elements[i].total. */
+  dmnsn_array *elements;
 
-#endif /* DIMENSION_IMPL_H */
+  /* The worker thread */
+  pthread_t thread;
+
+  /* Read-write synchronization */
+  pthread_rwlock_t *rwlock;
+
+  /* Condition variable for waiting for a particular amount of progress */
+  pthread_cond_t  *cond;
+  pthread_mutex_t *mutex;
+};
+
+#endif /* DIMENSION_IMPL_PROGRESS_STRUCT_H */
