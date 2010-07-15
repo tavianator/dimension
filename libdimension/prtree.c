@@ -525,7 +525,8 @@ dmnsn_delete_prtree(dmnsn_prtree *tree)
 
 /* Ray-AABB intersection test */
 static inline bool
-dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
+dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_vector inv,
+                           dmnsn_bounding_box box, double t)
 {
   double tmin = -INFINITY, tmax = INFINITY;
 
@@ -534,8 +535,9 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
     return false;
 
   if (line.n.x != 0.0) {
-    double tx1 = (box.min.x - line.x0.x)/line.n.x;
-    double tx2 = (box.max.x - line.x0.x)/line.n.x;
+    /* inv.x == 1.0/line.n.x */
+    double tx1 = (box.min.x - line.x0.x)*inv.x;
+    double tx2 = (box.max.x - line.x0.x)*inv.x;
 
     tmin = dmnsn_max(tmin, dmnsn_min(tx1, tx2));
     tmax = dmnsn_min(tmax, dmnsn_max(tx1, tx2));
@@ -547,8 +549,8 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
   }
 
   if (line.n.y != 0.0) {
-    double ty1 = (box.min.y - line.x0.y)/line.n.y;
-    double ty2 = (box.max.y - line.x0.y)/line.n.y;
+    double ty1 = (box.min.y - line.x0.y)*inv.y;
+    double ty2 = (box.max.y - line.x0.y)*inv.y;
 
     tmin = dmnsn_max(tmin, dmnsn_min(ty1, ty2));
     tmax = dmnsn_min(tmax, dmnsn_max(ty1, ty2));
@@ -560,8 +562,8 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
   }
 
   if (line.n.z != 0.0) {
-    double tz1 = (box.min.z - line.x0.z)/line.n.z;
-    double tz2 = (box.max.z - line.x0.z)/line.n.z;
+    double tz1 = (box.min.z - line.x0.z)*inv.z;
+    double tz2 = (box.max.z - line.x0.z)*inv.z;
 
     tmin = dmnsn_max(tmin, dmnsn_min(tz1, tz2));
     tmax = dmnsn_min(tmax, dmnsn_max(tz1, tz2));
@@ -577,14 +579,14 @@ dmnsn_ray_box_intersection(dmnsn_line line, dmnsn_bounding_box box, double t)
 
 static void
 dmnsn_prtree_intersection_recursive(const dmnsn_prtree_node *node,
-                                    dmnsn_line ray,
+                                    dmnsn_line ray, dmnsn_vector inv,
                                     dmnsn_intersection *intersection, double *t)
 {
   for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
     if (!node->children[i])
       break;
 
-    if (dmnsn_ray_box_intersection(ray, node->bounding_boxes[i], *t)) {
+    if (dmnsn_ray_box_intersection(ray, inv, node->bounding_boxes[i], *t)) {
       if (node->is_leaf) {
         dmnsn_object *object = node->children[i];
 
@@ -596,7 +598,7 @@ dmnsn_prtree_intersection_recursive(const dmnsn_prtree_node *node,
           }
         }
       } else {
-        dmnsn_prtree_intersection_recursive(node->children[i], ray,
+        dmnsn_prtree_intersection_recursive(node->children[i], ray, inv,
                                             intersection, t);
       }
     }
@@ -620,9 +622,12 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
     }
   }
 
+  /* Precalculate 1.0/ray.n.{x,y,z} to save time in intersection tests */
+  dmnsn_vector inv = dmnsn_new_vector(1.0/ray.n.x, 1.0/ray.n.y, 1.0/ray.n.z);
+
   /* Search the bounded objects */
-  if (dmnsn_ray_box_intersection(ray, tree->root->bounding_box, t)) {
-    dmnsn_prtree_intersection_recursive(tree->root, ray, intersection, &t);
+  if (dmnsn_ray_box_intersection(ray, inv, tree->root->bounding_box, t)) {
+    dmnsn_prtree_intersection_recursive(tree->root, ray, inv, intersection, &t);
   }
 
   return !isinf(t);
