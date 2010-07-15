@@ -89,8 +89,8 @@ main()
 
   /* dmnsn_prtree_intersection() */
   dmnsn_line ray = dmnsn_new_line(
-    dmnsn_new_vector(0.0, 0.0, -2.0),
-    dmnsn_new_vector(0.0, 0.0, 1.0)
+    dmnsn_new_vector( 1.0,  1.0, -2.0),
+    dmnsn_new_vector(-0.5, -0.5,  1.0)
   );
   dmnsn_intersection intersection;
 
