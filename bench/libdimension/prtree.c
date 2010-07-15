@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include "dimension_impl.h"
+#include "dimension-impl.h"
 #include <sandglass.h>
 #include <stdlib.h>
 

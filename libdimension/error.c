@@ -1,3 +1,4 @@
+
 /*************************************************************************
  * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
@@ -18,7 +19,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension_impl.h"
+#include "dimension-impl.h"
 #include <pthread.h>
 #include <stdio.h>     /* For fprintf() */
 #include <stdlib.h>    /* For exit() */

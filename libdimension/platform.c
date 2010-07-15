@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension_impl.h"
+#include "dimension-impl.h"
 #if HAVE_UNISTD_H
   #include <unistd.h>
 #endif

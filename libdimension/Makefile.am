@@ -56,7 +56,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           cube.c                                               \
                           csg.c                                                \
                           diffuse.c                                            \
-                          dimension_impl.h                                     \
+                          dimension-impl.h                                     \
                           error.c                                              \
                           finish_combination.c                                 \
                           geometry.c                                           \

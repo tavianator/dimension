@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension_impl.h"
+#include "dimension-impl.h"
 
 typedef struct dmnsn_thread_payload {
   dmnsn_thread_fn *thread_fn;

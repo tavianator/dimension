@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension_impl.h"
+#include "dimension-impl.h"
 #include <pthread.h>
 
 /* A single element in an array for dmnsn_progress.  Progress of this item is
