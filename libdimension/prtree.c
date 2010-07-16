@@ -523,63 +523,50 @@ dmnsn_delete_prtree(dmnsn_prtree *tree)
   }
 }
 
-typedef struct dmnsn_inverted_line {
+typedef struct dmnsn_optimized_line {
   dmnsn_line line;
   dmnsn_vector n_inv;
 } dmnsn_optimized_line;
 
-/* Ray-AABB intersection test */
+/* Precompute inverses for faster ray-box intersection tests */
+static inline dmnsn_optimized_line
+dmnsn_optimize_line(dmnsn_line line)
+{
+  dmnsn_optimized_line optline = {
+    .line  = line,
+    .n_inv = dmnsn_new_vector(1.0/line.n.x, 1.0/line.n.y, 1.0/line.n.z)
+  };
+  return optline;
+}
+
+/* Ray-AABB intersection test, by the slab method */
 static inline bool
 dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
                            dmnsn_bounding_box box, double t)
 {
-  double tmin = -INFINITY, tmax = INFINITY;
-
-  /* Detenerate box test */
+  /* Degenerate box test */
   if (box.min.x >= box.max.x)
     return false;
 
-  if (optline.line.n.x != 0.0) {
-    /* inv.x == 1.0/line.n.x */
-    double tx1 = (box.min.x - optline.line.x0.x)*optline.n_inv.x;
-    double tx2 = (box.max.x - optline.line.x0.x)*optline.n_inv.x;
+  double tx1 = (box.min.x - optline.line.x0.x)*optline.n_inv.x;
+  double tx2 = (box.max.x - optline.line.x0.x)*optline.n_inv.x;
 
-    tmin = dmnsn_max(tmin, dmnsn_min(tx1, tx2));
-    tmax = dmnsn_min(tmax, dmnsn_max(tx1, tx2));
+  double tmin = dmnsn_min(tx1, tx2);
+  double tmax = dmnsn_max(tx1, tx2);
 
-    if (tmin > tmax)
-      return false;
-  } else if (optline.line.x0.x < box.min.x || optline.line.x0.x > box.max.x) {
-    return false;
-  }
+  double ty1 = (box.min.y - optline.line.x0.y)*optline.n_inv.y;
+  double ty2 = (box.max.y - optline.line.x0.y)*optline.n_inv.y;
 
-  if (optline.line.n.y != 0.0) {
-    double ty1 = (box.min.y - optline.line.x0.y)*optline.n_inv.y;
-    double ty2 = (box.max.y - optline.line.x0.y)*optline.n_inv.y;
+  tmin = dmnsn_max(tmin, dmnsn_min(ty1, ty2));
+  tmax = dmnsn_min(tmax, dmnsn_max(ty1, ty2));
 
-    tmin = dmnsn_max(tmin, dmnsn_min(ty1, ty2));
-    tmax = dmnsn_min(tmax, dmnsn_max(ty1, ty2));
+  double tz1 = (box.min.z - optline.line.x0.z)*optline.n_inv.z;
+  double tz2 = (box.max.z - optline.line.x0.z)*optline.n_inv.z;
 
-    if (tmin > tmax)
-      return false;
-  } else if (optline.line.x0.y < box.min.y || optline.line.x0.y > box.max.y) {
-    return false;
-  }
+  tmin = dmnsn_max(tmin, dmnsn_min(tz1, tz2));
+  tmax = dmnsn_min(tmax, dmnsn_max(tz1, tz2));
 
-  if (optline.line.n.z != 0.0) {
-    double tz1 = (box.min.z - optline.line.x0.z)*optline.n_inv.z;
-    double tz2 = (box.max.z - optline.line.x0.z)*optline.n_inv.z;
-
-    tmin = dmnsn_max(tmin, dmnsn_min(tz1, tz2));
-    tmax = dmnsn_min(tmax, dmnsn_max(tz1, tz2));
-
-    if (tmin > tmax)
-      return false;
-  } else if (optline.line.x0.z < box.min.z || optline.line.x0.z > box.max.z) {
-    return false;
-  }
-
-  return tmax >= 0.0 && tmin < t;
+  return tmax >= 0.0 && tmax >= tmin && tmin < t;
 }
 
 static void
@@ -629,9 +616,7 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
   }
 
   /* Precalculate 1.0/ray.n.{x,y,z} to save time in intersection tests */
-  dmnsn_optimized_line optline;
-  optline.line = ray;
-  optline.n_inv = dmnsn_new_vector(1.0/ray.n.x, 1.0/ray.n.y, 1.0/ray.n.z);
+  dmnsn_optimized_line optline = dmnsn_optimize_line(ray);
 
   /* Search the bounded objects */
   if (dmnsn_ray_box_intersection(optline, tree->root->bounding_box, t)) {
