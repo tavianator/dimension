@@ -544,6 +544,15 @@ static inline bool
 dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
                            dmnsn_bounding_box box, double t)
 {
+  /*
+   * This is actually correct, even though it appears not to handle edge cases
+   * (line.n.{x,y,z} == 0).  It works because the infinities that result from
+   * dividing by zero will still behave correctly in the comparisons.  Lines
+   * which are parallel to an axis and outside the box will have tmin == inf
+   * or tmax == -inf, while lines inside the box will have tmin and tmax
+   * unchanged.
+   */
+
   /* Degenerate box test */
   if (box.min.x >= box.max.x)
     return false;
