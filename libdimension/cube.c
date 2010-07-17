@@ -54,100 +54,77 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
   dmnsn_line line_trans = dmnsn_transform_line(cube->trans_inv, line);
 
   dmnsn_vector nmin, nmax;
-  double tmin = -INFINITY, tmax = INFINITY;
+  double tmin, tmax;
 
-  if (line_trans.n.x != 0.0) {
-    double tx1 = (-1.0 - line_trans.x0.x)/line_trans.n.x;
-    double tx2 = (+1.0 - line_trans.x0.x)/line_trans.n.x;
+  double tx1 = (-1.0 - line_trans.x0.x)/line_trans.n.x;
+  double tx2 = (+1.0 - line_trans.x0.x)/line_trans.n.x;
 
-    if (tx1 < tx2) {
-      if (tx1 > tmin) {
-        tmin = tx1;
-        nmin = dmnsn_new_vector(-1.0, 0.0, 0.0);
-      }
-      if (tx2 < tmax) {
-        tmax = tx2;
-        nmax = dmnsn_new_vector(+1.0, 0.0, 0.0);
-      }
-    } else {
-      if (tx2 > tmin) {
-        tmin = tx2;
-        nmin = dmnsn_new_vector(+1.0, 0.0, 0.0);
-      }
-      if (tx1 < tmax) {
-        tmax = tx1;
-        nmax = dmnsn_new_vector(-1.0, 0.0, 0.0);
-      }
-    }
-
-    if (tmin > tmax)
-      return false;
+  if (tx1 < tx2) {
+    tmin = tx1;
+    tmax = tx2;
+    nmin = dmnsn_new_vector(-1.0, 0.0, 0.0);
+    nmax = dmnsn_new_vector(+1.0, 0.0, 0.0);
   } else {
-    if (line_trans.x0.x < -1.0 || line_trans.x0.x > 1.0)
-      return false;
+    tmin = tx2;
+    tmax = tx1;
+    nmin = dmnsn_new_vector(+1.0, 0.0, 0.0);
+    nmax = dmnsn_new_vector(-1.0, 0.0, 0.0);
   }
 
-  if (line_trans.n.y != 0.0) {
-    double ty1 = (-1.0 - line_trans.x0.y)/line_trans.n.y;
-    double ty2 = (+1.0 - line_trans.x0.y)/line_trans.n.y;
+  if (tmin > tmax)
+    return false;
 
-    if (ty1 < ty2) {
-      if (ty1 > tmin) {
-        tmin = ty1;
-        nmin = dmnsn_new_vector(0.0, -1.0, 0.0);
-      }
-      if (ty2 < tmax) {
-        tmax = ty2;
-        nmax = dmnsn_new_vector(0.0, +1.0, 0.0);
-      }
-    } else {
-      if (ty2 > tmin) {
-        tmin = ty2;
-        nmin = dmnsn_new_vector(0.0, +1.0, 0.0);
-      }
-      if (ty1 < tmax) {
-        tmax = ty1;
-        nmax = dmnsn_new_vector(0.0, -1.0, 0.0);
-      }
+  double ty1 = (-1.0 - line_trans.x0.y)/line_trans.n.y;
+  double ty2 = (+1.0 - line_trans.x0.y)/line_trans.n.y;
+
+  if (ty1 < ty2) {
+    if (ty1 > tmin) {
+      tmin = ty1;
+      nmin = dmnsn_new_vector(0.0, -1.0, 0.0);
     }
-
-    if (tmin > tmax)
-      return false;
+    if (ty2 < tmax) {
+      tmax = ty2;
+      nmax = dmnsn_new_vector(0.0, +1.0, 0.0);
+    }
   } else {
-    if (line_trans.x0.y < -1.0 || line_trans.x0.y > 1.0)
-      return false;
+    if (ty2 > tmin) {
+      tmin = ty2;
+      nmin = dmnsn_new_vector(0.0, +1.0, 0.0);
+    }
+    if (ty1 < tmax) {
+      tmax = ty1;
+      nmax = dmnsn_new_vector(0.0, -1.0, 0.0);
+    }
   }
 
-  if (line_trans.n.z != 0.0) {
-    double tz1 = (-1.0 - line_trans.x0.z)/line_trans.n.z;
-    double tz2 = (+1.0 - line_trans.x0.z)/line_trans.n.z;
+  if (tmin > tmax)
+    return false;
 
-    if (tz1 < tz2) {
-      if (tz1 > tmin) {
-        tmin = tz1;
-        nmin = dmnsn_new_vector(0.0, 0.0, -1.0);
-      }
-      if (tz2 < tmax) {
-        tmax = tz2;
-        nmax = dmnsn_new_vector(0.0, 0.0, +1.0);
-      }
-    } else {
-      if (tz2 > tmin) {
-        tmin = tz2;
-        nmin = dmnsn_new_vector(0.0, 0.0, +1.0);
-      }
-      if (tz1 < tmax) {
-        tmax = tz1;
-        nmax = dmnsn_new_vector(0.0, 0.0, -1.0);
-      }
+  double tz1 = (-1.0 - line_trans.x0.z)/line_trans.n.z;
+  double tz2 = (+1.0 - line_trans.x0.z)/line_trans.n.z;
+
+  if (tz1 < tz2) {
+    if (tz1 > tmin) {
+      tmin = tz1;
+      nmin = dmnsn_new_vector(0.0, 0.0, -1.0);
     }
-
-    if (tmin > tmax)
-      return false;
+    if (tz2 < tmax) {
+      tmax = tz2;
+      nmax = dmnsn_new_vector(0.0, 0.0, +1.0);
+    }
   } else {
-    if (line_trans.x0.z < -1.0 || line_trans.x0.z > 1.0)
-      return false;
+    if (tz2 > tmin) {
+      tmin = tz2;
+      nmin = dmnsn_new_vector(0.0, 0.0, +1.0);
+    }
+    if (tz1 < tmax) {
+      tmax = tz1;
+      nmax = dmnsn_new_vector(0.0, 0.0, -1.0);
+    }
   }
+
+  if (tmin > tmax)
+    return false;
 
   if (tmin < 0.0) {
     tmin = tmax;
