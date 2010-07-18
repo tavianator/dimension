@@ -22,6 +22,7 @@
  */
 
 #include "dimension-impl.h"
+#include "../../libdimension/prtree.c" /* For DMNSN_PRTREE_B */
 #include <stdio.h>
 #include <stdlib.h>
 

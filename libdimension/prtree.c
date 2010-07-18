@@ -21,13 +21,25 @@
 #include "dimension-impl.h"
 #include <stdlib.h>
 
-typedef struct dmnsn_pseudo_prtree dmnsn_pseudo_prtree;
+/* Number of children per node */
+#define DMNSN_PRTREE_B 6
+
+struct dmnsn_prtree_node {
+  dmnsn_bounding_box bounding_box;
+
+  /* Children (objects or subtrees) */
+  bool is_leaf;
+  void *children[DMNSN_PRTREE_B];
+  dmnsn_bounding_box bounding_boxes[DMNSN_PRTREE_B];
+};
 
 typedef struct dmnsn_pseudo_prleaf {
   void *children[DMNSN_PRTREE_B];
   bool is_leaf;
   dmnsn_bounding_box bounding_box;
 } dmnsn_pseudo_prleaf;
+
+typedef struct dmnsn_pseudo_prtree dmnsn_pseudo_prtree;
 
 typedef struct dmnsn_pseudo_prnode {
   dmnsn_pseudo_prtree *left, *right;

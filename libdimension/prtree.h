@@ -30,17 +30,7 @@
 
 #include <stdbool.h>
 
-/* Number of children per node */
-#define DMNSN_PRTREE_B 6
-
-typedef struct dmnsn_prtree_node {
-  dmnsn_bounding_box bounding_box;
-
-  /* Children (objects or subtrees) */
-  bool is_leaf;
-  void *children[DMNSN_PRTREE_B];
-  dmnsn_bounding_box bounding_boxes[DMNSN_PRTREE_B];
-} dmnsn_prtree_node;
+typedef struct dmnsn_prtree_node dmnsn_prtree_node;
 
 typedef struct dmnsn_prtree {
   dmnsn_bounding_box bounding_box;
