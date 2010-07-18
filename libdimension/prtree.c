@@ -468,29 +468,36 @@ dmnsn_split_unbounded(dmnsn_list *objects)
 dmnsn_prtree *
 dmnsn_new_prtree(const dmnsn_array *objects)
 {
+  dmnsn_prtree *prtree = dmnsn_malloc(sizeof(dmnsn_prtree));
+
   dmnsn_list *leaves = dmnsn_object_list(objects);
   dmnsn_list *unbounded = dmnsn_split_unbounded(leaves);
 
-  dmnsn_pseudo_prtree *pseudo = dmnsn_new_pseudo_prtree(leaves, true, 0);
-  dmnsn_delete_list(leaves);
-  leaves = dmnsn_pseudo_prtree_leaves(pseudo);
-  dmnsn_delete_pseudo_prtree(pseudo);
-
-  while (dmnsn_list_size(leaves) > 1) {
-    pseudo = dmnsn_new_pseudo_prtree(leaves, false, 0);
+  if (dmnsn_list_size(leaves) > 0) {
+    dmnsn_pseudo_prtree *pseudo = dmnsn_new_pseudo_prtree(leaves, true, 0);
     dmnsn_delete_list(leaves);
     leaves = dmnsn_pseudo_prtree_leaves(pseudo);
     dmnsn_delete_pseudo_prtree(pseudo);
+
+    while (dmnsn_list_size(leaves) > 1) {
+      pseudo = dmnsn_new_pseudo_prtree(leaves, false, 0);
+      dmnsn_delete_list(leaves);
+      leaves = dmnsn_pseudo_prtree_leaves(pseudo);
+      dmnsn_delete_pseudo_prtree(pseudo);
+    }
+
+    dmnsn_list_get(dmnsn_list_first(leaves), &prtree->root);
+  } else {
+    prtree->root = NULL;
   }
 
-  dmnsn_prtree *prtree = dmnsn_malloc(sizeof(dmnsn_prtree));
-  dmnsn_list_get(dmnsn_list_first(leaves), &prtree->root);
   prtree->unbounded = dmnsn_array_from_list(unbounded);
-
   if (dmnsn_array_size(prtree->unbounded) > 0) {
     prtree->bounding_box = dmnsn_infinite_bounding_box();
-  } else {
+  } else if (prtree->root) {
     prtree->bounding_box = prtree->root->bounding_box;
+  } else {
+    prtree->bounding_box = dmnsn_zero_bounding_box();
   }
 
   dmnsn_delete_list(unbounded);
@@ -552,10 +559,6 @@ dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
    * or tmax == -inf, while lines inside the box will have tmin and tmax
    * unchanged.
    */
-
-  /* Degenerate box test */
-  if (box.min.x >= box.max.x)
-    return false;
 
   double tx1 = (box.min.x - optline.line.x0.x)*optline.n_inv.x;
   double tx2 = (box.max.x - optline.line.x0.x)*optline.n_inv.x;
@@ -628,7 +631,9 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
   dmnsn_optimized_line optline = dmnsn_optimize_line(ray);
 
   /* Search the bounded objects */
-  if (dmnsn_ray_box_intersection(optline, tree->root->bounding_box, t)) {
+  if (tree->root
+      && dmnsn_ray_box_intersection(optline, tree->root->bounding_box, t))
+  {
     dmnsn_prtree_intersection_recursive(tree->root, optline, intersection, &t);
   }
 
@@ -667,8 +672,11 @@ dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point)
   }
 
   /* Search the bounded objects */
-  if (dmnsn_bounding_box_contains(tree->root->bounding_box, point))
+  if (tree->root
+      && dmnsn_bounding_box_contains(tree->root->bounding_box, point))
+  {
     return dmnsn_prtree_inside_recursive(tree->root, point);
+  }
 
   return false;
 }
