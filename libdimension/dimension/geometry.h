@@ -259,21 +259,21 @@ dmnsn_vector_normalize(dmnsn_vector n)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_min(dmnsn_vector a, dmnsn_vector b)
 {
-  dmnsn_vector ret = a;
-  if (b.x < ret.x) ret.x = b.x;
-  if (b.y < ret.y) ret.y = b.y;
-  if (b.z < ret.z) ret.z = b.z;
-  return ret;
+  return dmnsn_new_vector(
+    dmnsn_min(a.x, b.x),
+    dmnsn_min(a.y, b.y),
+    dmnsn_min(a.z, b.z)
+  );
 }
 
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_max(dmnsn_vector a, dmnsn_vector b)
 {
-  dmnsn_vector ret = a;
-  if (b.x > ret.x) ret.x = b.x;
-  if (b.y > ret.y) ret.y = b.y;
-  if (b.z > ret.z) ret.z = b.z;
-  return ret;
+  return dmnsn_new_vector(
+    dmnsn_max(a.x, b.x),
+    dmnsn_max(a.y, b.y),
+    dmnsn_max(a.z, b.z)
+  );
 }
 
 double dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2,
