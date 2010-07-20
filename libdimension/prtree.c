@@ -598,14 +598,13 @@ dmnsn_prtree_intersection_recursive(const dmnsn_prtree_node *node,
                                     dmnsn_optimized_line ray,
                                     dmnsn_intersection *intersection, double *t)
 {
-  for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
-    if (!node->children[i])
-      break;
+  if (node->is_leaf) {
+    for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
+      if (!node->children[i])
+        break;
 
-    if (dmnsn_ray_box_intersection(ray, node->bounding_boxes[i], *t)) {
-      if (node->is_leaf) {
+      if (dmnsn_ray_box_intersection(ray, node->bounding_boxes[i], *t)) {
         dmnsn_object *object = node->children[i];
-
         dmnsn_intersection local_intersection;
         if ((*object->intersection_fn)(object, ray.line, &local_intersection)) {
           if (local_intersection.t < *t) {
@@ -613,7 +612,14 @@ dmnsn_prtree_intersection_recursive(const dmnsn_prtree_node *node,
             *t = local_intersection.t;
           }
         }
-      } else {
+      }
+    }
+  } else {
+    for (size_t i = 0; i < DMNSN_PRTREE_B; ++i) {
+      if (!node->children[i])
+        break;
+
+      if (dmnsn_ray_box_intersection(ray, node->bounding_boxes[i], *t)) {
         dmnsn_prtree_intersection_recursive(
           node->children[i], ray, intersection, t
         );
