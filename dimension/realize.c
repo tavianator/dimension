@@ -879,7 +879,8 @@ dmnsn_realize_plane(dmnsn_astnode astnode)
 
 /* Bulk-load a union */
 static dmnsn_object *
-dmnsn_realize_union(dmnsn_astnode astnode, dmnsn_array *lights)
+dmnsn_realize_union(dmnsn_astnode astnode, dmnsn_astnode modifiers,
+                    dmnsn_array *lights)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_UNION, "Expected a union.");
 
@@ -887,6 +888,7 @@ dmnsn_realize_union(dmnsn_astnode astnode, dmnsn_array *lights)
   DMNSN_ARRAY_FOREACH (dmnsn_astnode *, onode, astnode.children) {
     if (onode->type == DMNSN_AST_LIGHT_SOURCE) {
       dmnsn_light *light = dmnsn_realize_light_source(*onode);
+      dmnsn_realize_light_source_modifiers(modifiers, light);
       dmnsn_array_push(lights, &light);
     } else {
       dmnsn_object *object = dmnsn_realize_object(*onode, lights);
@@ -906,8 +908,8 @@ typedef dmnsn_object *dmnsn_csg_object_fn(dmnsn_object *a, dmnsn_object *b);
 
 /* Generalized CSG realizer */
 static dmnsn_object *
-dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
-                  dmnsn_csg_object_fn *csg_object_fn)
+dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_astnode modifiers,
+                  dmnsn_array *lights, dmnsn_csg_object_fn *csg_object_fn)
 {
   dmnsn_object *csg = NULL;
   dmnsn_astnode *onode;
@@ -917,6 +919,7 @@ dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
   {
     if (onode->type == DMNSN_AST_LIGHT_SOURCE) {
       dmnsn_light *light = dmnsn_realize_light_source(*onode);
+      dmnsn_realize_light_source_modifiers(modifiers, light);
       dmnsn_array_push(lights, &light);
     } else {
       csg = dmnsn_realize_object(*onode, lights);
@@ -930,6 +933,7 @@ dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
   {
     if (onode->type == DMNSN_AST_LIGHT_SOURCE) {
       dmnsn_light *light = dmnsn_realize_light_source(*onode);
+      dmnsn_realize_light_source_modifiers(modifiers, light);
       dmnsn_array_push(lights, &light);
     } else {
       dmnsn_object *object = dmnsn_realize_object(*onode, lights);
@@ -941,25 +945,30 @@ dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_array *lights,
 }
 
 static dmnsn_object *
-dmnsn_realize_intersection(dmnsn_astnode astnode, dmnsn_array *lights)
+dmnsn_realize_intersection(dmnsn_astnode astnode, dmnsn_astnode modifiers,
+                           dmnsn_array *lights)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_INTERSECTION,
                "Expected an intersection.");
-  return dmnsn_realize_csg(astnode, lights, &dmnsn_new_csg_intersection);
+  return dmnsn_realize_csg(astnode, modifiers, lights,
+                           &dmnsn_new_csg_intersection);
 }
 
 static dmnsn_object *
-dmnsn_realize_difference(dmnsn_astnode astnode, dmnsn_array *lights)
+dmnsn_realize_difference(dmnsn_astnode astnode, dmnsn_astnode modifiers,
+                         dmnsn_array *lights)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_DIFFERENCE, "Expected a difference.");
-  return dmnsn_realize_csg(astnode, lights, &dmnsn_new_csg_difference);
+  return dmnsn_realize_csg(astnode, modifiers, lights,
+                           &dmnsn_new_csg_difference);
 }
 
 static dmnsn_object *
-dmnsn_realize_merge(dmnsn_astnode astnode, dmnsn_array *lights)
+dmnsn_realize_merge(dmnsn_astnode astnode, dmnsn_astnode modifiers,
+                    dmnsn_array *lights)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_MERGE, "Expected a merge.");
-  return dmnsn_realize_csg(astnode, lights, &dmnsn_new_csg_merge);
+  return dmnsn_realize_csg(astnode, modifiers, lights, &dmnsn_new_csg_merge);
 }
 
 /* Realize an object, or maybe a light */
@@ -970,8 +979,9 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
                || astnode.type == DMNSN_AST_LIGHT_SOURCE,
                "Expected an object.");
 
-  dmnsn_astnode onode;
+  dmnsn_astnode onode, modifiers;
   dmnsn_array_get(astnode.children, 0, &onode);
+  dmnsn_array_get(astnode.children, 1, &modifiers);
 
   dmnsn_object *object = NULL;
 
@@ -980,13 +990,13 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
     object = dmnsn_realize_box(onode);
     break;
   case DMNSN_AST_DIFFERENCE:
-    object = dmnsn_realize_difference(onode, lights);
+    object = dmnsn_realize_difference(onode, modifiers, lights);
     break;
   case DMNSN_AST_INTERSECTION:
-    object = dmnsn_realize_intersection(onode, lights);
+    object = dmnsn_realize_intersection(onode, modifiers, lights);
     break;
   case DMNSN_AST_MERGE:
-    object = dmnsn_realize_merge(onode, lights);
+    object = dmnsn_realize_merge(onode, modifiers, lights);
     break;
   case DMNSN_AST_PLANE:
     object = dmnsn_realize_plane(onode);
@@ -995,7 +1005,7 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
     object = dmnsn_realize_sphere(onode);
     break;
   case DMNSN_AST_UNION:
-    object = dmnsn_realize_union(onode, lights);
+    object = dmnsn_realize_union(onode, modifiers, lights);
     break;
 
   case DMNSN_AST_LIGHT_SOURCE:
@@ -1010,8 +1020,6 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
   }
 
   if (object) {
-    dmnsn_astnode modifiers;
-    dmnsn_array_get(astnode.children, 1, &modifiers);
     dmnsn_realize_object_modifiers(modifiers, object);
   }
   return object;
