@@ -66,7 +66,7 @@ dmnsn_new_fake_object(void)
 int
 main(void)
 {
-  const size_t nobjects = 128;
+  const size_t nobjects = 10000;
 
   sandglass_t sandglass;
   if (sandglass_init_monotonic(&sandglass, SANDGLASS_CPUTIME) != 0) {
