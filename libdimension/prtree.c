@@ -73,19 +73,17 @@ enum {
   DMNSN_ZMAX
 };
 
-static double
+static inline double
 dmnsn_priority_get(dmnsn_list_iterator *i, bool is_object, int comparator)
 {
   dmnsn_bounding_box box;
 
   if (is_object) {
-    dmnsn_object *object;
-    dmnsn_list_get(i, &object);
-    box = object->bounding_box;
+    dmnsn_object **object = dmnsn_list_at(i);
+    box = (*object)->bounding_box;
   } else {
-    dmnsn_prtree_node *prnode;
-    dmnsn_list_get(i, &prnode);
-    box = prnode->bounding_box;
+    dmnsn_prtree_node **prnode = dmnsn_list_at(i);
+    box = (*prnode)->bounding_box;
   }
 
   switch (comparator) {

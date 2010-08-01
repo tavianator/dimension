@@ -123,6 +123,14 @@ dmnsn_list_get(const dmnsn_list_iterator *i, void *obj)
   memcpy(obj, i->ptr, i->obj_size);
 }
 
+/* Get a pointer to the i'th object */
+DMNSN_INLINE void *
+dmnsn_list_at(const dmnsn_list_iterator *i)
+{
+  dmnsn_assert(i, "NULL list iterator.");
+  return i->ptr;
+}
+
 /* Set the i'th object, expanding the list if necessary */
 DMNSN_INLINE void
 dmnsn_list_set(dmnsn_list_iterator *i, const void *obj)
