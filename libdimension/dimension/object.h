@@ -83,7 +83,7 @@ struct dmnsn_object {
 };
 
 /* Allocate a dummy object */
-dmnsn_object *dmnsn_new_object();
+dmnsn_object *dmnsn_new_object(void);
 /* Free an object */
 void dmnsn_delete_object(dmnsn_object *object);
 

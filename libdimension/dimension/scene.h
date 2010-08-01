@@ -67,7 +67,7 @@ typedef struct {
 } dmnsn_scene;
 
 /* Create a scene */
-dmnsn_scene *dmnsn_new_scene();
+dmnsn_scene *dmnsn_new_scene(void);
 void dmnsn_delete_scene(dmnsn_scene *scene);
 
 #endif /* DIMENSION_SCENE_H */

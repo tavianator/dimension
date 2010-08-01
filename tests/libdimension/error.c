@@ -23,7 +23,7 @@
 #include <stdlib.h>
 
 int
-main()
+main(void)
 {
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
   dmnsn_error(DMNSN_SEVERITY_LOW, "This error is expected.");

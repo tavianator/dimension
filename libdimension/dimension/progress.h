@@ -31,7 +31,7 @@
 typedef struct dmnsn_progress dmnsn_progress;
 
 /* Allocate a new progress object */
-dmnsn_progress *dmnsn_new_progress();
+dmnsn_progress *dmnsn_new_progress(void);
 /* For failed returns from *_async() functions */
 void dmnsn_delete_progress(dmnsn_progress *progress);
 

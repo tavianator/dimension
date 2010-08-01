@@ -35,7 +35,7 @@ typedef struct dmnsn_patricia_trie {
   dmnsn_astnode value;
 } dmnsn_patricia_trie;
 
-void
+static void
 dmnsn_delete_patricia_trie(dmnsn_patricia_trie *trie)
 {
   if (trie) {
@@ -55,8 +55,8 @@ dmnsn_delete_patricia_trie(dmnsn_patricia_trie *trie)
   }
 }
 
-dmnsn_patricia_trie *
-dmnsn_new_patricia_trie()
+static dmnsn_patricia_trie *
+dmnsn_new_patricia_trie(void)
 {
   dmnsn_patricia_trie *trie = dmnsn_malloc(sizeof(dmnsn_patricia_trie));
   trie->prefix = dmnsn_strdup("");
@@ -65,7 +65,7 @@ dmnsn_new_patricia_trie()
   return trie;
 }
 
-void
+static void
 dmnsn_patricia_insert(dmnsn_patricia_trie *trie,
                       const char *id, dmnsn_astnode value)
 {
@@ -147,7 +147,7 @@ dmnsn_patricia_insert(dmnsn_patricia_trie *trie,
   }
 }
 
-bool
+static bool
 dmnsn_patricia_remove(dmnsn_patricia_trie *trie, const char *id)
 {
   /*
@@ -190,7 +190,7 @@ dmnsn_patricia_remove(dmnsn_patricia_trie *trie, const char *id)
   return false;
 }
 
-dmnsn_astnode *
+static dmnsn_astnode *
 dmnsn_patricia_find(dmnsn_patricia_trie *trie, const char *id)
 {
   /*
@@ -969,7 +969,7 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_delete_astnode(lhs);
       dmnsn_delete_astnode(rhs);
       return ret;
-    }    
+    }
 
     switch (astnode.type) {
     case DMNSN_AST_EQUAL:

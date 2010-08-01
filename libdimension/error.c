@@ -24,7 +24,7 @@
 #include <stdio.h>     /* For fprintf() */
 #include <stdlib.h>    /* For exit() */
 
-static void dmnsn_default_fatal_error_fn();
+static void dmnsn_default_fatal_error_fn(void);
 static dmnsn_fatal_error_fn *dmnsn_fatal = &dmnsn_default_fatal_error_fn;
 
 static dmnsn_severity dmnsn_resilience = DMNSN_SEVERITY_MEDIUM;

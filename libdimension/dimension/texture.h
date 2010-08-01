@@ -49,7 +49,7 @@ struct dmnsn_pigment {
   void *ptr;
 };
 
-dmnsn_pigment *dmnsn_new_pigment();
+dmnsn_pigment *dmnsn_new_pigment(void);
 void dmnsn_delete_pigment(dmnsn_pigment *pigment);
 
 void dmnsn_pigment_init(dmnsn_pigment *pigment);
@@ -88,7 +88,7 @@ struct dmnsn_finish {
   void *ptr;
 };
 
-dmnsn_finish *dmnsn_new_finish();
+dmnsn_finish *dmnsn_new_finish(void);
 void dmnsn_delete_finish(dmnsn_finish *finish);
 
 /*
@@ -107,7 +107,7 @@ typedef struct {
   unsigned int *refcount;
 } dmnsn_texture;
 
-dmnsn_texture *dmnsn_new_texture();
+dmnsn_texture *dmnsn_new_texture(void);
 void dmnsn_delete_texture(dmnsn_texture *texture);
 
 void dmnsn_texture_init(dmnsn_texture *texture);

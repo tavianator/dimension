@@ -29,12 +29,12 @@
 void dmnsn_backtrace(FILE *file);
 
 /* Return whether this is the main execution thread, if we can tell */
-bool dmnsn_is_main_thread();
+bool dmnsn_is_main_thread(void);
 
 /* Return true if we are little-endian */
-bool dmnsn_is_little_endian();
+bool dmnsn_is_little_endian(void);
 
 /* Return the number of CPUs available to dimension */
-size_t dmnsn_ncpus();
+size_t dmnsn_ncpus(void);
 
 #endif /* DIMENSION_IMPL_UTILITIES_H */

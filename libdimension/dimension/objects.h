@@ -29,9 +29,9 @@
 dmnsn_object *dmnsn_new_plane(dmnsn_vector normal);
 
 /* A sphere object, of radius 1, centered at the origin. */
-dmnsn_object *dmnsn_new_sphere();
+dmnsn_object *dmnsn_new_sphere(void);
 
 /* A cube, axis-aligned, from (-1, -1, -1) to (1, 1, 1) */
-dmnsn_object *dmnsn_new_cube();
+dmnsn_object *dmnsn_new_cube(void);
 
 #endif /* DIMENSION_OBJECTS_H */

@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-bool
+static bool
 dmnsn_comparator(dmnsn_list_iterator *i, dmnsn_list_iterator *j)
 {
   uint32_t a, b;
@@ -33,7 +33,7 @@ dmnsn_comparator(dmnsn_list_iterator *i, dmnsn_list_iterator *j)
 }
 
 int
-main()
+main(void)
 {
   const size_t count = 32;
   uint32_t object = 1;

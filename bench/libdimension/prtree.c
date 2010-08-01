@@ -21,7 +21,7 @@
 #include <sandglass.h>
 #include <stdlib.h>
 
-bool
+static bool
 dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line,
                            dmnsn_intersection *intersection)
 {
@@ -29,13 +29,13 @@ dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line,
   return true;
 }
 
-bool
+static bool
 dmnsn_fake_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
   return true;
 }
 
-void
+static void
 dmnsn_randomize_bounding_box(dmnsn_object *object)
 {
   dmnsn_vector a, b;
@@ -53,7 +53,7 @@ dmnsn_randomize_bounding_box(dmnsn_object *object)
 }
 
 static dmnsn_object *
-dmnsn_new_fake_object()
+dmnsn_new_fake_object(void)
 {
   dmnsn_object *object = dmnsn_new_object();
   /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
@@ -64,7 +64,7 @@ dmnsn_new_fake_object()
 }
 
 int
-main()
+main(void)
 {
   const size_t nobjects = 128;
 

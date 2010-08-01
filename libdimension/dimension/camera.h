@@ -41,7 +41,7 @@ struct dmnsn_camera {
   void *ptr;
 };
 
-dmnsn_camera *dmnsn_new_camera();
+dmnsn_camera *dmnsn_new_camera(void);
 void dmnsn_delete_camera(dmnsn_camera *camera);
 
 #endif /* DIMENSION_CAMERA_H */

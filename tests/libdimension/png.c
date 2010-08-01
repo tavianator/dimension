@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 int
-main()
+main(void)
 {
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);

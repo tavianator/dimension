@@ -28,7 +28,7 @@
 
 unsigned int calls = 0;
 
-bool
+static bool
 dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line,
                            dmnsn_intersection *intersection)
 {
@@ -37,7 +37,7 @@ dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line,
   return true;
 }
 
-void
+static void
 dmnsn_randomize_bounding_box(dmnsn_object *object)
 {
   dmnsn_vector a, b;
@@ -55,7 +55,7 @@ dmnsn_randomize_bounding_box(dmnsn_object *object)
 }
 
 int
-main()
+main(void)
 {
   const size_t nobjects = 128;
   dmnsn_scene *scene = dmnsn_new_scene();

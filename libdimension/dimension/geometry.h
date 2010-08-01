@@ -118,7 +118,7 @@ dmnsn_new_matrix(double a0, double a1, double a2, double a3,
   return m;
 }
 
-dmnsn_matrix dmnsn_identity_matrix();
+dmnsn_matrix dmnsn_identity_matrix(void);
 dmnsn_matrix dmnsn_scale_matrix(dmnsn_vector s);
 dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d);
 /* Left-handed rotation; theta/|theta| = axis, |theta| = angle */
@@ -132,7 +132,7 @@ dmnsn_new_line(dmnsn_vector x0, dmnsn_vector n)
 }
 
 DMNSN_INLINE dmnsn_bounding_box
-dmnsn_zero_bounding_box()
+dmnsn_zero_bounding_box(void)
 {
   dmnsn_bounding_box box = {
     {  INFINITY,  INFINITY,  INFINITY },
@@ -142,7 +142,7 @@ dmnsn_zero_bounding_box()
 }
 
 DMNSN_INLINE dmnsn_bounding_box
-dmnsn_infinite_bounding_box()
+dmnsn_infinite_bounding_box(void)
 {
   dmnsn_bounding_box box = {
     { -INFINITY, -INFINITY, -INFINITY },

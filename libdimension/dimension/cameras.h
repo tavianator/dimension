@@ -28,7 +28,7 @@
 /* A perspective camera, at the origin, looking at (0, 0, 1).  The feild of view
    is the section of the plane z = 1 from (-0.5, -0.5) to (0.5, 0.5).  Rays are
    transformed by the camera's transformation matrix. */
-dmnsn_camera *dmnsn_new_perspective_camera();
+dmnsn_camera *dmnsn_new_perspective_camera(void);
 
 /* Get or set the transformation matrix */
 dmnsn_matrix dmnsn_get_perspective_camera_trans(const dmnsn_camera *camera);

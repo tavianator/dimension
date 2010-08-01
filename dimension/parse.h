@@ -199,7 +199,7 @@ struct dmnsn_astnode {
 
 typedef dmnsn_array dmnsn_astree;
 
-dmnsn_astnode dmnsn_new_ast_array();
+dmnsn_astnode dmnsn_new_ast_array(void);
 dmnsn_astnode dmnsn_new_ast_integer(long value);
 dmnsn_astnode dmnsn_new_ast_float(double value);
 dmnsn_astnode dmnsn_new_ast_ivector(long x, long y, long z, long f, long t);
@@ -222,7 +222,7 @@ const char *dmnsn_astnode_string(dmnsn_astnode_type astnode_type);
 
 typedef dmnsn_array dmnsn_symbol_table;
 
-dmnsn_symbol_table *dmnsn_new_symbol_table();
+dmnsn_symbol_table *dmnsn_new_symbol_table(void);
 
 void dmnsn_delete_symbol_table(dmnsn_symbol_table *symtable);
 

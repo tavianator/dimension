@@ -518,7 +518,7 @@ dmnsn_new_prtree(const dmnsn_array *objects)
 }
 
 /* Free a PR-tree node */
-void
+static void
 dmnsn_delete_prtree_node(dmnsn_prtree_node *node)
 {
   if (node) {

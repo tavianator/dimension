@@ -23,7 +23,7 @@
 #include <stdint.h>
 
 int
-main()
+main(void)
 {
   const unsigned int count = 32;
   uint32_t object = 1;

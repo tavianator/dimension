@@ -23,7 +23,7 @@
 #include <stdlib.h>
 
 int
-main()
+main(void)
 {
   if (dmnsn_get_resilience() != DMNSN_SEVERITY_MEDIUM) {
     return EXIT_FAILURE;

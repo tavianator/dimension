@@ -25,8 +25,8 @@
 /*
  * Test scene -- code version of tests/dimension/demo.pov
  */
-dmnsn_scene *
-dmnsn_new_test_scene()
+static dmnsn_scene *
+dmnsn_new_test_scene(void)
 {
   /* Allocate a new scene */
   dmnsn_scene *scene = dmnsn_new_scene();
@@ -110,7 +110,7 @@ dmnsn_new_test_scene()
 }
 
 int
-main()
+main(void)
 {
   bool have_png = true, have_gl = true;
 

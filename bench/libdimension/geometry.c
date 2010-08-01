@@ -22,7 +22,7 @@
 #include <stdlib.h>
 
 int
-main()
+main(void)
 {
   dmnsn_vector vector, vector2;
   dmnsn_matrix matrix, matrix2;

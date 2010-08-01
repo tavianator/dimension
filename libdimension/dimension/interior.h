@@ -39,7 +39,7 @@ typedef struct dmnsn_interior {
   unsigned int *refcount;
 } dmnsn_interior;
 
-dmnsn_interior *dmnsn_new_interior();
+dmnsn_interior *dmnsn_new_interior(void);
 void dmnsn_delete_interior(dmnsn_interior *interior);
 
 #endif /* DIMENSION_INTERIOR_H */

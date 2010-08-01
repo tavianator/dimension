@@ -41,7 +41,7 @@ struct dmnsn_light {
   void *ptr;
 };
 
-dmnsn_light *dmnsn_new_light();
+dmnsn_light *dmnsn_new_light(void);
 void dmnsn_delete_light(dmnsn_light *light);
 
 #endif /* DIMENSION_LIGHT_H */
