@@ -32,7 +32,7 @@ static void dmnsn_progress_rdlock(const dmnsn_progress *progress);
 static void dmnsn_progress_wrlock(dmnsn_progress *progress);
 static void dmnsn_progress_unlock(const dmnsn_progress *progress);
 
-/* Allocate a new dmnsn_progress*, returning NULL on failure */
+/* Allocate a new dmnsn_progress* */
 dmnsn_progress *
 dmnsn_new_progress()
 {
@@ -58,6 +58,9 @@ dmnsn_new_progress()
   if (pthread_mutex_init(progress->mutex, NULL) != 0) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't initialize mutex.");
   }
+
+  progress->min_wait = 1.0;
+  progress->min_waitp = &progress->min_wait;
 
   return progress;
 }
@@ -86,7 +89,8 @@ dmnsn_delete_progress(dmnsn_progress *progress)
 }
 
 /* Join the worker thread and delete `progress'. */
-int dmnsn_finish_progress(dmnsn_progress *progress)
+int
+dmnsn_finish_progress(dmnsn_progress *progress)
 {
   void *ptr;
   int retval = -1;
@@ -137,6 +141,10 @@ dmnsn_wait_progress(const dmnsn_progress *progress, double prog)
     while (dmnsn_get_progress(progress) < prog);
   } else {
     while (dmnsn_get_progress(progress) < prog) {
+      /* Set the minimum waited-on value */
+      if (prog < progress->min_wait)
+        *progress->min_waitp = prog;
+
       if (pthread_cond_wait(progress->cond, progress->mutex) != 0) {
         dmnsn_error(DMNSN_SEVERITY_LOW,
                     "Couldn't wait on condition variable.");
@@ -165,10 +173,9 @@ void
 dmnsn_increment_progress(dmnsn_progress *progress)
 {
   dmnsn_progress_element *element;
-  size_t size;
 
   dmnsn_progress_wrlock(progress);
-    size = dmnsn_array_size(progress->elements);
+    size_t size = dmnsn_array_size(progress->elements);
     element = dmnsn_array_at(progress->elements, size - 1);
     ++element->progress; /* Increment the last element */
 
@@ -184,9 +191,15 @@ dmnsn_increment_progress(dmnsn_progress *progress)
   if (pthread_mutex_lock(progress->mutex) != 0) {
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock condition mutex.");
   }
-  if (pthread_cond_broadcast(progress->cond) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
+
+  if (dmnsn_get_progress(progress) >= progress->min_wait) {
+    progress->min_wait = 1.0;
+
+    if (pthread_cond_broadcast(progress->cond) != 0) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
+    }
   }
+
   if (pthread_mutex_unlock(progress->mutex) != 0) {
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock condition mutex.");
   }

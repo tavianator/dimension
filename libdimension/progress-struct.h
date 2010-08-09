@@ -35,6 +35,10 @@ struct dmnsn_progress {
   /* Condition variable for waiting for a particular amount of progress */
   pthread_cond_t  *cond;
   pthread_mutex_t *mutex;
+
+  /* Minimum waited-on value */
+  volatile double min_wait;
+  volatile double *min_waitp; /* Hack for const values */
 };
 
 #endif /* DIMENSION_IMPL_PROGRESS_STRUCT_H */
