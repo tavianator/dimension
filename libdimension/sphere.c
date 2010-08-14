@@ -51,7 +51,7 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
                              dmnsn_intersection *intersection)
 {
   dmnsn_line l = dmnsn_transform_line(sphere->trans_inv, line);
- 
+
   /* Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1 */
   double a, b, c, t;
   a = dmnsn_vector_dot(l.n, l.n);

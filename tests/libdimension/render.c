@@ -106,6 +106,16 @@ dmnsn_new_test_scene(void)
   plane->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
   dmnsn_array_push(scene->objects, &plane);
 
+  dmnsn_object *cylinder = dmnsn_new_cylinder();
+  cylinder->trans =
+    dmnsn_matrix_mul(
+      dmnsn_rotation_matrix(dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)),
+      dmnsn_scale_matrix(dmnsn_new_vector(0.1, 1.5, 0.1))
+    );
+  cylinder->texture = dmnsn_new_texture();
+  cylinder->texture->pigment = dmnsn_new_solid_pigment(dmnsn_red);
+  dmnsn_array_push(scene->objects, &cylinder);
+
   return scene;
 }
 

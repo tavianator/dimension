@@ -55,6 +55,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           color.c                                              \
                           cube.c                                               \
                           csg.c                                                \
+                          cylinder.c                                           \
                           diffuse.c                                            \
                           dimension-impl.h                                     \
                           error.c                                              \
