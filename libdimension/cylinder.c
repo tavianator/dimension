@@ -41,9 +41,8 @@ dmnsn_new_cylinder(bool open)
   cylinder->inside_fn        = &dmnsn_cylinder_inside_fn;
   cylinder->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
   cylinder->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
-  if (open) {
-    cylinder->ptr = cylinder; /* (bool)cyliner->ptr == open */
-  }
+  /* (bool)cyliner->ptr == open */
+  cylinder->ptr              = open ? cylinder : NULL;
   return cylinder;
 }
 
@@ -69,16 +68,26 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
       p = dmnsn_line_point(l, t);
     }
 
-    if (!cylinder->ptr) {
+    if (!cylinder->ptr && l.n.y) {
       /* Test for cap intersections */
-      double tcap = (-1.0 - l.x0.y)/l.n.y;
+      double tcap1 = (-1.0 - l.x0.y)/l.n.y;
+      double tcap2 = (+1.0 - l.x0.y)/l.n.y;
+
+      double tcap;
+      dmnsn_vector norm;
+      if (tcap1 < tcap2) {
+        tcap = tcap1;
+        norm = dmnsn_new_vector(0.0, -1.0, 0.0);
+      } else {
+        tcap = tcap2;
+        norm = dmnsn_new_vector(0.0, 1.0, 0.0);
+      }
       dmnsn_vector pcap = dmnsn_line_point(l, tcap);
-      dmnsn_vector norm = dmnsn_new_vector(0.0, -1.0, 0.0);
 
       if (tcap < 0.0 || pcap.x*pcap.x + pcap.z*pcap.z >= 1.0) {
-        tcap = (+1.0 - l.x0.y)/l.n.y;
+        tcap = dmnsn_max(tcap1, tcap2);
         pcap = dmnsn_line_point(l, tcap);
-        norm = dmnsn_new_vector(0.0, 1.0, 0.0);
+        norm = dmnsn_vector_negate(norm);
       }
 
       if (tcap >= 0.0
