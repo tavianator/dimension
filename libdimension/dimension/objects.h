@@ -25,6 +25,8 @@
 #ifndef DIMENSION_OBJECTS_H
 #define DIMENSION_OBJECTS_H
 
+#include <stdbool.h>
+
 /* A plane through the origin, with the given normal */
 dmnsn_object *dmnsn_new_plane(dmnsn_vector normal);
 
@@ -35,6 +37,6 @@ dmnsn_object *dmnsn_new_sphere(void);
 dmnsn_object *dmnsn_new_cube(void);
 
 /* A cylinder, of radius 1, from y = -1 to y = 1 */
-dmnsn_object *dmnsn_new_cylinder(void);
+dmnsn_object *dmnsn_new_cylinder(bool open);
 
 #endif /* DIMENSION_OBJECTS_H */

@@ -34,13 +34,16 @@ static bool dmnsn_cylinder_inside_fn(const dmnsn_object *cylinder,
 
 /* Allocate a new cylinder object */
 dmnsn_object *
-dmnsn_new_cylinder()
+dmnsn_new_cylinder(bool open)
 {
   dmnsn_object *cylinder = dmnsn_new_object();
   cylinder->intersection_fn  = &dmnsn_cylinder_intersection_fn;
   cylinder->inside_fn        = &dmnsn_cylinder_inside_fn;
   cylinder->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
   cylinder->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
+  if (open) {
+    cylinder->ptr = cylinder; /* (bool)cyliner->ptr == open */
+  }
   return cylinder;
 }
 
@@ -57,7 +60,6 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
   b = 2.0*(l.n.x*l.x0.x + l.n.z*l.x0.z);
   c = l.x0.x*l.x0.x + l.x0.z*l.x0.z - 1.0;
 
-
   if (b*b - 4.0*a*c >= 0.0) {
     t = (-b - sqrt(b*b - 4.0*a*c))/(2.0*a);
     dmnsn_vector p = dmnsn_line_point(l, t);
@@ -65,19 +67,42 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
     if (t < 0.0 || p.y <= -1.0 || p.y >= 1.0) {
       t = (-b + sqrt(b*b - 4.0*a*c))/(2.0*a);
       p = dmnsn_line_point(l, t);
-
-      if (t < 0.0 || p.y <= -1.0 || p.y >= 1.0)
-        return false;
     }
 
-    p.y = 0;
+    if (!cylinder->ptr) {
+      /* Test for cap intersections */
+      double tcap = (-1.0 - l.x0.y)/l.n.y;
+      dmnsn_vector pcap = dmnsn_line_point(l, tcap);
+      dmnsn_vector norm = dmnsn_new_vector(0.0, -1.0, 0.0);
 
-    intersection->ray      = line;
-    intersection->t        = t;
-    intersection->normal   = dmnsn_transform_normal(cylinder->trans, p);
-    intersection->texture  = cylinder->texture;
-    intersection->interior = cylinder->interior;
-    return true;
+      if (tcap < 0.0 || pcap.x*pcap.x + pcap.z*pcap.z >= 1.0) {
+        tcap = (+1.0 - l.x0.y)/l.n.y;
+        pcap = dmnsn_line_point(l, tcap);
+        norm = dmnsn_new_vector(0.0, 1.0, 0.0);
+      }
+
+      if (tcap >= 0.0
+          && (tcap < t || p.y <= -1.0 || p.y >= 1.0)
+          && pcap.x*pcap.x + pcap.z*pcap.z < 1.0)
+      {
+        intersection->ray      = line;
+        intersection->t        = tcap;
+        intersection->normal   = dmnsn_transform_normal(cylinder->trans, norm);
+        intersection->texture  = cylinder->texture;
+        intersection->interior = cylinder->interior;
+        return true;
+      }
+    }
+
+    if (t >= 0.0 && p.y > -1.0 && p.y < 1.0) {
+      p.y = 0;
+      intersection->ray      = line;
+      intersection->t        = t;
+      intersection->normal   = dmnsn_transform_normal(cylinder->trans, p);
+      intersection->texture  = cylinder->texture;
+      intersection->interior = cylinder->interior;
+      return true;
+    }
   }
 
   return false;
