@@ -134,6 +134,7 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
 
   dmnsn_astnode_map(DMNSN_AST_OBJECT,       "object");
   dmnsn_astnode_map(DMNSN_AST_BOX,          "box");
+  dmnsn_astnode_map(DMNSN_AST_CYLINDER,     "cylinder");
   dmnsn_astnode_map(DMNSN_AST_DIFFERENCE,   "difference");
   dmnsn_astnode_map(DMNSN_AST_INTERSECTION, "intersection");
   dmnsn_astnode_map(DMNSN_AST_LIGHT_SOURCE, "light_source");

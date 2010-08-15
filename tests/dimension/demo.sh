@@ -77,6 +77,20 @@ demo_exp=$(echo -n \
               (phong_size (float 40)))))))
       object-modifiers)
   (object
+    (cylinder
+      (vector (float 0) (float -1.25) (float 0) (float 0) (float 0))
+      (vector (float 0) (float 1.25) (float 0) (float 0) (float 0))
+      (float 0.1)
+      (integer 0))
+    (object-modifiers
+      (pigment
+        (vector (integer 1) (integer 0) (integer 0)
+                (integer 0) (integer 0))
+        pigment-modifiers)
+      (transformation
+        (rotation (vector (integer -45) (integer 0) (integer 0)
+                          (integer 0) (integer 0))))))
+  (object
     (plane
       (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0))
       (integer -2))

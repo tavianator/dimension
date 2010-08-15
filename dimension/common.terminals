@@ -152,7 +152,7 @@
 %token DMNSN_T_CUBIC_SPLINE
 %token DMNSN_T_CUBIC_WAVE
 %token DMNSN_T_CUTAWAY_TEXTURES
-%token DMNSN_T_CYLINDER
+%token DMNSN_T_CYLINDER                 "cylinder"
 %token DMNSN_T_CYLINDRICAL
 %token DMNSN_T_DEFINED
 %token DMNSN_T_DEGREES                  "degrees"
@@ -315,7 +315,7 @@
 %token DMNSN_T_ON                       "on"
 %token DMNSN_T_ONCE
 %token DMNSN_T_ONION
-%token DMNSN_T_OPEN
+%token DMNSN_T_OPEN                     "open"
 %token DMNSN_T_ORIENT
 %token DMNSN_T_ORIENTATION
 %token DMNSN_T_ORTHOGRAPHIC

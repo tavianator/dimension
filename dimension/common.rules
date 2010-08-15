@@ -283,6 +283,7 @@ OBJECT: FINITE_SOLID_OBJECT
 ;
 
 FINITE_SOLID_OBJECT: BOX
+                   | CYLINDER
                    | SPHERE
 ;
 
@@ -295,6 +296,25 @@ BOX: "box" "{"
      $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, object, $6);
    }
 ;
+
+CYLINDER: "cylinder" "{"
+            VECTOR "," VECTOR "," FLOAT
+            MAYBE_OPEN
+            OBJECT_MODIFIERS
+          "}"
+        {
+          dmnsn_astnode object
+            = dmnsn_new_astnode4(DMNSN_AST_CYLINDER, @$, $3, $5, $7, $8);
+          $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, object, $9);
+        }
+;
+
+MAYBE_OPEN: /* empty */ {
+            $$ = dmnsn_new_ast_integer(false);
+          }
+          | "open" {
+            $$ = dmnsn_new_ast_integer(true);
+          }
 
 SPHERE: "sphere" "{"
           VECTOR "," FLOAT

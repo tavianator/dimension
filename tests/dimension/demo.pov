@@ -71,6 +71,14 @@ difference {
   }
 }
 
+cylinder {
+  -1.25*y, 1.25*y, 0.1
+  pigment {
+    color rgb <1, 0, 0>
+  }
+  rotate -45*x
+}
+
 plane {
   y, -2
   pigment {

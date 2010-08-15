@@ -843,6 +843,50 @@ dmnsn_realize_box(dmnsn_astnode astnode)
 }
 
 static dmnsn_object *
+dmnsn_realize_cylinder(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_CYLINDER, "Expected a cylinder.");
+
+  dmnsn_astnode pnode1, pnode2, radius, open;
+  dmnsn_array_get(astnode.children, 0, &pnode1);
+  dmnsn_array_get(astnode.children, 1, &pnode2);
+  dmnsn_array_get(astnode.children, 2, &radius);
+  dmnsn_array_get(astnode.children, 3, &open);
+
+  dmnsn_vector p1 = dmnsn_realize_vector(pnode1);
+  dmnsn_vector p2 = dmnsn_realize_vector(pnode2);
+  double r = dmnsn_realize_float(radius);
+
+  dmnsn_vector dir = dmnsn_vector_sub(p2, p1);
+  double l = dmnsn_vector_norm(dir);
+
+  double theta1 = dmnsn_vector_axis_angle(dmnsn_y, dir, dmnsn_x);
+  double theta2 = dmnsn_vector_axis_angle(dmnsn_y, dir, dmnsn_z);
+
+  dmnsn_object *cylinder = dmnsn_new_cylinder(dmnsn_realize_integer(open));
+  /* Transformations: lift the cylinder to start at the origin, scale, rotate,
+     and translate properly */
+  cylinder->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0));
+  cylinder->trans = dmnsn_matrix_mul(
+    dmnsn_scale_matrix(dmnsn_new_vector(r, l/2.0, r)),
+    cylinder->trans
+  );
+  cylinder->trans = dmnsn_matrix_mul(
+    dmnsn_rotation_matrix(dmnsn_new_vector(theta1, 0.0, 0.0)),
+    cylinder->trans
+  );
+  cylinder->trans = dmnsn_matrix_mul(
+    dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 0.0, theta2)),
+    cylinder->trans
+  );
+  cylinder->trans = dmnsn_matrix_mul(
+    dmnsn_translation_matrix(p1),
+    cylinder->trans
+  );
+  return cylinder;
+}
+
+static dmnsn_object *
 dmnsn_realize_sphere(dmnsn_astnode astnode)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_SPHERE, "Expected a sphere.");
@@ -988,6 +1032,9 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
   switch (onode.type) {
   case DMNSN_AST_BOX:
     object = dmnsn_realize_box(onode);
+    break;
+  case DMNSN_AST_CYLINDER:
+    object = dmnsn_realize_cylinder(onode);
     break;
   case DMNSN_AST_DIFFERENCE:
     object = dmnsn_realize_difference(onode, modifiers, lights);
