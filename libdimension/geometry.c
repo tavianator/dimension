@@ -87,8 +87,12 @@ dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2, dmnsn_vector axis)
   dmnsn_vector d    = dmnsn_vector_sub(v1, v2);
   dmnsn_vector proj = dmnsn_vector_add(dmnsn_vector_proj(d, axis), v2);
 
+  double projn = dmnsn_vector_norm(proj);
+  if (!projn)
+    return 0.0;
+
   double c = dmnsn_vector_dot(dmnsn_vector_normalize(v1),
-                              dmnsn_vector_normalize(proj));
+                              dmnsn_vector_div(proj, projn));
   double angle = acos(c);
 
   if (dmnsn_vector_dot(dmnsn_vector_cross(v1, proj), axis) > 0) {
