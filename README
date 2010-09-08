@@ -24,7 +24,7 @@ Tests:               tests/dimension/*.{pov,sh}
 Library (LGPLv3):
 =================
 
-API:                   libdimension/dimension.h, libdimension/dimension/*.
+API:                   libdimension/dimension.h, libdimension/dimension/*.h
                        (Implementations for libdimension/dimension/$file.h
                        are generally at libdimension/$file.c)
 Ray tracing algorithm: libdimension/raytrace.c
