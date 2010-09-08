@@ -58,6 +58,7 @@ Makefile.in
 
 # Files created by `make bench'
 /bench/*/bench-*
+/bench/*/*.png
 
 # Files and folders created by libtool
 .libs/

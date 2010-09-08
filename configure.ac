@@ -135,5 +135,6 @@ AC_CONFIG_FILES([Makefile
                  tests/dimension/Makefile
                  bench/Makefile
                  bench/libdimension/Makefile
+                 bench/dimension/Makefile
                  doc/Makefile])
 AC_OUTPUT

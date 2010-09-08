@@ -17,10 +17,19 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-SUBDIRS = libdimension dimension
+ENVIRONMENT = top_builddir=$(top_builddir)
 
-bench: all-recursive
-	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) bench
-	cd dimension && $(MAKE) $(AM_MAKEFLAGS) bench
+bench: tokenize.sh parse.sh render.sh
+	$(ENVIRONMENT) ./tokenize.sh
+	$(ENVIRONMENT) ./parse.sh
+	$(ENVIRONMENT) ./render.sh
+
+.sh:
+	cp $(srcdir)/$@ .
+
+clean-local:
+	rm -f *.png
+
+EXTRA_DIST = bench.pov
 
 .PHONY: bench
