@@ -171,9 +171,9 @@ dmnsn_array_remove(dmnsn_array *array, size_t i)
 }
 
 /* Macro to shorten array iteration */
-#define DMNSN_ARRAY_FOREACH(type, i, array)     \
-  for (type i = dmnsn_array_first(array);       \
-       i <= (type)dmnsn_array_last(array);      \
+#define DMNSN_ARRAY_FOREACH(type, i, array)                             \
+  for (type i = dmnsn_array_first(array);                               \
+       i - (type)dmnsn_array_first(array) < dmnsn_array_size(array);    \
        ++i)
 
 #endif /* DIMENSION_ARRAY_H */
