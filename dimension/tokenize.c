@@ -71,11 +71,11 @@ dmnsn_delete_token_buffer(void *ptr)
   dmnsn_token_buffer *tbuffer = ptr;
   if (tbuffer) {
     DMNSN_ARRAY_FOREACH (dmnsn_buffered_token *, buffered, tbuffer->buffered) {
-      free(buffered->lval.value);
+      dmnsn_free(buffered->lval.value);
     }
 
     dmnsn_delete_array(tbuffer->buffered);
-    free(tbuffer);
+    dmnsn_free(tbuffer);
   }
 }
 
@@ -238,13 +238,13 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
   strcpy(local_include, localdir);
   strcat(local_include, "/");
   strcat(local_include, include);
-  free(filename_copy);
+  dmnsn_free(filename_copy);
 
   FILE *file = fopen(local_include, "r");
   if (!file) {
     dmnsn_diagnostic(*llocp, "Couldn't open include file '%s'", include);
     dmnsn_undef_symbol(symtable, "$include");
-    free(local_include);
+    dmnsn_free(local_include);
     dmnsn_delete_token_buffer(tbuffer);
     return NULL;
   }
@@ -256,7 +256,7 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
                      include);
     dmnsn_undef_symbol(symtable, "$include");
     fclose(file);
-    free(local_include);
+    dmnsn_free(local_include);
     dmnsn_delete_token_buffer(tbuffer);
     return NULL;
   }
@@ -273,7 +273,7 @@ dmnsn_include_buffer(int token, dmnsn_token_buffer *prev,
                "$includes has wrong type.");
 
   dmnsn_astnode fnode = dmnsn_new_ast_string(local_include);
-  free(local_include);
+  dmnsn_free(local_include);
   tbuffer->filename = fnode.ptr;
   dmnsn_array_push(includes->children, &fnode);
 
@@ -502,7 +502,7 @@ dmnsn_if_buffer(int token, dmnsn_token_buffer *prev,
     if (cond) {
       dmnsn_array_push(tbuffer->buffered, &buffered);
     } else {
-      free(buffered.lval.value);
+      dmnsn_free(buffered.lval.value);
     }
   }
 

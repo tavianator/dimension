@@ -30,7 +30,7 @@ IDENTIFIER: "identifier" {
             }
             $$ = dmnsn_new_astnode(DMNSN_AST_IDENTIFIER, @$);
             $$.ptr = dmnsn_strdup(id);
-            free($1);
+            dmnsn_free($1);
           }
 ;
 
@@ -604,13 +604,13 @@ FLOAT_LITERAL: "integer" {
                $$ = dmnsn_new_astnode(DMNSN_AST_INTEGER, @$);
                $$.ptr = dmnsn_malloc(sizeof(long));
                *(long *)$$.ptr = strtol($1, NULL, 0);
-               free($1);
+               dmnsn_free($1);
              }
              | "float" {
                $$ = dmnsn_new_astnode(DMNSN_AST_FLOAT, @$);
                $$.ptr = dmnsn_malloc(sizeof(double));
                *(double *)$$.ptr = strtod($1, NULL);
-               free($1);
+               dmnsn_free($1);
              }
 ;
 

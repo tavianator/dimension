@@ -275,7 +275,7 @@ main(int argc, char **argv)
       strcpy(output, base);
       ext = output + len;
     }
-    free(input_copy);
+    dmnsn_free(input_copy);
     strcpy(ext, ".png");
     free_output = true;
   }
@@ -283,7 +283,7 @@ main(int argc, char **argv)
   /* Open the output file */
   FILE *output_file = fopen(output, "wb");
   if (free_output)
-    free(output);
+    dmnsn_free(output);
   if (!output_file) {
     fprintf(stderr, "Couldn't open output file!");
     return EXIT_FAILURE;

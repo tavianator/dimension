@@ -123,10 +123,10 @@ dmnsn_raytrace_scene_thread(void *ptr)
     }
   }
 
-  free(threads);
-  free(payloads);
+  dmnsn_free(threads);
+  dmnsn_free(payloads);
   dmnsn_delete_prtree(payload->prtree);
-  free(payload);
+  dmnsn_free(payload);
 
   return 0;
 }

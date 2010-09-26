@@ -49,3 +49,9 @@ dmnsn_strdup(const char *s)
   strcpy(copy, s);
   return copy;
 }
+
+void
+dmnsn_free(void *ptr)
+{
+  free(ptr);
+}

@@ -19,7 +19,7 @@
  *************************************************************************/
 
 #include "dimension.h"
-#include <stdlib.h> /* For free() */
+#include <stdlib.h> /* For dmnsn_free() */
 
 /* Allocate a new canvas, of width x and height y */
 dmnsn_canvas *
@@ -55,8 +55,8 @@ dmnsn_delete_canvas(dmnsn_canvas *canvas)
     dmnsn_delete_array(canvas->optimizers);
 
     /* Free the pixels and canvas */
-    free(canvas->pixels);
-    free(canvas);
+    dmnsn_free(canvas->pixels);
+    dmnsn_free(canvas);
   }
 }
 

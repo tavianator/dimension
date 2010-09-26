@@ -29,3 +29,4 @@
 void *dmnsn_malloc(size_t size);
 void *dmnsn_realloc(void *ptr, size_t size);
 char *dmnsn_strdup(const char *s);
+void  dmnsn_free(void *ptr);

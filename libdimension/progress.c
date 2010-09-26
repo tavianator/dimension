@@ -80,11 +80,11 @@ dmnsn_delete_progress(dmnsn_progress *progress)
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking condition variable.");
     }
 
-    free(progress->rwlock);
-    free(progress->mutex);
-    free(progress->cond);
+    dmnsn_free(progress->rwlock);
+    dmnsn_free(progress->mutex);
+    dmnsn_free(progress->cond);
     dmnsn_delete_array(progress->elements);
-    free(progress);
+    dmnsn_free(progress);
   }
 }
 
@@ -102,7 +102,7 @@ dmnsn_finish_progress(dmnsn_progress *progress)
       dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Joining worker thread failed.");
     } else if (ptr) {
       retval = *(int *)ptr;
-      free(ptr);
+      dmnsn_free(ptr);
       /* Wake up all waiters */
       dmnsn_done_progress(progress);
     }

@@ -40,6 +40,6 @@ dmnsn_delete_light(dmnsn_light *light)
     if (light->free_fn) {
       (*light->free_fn)(light->ptr);
     }
-    free(light);
+    dmnsn_free(light);
   }
 }

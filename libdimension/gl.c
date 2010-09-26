@@ -114,7 +114,7 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 
   glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT, pixels);
 
-  free(pixels);
+  dmnsn_free(pixels);
   return glGetError() == GL_NO_ERROR ? 0 : 1;
 }
 
@@ -135,7 +135,7 @@ dmnsn_gl_read_canvas(size_t x0, size_t y0,
   glReadPixels(x0, y0, width, height, GL_RGBA, GL_UNSIGNED_SHORT, pixels);
 
   if (glGetError() != GL_NO_ERROR) {
-    free(pixels);
+    dmnsn_free(pixels);
     dmnsn_delete_canvas(canvas);
     return NULL;
   }
@@ -154,7 +154,7 @@ dmnsn_gl_read_canvas(size_t x0, size_t y0,
     }
   }
 
-  free(pixels);
+  dmnsn_free(pixels);
   return canvas;
 }
 

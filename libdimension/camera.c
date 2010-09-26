@@ -38,6 +38,6 @@ dmnsn_delete_camera(dmnsn_camera *camera)
     if (camera->free_fn) {
       (*camera->free_fn)(camera->ptr);
     }
-    free(camera);
+    dmnsn_free(camera);
   }
 }

@@ -357,7 +357,7 @@ dmnsn_delete_pseudo_prtree(dmnsn_pseudo_prtree *pseudo)
       dmnsn_delete_pseudo_prtree(pseudo->pseudo.node.left);
       dmnsn_delete_pseudo_prtree(pseudo->pseudo.node.right);
     }
-    free(pseudo);
+    dmnsn_free(pseudo);
   }
 }
 
@@ -526,7 +526,7 @@ dmnsn_delete_prtree_node(dmnsn_prtree_node *node)
         dmnsn_delete_prtree_node(node->children[i]);
       }
     }
-    free(node);
+    dmnsn_free(node);
   }
 }
 
@@ -537,7 +537,7 @@ dmnsn_delete_prtree(dmnsn_prtree *tree)
   if (tree) {
     dmnsn_delete_prtree_node(tree->root);
     dmnsn_delete_array(tree->unbounded);
-    free(tree);
+    dmnsn_free(tree);
   }
 }
 

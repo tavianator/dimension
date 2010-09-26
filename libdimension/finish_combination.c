@@ -112,7 +112,7 @@ dmnsn_finish_combination_free_fn(void *ptr)
   dmnsn_finish **params = ptr;
   dmnsn_delete_finish(params[0]);
   dmnsn_delete_finish(params[1]);
-  free(ptr);
+  dmnsn_free(ptr);
 }
 
 dmnsn_finish *

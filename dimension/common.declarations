@@ -29,5 +29,5 @@
 %lex-param {dmnsn_symbol_table *symtable}
 %lex-param {void *yyscanner}
 
-%destructor { free($$); } <value>
+%destructor { dmnsn_free($$); } <value>
 %destructor { dmnsn_delete_astnode($$); } <astnode>

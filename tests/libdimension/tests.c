@@ -128,7 +128,7 @@ dmnsn_delete_display(dmnsn_display *display)
     if (display->dpy)
       XCloseDisplay(display->dpy);
 
-    free(display);
+    dmnsn_free(display);
   }
 }
 

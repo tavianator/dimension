@@ -420,7 +420,7 @@ dmnsn_tokenize(FILE *file, const char *filename)
 static void
 dmnsn_delete_token(dmnsn_token token)
 {
-  free(token.value);
+  dmnsn_free(token.value);
 }
 
 void

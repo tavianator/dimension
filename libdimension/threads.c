@@ -42,7 +42,7 @@ dmnsn_thread(void *arg)
   ret  = dmnsn_malloc(sizeof(int));
   *ret = (*payload->thread_fn)(payload->arg);
   pthread_cleanup_pop(1);
-  free(payload);
+  dmnsn_free(payload);
   return ret;
 }
 

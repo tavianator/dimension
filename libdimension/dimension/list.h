@@ -54,8 +54,8 @@ DMNSN_INLINE void
 dmnsn_delete_list_iterator(dmnsn_list_iterator *i)
 {
   if (i) {
-    free(i->ptr);
-    free(i);
+    dmnsn_free(i->ptr);
+    dmnsn_free(i);
   }
 }
 

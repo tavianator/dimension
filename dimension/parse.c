@@ -39,7 +39,7 @@ static void
 dmnsn_delete_patricia_trie(dmnsn_patricia_trie *trie)
 {
   if (trie) {
-    free(trie->prefix);
+    dmnsn_free(trie->prefix);
 
     if (trie->leaf)
       dmnsn_delete_astnode(trie->value);
@@ -51,7 +51,7 @@ dmnsn_delete_patricia_trie(dmnsn_patricia_trie *trie)
     }
     dmnsn_delete_array(trie->children);
 
-    free(trie);
+    dmnsn_free(trie);
   }
 }
 
@@ -455,9 +455,9 @@ dmnsn_delete_astnode(dmnsn_astnode astnode)
     if (astnode.free_fn) {
       (*astnode.free_fn)(astnode.ptr);
     } else {
-      free(astnode.ptr);
+      dmnsn_free(astnode.ptr);
     }
-    free(astnode.refcount);
+    dmnsn_free(astnode.refcount);
   } else {
     --*astnode.refcount;
   }

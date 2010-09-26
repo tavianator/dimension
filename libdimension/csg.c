@@ -101,7 +101,7 @@ dmnsn_csg_free_fn(void *ptr)
   dmnsn_object **params = ptr;
   dmnsn_delete_object(params[1]);
   dmnsn_delete_object(params[0]);
-  free(ptr);
+  dmnsn_free(ptr);
 }
 
 /* Generic CSG intersection function */

@@ -39,7 +39,7 @@ dmnsn_delete_pigment(dmnsn_pigment *pigment)
     if (pigment->free_fn) {
       (*pigment->free_fn)(pigment->ptr);
     }
-    free(pigment);
+    dmnsn_free(pigment);
   }
 }
 
@@ -71,7 +71,7 @@ dmnsn_delete_finish(dmnsn_finish *finish)
     if (finish->free_fn) {
       (*finish->free_fn)(finish->ptr);
     }
-    free(finish);
+    dmnsn_free(finish);
   }
 }
 
@@ -96,8 +96,8 @@ dmnsn_delete_texture(dmnsn_texture *texture)
     if (*texture->refcount <= 1) {
       dmnsn_delete_finish(texture->finish);
       dmnsn_delete_pigment(texture->pigment);
-      free(texture->refcount);
-      free(texture);
+      dmnsn_free(texture->refcount);
+      dmnsn_free(texture);
     } else {
       --*texture->refcount;
     }

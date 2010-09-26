@@ -40,8 +40,8 @@ DMNSN_INLINE void
 dmnsn_delete_array(dmnsn_array *array)
 {
   if (array) {
-    free(array->ptr);
-    free(array);
+    dmnsn_free(array->ptr);
+    dmnsn_free(array);
   }
 }
 

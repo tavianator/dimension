@@ -54,7 +54,7 @@ dmnsn_delete_list(dmnsn_list *list)
     while (list->first) {
       dmnsn_list_remove(list, list->first);
     }
-    free(list);
+    dmnsn_free(list);
   }
 }
 
