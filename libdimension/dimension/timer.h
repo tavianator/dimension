@@ -19,59 +19,16 @@
  *************************************************************************/
 
 /*
- * A scene.
+ * A platform-agnostic timer abstraction
  */
 
-#ifndef DIMENSION_SCENE_H
-#define DIMENSION_SCENE_H
+typedef struct dmnsn_timer {
+  double real, user, system;
+} dmnsn_timer;
 
-#include <stdbool.h>
+#define DMNSN_TIMER_FORMAT "%.2fs (user: %.2fs; system: %.2fs)"
+#define DMNSN_TIMER_PRINTF(t) (t)->real, (t)->user, (t)->system
 
-enum {
-  DMNSN_RENDER_NONE         = 0,
-  DMNSN_RENDER_PIGMENT      = 1 << 0,
-  DMNSN_RENDER_LIGHTS       = 1 << 1,
-  DMNSN_RENDER_FINISH       = 1 << 2,
-  DMNSN_RENDER_TRANSLUCENCY = 1 << 3,
-  DMNSN_RENDER_REFLECTION   = 1 << 4,
-  DMNSN_RENDER_FULL         = ~DMNSN_RENDER_NONE
-};
-
-typedef unsigned int dmnsn_quality;
-
-typedef struct {
-  /* World attributes */
-  dmnsn_color background;
-  dmnsn_texture *default_texture;
-
-  /* Camera */
-  dmnsn_camera *camera;
-
-  /* Canvas */
-  dmnsn_canvas *canvas;
-
-  /* Objects */
-  dmnsn_array *objects;
-
-  /* Lights */
-  dmnsn_array *lights;
-
-  /* Rendering quality */
-  dmnsn_quality quality;
-
-  /* Recursion limit */
-  unsigned int reclimit;
-
-  /* Number of parallel threads */
-  unsigned int nthreads;
-
-  /* Timers */
-  dmnsn_timer *bounding_timer;
-  dmnsn_timer *render_timer;
-} dmnsn_scene;
-
-/* Create a scene */
-dmnsn_scene *dmnsn_new_scene(void);
-void dmnsn_delete_scene(dmnsn_scene *scene);
-
-#endif /* DIMENSION_SCENE_H */
+dmnsn_timer *dmnsn_new_timer();
+void dmnsn_complete_timer(dmnsn_timer *timer);
+void dmnsn_delete_timer(dmnsn_timer *timer);

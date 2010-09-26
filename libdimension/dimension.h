@@ -65,6 +65,7 @@ typedef void dmnsn_free_fn(void *ptr);
 #include <dimension/array.h>
 #include <dimension/list.h>
 #include <dimension/progress.h>
+#include <dimension/timer.h>
 #include <dimension/geometry.h>
 #include <dimension/color.h>
 #include <dimension/canvas.h>

@@ -233,14 +233,19 @@ main(int argc, char **argv)
   }
 
   /* Realize the input */
+
   printf("Parsing scene ...\n");
-  dmnsn_scene *scene = dmnsn_realize(input_file, symtable);
-  if (!scene) {
-    fprintf(stderr, "Error realizing input file!\n");
-    dmnsn_delete_symbol_table(symtable);
-    fclose(input_file);
-    return EXIT_FAILURE;
-  }
+  /* Time the parser */
+  dmnsn_timer *parse_timer = dmnsn_new_timer();
+    dmnsn_scene *scene = dmnsn_realize(input_file, symtable);
+    if (!scene) {
+      fprintf(stderr, "Error realizing input file!\n");
+      dmnsn_delete_timer(parse_timer);
+      dmnsn_delete_symbol_table(symtable);
+      fclose(input_file);
+      return EXIT_FAILURE;
+    }
+  dmnsn_complete_timer(parse_timer);
 
   dmnsn_delete_symbol_table(symtable);
   fclose(input_file);
@@ -285,6 +290,7 @@ main(int argc, char **argv)
   if (free_output)
     dmnsn_free(output);
   if (!output_file) {
+    dmnsn_delete_timer(parse_timer);
     fprintf(stderr, "Couldn't open output file!");
     return EXIT_FAILURE;
   }
@@ -301,30 +307,49 @@ main(int argc, char **argv)
                     scene->nthreads);
 
   if (dmnsn_finish_progress(render_progress) != 0) {
+    dmnsn_delete_timer(parse_timer);
     dmnsn_delete_scene(scene);
     fprintf(stderr, "Error rendering scene!\n");
     return EXIT_FAILURE;
   }
 
-  dmnsn_progress *output_progress
-    = dmnsn_png_write_canvas_async(scene->canvas, output_file);
-  if (!output_progress) {
+  /* Time the export */
+  dmnsn_timer *export_timer = dmnsn_new_timer();
+    dmnsn_progress *output_progress
+      = dmnsn_png_write_canvas_async(scene->canvas, output_file);
+    if (!output_progress) {
+      dmnsn_delete_timer(parse_timer);
+      fclose(output_file);
+      dmnsn_delete_scene(scene);
+      fprintf(stderr, "Couldn't initialize PNG export!\n");
+      return EXIT_FAILURE;
+    }
+
+    dmnsn_progressbar("Writing PNG", output_progress);
+
+    if (dmnsn_finish_progress(output_progress) != 0) {
+      dmnsn_delete_timer(export_timer);
+      dmnsn_delete_timer(parse_timer);
+      fclose(output_file);
+      dmnsn_delete_scene(scene);
+      fprintf(stderr, "Couldn't write output!\n");
+      return EXIT_FAILURE;
+    }
     fclose(output_file);
-    dmnsn_delete_scene(scene);
-    fprintf(stderr, "Couldn't initialize PNG export!\n");
-    return EXIT_FAILURE;
-  }
+  dmnsn_complete_timer(export_timer);
 
-  dmnsn_progressbar("Writing PNG", output_progress);
+  printf("\n"
+         "  Parse time:    " DMNSN_TIMER_FORMAT "\n"
+         "  Bounding time: " DMNSN_TIMER_FORMAT "\n"
+         "  Render time:   " DMNSN_TIMER_FORMAT "\n"
+         "  Export time:   " DMNSN_TIMER_FORMAT "\n",
+         DMNSN_TIMER_PRINTF(parse_timer),
+         DMNSN_TIMER_PRINTF(scene->bounding_timer),
+         DMNSN_TIMER_PRINTF(scene->render_timer),
+         DMNSN_TIMER_PRINTF(export_timer));
 
-  if (dmnsn_finish_progress(output_progress) != 0) {
-    fclose(output_file);
-    dmnsn_delete_scene(scene);
-    fprintf(stderr, "Couldn't write output!\n");
-    return EXIT_FAILURE;
-  }
-  fclose(output_file);
-
+  dmnsn_delete_timer(export_timer);
+  dmnsn_delete_timer(parse_timer);
   dmnsn_delete_scene(scene);
   return EXIT_SUCCESS;
 }

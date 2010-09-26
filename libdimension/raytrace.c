@@ -76,12 +76,15 @@ dmnsn_raytrace_scene_thread(void *ptr)
 {
   dmnsn_raytrace_payload *payload = ptr;
 
-  /* Pre-calculate bounding box transformations, etc. */
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, payload->scene->objects) {
-    dmnsn_object_init(*object);
-  }
+  /* Time the bounding tree construction */
+  payload->scene->bounding_timer = dmnsn_new_timer();
+    /* Pre-calculate bounding box transformations, etc. */
+    DMNSN_ARRAY_FOREACH (dmnsn_object **, object, payload->scene->objects) {
+      dmnsn_object_init(*object);
+    }
 
-  payload->prtree = dmnsn_new_prtree(payload->scene->objects);
+    payload->prtree = dmnsn_new_prtree(payload->scene->objects);
+  dmnsn_complete_timer(payload->scene->bounding_timer);
 
   dmnsn_raytrace_payload *payloads;
   pthread_t *threads;
@@ -105,23 +108,26 @@ dmnsn_raytrace_scene_thread(void *ptr)
     payloads[i].threads = nthreads;
   }
 
-  /* Create the threads */
-  for (int i = 0; i < nthreads; ++i) {
-    if (pthread_create(&threads[i], NULL,
-                       &dmnsn_raytrace_scene_multithread_thread,
-                       &payloads[i]) != 0)
-    {
-      dmnsn_error(DMNSN_SEVERITY_HIGH,
-                  "Couldn't start worker thread in raytrace engine.");
+  /* Time the render itself */
+  payload->scene->render_timer = dmnsn_new_timer();
+    /* Create the threads */
+    for (int i = 0; i < nthreads; ++i) {
+      if (pthread_create(&threads[i], NULL,
+                         &dmnsn_raytrace_scene_multithread_thread,
+                         &payloads[i]) != 0)
+        {
+          dmnsn_error(DMNSN_SEVERITY_HIGH,
+                      "Couldn't start worker thread in raytrace engine.");
+        }
     }
-  }
 
-  for (int i = 0; i < nthreads; ++i) {
-    if (pthread_join(threads[i], NULL)) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Couldn't join worker thread in raytrace engine.");
+    for (int i = 0; i < nthreads; ++i) {
+      if (pthread_join(threads[i], NULL)) {
+        dmnsn_error(DMNSN_SEVERITY_MEDIUM,
+                    "Couldn't join worker thread in raytrace engine.");
+      }
     }
-  }
+  dmnsn_complete_timer(payload->scene->render_timer);
 
   dmnsn_free(threads);
   dmnsn_free(payloads);

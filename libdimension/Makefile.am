@@ -43,7 +43,8 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/progress.h                                  \
                          dimension/raytrace.h                                  \
                          dimension/scene.h                                     \
-                         dimension/texture.h
+                         dimension/texture.h                                   \
+                         dimension/timer.h
 
 lib_LTLIBRARIES = libdimension.la
 
@@ -84,7 +85,8 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           sphere.c                                             \
                           texture.c                                            \
                           threads.c                                            \
-                          threads.h
+                          threads.h                                            \
+                          timer.c
 libdimension_la_CFLAGS  = $(AM_CFLAGS) -pthread
 libdimension_la_LDFLAGS = -version-info 0:0:0 $(AM_LDFLAGS)
 libdimension_la_LIBADD  = -lm

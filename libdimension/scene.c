@@ -35,6 +35,8 @@ dmnsn_new_scene()
   scene->quality         = DMNSN_RENDER_FULL;
   scene->reclimit        = 5;
   scene->nthreads        = dmnsn_ncpus();
+  scene->bounding_timer  = NULL;
+  scene->render_timer    = NULL;
 
   return scene;
 }
@@ -44,6 +46,9 @@ void
 dmnsn_delete_scene(dmnsn_scene *scene)
 {
   if (scene) {
+    dmnsn_delete_timer(scene->render_timer);
+    dmnsn_delete_timer(scene->bounding_timer);
+
     DMNSN_ARRAY_FOREACH (dmnsn_light **, light, scene->lights) {
       dmnsn_delete_light(*light);
     }

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
+ * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -18,60 +18,47 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * A scene.
- */
+#include "dimension.h"
+#include <sys/times.h>
+#include <unistd.h>
 
-#ifndef DIMENSION_SCENE_H
-#define DIMENSION_SCENE_H
+static long clk_tck = 0;
 
-#include <stdbool.h>
+dmnsn_timer *
+dmnsn_new_timer()
+{
+  /* Figure out the clock ticks per second */
+  if (!clk_tck) {
+    clk_tck = sysconf(_SC_CLK_TCK);
+    if (clk_tck == -1) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sysconf(_SC_CLK_TCK) failed.");
+      clk_tck = 1000000L;
+    }
+  }
 
-enum {
-  DMNSN_RENDER_NONE         = 0,
-  DMNSN_RENDER_PIGMENT      = 1 << 0,
-  DMNSN_RENDER_LIGHTS       = 1 << 1,
-  DMNSN_RENDER_FINISH       = 1 << 2,
-  DMNSN_RENDER_TRANSLUCENCY = 1 << 3,
-  DMNSN_RENDER_REFLECTION   = 1 << 4,
-  DMNSN_RENDER_FULL         = ~DMNSN_RENDER_NONE
-};
+  dmnsn_timer *timer = dmnsn_malloc(sizeof(dmnsn_timer));
 
-typedef unsigned int dmnsn_quality;
+  struct tms buf;
+  clock_t real = times(&buf);
+  timer->real   = (double)real/clk_tck;
+  timer->user   = (double)buf.tms_utime/clk_tck;
+  timer->system = (double)buf.tms_stime/clk_tck;
 
-typedef struct {
-  /* World attributes */
-  dmnsn_color background;
-  dmnsn_texture *default_texture;
+  return timer;
+}
 
-  /* Camera */
-  dmnsn_camera *camera;
+void
+dmnsn_complete_timer(dmnsn_timer *timer)
+{
+  struct tms buf;
+  clock_t real = times(&buf);
+  timer->real   = (double)real/clk_tck - timer->real;
+  timer->user   = (double)buf.tms_utime/clk_tck - timer->user;
+  timer->system = (double)buf.tms_stime/clk_tck - timer->system;
+}
 
-  /* Canvas */
-  dmnsn_canvas *canvas;
-
-  /* Objects */
-  dmnsn_array *objects;
-
-  /* Lights */
-  dmnsn_array *lights;
-
-  /* Rendering quality */
-  dmnsn_quality quality;
-
-  /* Recursion limit */
-  unsigned int reclimit;
-
-  /* Number of parallel threads */
-  unsigned int nthreads;
-
-  /* Timers */
-  dmnsn_timer *bounding_timer;
-  dmnsn_timer *render_timer;
-} dmnsn_scene;
-
-/* Create a scene */
-dmnsn_scene *dmnsn_new_scene(void);
-void dmnsn_delete_scene(dmnsn_scene *scene);
-
-#endif /* DIMENSION_SCENE_H */
+void
+dmnsn_delete_timer(dmnsn_timer *timer)
+{
+  dmnsn_free(timer);
+}
