@@ -40,7 +40,8 @@ dmnsn_report_error(dmnsn_severity severity,
     /* An error more severe than our resilience happened, bail out */
     fprintf(stderr, "Dimension ERROR: %s, %s:%u: %s\n",
             func, file, line, str);
-    (*dmnsn_fatal)();
+    dmnsn_fatal_error_fn *fatal = dmnsn_get_fatal_error_fn();
+    (*fatal)();
     exit(EXIT_FAILURE); /* Failsafe in case *dmnsn_fatal doesn't exit */
   } else {
     /* A trivial error happened, warn and continue */
@@ -79,7 +80,8 @@ dmnsn_set_resilience(dmnsn_severity resilience)
     /* Tried to set an illegal resilience, bail out */
     fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n", DMNSN_FUNC, __LINE__,
             "Resilience has wrong value.");
-    (*dmnsn_fatal)();
+    dmnsn_fatal_error_fn *fatal = dmnsn_get_fatal_error_fn();
+    (*fatal)();
     exit(EXIT_FAILURE);
   }
 
