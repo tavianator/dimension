@@ -65,11 +65,25 @@ dmnsn_new_progress()
   return progress;
 }
 
-/* Delete a dmnsn_progress*, which has not yet been associated with a thread */
-void
-dmnsn_delete_progress(dmnsn_progress *progress)
+/* Join the worker thread and delete `progress'. */
+int
+dmnsn_finish_progress(dmnsn_progress *progress)
 {
+  void *ptr;
+  int retval = -1;
+
   if (progress) {
+    /* Get the thread's return value */
+    if (pthread_join(progress->thread, &ptr) != 0) {
+      /* Medium severity because an unjoined thread likely means that the thread
+         is incomplete or invalid */
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Joining worker thread failed.");
+    } else if (ptr) {
+      retval = *(int *)ptr;
+      dmnsn_free(ptr);
+    }
+
+    /* Free the progress object */
     if (pthread_rwlock_destroy(progress->rwlock) != 0) {
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking rwlock.");
     }
@@ -79,34 +93,11 @@ dmnsn_delete_progress(dmnsn_progress *progress)
     if (pthread_cond_destroy(progress->cond) != 0) {
       dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking condition variable.");
     }
-
     dmnsn_free(progress->rwlock);
     dmnsn_free(progress->mutex);
     dmnsn_free(progress->cond);
     dmnsn_delete_array(progress->elements);
     dmnsn_free(progress);
-  }
-}
-
-/* Join the worker thread and delete `progress'. */
-int
-dmnsn_finish_progress(dmnsn_progress *progress)
-{
-  void *ptr;
-  int retval = -1;
-
-  if (progress) {
-    if (pthread_join(progress->thread, &ptr) != 0) {
-      /* Medium severity because an unjoined thread likely means that the thread
-         is incomplete or invalid */
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Joining worker thread failed.");
-    } else if (ptr) {
-      retval = *(int *)ptr;
-      dmnsn_free(ptr);
-      /* Wake up all waiters */
-      dmnsn_done_progress(progress);
-    }
-    dmnsn_delete_progress(progress);
   }
 
   return retval;

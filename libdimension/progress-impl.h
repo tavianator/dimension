@@ -18,8 +18,18 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_IMPL_PROGRESS_STRUCT_H
-#define DIMENSION_IMPL_PROGRESS_STRUCT_H
+#ifndef DIMENSION_IMPL_PROGRESS_H
+#define DIMENSION_IMPL_PROGRESS_H
+
+/* Allocate a new progress object */
+dmnsn_progress *dmnsn_new_progress(void);
+
+/* Create a new level of loop nesting */
+void dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total);
+/* Increment the progress counter; should only be called from innermost loop */
+void dmnsn_increment_progress(dmnsn_progress *progress);
+/* Instantly complete the progress */
+void dmnsn_done_progress(dmnsn_progress *progress);
 
 struct dmnsn_progress {
   /* Array of progress elements.  Progress is given by P(0), where
@@ -41,4 +51,4 @@ struct dmnsn_progress {
   volatile double *min_waitp; /* Hack for const values */
 };
 
-#endif /* DIMENSION_IMPL_PROGRESS_STRUCT_H */
+#endif /* DIMENSION_IMPL_PROGRESS_H */

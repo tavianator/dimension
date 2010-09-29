@@ -75,7 +75,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           platform.h                                           \
                           point_light.c                                        \
                           progress.c                                           \
-                          progress-struct.h                                    \
+                          progress-impl.h                                      \
                           prtree.c                                             \
                           prtree.h                                             \
                           raytrace.c                                           \

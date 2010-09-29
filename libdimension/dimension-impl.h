@@ -23,7 +23,7 @@
 
 #define _GNU_SOURCE
 #include "dimension.h"
-#include "progress-struct.h"
+#include "progress-impl.h"
 #include "platform.h"
 #include "threads.h"
 #include "prtree.h"

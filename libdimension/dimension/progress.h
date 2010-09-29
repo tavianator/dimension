@@ -30,12 +30,7 @@
 
 typedef struct dmnsn_progress dmnsn_progress;
 
-/* Allocate a new progress object */
-dmnsn_progress *dmnsn_new_progress(void);
-/* For failed returns from *_async() functions */
-void dmnsn_delete_progress(dmnsn_progress *progress);
-
-/* Join the worker thread and returns it's integer return value in addition to
+/* Join the worker thread and return it's integer return value in addition to
    deleting `progress' */
 int dmnsn_finish_progress(dmnsn_progress *progress);
 
@@ -43,12 +38,5 @@ int dmnsn_finish_progress(dmnsn_progress *progress);
 double dmnsn_get_progress(const dmnsn_progress *progress);
 /* Wait for the progress to be >= prog, in a better way than spinlocking */
 void dmnsn_wait_progress(const dmnsn_progress *progress, double prog);
-
-/* Create a new level of loop nesting */
-void dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total);
-/* Increment the progress counter; should only be called from innermost loop */
-void dmnsn_increment_progress(dmnsn_progress *progress);
-/* Instantly complete the progress */
-void dmnsn_done_progress(dmnsn_progress *progress);
 
 #endif /* DIMENSION_PROGRESS_H */
