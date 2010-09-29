@@ -46,7 +46,7 @@ dmnsn_thread(void *arg)
   return ret;
 }
 
-int
+void
 dmnsn_new_thread(dmnsn_progress *progress, const pthread_attr_t *attr,
                  dmnsn_thread_fn *thread_fn, void *arg)
 {
@@ -55,5 +55,7 @@ dmnsn_new_thread(dmnsn_progress *progress, const pthread_attr_t *attr,
   payload->arg       = arg;
   payload->progress  = progress;
 
-  return pthread_create(&progress->thread, attr, &dmnsn_thread, payload);
+  if (pthread_create(&progress->thread, attr, &dmnsn_thread, payload) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start thread.");
+  }
 }

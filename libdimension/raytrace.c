@@ -58,11 +58,7 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
   payload->progress = progress;
   payload->scene    = scene;
 
-  if (dmnsn_new_thread(progress, NULL, &dmnsn_raytrace_scene_thread, payload)
-      != 0)
-  {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start worker thread.");
-  }
+  dmnsn_new_thread(progress, NULL, &dmnsn_raytrace_scene_thread, payload);
 
   return progress;
 }

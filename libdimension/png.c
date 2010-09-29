@@ -140,11 +140,7 @@ dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
   payload->file     = file;
 
   /* Create the worker thread */
-  if (dmnsn_new_thread(progress, NULL, &dmnsn_png_write_canvas_thread, payload)
-      != 0)
-  {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start worker thread.");
-  }
+  dmnsn_new_thread(progress, NULL, &dmnsn_png_write_canvas_thread, payload);
 
   return progress;
 }
@@ -172,11 +168,7 @@ dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
   payload->file     = file;
 
   /* Create the worker thread */
-  if (dmnsn_new_thread(progress, NULL, &dmnsn_png_read_canvas_thread, payload)
-      != 0)
-  {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start worker thread.");
-  }
+  dmnsn_new_thread(progress, NULL, &dmnsn_png_read_canvas_thread, payload);
 
   return progress;
 }

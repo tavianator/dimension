@@ -26,7 +26,7 @@
 typedef int dmnsn_thread_fn(void *ptr);
 
 /* Creates a thread that cleans up after itself on errors */
-int dmnsn_new_thread(dmnsn_progress *progress, const pthread_attr_t *attr,
-                     dmnsn_thread_fn *thread_fn, void *arg);
+void dmnsn_new_thread(dmnsn_progress *progress, const pthread_attr_t *attr,
+                      dmnsn_thread_fn *thread_fn, void *arg);
 
 #endif /* DIMENSION_IMPL_THREADS_H */
