@@ -323,18 +323,13 @@ dmnsn_png_write_canvas_thread(void *ptr)
 
 /* Thread-specific pointer to the appropriate dmnsn_progress* for
    dmnsn_png_read_row_callback */
-static pthread_key_t progress_key;
-static pthread_mutex_t progress_mutex = PTHREAD_MUTEX_INITIALIZER;
-static int progress_key_init = 0;
+static __thread dmnsn_progress *dmnsn_tl_png_read_progress;
 
 /* Callback to increment the progress after a row has been read */
 static void
 dmnsn_png_read_row_callback(png_structp png_ptr, png_uint_32 row, int pass)
 {
-  dmnsn_progress *progress = pthread_getspecific(progress_key);
-  if (progress) {
-    dmnsn_increment_progress(progress);
-  }
+  dmnsn_increment_progress(dmnsn_tl_png_read_progress);
 }
 
 /* Read a PNG file */
@@ -342,31 +337,7 @@ static int
 dmnsn_png_read_canvas_thread(void *ptr)
 {
   dmnsn_png_read_payload *payload = ptr;
-
-  /* Initialize/set progress_key */
-
-  if (pthread_mutex_lock(&progress_mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                "Couldn't lock thread-specific pointer mutex.");
-  }
-
-  if (progress_key_init == 0) {
-    if (pthread_key_create(&progress_key, NULL) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                  "Couldn't create thread-specific pointer.");
-    }
-
-    progress_key_init = 1;
-  }
-
-  if (pthread_setspecific(progress_key, payload->progress) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't set thread-specific pointer.");
-  }
-
-  if (pthread_mutex_unlock(&progress_mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM,
-                "Couldn't unlock thread-specific pointer mutex.");
-  }
+  dmnsn_tl_png_read_progress = payload->progress;
 
   if (!payload->file) {
     /* file was NULL */
