@@ -28,9 +28,20 @@ typedef struct {
 } dmnsn_progress_element;
 
 /* For thread synchronization */
-static void dmnsn_progress_rdlock(const dmnsn_progress *progress);
-static void dmnsn_progress_wrlock(dmnsn_progress *progress);
-static void dmnsn_progress_unlock(const dmnsn_progress *progress);
+
+static void dmnsn_progress_rdlock_impl(const dmnsn_progress *progress);
+static void dmnsn_progress_wrlock_impl(dmnsn_progress *progress);
+static void dmnsn_progress_unlock_impl(void *arg);
+
+#define dmnsn_progress_rdlock(progress)                                 \
+  dmnsn_progress_rdlock_impl(progress);                                 \
+  pthread_cleanup_push(&dmnsn_progress_unlock_impl, (void *)progress);
+#define dmnsn_progress_wrlock(progress)                                 \
+  dmnsn_progress_wrlock_impl(progress);                                 \
+  pthread_cleanup_push(&dmnsn_progress_unlock_impl, (void *)progress);
+#define dmnsn_progress_unlock(progress)         \
+  pthread_cleanup_pop(1);
+
 
 /* Allocate a new dmnsn_progress* */
 dmnsn_progress *
@@ -222,7 +233,7 @@ dmnsn_done_progress(dmnsn_progress *progress)
 /* Thread synchronization */
 
 static void
-dmnsn_progress_rdlock(const dmnsn_progress *progress)
+dmnsn_progress_rdlock_impl(const dmnsn_progress *progress)
 {
   if (pthread_rwlock_rdlock(progress->rwlock) != 0) {
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't acquire read-lock.");
@@ -230,7 +241,7 @@ dmnsn_progress_rdlock(const dmnsn_progress *progress)
 }
 
 static void
-dmnsn_progress_wrlock(dmnsn_progress *progress)
+dmnsn_progress_wrlock_impl(dmnsn_progress *progress)
 {
   if (pthread_rwlock_wrlock(progress->rwlock) != 0) {
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't acquire write-lock.");
@@ -238,8 +249,9 @@ dmnsn_progress_wrlock(dmnsn_progress *progress)
 }
 
 static void
-dmnsn_progress_unlock(const dmnsn_progress *progress)
+dmnsn_progress_unlock_impl(void *arg)
 {
+  const dmnsn_progress *progress = arg;
   if (pthread_rwlock_unlock(progress->rwlock) != 0) {
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock read-write lock.");
   }
