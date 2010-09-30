@@ -87,13 +87,13 @@ dmnsn_max(double a, double b)
 DMNSN_INLINE double
 dmnsn_radians(double degrees)
 {
-  return degrees*M_PI/180.0;
+  return degrees*atan(1.0)/45.0;
 }
 
 DMNSN_INLINE double
 dmnsn_degrees(double radians)
 {
-  return radians*180.0/M_PI;
+  return radians*45.0/atan(1.0);
 }
 
 /* Shorthand for vector/matrix construction */
