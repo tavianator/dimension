@@ -19,6 +19,7 @@
  *************************************************************************/
 
 #include "dimension-impl.h"
+#include <pthread.h>
 
 typedef struct dmnsn_thread_payload {
   dmnsn_thread_fn *thread_fn;
@@ -29,7 +30,10 @@ typedef struct dmnsn_thread_payload {
 static void
 dmnsn_thread_cleanup(void *arg)
 {
-  dmnsn_progress *progress = arg;
+  dmnsn_thread_payload *payload = arg;
+  dmnsn_progress *progress = payload->progress;
+  dmnsn_free(payload);
+
   dmnsn_done_progress(progress);
 }
 
@@ -38,11 +42,11 @@ dmnsn_thread(void *arg)
 {
   dmnsn_thread_payload *payload = arg;
   int *ret;
-  pthread_cleanup_push(&dmnsn_thread_cleanup, payload->progress);
+
+  pthread_cleanup_push(&dmnsn_thread_cleanup, payload);
   ret  = dmnsn_malloc(sizeof(int));
   *ret = (*payload->thread_fn)(payload->arg);
   pthread_cleanup_pop(1);
-  dmnsn_free(payload);
   return ret;
 }
 

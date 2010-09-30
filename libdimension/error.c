@@ -133,14 +133,22 @@ void dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal)
   }
 }
 
+/* Prevent infinite recursion if the fatal error function itself calls
+   dmnsn_error() */
+static __thread bool dmnsn_tl_exiting = false;
+
 static void
 dmnsn_default_fatal_error_fn()
 {
   dmnsn_backtrace(stderr);
 
-  if (dmnsn_is_main_thread()) {
+  if (dmnsn_tl_exiting) {
+    abort();
+  } else if (dmnsn_is_main_thread()) {
     exit(EXIT_FAILURE);
   } else {
+    dmnsn_tl_exiting = true;
+
     int *ret = malloc(sizeof(int)); /* Don't use dmnsn_malloc */
     if (ret)
       *ret = 1;
