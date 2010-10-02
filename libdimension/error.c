@@ -76,7 +76,7 @@ dmnsn_get_resilience()
 void
 dmnsn_set_resilience(dmnsn_severity resilience)
 {
-  if (resilience > DMNSN_SEVERITY_HIGH) {
+  if (resilience < DMNSN_SEVERITY_LOW || resilience > DMNSN_SEVERITY_HIGH) {
     /* Tried to set an illegal resilience, bail out */
     fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n", DMNSN_FUNC, __LINE__,
             "Resilience has wrong value.");
@@ -101,7 +101,8 @@ dmnsn_set_resilience(dmnsn_severity resilience)
   }
 }
 
-dmnsn_fatal_error_fn *dmnsn_get_fatal_error_fn()
+dmnsn_fatal_error_fn *
+dmnsn_get_fatal_error_fn()
 {
   dmnsn_fatal_error_fn *fatal;
   if (pthread_mutex_lock(&dmnsn_fatal_mutex) != 0) {
@@ -118,7 +119,8 @@ dmnsn_fatal_error_fn *dmnsn_get_fatal_error_fn()
   return fatal;
 }
 
-void dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal)
+void
+dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal)
 {
   if (pthread_mutex_lock(&dmnsn_fatal_mutex) != 0) {
     fprintf(stderr, "Dimension WARNING: %s, line %u: %s\n",
@@ -133,21 +135,25 @@ void dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal)
   }
 }
 
-/* Prevent infinite recursion if the fatal error function itself calls
-   dmnsn_error() */
-static __thread bool dmnsn_tl_exiting = false;
-
 static void
 dmnsn_default_fatal_error_fn()
 {
+  /* Prevent infinite recursion if the fatal error function itself calls
+     dmnsn_error() */
+  static __thread bool thread_exiting = false;
+
   dmnsn_backtrace(stderr);
 
-  if (dmnsn_tl_exiting) {
+  if (thread_exiting) {
+    fprintf(stderr, "Dimension ERROR: %s, line %u: %s\n",
+            DMNSN_FUNC, __LINE__,
+            "Error raised while in error handler, aborting.");
     abort();
   } else if (dmnsn_is_main_thread()) {
+    thread_exiting = true;
     exit(EXIT_FAILURE);
   } else {
-    dmnsn_tl_exiting = true;
+    thread_exiting = true;
 
     int *ret = malloc(sizeof(int)); /* Don't use dmnsn_malloc */
     if (ret)
