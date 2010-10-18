@@ -21,17 +21,6 @@
 #include "dimension.h"
 #include <stdlib.h>
 
-dmnsn_vector
-dmnsn_transform_normal(dmnsn_matrix trans, dmnsn_vector normal)
-{
-  return dmnsn_vector_normalize(
-    dmnsn_vector_sub(
-      dmnsn_transform_vector(trans, normal),
-      dmnsn_transform_vector(trans, dmnsn_zero)
-    )
-  );
-}
-
 /* Allocate a dummy object */
 dmnsn_object *
 dmnsn_new_object()

@@ -281,7 +281,24 @@ double dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2,
 
 dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
 dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
-dmnsn_vector dmnsn_transform_vector(dmnsn_matrix lhs, dmnsn_vector rhs);
+
+/* Affine transformation; lhs*(x,y,z,1), normalized so the fourth element is
+   1 */
+DMNSN_INLINE dmnsn_vector
+dmnsn_transform_vector(dmnsn_matrix lhs, dmnsn_vector rhs)
+{
+  /* 12 multiplications, 3 divisions, 12 additions */
+  dmnsn_vector r;
+  double w;
+
+  r.x = lhs.n[0][0]*rhs.x + lhs.n[0][1]*rhs.y + lhs.n[0][2]*rhs.z + lhs.n[0][3];
+  r.y = lhs.n[1][0]*rhs.x + lhs.n[1][1]*rhs.y + lhs.n[1][2]*rhs.z + lhs.n[1][3];
+  r.z = lhs.n[2][0]*rhs.x + lhs.n[2][1]*rhs.y + lhs.n[2][2]*rhs.z + lhs.n[2][3];
+  w   = lhs.n[3][0]*rhs.x + lhs.n[3][1]*rhs.y + lhs.n[3][2]*rhs.z + lhs.n[3][3];
+
+  return dmnsn_vector_div(r, w);
+}
+
 dmnsn_bounding_box dmnsn_transform_bounding_box(dmnsn_matrix lhs,
                                                 dmnsn_bounding_box rhs);
 

@@ -345,23 +345,6 @@ dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs)
   return r;
 }
 
-/* Affine transformation; lhs*(x,y,z,1), normalized so the fourth element is
-   1 */
-dmnsn_vector
-dmnsn_transform_vector(dmnsn_matrix lhs, dmnsn_vector rhs)
-{
-  /* 12 multiplications, 3 divisions, 12 additions */
-  dmnsn_vector r;
-  double w;
-
-  r.x = lhs.n[0][0]*rhs.x + lhs.n[0][1]*rhs.y + lhs.n[0][2]*rhs.z + lhs.n[0][3];
-  r.y = lhs.n[1][0]*rhs.x + lhs.n[1][1]*rhs.y + lhs.n[1][2]*rhs.z + lhs.n[1][3];
-  r.z = lhs.n[2][0]*rhs.x + lhs.n[2][1]*rhs.y + lhs.n[2][2]*rhs.z + lhs.n[2][3];
-  w   = lhs.n[3][0]*rhs.x + lhs.n[3][1]*rhs.y + lhs.n[3][2]*rhs.z + lhs.n[3][3];
-
-  return dmnsn_vector_div(r, w);
-}
-
 /* Give an axis-aligned box that contains the given box transformed by `lhs' */
 dmnsn_bounding_box
 dmnsn_transform_bounding_box(dmnsn_matrix trans, dmnsn_bounding_box box)

@@ -41,8 +41,6 @@ typedef struct dmnsn_intersection {
   const dmnsn_interior *interior;
 } dmnsn_intersection;
 
-dmnsn_vector dmnsn_transform_normal(dmnsn_matrix trans, dmnsn_vector normal);
-
 /* Forward-declare dmnsn_object */
 typedef struct dmnsn_object dmnsn_object;
 
@@ -88,5 +86,21 @@ dmnsn_object *dmnsn_new_object(void);
 void dmnsn_delete_object(dmnsn_object *object);
 
 void dmnsn_object_init(dmnsn_object *object);
+
+/* Useful function to transform a normal vector */
+DMNSN_INLINE dmnsn_vector
+dmnsn_transform_normal(dmnsn_matrix trans, dmnsn_vector normal)
+{
+  return dmnsn_vector_normalize(
+    dmnsn_vector_sub(
+      dmnsn_transform_vector(trans, normal),
+      /* Optimized form of dmnsn_transform_vector(trans, dmnsn_zero) */
+      dmnsn_vector_div(
+        dmnsn_new_vector(trans.n[0][3], trans.n[1][3], trans.n[2][3]),
+        trans.n[3][3]
+      )
+    )
+  );
+}
 
 #endif /* DIMENSION_OBJECT_H */
