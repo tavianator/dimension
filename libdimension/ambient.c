@@ -46,7 +46,7 @@ dmnsn_new_ambient_finish(dmnsn_color ambient)
 
   finish->ptr        = param;
   finish->ambient_fn = &dmnsn_ambient_finish_fn;
-  finish->free_fn    = &free;
+  finish->free_fn    = &dmnsn_free;
 
   return finish;
 }

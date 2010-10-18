@@ -41,7 +41,7 @@ dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 
   dmnsn_canvas_optimizer optimizer;
   optimizer.optimizer_fn = &dmnsn_gl_optimizer_fn;
-  optimizer.free_fn = &free;
+  optimizer.free_fn = &dmnsn_free;
 
   /* Allocate a buffer to hold RGB values */
   optimizer.ptr = dmnsn_malloc(4*canvas->x*canvas->y*sizeof(GLushort));

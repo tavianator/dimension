@@ -58,7 +58,7 @@ dmnsn_new_reflective_finish(dmnsn_color min, dmnsn_color max, double falloff)
 
   finish->ptr           = params;
   finish->reflection_fn = &dmnsn_reflective_finish_fn;
-  finish->free_fn       = &free;
+  finish->free_fn       = &dmnsn_free;
 
   return finish;
 }

@@ -41,7 +41,7 @@ dmnsn_new_point_light(dmnsn_vector x0, dmnsn_color color)
 
   light->x0       = x0;
   light->light_fn = &dmnsn_point_light_fn;
-  light->free_fn  = &free;
+  light->free_fn  = &dmnsn_free;
   light->ptr      = ptr;
 
   return light;

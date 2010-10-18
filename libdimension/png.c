@@ -44,7 +44,7 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
 
   dmnsn_canvas_optimizer optimizer;
   optimizer.optimizer_fn = &dmnsn_png_optimizer_fn;
-  optimizer.free_fn = &free;
+  optimizer.free_fn = &dmnsn_free;
 
   optimizer.ptr = dmnsn_malloc(4*canvas->x*canvas->y*sizeof(uint16_t));
 
