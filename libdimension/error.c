@@ -154,10 +154,6 @@ dmnsn_default_fatal_error_fn()
     exit(EXIT_FAILURE);
   } else {
     thread_exiting = true;
-
-    int *ret = malloc(sizeof(int)); /* Don't use dmnsn_malloc */
-    if (ret)
-      *ret = 1;
-    pthread_exit(ret);
+    pthread_exit(NULL);
   }
 }
