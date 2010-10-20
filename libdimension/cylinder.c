@@ -32,17 +32,29 @@ static bool dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder,
 static bool dmnsn_cylinder_inside_fn(const dmnsn_object *cylinder,
                                      dmnsn_vector point);
 
+/* Payload type */
+typedef struct dmnsn_cylinder_payload {
+  double r1, r2;
+  bool open;
+} dmnsn_cylinder_payload;
+
 /* Allocate a new cylinder object */
 dmnsn_object *
-dmnsn_new_cylinder(bool open)
+dmnsn_new_cylinder(double r1, double r2, bool open)
 {
   dmnsn_object *cylinder = dmnsn_new_object();
   cylinder->intersection_fn  = &dmnsn_cylinder_intersection_fn;
   cylinder->inside_fn        = &dmnsn_cylinder_inside_fn;
   cylinder->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
   cylinder->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
-  /* (bool)cyliner->ptr == open */
-  cylinder->ptr              = open ? cylinder : NULL;
+
+  dmnsn_cylinder_payload *payload
+    = dmnsn_malloc(sizeof(dmnsn_cylinder_payload));
+  payload->r1       = r1;
+  payload->r2       = r2;
+  payload->open     = open;
+  cylinder->ptr     = payload;
+  cylinder->free_fn = &dmnsn_free;
   return cylinder;
 }
 
@@ -52,12 +64,17 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
                                dmnsn_intersection *intersection)
 {
   dmnsn_line l = dmnsn_transform_line(cylinder->trans_inv, line);
+  dmnsn_cylinder_payload *payload = cylinder->ptr;
+  double r1 = payload->r1, r2 = payload->r2;
 
-  /* Solve (x0 + nx*t)^2 + (z0 + nz*t)^2 == 1 */
+  /* Solve (x0 + nx*t)^2 + (z0 + nz*t)^2
+           == (((r2 - r1)*(y0 + ny*t) + r1 + r2)/2)^2 */
   double a, b, c, t;
-  a = l.n.x*l.n.x + l.n.z*l.n.z;
-  b = 2.0*(l.n.x*l.x0.x + l.n.z*l.x0.z);
-  c = l.x0.x*l.x0.x + l.x0.z*l.x0.z - 1.0;
+  a = l.n.x*l.n.x + l.n.z*l.n.z - l.n.y*l.n.y*(r2 - r1)*(r2 - r1)/4.0;
+  b = 2.0*(l.n.x*l.x0.x + l.n.z*l.x0.z)
+      - l.n.y*(r2 - r1)*(l.x0.y*(r2 - r1) + r2 + r1)/2.0;
+  c = l.x0.x*l.x0.x + l.x0.z*l.x0.z
+      - (l.x0.y*(r2 - r1) + r2 + r1)*(l.x0.y*(r2 - r1) + r2 + r1)/4;
 
   if (b*b - 4.0*a*c >= 0.0) {
     t = (-b - sqrt(b*b - 4.0*a*c))/(2.0*a);
@@ -68,31 +85,40 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
       p = dmnsn_line_point(l, t);
     }
 
-    if (!cylinder->ptr && l.n.y) {
+    if (!payload->open && l.n.y) {
       /* Test for cap intersections */
       double tcap1 = (-1.0 - l.x0.y)/l.n.y;
       double tcap2 = (+1.0 - l.x0.y)/l.n.y;
 
-      double tcap;
+      double tcap, r;
       dmnsn_vector norm;
       if (tcap1 < tcap2) {
         tcap = tcap1;
+        r    = r1;
         norm = dmnsn_new_vector(0.0, -1.0, 0.0);
       } else {
         tcap = tcap2;
+        r    = r2;
         norm = dmnsn_new_vector(0.0, 1.0, 0.0);
       }
       dmnsn_vector pcap = dmnsn_line_point(l, tcap);
 
-      if (tcap < 0.0 || pcap.x*pcap.x + pcap.z*pcap.z >= 1.0) {
-        tcap = dmnsn_max(tcap1, tcap2);
+      if (tcap < 0.0 || pcap.x*pcap.x + pcap.z*pcap.z >= r*r) {
+        if (tcap2 <= tcap1) {
+          tcap = tcap1;
+          r    = r1;
+          norm = dmnsn_new_vector(0.0, -1.0, 0.0);
+        } else {
+          tcap = tcap2;
+          r    = r2;
+          norm = dmnsn_new_vector(0.0, 1.0, 0.0);
+        }
         pcap = dmnsn_line_point(l, tcap);
-        norm = dmnsn_vector_negate(norm);
       }
 
       if (tcap >= 0.0
           && (tcap < t || p.y <= -1.0 || p.y >= 1.0)
-          && pcap.x*pcap.x + pcap.z*pcap.z < 1.0)
+          && pcap.x*pcap.x + pcap.z*pcap.z < r*r)
       {
         intersection->ray      = line;
         intersection->t        = tcap;
@@ -104,10 +130,12 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
     }
 
     if (t >= 0.0 && p.y > -1.0 && p.y < 1.0) {
-      p.y = 0;
+      dmnsn_vector norm = dmnsn_vector_normalize(
+        dmnsn_new_vector(p.x, -(r2 - r1)*sqrt(p.x*p.x + p.z*p.z)/2.0, p.z)
+      );
       intersection->ray      = line;
       intersection->t        = t;
-      intersection->normal   = dmnsn_transform_normal(cylinder->trans, p);
+      intersection->normal   = dmnsn_transform_normal(cylinder->trans, norm);
       intersection->texture  = cylinder->texture;
       intersection->interior = cylinder->interior;
       return true;

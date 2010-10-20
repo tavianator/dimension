@@ -36,7 +36,7 @@ dmnsn_object *dmnsn_new_sphere(void);
 /* A cube, axis-aligned, from (-1, -1, -1) to (1, 1, 1) */
 dmnsn_object *dmnsn_new_cube(void);
 
-/* A cylinder, of radius 1, from y = -1 to y = 1 */
-dmnsn_object *dmnsn_new_cylinder(bool open);
+/* A cylinder/cone, from r = r1 at y = -1, to r = r2 at y = 1 */
+dmnsn_object *dmnsn_new_cylinder(double r1, double r2, bool open);
 
 #endif /* DIMENSION_OBJECTS_H */

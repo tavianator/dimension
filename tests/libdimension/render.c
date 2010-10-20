@@ -106,15 +106,28 @@ dmnsn_new_test_scene(void)
   plane->texture->pigment = dmnsn_new_solid_pigment(dmnsn_white);
   dmnsn_array_push(scene->objects, &plane);
 
-  dmnsn_object *cylinder = dmnsn_new_cylinder(false);
+  dmnsn_object *cylinder = dmnsn_new_cylinder(0.1, 0.1, false);
   cylinder->trans =
     dmnsn_matrix_mul(
       dmnsn_rotation_matrix(dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)),
-      dmnsn_scale_matrix(dmnsn_new_vector(0.1, 1.25, 0.1))
+      dmnsn_scale_matrix(dmnsn_new_vector(1.0, 1.25, 1.0))
     );
   cylinder->texture = dmnsn_new_texture();
   cylinder->texture->pigment = dmnsn_new_solid_pigment(dmnsn_red);
   dmnsn_array_push(scene->objects, &cylinder);
+
+  dmnsn_object *cone = dmnsn_new_cylinder(0.1, 0.0, true);
+  cone->trans =
+    dmnsn_matrix_mul(
+      dmnsn_rotation_matrix(dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)),
+      dmnsn_matrix_mul(
+        dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.375, 0.0)),
+        dmnsn_scale_matrix(dmnsn_new_vector(1.0, 0.125, 1.0))
+      )
+    );
+  cone->texture = dmnsn_new_texture();
+  cone->texture->pigment = dmnsn_new_solid_pigment(dmnsn_red);
+  dmnsn_array_push(scene->objects, &cone);
 
   return scene;
 }

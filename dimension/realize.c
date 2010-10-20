@@ -863,12 +863,13 @@ dmnsn_realize_cylinder(dmnsn_astnode astnode)
   double theta1 = dmnsn_vector_axis_angle(dmnsn_y, dir, dmnsn_x);
   double theta2 = dmnsn_vector_axis_angle(dmnsn_y, dir, dmnsn_z);
 
-  dmnsn_object *cylinder = dmnsn_new_cylinder(dmnsn_realize_integer(open));
+  dmnsn_object *cylinder
+    = dmnsn_new_cylinder(r, r, dmnsn_realize_integer(open));
   /* Transformations: lift the cylinder to start at the origin, scale, rotate,
      and translate properly */
   cylinder->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0));
   cylinder->trans = dmnsn_matrix_mul(
-    dmnsn_scale_matrix(dmnsn_new_vector(r, l/2.0, r)),
+    dmnsn_scale_matrix(dmnsn_new_vector(1.0, l/2.0, 1.0)),
     cylinder->trans
   );
   cylinder->trans = dmnsn_matrix_mul(
