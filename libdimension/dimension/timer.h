@@ -29,6 +29,6 @@ typedef struct dmnsn_timer {
 #define DMNSN_TIMER_FORMAT "%.2fs (user: %.2fs; system: %.2fs)"
 #define DMNSN_TIMER_PRINTF(t) (t)->real, (t)->user, (t)->system
 
-dmnsn_timer *dmnsn_new_timer();
+dmnsn_timer *dmnsn_new_timer(void);
 void dmnsn_complete_timer(dmnsn_timer *timer);
 void dmnsn_delete_timer(dmnsn_timer *timer);
