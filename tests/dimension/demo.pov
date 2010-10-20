@@ -71,8 +71,15 @@ difference {
   }
 }
 
-cylinder {
-  -1.25*y, 1.25*y, 0.1
+union {
+  cylinder {
+    -1.25*y, 1.25*y, 0.1
+  }
+  cone {
+    1.25*y, 0.1, 1.5*y, 0
+    open
+  }
+
   pigment {
     color rgb <1, 0, 0>
   }

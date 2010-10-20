@@ -184,6 +184,7 @@ unsigned long wchar;
 "camera"                RETURN_TOKEN(DMNSN_T_CAMERA);
 "color"                 RETURN_TOKEN(DMNSN_T_COLOR);
 "colour"                RETURN_TOKEN(DMNSN_T_COLOR);
+"cone"                  RETURN_TOKEN(DMNSN_T_CONE);
 "cos"                   RETURN_TOKEN(DMNSN_T_COS);
 "cosh"                  RETURN_TOKEN(DMNSN_T_COSH);
 "cylinder"              RETURN_TOKEN(DMNSN_T_CYLINDER);

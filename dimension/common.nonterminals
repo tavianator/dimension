@@ -40,6 +40,7 @@
 %type <astnode> OBJECT
 %type <astnode> FINITE_SOLID_OBJECT
 %type <astnode> BOX
+%type <astnode> CONE
 %type <astnode> CYLINDER
 %type <astnode> MAYBE_OPEN
 %type <astnode> SPHERE

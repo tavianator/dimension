@@ -845,17 +845,28 @@ dmnsn_realize_box(dmnsn_astnode astnode)
 static dmnsn_object *
 dmnsn_realize_cylinder(dmnsn_astnode astnode)
 {
-  dmnsn_assert(astnode.type == DMNSN_AST_CYLINDER, "Expected a cylinder.");
+  dmnsn_astnode pnode1, rnode1, pnode2, rnode2, open;
 
-  dmnsn_astnode pnode1, pnode2, radius, open;
-  dmnsn_array_get(astnode.children, 0, &pnode1);
-  dmnsn_array_get(astnode.children, 1, &pnode2);
-  dmnsn_array_get(astnode.children, 2, &radius);
-  dmnsn_array_get(astnode.children, 3, &open);
+  if (astnode.type == DMNSN_AST_CONE) {
+    dmnsn_array_get(astnode.children, 0, &pnode1);
+    dmnsn_array_get(astnode.children, 1, &rnode1);
+    dmnsn_array_get(astnode.children, 2, &pnode2);
+    dmnsn_array_get(astnode.children, 3, &rnode2);
+    dmnsn_array_get(astnode.children, 4, &open);
+  } else if (astnode.type == DMNSN_AST_CYLINDER) {
+    dmnsn_array_get(astnode.children, 0, &pnode1);
+    dmnsn_array_get(astnode.children, 1, &pnode2);
+    dmnsn_array_get(astnode.children, 2, &rnode1);
+    dmnsn_array_get(astnode.children, 2, &rnode2);
+    dmnsn_array_get(astnode.children, 3, &open);
+  } else {
+    dmnsn_assert(false, "Expected a cone or cylinder.");
+  }
 
   dmnsn_vector p1 = dmnsn_realize_vector(pnode1);
   dmnsn_vector p2 = dmnsn_realize_vector(pnode2);
-  double r = dmnsn_realize_float(radius);
+  double r1 = dmnsn_realize_float(rnode1);
+  double r2 = dmnsn_realize_float(rnode2);
 
   dmnsn_vector dir = dmnsn_vector_sub(p2, p1);
   double l = dmnsn_vector_norm(dir);
@@ -864,7 +875,7 @@ dmnsn_realize_cylinder(dmnsn_astnode astnode)
   double theta2 = dmnsn_vector_axis_angle(dmnsn_y, dir, dmnsn_z);
 
   dmnsn_object *cylinder
-    = dmnsn_new_cylinder(r, r, dmnsn_realize_integer(open));
+    = dmnsn_new_cylinder(r1, r2, dmnsn_realize_integer(open));
   /* Transformations: lift the cylinder to start at the origin, scale, rotate,
      and translate properly */
   cylinder->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0));
@@ -1034,6 +1045,7 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
   case DMNSN_AST_BOX:
     object = dmnsn_realize_box(onode);
     break;
+  case DMNSN_AST_CONE:
   case DMNSN_AST_CYLINDER:
     object = dmnsn_realize_cylinder(onode);
     break;

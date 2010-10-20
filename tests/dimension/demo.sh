@@ -77,11 +77,22 @@ demo_exp=$(echo -n \
               (phong_size (float 40)))))))
       object-modifiers)
   (object
-    (cylinder
-      (vector (float 0) (float -1.25) (float 0) (float 0) (float 0))
-      (vector (float 0) (float 1.25) (float 0) (float 0) (float 0))
-      (float 0.1)
-      (integer 0))
+    (union
+      (object
+        (cylinder
+          (vector (float 0) (float -1.25) (float 0) (float 0) (float 0))
+          (vector (float 0) (float 1.25) (float 0) (float 0) (float 0))
+          (float 0.1)
+          (integer 0))
+        object-modifiers)
+      (object
+        (cone
+          (vector (float 0) (float 1.25) (float 0) (float 0) (float 0))
+          (float 0.1)
+          (vector (float 0) (float 1.5) (float 0) (float 0) (float 0))
+          (integer 0)
+          (integer 1))
+        object-modifiers))
     (object-modifiers
       (pigment
         (vector (integer 1) (integer 0) (integer 0)

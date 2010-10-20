@@ -283,6 +283,7 @@ OBJECT: FINITE_SOLID_OBJECT
 ;
 
 FINITE_SOLID_OBJECT: BOX
+                   | CONE
                    | CYLINDER
                    | SPHERE
 ;
@@ -295,6 +296,18 @@ BOX: "box" "{"
      dmnsn_astnode object = dmnsn_new_astnode2(DMNSN_AST_BOX, @$, $3, $5);
      $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, object, $6);
    }
+;
+
+CONE: "cone" "{"
+        VECTOR "," FLOAT "," VECTOR "," FLOAT
+        MAYBE_OPEN
+        OBJECT_MODIFIERS
+      "}"
+    {
+      dmnsn_astnode object
+        = dmnsn_new_astnode5(DMNSN_AST_CONE, @$, $3, $5, $7, $9, $10);
+      $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, object, $11);
+    }
 ;
 
 CYLINDER: "cylinder" "{"

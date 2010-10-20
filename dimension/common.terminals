@@ -134,7 +134,7 @@
 %token DMNSN_T_COMPONENT
 %token DMNSN_T_COMPOSITE
 %token DMNSN_T_CONCAT
-%token DMNSN_T_CONE
+%token DMNSN_T_CONE                     "cone"
 %token DMNSN_T_CONFIDENCE
 %token DMNSN_T_CONIC_SWEEP
 %token DMNSN_T_CONSERVE_ENERGY
