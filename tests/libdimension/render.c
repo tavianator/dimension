@@ -49,7 +49,11 @@ dmnsn_new_test_scene(void)
     )
   );
   trans = dmnsn_matrix_mul(
-    dmnsn_translation_matrix(dmnsn_new_vector(0.0, 0.0, -4.0)),
+    dmnsn_rotation_matrix(dmnsn_new_vector(0.0624188099959577, 0.0, 0.0)),
+    trans
+  );
+  trans = dmnsn_matrix_mul(
+    dmnsn_translation_matrix(dmnsn_new_vector(0.0, 0.25, -4.0)),
     trans
   );
   trans = dmnsn_matrix_mul(
