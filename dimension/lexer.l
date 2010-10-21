@@ -406,7 +406,8 @@ dmnsn_tokenize(FILE *file, const char *filename)
   yyset_extra(NULL, scanner);
 
   while ((token.type = dmnsn_yylex_impl(&item, &location, filename, scanner))
-         != 0) {
+         != 0)
+  {
     token.value    = item.value;
     token.filename = location.first_filename;
     token.line     = location.first_line;
