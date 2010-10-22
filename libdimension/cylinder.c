@@ -150,6 +150,9 @@ static bool
 dmnsn_cylinder_inside_fn(const dmnsn_object *cylinder, dmnsn_vector point)
 {
   point = dmnsn_transform_vector(cylinder->trans_inv, point);
-  return point.x*point.x + point.z*point.z < 1
-      && point.y > -1.0 && point.y < 1.0;
+  dmnsn_cylinder_payload *payload = cylinder->ptr;
+  double r1 = payload->r1, r2 = payload->r2;
+  double r = (point.y*(r2 - r1) + r1 + r2)/2.0;
+  return point.x*point.x + point.z*point.z < r*r
+         && point.y > -1.0 && point.y < 1.0;
 }
