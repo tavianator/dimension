@@ -64,7 +64,7 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
                                dmnsn_intersection *intersection)
 {
   dmnsn_line l = dmnsn_transform_line(cylinder->trans_inv, line);
-  dmnsn_cylinder_payload *payload = cylinder->ptr;
+  const dmnsn_cylinder_payload *payload = cylinder->ptr;
   double r1 = payload->r1, r2 = payload->r2;
 
   /* Solve (x0 + nx*t)^2 + (z0 + nz*t)^2
@@ -150,7 +150,7 @@ static bool
 dmnsn_cylinder_inside_fn(const dmnsn_object *cylinder, dmnsn_vector point)
 {
   point = dmnsn_transform_vector(cylinder->trans_inv, point);
-  dmnsn_cylinder_payload *payload = cylinder->ptr;
+  const dmnsn_cylinder_payload *payload = cylinder->ptr;
   double r1 = payload->r1, r2 = payload->r2;
   double r = (point.y*(r2 - r1) + r1 + r2)/2.0;
   return point.x*point.x + point.z*point.z < r*r
