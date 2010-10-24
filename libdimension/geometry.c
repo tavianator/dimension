@@ -61,7 +61,7 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
   if (angle == 0.0) {
     return dmnsn_identity_matrix();
   }
-  dmnsn_vector axis = dmnsn_vector_normalize(theta);
+  dmnsn_vector axis = dmnsn_vector_div(theta, angle);
 
   /* Shorthand to make dmnsn_new_matrix() call legible */
 
@@ -142,8 +142,8 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   dmnsn_matrix2 P, Q, R, S, Pi, RPi, PiQ, RPiQ, PP, QQ, RR, SS;
   double Pdet = A.n[0][0]*A.n[1][1] - A.n[0][1]*A.n[1][0];
 
-  if (Pdet == 0.0) {
-    /* If we can't invert P, try a more generic algorithm; this is very
+  if (fabs(Pdet) < dmnsn_epsilon) {
+    /* If P is close to singular, try a more generic algorithm; this is very
      * unlikely, but not impossible, eg.
      *   [ 1 1 0 0 ]
      *   [ 1 1 1 0 ]
