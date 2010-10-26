@@ -86,6 +86,29 @@ union {
   rotate -45*x
 }
 
+union {
+  torus {
+    0.15, 0.05
+    translate -y
+    sturm off
+  }
+  torus {
+    0.15, 0.05
+  }
+  torus {
+    0.15, 0.05
+    translate y
+  }
+
+  pigment {
+    color rgb <0, 0, 1>
+  }
+  finish {
+    ambient 1
+  }
+  rotate -45*x
+}
+
 plane {
   y, -2
   pigment {

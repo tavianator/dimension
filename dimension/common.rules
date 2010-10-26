@@ -286,6 +286,7 @@ FINITE_SOLID_OBJECT: BOX
                    | CONE
                    | CYLINDER
                    | SPHERE
+                   | TORUS
 ;
 
 BOX: "box" "{"
@@ -328,6 +329,7 @@ MAYBE_OPEN: /* empty */ {
           | "open" {
             $$ = dmnsn_new_ast_integer(true);
           }
+;
 
 SPHERE: "sphere" "{"
           VECTOR "," FLOAT
@@ -337,6 +339,38 @@ SPHERE: "sphere" "{"
         dmnsn_astnode object = dmnsn_new_astnode2(DMNSN_AST_SPHERE, @$, $3, $5);
         $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, object, $6);
       }
+;
+
+TORUS: "torus" "{"
+         FLOAT "," FLOAT
+         TORUS_MODIFIERS
+       "}"
+     {
+       dmnsn_astnode object = dmnsn_new_astnode2(DMNSN_AST_TORUS, @$, $3, $5);
+       $$ = dmnsn_new_astnode2(DMNSN_AST_OBJECT, @$, object, $6);
+     }
+;
+
+TORUS_MODIFIERS: /* empty */ {
+                 $$ = dmnsn_new_astnode(DMNSN_AST_OBJECT_MODIFIERS, @$);
+               }
+               | TORUS_MODIFIERS OBJECT_MODIFIER {
+                 $$ = $1;
+                 dmnsn_array_push($$.children, &$2);
+               }
+               | TORUS_MODIFIERS "sturm" {
+                 dmnsn_diagnostic(@2,
+                                  "WARNING: Dimension does not use 'sturm';"
+                                  " ignored.");
+                 $$ = $1;
+               }
+               | TORUS_MODIFIERS "sturm" FLOAT {
+                 dmnsn_diagnostic(@2,
+                                  "WARNING: Dimension does not use 'sturm';"
+                                  " ignored.");
+                 dmnsn_delete_astnode($3);
+                 $$ = $1;
+               }
 ;
 
 INFINITE_SOLID_OBJECT: PLANE

@@ -421,7 +421,7 @@
 %token DMNSN_T_STRLEN                   "strlen"
 %token DMNSN_T_STRLWR
 %token DMNSN_T_STRUPR
-%token DMNSN_T_STURM
+%token DMNSN_T_STURM                    "sturm"
 %token DMNSN_T_SUBSTR
 %token DMNSN_T_SUM
 %token DMNSN_T_SUPERELLIPSOID
@@ -443,7 +443,7 @@
 %token DMNSN_T_TILES
 %token DMNSN_T_TOLERANCE
 %token DMNSN_T_TOROIDAL
-%token DMNSN_T_TORUS
+%token DMNSN_T_TORUS                    "torus"
 %token DMNSN_T_TRACE
 %token DMNSN_T_TRANSFORM                "transform"
 %token DMNSN_T_TRANSLATE                "translate"

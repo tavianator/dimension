@@ -102,13 +102,39 @@ demo_exp=$(echo -n \
         (rotation (vector (integer -45) (integer 0) (integer 0)
                           (integer 0) (integer 0))))))
   (object
+    (union
+      (object
+        (torus (float 0.15) (float 0.05))
+        (object-modifiers
+          (transformation
+            (translation (vector (integer 0) (integer -1) (integer 0)
+                                 (integer 0) (integer 0))))))
+      (object
+        (torus (float 0.15) (float 0.05))
+        object-modifiers)
+      (object
+        (torus (float 0.15) (float 0.05))
+        (object-modifiers
+          (transformation
+            (translation (vector (integer 0) (integer 1) (integer 0)
+                                 (integer 0) (integer 0)))))))
+    (object-modifiers
+      (pigment
+        (vector (integer 0) (integer 0) (integer 1) (integer 0) (integer 0))
+        pigment-modifiers)
+      (finish
+        (ambient
+          (vector (integer 1) (integer 1) (integer 1) (integer 1) (integer 1))))
+      (transformation
+        (rotation (vector (integer -45) (integer 0) (integer 0)
+                          (integer 0) (integer 0))))))
+  (object
     (plane
       (vector (integer 0) (integer 1) (integer 0) (integer 0) (integer 0))
       (integer -2))
     (object-modifiers
       (pigment
-        (vector (integer 1) (integer 1) (integer 1)
-                (integer 0) (integer 0))
+        (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
         pigment-modifiers))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 

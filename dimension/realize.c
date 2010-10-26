@@ -917,6 +917,22 @@ dmnsn_realize_sphere(dmnsn_astnode astnode)
 }
 
 static dmnsn_object *
+dmnsn_realize_torus(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_TORUS, "Expected a torus.");
+
+  dmnsn_astnode major, minor;
+  dmnsn_array_get(astnode.children, 0, &major);
+  dmnsn_array_get(astnode.children, 1, &minor);
+
+  double R = dmnsn_realize_float(major);
+  double r = dmnsn_realize_float(minor);
+
+  dmnsn_object *torus = dmnsn_new_torus(R, r);
+  return torus;
+}
+
+static dmnsn_object *
 dmnsn_realize_plane(dmnsn_astnode astnode)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_PLANE, "Expected a plane.");
@@ -1063,6 +1079,9 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
     break;
   case DMNSN_AST_SPHERE:
     object = dmnsn_realize_sphere(onode);
+    break;
+  case DMNSN_AST_TORUS:
+    object = dmnsn_realize_torus(onode);
     break;
   case DMNSN_AST_UNION:
     object = dmnsn_realize_union(onode, modifiers, lights);

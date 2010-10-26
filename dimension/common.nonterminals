@@ -44,6 +44,8 @@
 %type <astnode> CYLINDER
 %type <astnode> MAYBE_OPEN
 %type <astnode> SPHERE
+%type <astnode> TORUS
+%type <astnode> TORUS_MODIFIERS
 %type <astnode> INFINITE_SOLID_OBJECT
 %type <astnode> PLANE
 %type <astnode> CSG_OBJECT
