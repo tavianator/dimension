@@ -39,4 +39,7 @@ dmnsn_object *dmnsn_new_cube(void);
 /* A cylinder/cone, from r = r1 at y = -1, to r = r2 at y = 1 */
 dmnsn_object *dmnsn_new_cylinder(double r1, double r2, bool open);
 
+/* A torus, centered at the origin and lying in the x-z plane */
+dmnsn_object *dmnsn_new_torus(double major, double minor);
+
 #endif /* DIMENSION_OBJECTS_H */

@@ -87,7 +87,8 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           texture.c                                            \
                           threads.c                                            \
                           threads.h                                            \
-                          timer.c
+                          timer.c                                              \
+                          torus.c
 libdimension_la_CFLAGS  = $(AM_CFLAGS) -pthread
 libdimension_la_LDFLAGS = -version-info 0:0:0 $(AM_LDFLAGS)
 libdimension_la_LIBADD  = -lm

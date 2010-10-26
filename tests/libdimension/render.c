@@ -133,6 +133,28 @@ dmnsn_new_test_scene(void)
   cone->texture->pigment = dmnsn_new_solid_pigment(dmnsn_red);
   dmnsn_array_push(scene->objects, &cone);
 
+  dmnsn_array *torus_array = dmnsn_new_array(sizeof(dmnsn_object *));
+
+  dmnsn_object *torus1 = dmnsn_new_torus(0.15, 0.05);
+  torus1->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -1.0, 0.0));
+  dmnsn_array_push(torus_array, &torus1);
+
+  dmnsn_object *torus2 = dmnsn_new_torus(0.15, 0.05);
+  dmnsn_array_push(torus_array, &torus2);
+
+  dmnsn_object *torus3 = dmnsn_new_torus(0.15, 0.05);
+  torus3->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0));
+  dmnsn_array_push(torus_array, &torus3);
+
+  dmnsn_object *torii = dmnsn_new_csg_union(torus_array);
+  torii->trans = dmnsn_rotation_matrix(
+    dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)
+  );
+  torii->texture = dmnsn_new_texture();
+  torii->texture->pigment = dmnsn_new_solid_pigment(dmnsn_blue);
+  torii->texture->finish  = dmnsn_new_ambient_finish(dmnsn_white);
+  dmnsn_array_push(scene->objects, &torii);
+
   return scene;
 }
 
