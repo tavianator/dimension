@@ -69,19 +69,27 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
 
   /* Solve (x0 + nx*t)^2 + (z0 + nz*t)^2
            == (((r2 - r1)*(y0 + ny*t) + r1 + r2)/2)^2 */
-  double a, b, c, t;
-  a = l.n.x*l.n.x + l.n.z*l.n.z - l.n.y*l.n.y*(r2 - r1)*(r2 - r1)/4.0;
-  b = 2.0*(l.n.x*l.x0.x + l.n.z*l.x0.z)
-      - l.n.y*(r2 - r1)*(l.x0.y*(r2 - r1) + r2 + r1)/2.0;
-  c = l.x0.x*l.x0.x + l.x0.z*l.x0.z
-      - (l.x0.y*(r2 - r1) + r2 + r1)*(l.x0.y*(r2 - r1) + r2 + r1)/4;
+  double poly[3], x[2];
+  poly[2] = l.n.x*l.n.x + l.n.z*l.n.z - l.n.y*l.n.y*(r2 - r1)*(r2 - r1)/4.0;
+  poly[1] = 2.0*(l.n.x*l.x0.x + l.n.z*l.x0.z)
+            - l.n.y*(r2 - r1)*(l.x0.y*(r2 - r1) + r2 + r1)/2.0;
+  poly[0] = l.x0.x*l.x0.x + l.x0.z*l.x0.z
+            - (l.x0.y*(r2 - r1) + r2 + r1)*(l.x0.y*(r2 - r1) + r2 + r1)/4;
 
-  if (b*b - 4.0*a*c >= 0.0) {
-    t = (-b - sqrt(b*b - 4.0*a*c))/(2.0*a);
-    dmnsn_vector p = dmnsn_line_point(l, t);
+  size_t n = dmnsn_solve_polynomial(poly, 2, x);
 
-    if (t < 0.0 || p.y <= -1.0 || p.y >= 1.0) {
-      t = (-b + sqrt(b*b - 4.0*a*c))/(2.0*a);
+  if (n > 0) {
+    double t = x[0];
+    dmnsn_vector p;
+    if (n == 2) {
+      t = dmnsn_min(t, x[1]);
+      p = dmnsn_line_point(l, t);
+
+      if (p.y <= -1.0 || p.y >= 1.0) {
+        t = dmnsn_max(x[0], x[1]);
+        p = dmnsn_line_point(l, t);
+      }
+    } else {
       p = dmnsn_line_point(l, t);
     }
 

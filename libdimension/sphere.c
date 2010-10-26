@@ -53,29 +53,27 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
   dmnsn_line l = dmnsn_transform_line(sphere->trans_inv, line);
 
   /* Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1 */
-  double a, b, c, t;
-  a = dmnsn_vector_dot(l.n, l.n);
-  b = 2.0*dmnsn_vector_dot(l.n, l.x0);
-  c = dmnsn_vector_dot(l.x0, l.x0) - 1.0;
+  double poly[3], x[2];
+  poly[2] = dmnsn_vector_dot(l.n, l.n);
+  poly[1] = 2.0*dmnsn_vector_dot(l.n, l.x0);
+  poly[0] = dmnsn_vector_dot(l.x0, l.x0) - 1.0;
 
-  if (b*b - 4.0*a*c >= 0.0) {
-    t = (-b - sqrt(b*b - 4.0*a*c))/(2.0*a);
-    if (t < 0.0) {
-      t = (-b + sqrt(b*b - 4.0*a*c))/(2.0*a);
-    }
+  size_t n = dmnsn_solve_polynomial(poly, 2, x);
+  if (n == 0) {
+    return false;
+  } else {
+    double t = x[0];
+    if (n == 2)
+      t = dmnsn_min(t, x[1]);
 
-    if (t >= 0.0) {
-      intersection->ray      = line;
-      intersection->t        = t;
-      intersection->normal   = dmnsn_transform_normal(sphere->trans,
+    intersection->ray      = line;
+    intersection->t        = t;
+    intersection->normal   = dmnsn_transform_normal(sphere->trans,
                                                       dmnsn_line_point(l, t));
-      intersection->texture  = sphere->texture;
-      intersection->interior = sphere->interior;
-      return true;
-    }
+    intersection->texture  = sphere->texture;
+    intersection->interior = sphere->interior;
+    return true;
   }
-
-  return false;
 }
 
 /* Return whether a point is inside a sphere (x**2 + y**2 + z**2 < 1.0) */

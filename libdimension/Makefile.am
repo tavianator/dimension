@@ -74,6 +74,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           platform.c                                           \
                           platform.h                                           \
                           point_light.c                                        \
+                          polynomial.c                                         \
                           progress.c                                           \
                           progress-impl.h                                      \
                           prtree.c                                             \

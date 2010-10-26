@@ -96,6 +96,13 @@ dmnsn_degrees(double radians)
   return radians*45.0/atan(1.0);
 }
 
+DMNSN_INLINE int
+dmnsn_signbit(double n)
+{
+  /* Guarantee a 1 or 0 return, to allow testing two signs for equality */
+  return signbit(n) ? 1 : 0;
+}
+
 /* Shorthand for vector/matrix construction */
 
 DMNSN_INLINE dmnsn_vector
