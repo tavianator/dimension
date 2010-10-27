@@ -80,7 +80,7 @@ dmnsn_real_degree(double poly[], size_t degree)
 static inline double
 dmnsn_improve_root(double poly[], size_t degree, double x)
 {
-  double error;
+  double dx;
   do {
     /* Calculate the value of the polynomial and its derivative at once */
     double p = poly[degree], dp = 0.0;
@@ -89,10 +89,9 @@ dmnsn_improve_root(double poly[], size_t degree, double x)
       p  = p*x  + poly[i];
     }
 
-    double dx = p/dp;
-    error = fabs(dx/x);
+    dx = p/dp;
     x -= dx;
-  } while (error > dmnsn_epsilon);
+  } while (fabs(dx) > dmnsn_epsilon);
 
   return x;
 }
