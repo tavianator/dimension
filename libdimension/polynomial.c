@@ -82,7 +82,7 @@ dmnsn_improve_root(double poly[], size_t degree, double x)
 {
   double error;
   do {
-    /* Calculate the value of the polynomial and its derrivative at once */
+    /* Calculate the value of the polynomial and its derivative at once */
     double p = poly[degree], dp = 0.0;
     for (ssize_t i = degree - 1; i >= 0; --i) {
       dp = dp*x + p;
