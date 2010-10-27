@@ -90,7 +90,6 @@ union {
   torus {
     0.15, 0.05
     translate -y
-    sturm off
   }
   torus {
     0.15, 0.05
