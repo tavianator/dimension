@@ -302,26 +302,15 @@ dmnsn_solve_polynomial(double poly[], size_t degree, double x[])
 void
 dmnsn_print_polynomial(FILE *file, double poly[], size_t degree)
 {
-  fprintf(file, "%g*x^%zu", poly[degree], degree);
-  for (size_t i = degree - 1; i > 1; --i) {
-    if (poly[i] > 0.0) {
-      fprintf(file, " + %g*x^%zu", poly[i], i);
-    } else if (poly[i] < 0.0) {
-      fprintf(file, " - %g*x^%zu", -poly[i], i);
+  for (ssize_t i = degree; i >= 0; --i) {
+    if (i < degree) {
+      fprintf(file, (poly[i] >= 0.0) ? " + " : " - ");
+    }
+    fprintf(file, "%g", poly[i]);
+    if (i >= 2) {
+      fprintf(file, "*x^%zu", i);
+    } else if (i == 1) {
+      fprintf(file, "*x");
     }
   }
-
-  if (poly[1] > 0.0) {
-    fprintf(file, " + %g*x", poly[1]);
-  } else if (poly[1] < 0.0) {
-    fprintf(file, " - %g*x", -poly[1]);
-  }
-
-  if (poly[0] > 0.0) {
-    fprintf(file, " + %g", poly[0]);
-  } else if (poly[0] < 0.0) {
-    fprintf(file, " - %g", -poly[0]);
-  }
-
-  fprintf(file, "\n");
 }
