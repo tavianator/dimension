@@ -24,14 +24,38 @@
 int
 main(void)
 {
-  double poly[6], x[5];
-  // poly[] = (x + 1)*(x - 1.2345)*(x - 2.3456)*(x - 5)*(x - 100)
-  poly[5] =  1.0;
-  poly[4] = -107.5801;
-  poly[3] =  770.2260432;
-  poly[2] = -1215.2863928;
-  poly[1] = -646.270936;
-  poly[0] =  1447.8216;
+#define NPOLY 5
+  double p[NPOLY][NPOLY + 1], x[NPOLY];
+
+  // p[0][] = x - 0.5;
+  p[0][1] =  1.0;
+  p[0][0] = -0.5;
+
+  // p[1][] = (x + 0.5)*(x - 0.5)
+  p[1][2] =  1.0;
+  p[1][1] =  0.0;
+  p[1][0] = -0.25;
+
+  // p[2][] = (x + 1)*(x - 1.2345)*(x - 100)
+  p[2][3] =  1.0;
+  p[2][2] = -100.2345;
+  p[2][1] =  22.2155;
+  p[2][0] =  123.45;
+
+  // p[3][] = (x + 1)*(x - 1.2345)*(x - 5)*(x - 100)
+  p[3][4] =  1.0;
+  p[3][3] = -105.2345;
+  p[3][2] =  523.388;
+  p[3][1] =  12.3725;
+  p[3][0] = -617.25;
+
+  // p[4][] = (x + 1)*(x - 1.2345)*(x - 2.3456)*(x - 5)*(x - 100)
+  p[4][5] =  1.0;
+  p[4][4] = -107.5801;
+  p[4][3] =  770.2260432;
+  p[4][2] = -1215.2863928;
+  p[4][1] = -646.270936;
+  p[4][0] =  1447.8216;
 
   sandglass_t sandglass;
   if (sandglass_init_monotonic(&sandglass, SANDGLASS_CPUTIME) != 0) {
@@ -39,8 +63,10 @@ main(void)
     return EXIT_FAILURE;
   }
 
-  sandglass_bench_fine(&sandglass, dmnsn_solve_polynomial(poly, 5, x));
-  printf("dmnsn_solve_polynomial(): %ld\n", sandglass.grains);
+  for (size_t i = 0; i < NPOLY; ++i) {
+    sandglass_bench_fine(&sandglass, dmnsn_solve_polynomial(p[i], i + 1, x));
+    printf("dmnsn_solve_polynomial(x^%zu): %ld\n", i + 1, sandglass.grains);
+  }
 
   return EXIT_SUCCESS;
 }
