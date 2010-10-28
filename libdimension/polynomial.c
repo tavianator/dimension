@@ -86,6 +86,9 @@ dmnsn_bisect_root(double poly[], size_t degree, double min, double max)
   double mid = 0.0, evmid;
   int lastsign = -1;
 
+  if (max - min <= dmnsn_epsilon)
+    return min;
+
   do {
     mid = (min*evmax - max*evmin)/(evmax - evmin);
     evmid = dmnsn_evaluate_polynomial(poly, degree, mid);
