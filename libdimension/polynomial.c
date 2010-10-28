@@ -91,7 +91,7 @@ dmnsn_improve_root(double poly[], size_t degree, double x)
 
     dx = p/dp;
     x -= dx;
-  } while (fabs(dx) > dmnsn_epsilon);
+  } while (fabs(dx/x) > dmnsn_epsilon);
 
   return x;
 }
@@ -174,51 +174,63 @@ dmnsn_binom(size_t n, size_t k)
   return ret;
 }
 
-/* Find a range that contains a single root, with Uspensky's algorithm */
-static bool
-dmnsn_uspensky_bound(double poly[], size_t degree, double *min, double *max)
+/* Find all ranges that contain a single root, with Uspensky's algorithm */
+static size_t
+dmnsn_uspensky_bounds(double poly[], size_t degree, double bounds[][2],
+                      size_t max_roots)
 {
-  size_t n = dmnsn_descartes_rule(poly, degree);
-  if (n == 0) {
-    return false;
-  } else if (n == 1) {
-    return true;
+  size_t signchanges = dmnsn_descartes_rule(poly, degree);
+  if (signchanges == 0) {
+    return 0;
+  } else if (signchanges == 1) {
+    bounds[0][0] = +0.0;
+    bounds[0][1] = INFINITY;
+    return 1;
   } else {
-    double a[degree];
-    /* a is the expanded form of poly(x + 1) */
+    size_t n = 0;
+
+    /* a[] is the expanded form of poly(x + 1), b[] is the expanded form of
+       (x + 1)^degree * poly(1/(x + 1)) */
+    double a[degree], b[degree];
     for (size_t i = 0; i <= degree; ++i) {
       a[i] = poly[i];
-      for (size_t j = i + 1; j <= degree; ++j) {
-        a[i] += dmnsn_binom(j, i)*poly[j];
-      }
-    }
-
-    if (a[0] == 0.0) {
-      *max = *min;
-      return true;
-    } else if (dmnsn_uspensky_bound(a, degree, min, max)) {
-      *min += 1.0;
-      *max += 1.0;
-      return true;
-    }
-
-    double b[degree];
-    /* b is the expanded form of (x + 1)^degree * poly(1/(x + 1)) */
-    for (size_t i = 0; i <= degree; ++i) {
       b[i] = poly[degree - i];
       for (size_t j = i + 1; j <= degree; ++j) {
-        b[i] += dmnsn_binom(j, i)*poly[degree - j];
+        double binom = dmnsn_binom(j, i);
+        a[i] += binom*poly[j];
+        b[i] += binom*poly[degree - j];
       }
     }
 
-    if (dmnsn_uspensky_bound(b, degree, min, max)) {
-      double temp = *min;
-      *min = 1.0/(*max + 1.0);
-      *max = 1.0/(temp + 1.0);
-      return true;
+    /* Test for a root at 1.0 */
+    if (a[0] == 0.0) {
+      bounds[n][0] = 1.0;
+      bounds[n][1] = 1.0;
+      ++n;
+      if (n == max_roots)
+        return n;
     }
 
-    return false;
+    /* Recursively test for roots in b[] */
+    size_t nb = dmnsn_uspensky_bounds(b, degree, bounds + n, max_roots - n);
+    for (size_t i = n; i < n + nb; ++i) {
+      double temp = bounds[i][0];
+      bounds[i][0] = 1.0/(bounds[i][1] + 1.0);
+      bounds[i][1] = 1.0/(temp + 1.0);
+    }
+    n += nb;
+    if (n == max_roots)
+      return n;
+
+    /* Recursively test for roots in a[] */
+    size_t na = dmnsn_uspensky_bounds(a, degree, bounds + n, max_roots - n);
+    for (size_t i = n; i < n + na; ++i) {
+      bounds[i][0] += 1.0;
+      bounds[i][1] += 1.0;
+    }
+    n += na;
+
+    return n;
   }
 }
 
@@ -239,22 +251,25 @@ dmnsn_solve_polynomial(double poly[], size_t degree, double x[])
   /* Account for leading zero coefficients */
   degree = dmnsn_real_degree(p, degree);
 
-  while (degree > 2) {
-    /* Get a bound on the range of positive roots */
-    double min = +0.0, max = INFINITY;
-    if (dmnsn_uspensky_bound(p, degree, &min, &max)) {
-      if (isinf(max)) {
-        /* Replace an infinite upper bound with a finite one due to Cauchy */
-        max = 0.0;
-        for (size_t j = 0; j < degree; ++j) {
-          max = dmnsn_max(max, fabs(p[j]));
-        }
-        max /= fabs(p[degree]);
-        max += 1.0;
-      }
+  if (degree >= 3) {
+    /* Find isolating intervals for degree - 2 roots of p[] */
+    double ranges[degree - 2][2];
+    size_t n = dmnsn_uspensky_bounds(p, degree, ranges, degree - 2);
+
+    /* Calculate an finite upper bound for the roots of p[] */
+    double absmax = 0.0;
+    for (size_t j = 0; j < degree; ++j) {
+      absmax = dmnsn_max(absmax, fabs(p[j]));
+    }
+    absmax /= fabs(p[degree]);
+    absmax += 1.0;
+
+    for (size_t j = 0; j < n; ++j) {
+      /* Replace large or infinite upper bounds with a finite one */
+      ranges[j][1] = dmnsn_min(ranges[j][1], absmax);
 
       /* Bisect within the found range */
-      double r = dmnsn_bisect_root(p, degree, min, max);
+      double r = dmnsn_bisect_root(p, degree, ranges[j][0], ranges[j][1]);
       r = dmnsn_improve_root(p, degree, r);
 
       /* Use synthetic division to eliminate the root `r' */
@@ -263,22 +278,13 @@ dmnsn_solve_polynomial(double poly[], size_t degree, double x[])
       /* Store the found root */
       x[i] = r;
       ++i;
-    } else {
-      break;
     }
-
-    i += dmnsn_zero_roots(p, &degree, x + i);
-    degree = dmnsn_real_degree(p, degree);
   }
 
-  switch (degree) {
-  case 1:
+  if (degree == 1) {
     i += dmnsn_solve_linear(p, x + i);
-    break;
-
-  case 2:
+  } else if (degree == 2) {
     i += dmnsn_solve_quadratic(p, x + i);
-    break;
   }
 
   return i;
