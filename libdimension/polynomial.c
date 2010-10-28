@@ -148,21 +148,40 @@ dmnsn_descartes_rule(double poly[], size_t degree)
   return changes;
 }
 
+#define DMNSN_NBINOM 11
+static const double dmnsn_pascals_triangle[DMNSN_NBINOM][DMNSN_NBINOM] = {
+  { 1.0 },
+  { 1.0, 1.0 },
+  { 1.0, 2.0, 1.0 },
+  { 1.0, 3.0, 3.0, 1.0 },
+  { 1.0, 4.0, 6.0, 4.0, 1.0 },
+  { 1.0, 5.0, 10.0, 10.0, 5.0, 1.0 },
+  { 1.0, 6.0, 15.0, 20.0, 15.0, 6.0, 1.0 },
+  { 1.0, 7.0, 21.0, 35.0, 35.0, 21.0, 7.0, 1.0 },
+  { 1.0, 8.0, 28.0, 56.0, 70.0, 56.0, 28.0, 8.0, 1.0 },
+  { 1.0, 9.0, 36.0, 84.0, 126.0, 126.0, 84.0, 36.0, 9.0, 1.0 },
+  { 1.0, 10.0, 45.0, 120.0, 210.0, 252.0, 210.0, 120.0, 45.0, 10.0, 1.0 }
+};
+
 /* Get the (n k) binomial coefficient */
 static inline double
 dmnsn_binom(size_t n, size_t k)
 {
-  if (k > n - k) {
-    k = n - k;
-  }
+  if (n < DMNSN_NBINOM && k < DMNSN_NBINOM) {
+    return dmnsn_pascals_triangle[n][k];
+  } else {
+    if (k > n - k) {
+      k = n - k;
+    }
 
-  double ret = 1.0;
-  for (size_t i = 0; i < k; ++i) {
-    ret *= n - i;
-    ret /= i + 1;
-  }
+    double ret = 1.0;
+    for (size_t i = 0; i < k; ++i) {
+      ret *= n - i;
+      ret /= i + 1;
+    }
 
-  return ret;
+    return ret;
+  }
 }
 
 /* Find all ranges that contain a single root, with Uspensky's algorithm */
