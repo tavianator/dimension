@@ -76,47 +76,38 @@ dmnsn_real_degree(double poly[], size_t degree)
   return 0;
 }
 
-/* Improve a root with Newton's method */
-static inline double
-dmnsn_improve_root(double poly[], size_t degree, double x)
-{
-  double dx;
-  do {
-    /* Calculate the value of the polynomial and its derivative at once */
-    double p = poly[degree], dp = 0.0;
-    for (ssize_t i = degree - 1; i >= 0; --i) {
-      dp = dp*x + p;
-      p  = p*x  + poly[i];
-    }
-
-    dx = p/dp;
-    x -= dx;
-  } while (fabs(dx/x) > dmnsn_epsilon);
-
-  return x;
-}
-
-/* Use the method of bisection to find a root in a range that contains exactly
-   one root, counting multiplicity */
+/* Use the false position method to find a root in a range that contains exactly
+   one root */
 static inline double
 dmnsn_bisect_root(double poly[], size_t degree, double min, double max)
 {
   double evmin = dmnsn_evaluate_polynomial(poly, degree, min);
   double evmax = dmnsn_evaluate_polynomial(poly, degree, max);
+  double mid = 0.0, evmid;
+  int lastsign = -1;
 
-  while (max - min > dmnsn_epsilon) {
-    double mid = (min + max)/2.0;
-    double evmid = dmnsn_evaluate_polynomial(poly, degree, mid);
-    if (dmnsn_signbit(evmid) == dmnsn_signbit(evmax)) {
+  do {
+    mid = (min*evmax - max*evmin)/(evmax - evmin);
+    evmid = dmnsn_evaluate_polynomial(poly, degree, mid);
+    int sign = dmnsn_signbit(evmid);
+    if (sign == dmnsn_signbit(evmax)) {
       max = mid;
       evmax = evmid;
+      if (sign == lastsign) {
+        evmin /= 2.0;
+      }
     } else {
       min = mid;
       evmin = evmid;
+      if (sign == lastsign) {
+        evmax /= 2.0;
+      }
     }
-  }
 
-  return (min + max)/2.0;
+    lastsign = sign;
+  } while (fabs(evmid) > fabs(mid)*dmnsn_epsilon);
+
+  return mid;
 }
 
 /* Use synthetic division to eliminate the root `r' from poly[] */
@@ -158,7 +149,7 @@ dmnsn_descartes_rule(double poly[], size_t degree)
 }
 
 /* Get the (n k) binomial coefficient */
-static double
+static inline double
 dmnsn_binom(size_t n, size_t k)
 {
   if (k > n - k) {
@@ -270,7 +261,6 @@ dmnsn_solve_polynomial(double poly[], size_t degree, double x[])
 
       /* Bisect within the found range */
       double r = dmnsn_bisect_root(p, degree, ranges[j][0], ranges[j][1]);
-      r = dmnsn_improve_root(p, degree, r);
 
       /* Use synthetic division to eliminate the root `r' */
       dmnsn_eliminate_root(p, &degree, r);
