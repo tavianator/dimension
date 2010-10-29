@@ -27,7 +27,7 @@ static inline size_t
 dmnsn_solve_linear(double poly[2], double x[1])
 {
   x[0] = -poly[0]/poly[1];
-  return (x[0] >= 0.0) ? 1 : 0;
+  return (x[0] > 0.0) ? 1 : 0;
 }
 
 static inline size_t
@@ -38,29 +38,26 @@ dmnsn_solve_quadratic(double poly[3], double x[2])
     double s = sqrt(disc);
     x[0] = (-poly[1] + s)/(2.0*poly[2]);
     x[1] = (-poly[1] - s)/(2.0*poly[2]);
-    return (x[0] >= 0.0) ? ((x[1] >= 0.0) ? 2 : 1) : 0;
+    return (x[0] > 0.0) ? ((x[1] > 0.0) ? 2 : 1) : 0;
   } else {
     return 0;
   }
 }
 
-static inline size_t
-dmnsn_zero_roots(double poly[], size_t *degree, double x[])
+/* Eliminate trivial zero roots from poly[] */
+static inline void
+dmnsn_eliminate_zero_roots(double poly[], size_t *degree)
 {
-  size_t i = 0;
-  while (i <= *degree && poly[i] == 0.0) {
-    x[i] = 0.0;
-    ++i;
-  }
+  size_t i, deg = *degree;
+  for (i = 0; i <= deg && poly[i] == 0.0; ++i);
 
   if (i > 0) {
-    for (size_t j = 0; j + i <= *degree; ++j) {
+    for (size_t j = 0; j + i <= deg; ++j) {
       poly[j] = poly[j + i];
     }
   }
 
   *degree -= i;
-  return i;
 }
 
 /* Get the real degree of a polynomial, ignoring leading zeros */
@@ -97,6 +94,8 @@ dmnsn_bisect_root(double poly[], size_t degree, double min, double max)
       max = mid;
       evmax = evmid;
       if (sign == lastsign) {
+        /* Don't allow the algorithm to keep the same endpoint for three
+           iterations in a row; this ensures superlinear convergence */
         evmin /= 2.0;
       }
     } else {
@@ -257,12 +256,12 @@ dmnsn_solve_polynomial(double poly[], size_t degree, double x[])
     p[i] = poly[i];
   }
 
-  size_t i = 0; /* Index into x[] */
-
-  /* Eliminate simple zero roots */
-  i += dmnsn_zero_roots(p, &degree, x + i);
   /* Account for leading zero coefficients */
   degree = dmnsn_real_degree(p, degree);
+  /* Eliminate simple zero roots */
+  dmnsn_eliminate_zero_roots(p, &degree);
+
+  size_t i = 0; /* Index into x[] */
 
   if (degree >= 3) {
     /* Find isolating intervals for degree - 2 roots of p[] */

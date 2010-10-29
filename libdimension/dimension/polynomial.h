@@ -41,8 +41,8 @@ dmnsn_evaluate_polynomial(double poly[], size_t degree, double x)
   return ret;
 }
 
-/* Stores the non-negative roots of poly[] in x[], and returns the number of
-   such roots that were stored */
+/* Stores the positive roots of poly[] in x[], and returns the number of such
+   roots that were stored */
 size_t dmnsn_solve_polynomial(double poly[], size_t degree, double x[]);
 
 /* Helper function to print a polynomial */
