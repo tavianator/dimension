@@ -25,7 +25,6 @@
  */
 
 /* Torus object callbacks */
-
 static bool dmnsn_torus_intersection_fn(const dmnsn_object *torus,
                                         dmnsn_line line,
                                         dmnsn_intersection *intersection);
@@ -59,6 +58,51 @@ dmnsn_new_torus(double major, double minor)
   return torus;
 }
 
+/* Bound the torus in a cylindrical shell */
+static inline bool
+dmnsn_torus_bound_intersection(const dmnsn_torus_payload *payload, dmnsn_line l)
+{
+  double R = payload->major, r = payload->minor;
+  double rmax = R + r, rmin = R - r;
+  double rmax2 = rmax*rmax, rmin2 = rmin*rmin;
+
+  /* Try the caps first */
+  double tlower = (-r - l.x0.y)/l.n.y;
+  double tupper = (+r - l.x0.y)/l.n.y;
+  dmnsn_vector lower = dmnsn_line_point(l, tlower);
+  dmnsn_vector upper = dmnsn_line_point(l, tupper);
+  double ldist2 = lower.x*lower.x + lower.z*lower.z;
+  double udist2 = upper.x*upper.x + upper.z*upper.z;
+  if ((ldist2 < rmin2 || ldist2 > rmax2) && (udist2 < rmin2 || udist2 > rmax2))
+  {
+    /* No valid intersection with the caps, try the cylinder walls */
+    double dist2 = l.x0.x*l.x0.x + l.x0.z*l.x0.z;
+    double bigcyl[3], smallcyl[3];
+    bigcyl[2]   = smallcyl[2] = l.n.x*l.n.x + l.n.z*l.n.z;
+    bigcyl[1]   = smallcyl[1] = 2.0*(l.n.x*l.x0.x + l.n.z*l.x0.z);
+    bigcyl[0]   = dist2 - rmax2;
+    smallcyl[0] = dist2 - rmin2;
+
+    double x[4];
+    size_t n = dmnsn_solve_polynomial(bigcyl, 2, x);
+    n += dmnsn_solve_polynomial(smallcyl, 2, x + n);
+
+    size_t i;
+    for (i = 0; i < n; ++i) {
+      dmnsn_vector p = dmnsn_line_point(l, x[i]);
+      if (p.y >= -r && p.y <= r)
+        break;
+    }
+
+    if (i == n) {
+      /* No valid intersection found */
+      return false;
+    }
+  }
+
+  return true;
+}
+
 /* Returns the closest intersection of `line' with `torus' */
 static bool
 dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line line,
@@ -66,9 +110,13 @@ dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line line,
 {
   dmnsn_line l = dmnsn_transform_line(torus->trans_inv, line);
   const dmnsn_torus_payload *payload = torus->ptr;
-  double R2 = payload->major*payload->major, r2 = payload->minor*payload->minor;
+  double R = payload->major, r = payload->minor;
+  double R2 = R*R, r2 = r*r;
 
-  /* This bit of algebra here is correct, and can be verified with a CAS */
+  if (!dmnsn_torus_bound_intersection(payload, l))
+    return false;
+
+  /* This bit of algebra here is correct */
   dmnsn_vector x0mod = dmnsn_new_vector(l.x0.x, -l.x0.y, l.x0.z);
   dmnsn_vector nmod  = dmnsn_new_vector(l.n.x,  -l.n.y,  l.n.z);
   double nn      = dmnsn_vector_dot(l.n, l.n);
