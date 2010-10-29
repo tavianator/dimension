@@ -1,0 +1,24 @@
+Here's an overview of how the code is arranged:
+
+Client (GPLv3):
+===============
+
+ENTRY POINT:         dimension/main.c
+Tokenizing:          dimension/lexer.l
+Language directives: dimension/tokenize.c
+Parsing:             dimension/common.rules
+Extra parsing stuff: dimension/{common,grammar,directives}.*
+Tests:               tests/dimension/*.{pov,sh}
+Benchmarks:          bench/dimension/*.{sh,pov}
+
+Library (LGPLv3):
+=================
+
+API:                   libdimension/dimension.h, libdimension/dimension/*.h
+                       (Implementations for libdimension/dimension/$file.h
+                       are generally at libdimension/$file.c)
+Ray tracing algorithm: libdimension/raytrace.c
+Bounding hierarchy:    libdimension/prtree.{c,h}
+Library internals:     libdimension/dimension-impl.h and its #includes
+Tests:                 tests/libdimension/*.{c,cpp}
+Benchmarks:            bench/libdimension/*.c
