@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 DMNSN_INLINE double
-dmnsn_evaluate_polynomial(double poly[], size_t degree, double x)
+dmnsn_evaluate_polynomial(const double poly[], size_t degree, double x)
 {
   double ret = poly[degree];
   ssize_t i;
@@ -43,9 +43,9 @@ dmnsn_evaluate_polynomial(double poly[], size_t degree, double x)
 
 /* Stores the positive roots of poly[] in x[], and returns the number of such
    roots that were stored */
-size_t dmnsn_solve_polynomial(double poly[], size_t degree, double x[]);
+size_t dmnsn_solve_polynomial(const double poly[], size_t degree, double x[]);
 
 /* Helper function to print a polynomial */
-void dmnsn_print_polynomial(FILE *file, double poly[], size_t degree);
+void dmnsn_print_polynomial(FILE *file, const double poly[], size_t degree);
 
 #endif /* DIMENSION_POLYNOMIAL_H */

@@ -24,14 +24,14 @@
 /* Basic solving methods */
 
 static inline size_t
-dmnsn_solve_linear(double poly[2], double x[1])
+dmnsn_solve_linear(const double poly[2], double x[1])
 {
   x[0] = -poly[0]/poly[1];
   return (x[0] > 0.0) ? 1 : 0;
 }
 
 static inline size_t
-dmnsn_solve_quadratic(double poly[3], double x[2])
+dmnsn_solve_quadratic(const double poly[3], double x[2])
 {
   double disc = poly[1]*poly[1] - 4.0*poly[0]*poly[2];
   if (disc >= 0.0) {
@@ -62,7 +62,7 @@ dmnsn_eliminate_zero_roots(double poly[], size_t *degree)
 
 /* Get the real degree of a polynomial, ignoring leading zeros */
 static inline size_t
-dmnsn_real_degree(double poly[], size_t degree)
+dmnsn_real_degree(const double poly[], size_t degree)
 {
   for (ssize_t i = degree; i >= 0; ++i) {
     if (poly[i] != 0.0) {
@@ -76,7 +76,7 @@ dmnsn_real_degree(double poly[], size_t degree)
 /* Use the false position method to find a root in a range that contains exactly
    one root */
 static inline double
-dmnsn_bisect_root(double poly[], size_t degree, double min, double max)
+dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
 {
   double evmin = dmnsn_evaluate_polynomial(poly, degree, min);
   double evmax = dmnsn_evaluate_polynomial(poly, degree, max);
@@ -127,7 +127,7 @@ dmnsn_eliminate_root(double poly[], size_t *degree, double r)
 
 /* Returns the number of sign changes between coefficients of `poly' */
 static inline size_t
-dmnsn_descartes_rule(double poly[], size_t degree)
+dmnsn_descartes_rule(const double poly[], size_t degree)
 {
   int lastsign = 0;
   size_t i;
@@ -188,7 +188,7 @@ dmnsn_binom(size_t n, size_t k)
 
 /* Find all ranges that contain a single root, with Uspensky's algorithm */
 static size_t
-dmnsn_uspensky_bounds(double poly[], size_t degree, double bounds[][2],
+dmnsn_uspensky_bounds(const double poly[], size_t degree, double bounds[][2],
                       size_t max_roots)
 {
   size_t signchanges = dmnsn_descartes_rule(poly, degree);
@@ -248,7 +248,7 @@ dmnsn_uspensky_bounds(double poly[], size_t degree, double bounds[][2],
 
 /* Modified Uspensky's algorithm */
 size_t
-dmnsn_solve_polynomial(double poly[], size_t degree, double x[])
+dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
 {
   /* Copy the polynomial so we can be destructive */
   double p[degree + 1];
@@ -302,7 +302,7 @@ dmnsn_solve_polynomial(double poly[], size_t degree, double x[])
 }
 
 void
-dmnsn_print_polynomial(FILE *file, double poly[], size_t degree)
+dmnsn_print_polynomial(FILE *file, const double poly[], size_t degree)
 {
   for (ssize_t i = degree; i >= 0; --i) {
     if (i < degree) {
