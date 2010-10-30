@@ -264,8 +264,6 @@ dmnsn_solve_polynomial(double poly[], size_t degree, double x[])
   size_t i = 0; /* Index into x[] */
 
   if (degree >= 3) {
-    dmnsn_print_polynomial(stdout, p, degree);
-    printf("\n");
     /* Find isolating intervals for degree - 2 roots of p[] */
     double ranges[degree - 2][2];
     size_t n = dmnsn_uspensky_bounds(p, degree, ranges, degree - 2);
