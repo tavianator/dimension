@@ -21,29 +21,6 @@
 #include "dimension.h"
 #include <math.h>
 
-/* Basic solving methods */
-
-static inline size_t
-dmnsn_solve_linear(const double poly[2], double x[1])
-{
-  x[0] = -poly[0]/poly[1];
-  return (x[0] >= dmnsn_epsilon) ? 1 : 0;
-}
-
-static inline size_t
-dmnsn_solve_quadratic(const double poly[3], double x[2])
-{
-  double disc = poly[1]*poly[1] - 4.0*poly[0]*poly[2];
-  if (disc >= 0.0) {
-    double s = sqrt(disc);
-    x[0] = (-poly[1] + s)/(2.0*poly[2]);
-    x[1] = (-poly[1] - s)/(2.0*poly[2]);
-    return (x[0] >= dmnsn_epsilon) ? ((x[1] >= dmnsn_epsilon) ? 2 : 1) : 0;
-  } else {
-    return 0;
-  }
-}
-
 /* Get the real degree of a polynomial, ignoring leading zeros */
 static inline size_t
 dmnsn_real_degree(const double poly[], size_t degree)
@@ -61,9 +38,10 @@ dmnsn_real_degree(const double poly[], size_t degree)
 static inline void
 dmnsn_normalize_polynomial(double poly[], size_t degree)
 {
-  for (size_t i = 0; i <= degree; ++i) {
+  for (size_t i = 0; i < degree; ++i) {
     poly[i] /= poly[degree];
   }
+  poly[degree] = 1.0;
 }
 
 /* Eliminate trivial zero roots from poly[] */
@@ -277,6 +255,29 @@ dmnsn_eliminate_root(double poly[], size_t *degree, double r)
     rem = temp + r*rem;
   }
   --*degree;
+}
+
+/* Basic solving methods -- assuming normalized polynomial */
+
+static inline size_t
+dmnsn_solve_linear(const double poly[2], double x[1])
+{
+  x[0] = -poly[0];
+  return (x[0] >= dmnsn_epsilon) ? 1 : 0;
+}
+
+static inline size_t
+dmnsn_solve_quadratic(const double poly[3], double x[2])
+{
+  double disc = poly[1]*poly[1] - 4.0*poly[0];
+  if (disc >= 0.0) {
+    double s = sqrt(disc);
+    x[0] = (-poly[1] + s)/2.0;
+    x[1] = (-poly[1] - s)/2.0;
+    return (x[0] >= dmnsn_epsilon) ? ((x[1] >= dmnsn_epsilon) ? 2 : 1) : 0;
+  } else {
+    return 0;
+  }
 }
 
 /* Uspensky's algorithm */
