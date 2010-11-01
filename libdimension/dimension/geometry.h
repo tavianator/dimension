@@ -63,7 +63,7 @@ typedef struct dmnsn_bounding_box { dmnsn_vector min, max; } dmnsn_bounding_box;
 
 /* Constants */
 
-#define dmnsn_epsilon 1.0e-9
+#define dmnsn_epsilon 1.0e-10
 
 static const dmnsn_vector dmnsn_zero = { 0.0, 0.0, 0.0 };
 static const dmnsn_vector dmnsn_x    = { 1.0, 0.0, 0.0 };

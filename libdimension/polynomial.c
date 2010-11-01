@@ -57,6 +57,15 @@ dmnsn_real_degree(const double poly[], size_t degree)
   return 0;
 }
 
+/* Divide each coefficient by the leading coefficient */
+static inline void
+dmnsn_normalize_polynomial(double poly[], size_t degree)
+{
+  for (size_t i = 0; i <= degree; ++i) {
+    poly[i] /= poly[degree];
+  }
+}
+
 /* Eliminate trivial zero roots from poly[] */
 static inline void
 dmnsn_eliminate_zero_roots(double poly[], size_t *degree)
@@ -285,6 +294,8 @@ dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
 
   /* Account for leading zero coefficients */
   degree = dmnsn_real_degree(p, degree);
+  /* Normalize the leading coefficient to 1.0 */
+  dmnsn_normalize_polynomial(p, degree);
   /* Eliminate simple zero roots */
   dmnsn_eliminate_zero_roots(p, &degree);
 
