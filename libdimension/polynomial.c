@@ -248,8 +248,9 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
 static inline void
 dmnsn_eliminate_root(double poly[], size_t *degree, double r)
 {
-  double rem = poly[*degree];
-  for (ssize_t i = *degree - 1; i >= 0; --i) {
+  size_t deg = *degree;
+  double rem = poly[deg];
+  for (ssize_t i = deg - 1; i >= 0; --i) {
     double temp = poly[i];
     poly[i] = rem;
     rem = temp + r*rem;
@@ -324,10 +325,13 @@ dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
     }
   }
 
-  if (degree == 1) {
+  switch (degree) {
+  case 1:
     i += dmnsn_solve_linear(p, x + i);
-  } else if (degree == 2) {
+    break;
+  case 2:
     i += dmnsn_solve_quadratic(p, x + i);
+    break;
   }
 
   return i;
