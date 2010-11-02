@@ -589,7 +589,7 @@ dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
   tmin = dmnsn_max(tmin, dmnsn_min(tz1, tz2));
   tmax = dmnsn_min(tmax, dmnsn_max(tz1, tz2));
 
-  return tmax >= 0.0 && tmax >= tmin && tmin < t;
+  return tmax >= dmnsn_max(0.0, tmin) && tmin < t;
 }
 
 static void
