@@ -25,7 +25,7 @@
 static inline size_t
 dmnsn_real_degree(const double poly[], size_t degree)
 {
-  for (ssize_t i = degree; i >= 0; ++i) {
+  for (ssize_t i = degree; i >= 0; --i) {
     if (fabs(poly[i]) >= dmnsn_epsilon) {
       return i;
     }
