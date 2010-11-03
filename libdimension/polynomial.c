@@ -104,21 +104,17 @@ static const double dmnsn_pascals_triangle[DMNSN_NBINOM][DMNSN_NBINOM] = {
 static inline double
 dmnsn_binom(size_t n, size_t k)
 {
-  if (n < DMNSN_NBINOM && k < DMNSN_NBINOM) {
-    return dmnsn_pascals_triangle[n][k];
-  } else {
-    if (k > n - k) {
-      k = n - k;
-    }
-
-    double ret = 1.0;
-    for (size_t i = 0; i < k; ++i) {
-      ret *= n - i;
-      ret /= i + 1;
-    }
-
-    return ret;
+  if (k > n - k) {
+    k = n - k;
   }
+
+  double ret = 1.0;
+  for (size_t i = 0; i < k; ++i) {
+    ret *= n - i;
+    ret /= i + 1;
+  }
+
+  return ret;
 }
 
 /* Find all ranges that contain a single root, with Uspensky's algorithm */
@@ -157,13 +153,26 @@ dmnsn_uspensky_bounds(const double poly[], size_t degree, double bounds[][2],
     /* a[] is the expanded form of poly(x + 1), b[] is the expanded form of
        (x + 1)^degree * poly(1/(x + 1)) */
     double a[degree + 1], b[degree + 1];
-    for (size_t i = 0; i <= degree; ++i) {
-      a[i] = poly[i];
-      b[i] = poly[degree - i];
-      for (size_t j = i + 1; j <= degree; ++j) {
-        double binom = dmnsn_binom(j, i);
-        a[i] += binom*poly[j];
-        b[i] += binom*poly[degree - j];
+    if (degree < DMNSN_NBINOM) {
+      /* Use precomputed binomial coefficients if possible */
+      for (size_t i = 0; i <= degree; ++i) {
+        a[i] = poly[i];
+        b[i] = poly[degree - i];
+        for (size_t j = i + 1; j <= degree; ++j) {
+          double binom = dmnsn_pascals_triangle[j][i];
+          a[i] += binom*poly[j];
+          b[i] += binom*poly[degree - j];
+        }
+      }
+    } else {
+      for (size_t i = 0; i <= degree; ++i) {
+        a[i] = poly[i];
+        b[i] = poly[degree - i];
+        for (size_t j = i + 1; j <= degree; ++j) {
+          double binom = dmnsn_binom(j, i);
+          a[i] += binom*poly[j];
+          b[i] += binom*poly[degree - j];
+        }
       }
     }
 
