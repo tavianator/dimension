@@ -231,7 +231,20 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
     mid = (min*evmax - max*evmin)/(evmax - evmin);
     evmid = dmnsn_evaluate_polynomial(poly, degree, mid);
     int sign = dmnsn_signbit(evmid);
-    if (sign == dmnsn_signbit(evmax)) {
+
+    if (mid < min) {
+      /* This can happen due to numerical instability in the root bounding
+         algorithm, so behave like the normal secant method */
+      max = min;
+      evmax = evmin;
+      min = mid;
+      evmin = evmid;
+    } else if (mid > max) {
+      min = max;
+      evmin = evmax;
+      max = mid;
+      evmax = evmid;
+    } else if (sign == dmnsn_signbit(evmax)) {
       max = mid;
       evmax = evmid;
       if (sign == lastsign) {
