@@ -337,7 +337,7 @@ dmnsn_line_add_epsilon(dmnsn_line l)
   return dmnsn_new_line(
     dmnsn_vector_add(
       l.x0,
-      dmnsn_vector_mul(dmnsn_epsilon, l.n)
+      dmnsn_vector_mul(1.0e3*dmnsn_epsilon, l.n)
     ),
     l.n
   );
