@@ -26,6 +26,7 @@ dmnsn_pigment *
 dmnsn_new_pigment()
 {
   dmnsn_pigment *pigment = dmnsn_malloc(sizeof(dmnsn_pigment));
+  pigment->init_fn = NULL;
   pigment->free_fn = NULL;
   pigment->trans   = dmnsn_identity_matrix();
   return pigment;
@@ -47,6 +48,10 @@ dmnsn_delete_pigment(dmnsn_pigment *pigment)
 void
 dmnsn_pigment_init(dmnsn_pigment *pigment)
 {
+  if (pigment->init_fn) {
+    (*pigment->init_fn)(pigment);
+  }
+
   pigment->trans_inv = dmnsn_matrix_inverse(pigment->trans);
 }
 

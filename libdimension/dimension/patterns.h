@@ -19,28 +19,12 @@
  *************************************************************************/
 
 /*
- * Custom pigments.
+ * Custom patterns
  */
 
-#ifndef DIMENSION_PIGMENTS_H
-#define DIMENSION_PIGMENTS_H
+#ifndef DIMENSION_PATTERNS_H
+#define DIMENSION_PATTERNS_H
 
-/* A solid color */
-dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color);
-/* An image map */
-dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas);
+dmnsn_pattern *dmnsn_new_checker_pattern();
 
-/* Color maps */
-typedef dmnsn_array dmnsn_color_map;
-
-dmnsn_color_map *dmnsn_new_color_map();
-void dmnsn_delete_color_map(dmnsn_color_map *map);
-
-void dmnsn_add_color_map_entry(dmnsn_color_map *map, double n, dmnsn_color c);
-dmnsn_color dmnsn_color_map_value(const dmnsn_color_map *map, double n);
-
-/* Color-mapped pigments */
-dmnsn_pigment *dmnsn_new_color_map_pigment(dmnsn_pattern *pattern,
-                                           dmnsn_color_map *map);
-
-#endif /* DIMENSION_PIGMENTS_H */
+#endif /* DIMENSION_PATTERNS_H */

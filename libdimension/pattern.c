@@ -18,29 +18,39 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Custom pigments.
- */
+#include "dimension.h"
 
-#ifndef DIMENSION_PIGMENTS_H
-#define DIMENSION_PIGMENTS_H
+/* Allocate a dummy pattern */
+dmnsn_pattern *
+dmnsn_new_pattern(void)
+{
+  dmnsn_pattern *pattern = dmnsn_malloc(sizeof(dmnsn_pattern));
+  pattern->trans   = dmnsn_identity_matrix();
+  pattern->free_fn = NULL;
+  return pattern;
+}
 
-/* A solid color */
-dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color);
-/* An image map */
-dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas);
+/* Delete a pattern */
+void
+dmnsn_delete_pattern(dmnsn_pattern *pattern)
+{
+  if (pattern->free_fn) {
+    (*pattern->free_fn)(pattern->ptr);
+  }
+  dmnsn_free(pattern);
+}
 
-/* Color maps */
-typedef dmnsn_array dmnsn_color_map;
+/* Precompute the transformation matrix inverse */
+void
+dmnsn_pattern_init(dmnsn_pattern *pattern)
+{
+  pattern->trans_inv = dmnsn_matrix_inverse(pattern->trans);
+}
 
-dmnsn_color_map *dmnsn_new_color_map();
-void dmnsn_delete_color_map(dmnsn_color_map *map);
-
-void dmnsn_add_color_map_entry(dmnsn_color_map *map, double n, dmnsn_color c);
-dmnsn_color dmnsn_color_map_value(const dmnsn_color_map *map, double n);
-
-/* Color-mapped pigments */
-dmnsn_pigment *dmnsn_new_color_map_pigment(dmnsn_pattern *pattern,
-                                           dmnsn_color_map *map);
-
-#endif /* DIMENSION_PIGMENTS_H */
+/* Invoke the pattern callback with the right transformation */
+double
+dmnsn_pattern_value(const dmnsn_pattern *pattern, dmnsn_vector v)
+{
+  v = dmnsn_transform_vector(pattern->trans_inv, v);
+  return (*pattern->pattern_fn)(pattern, v);
+}

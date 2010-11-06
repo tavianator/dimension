@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -18,29 +18,41 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+#include "dimension.h"
+
 /*
- * Custom pigments.
+ * Checker pattern
  */
 
-#ifndef DIMENSION_PIGMENTS_H
-#define DIMENSION_PIGMENTS_H
+static double
+dmnsn_checker_pattern_fn(const dmnsn_pattern *checker, dmnsn_vector v)
+{
+  double xmod = fmod(v.x, 2.0);
+  double ymod = fmod(v.y, 2.0);
+  double zmod = fmod(v.z, 2.0);
 
-/* A solid color */
-dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color);
-/* An image map */
-dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas);
+  if (xmod < -dmnsn_epsilon)
+    xmod += 2.0;
+  if (ymod < -dmnsn_epsilon)
+    ymod += 2.0;
+  if (zmod < -dmnsn_epsilon)
+    zmod += 2.0;
 
-/* Color maps */
-typedef dmnsn_array dmnsn_color_map;
+  /* Return 0 when an even number of coordinates are in [0, 1), 1 otherwise */
+  unsigned int n = 0;
+  if (xmod >= 1.0)
+    ++n;
+  if (ymod >= 1.0)
+    ++n;
+  if (zmod >= 1.0)
+    ++n;
+  return (n%2 == 0) ? 0.0 : 1.0;
+}
 
-dmnsn_color_map *dmnsn_new_color_map();
-void dmnsn_delete_color_map(dmnsn_color_map *map);
-
-void dmnsn_add_color_map_entry(dmnsn_color_map *map, double n, dmnsn_color c);
-dmnsn_color dmnsn_color_map_value(const dmnsn_color_map *map, double n);
-
-/* Color-mapped pigments */
-dmnsn_pigment *dmnsn_new_color_map_pigment(dmnsn_pattern *pattern,
-                                           dmnsn_color_map *map);
-
-#endif /* DIMENSION_PIGMENTS_H */
+dmnsn_pattern *
+dmnsn_new_checker_pattern()
+{
+  dmnsn_pattern *checker = dmnsn_new_pattern();
+  checker->pattern_fn = &dmnsn_checker_pattern_fn;
+  return checker;
+}

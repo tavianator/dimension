@@ -19,28 +19,37 @@
  *************************************************************************/
 
 /*
- * Custom pigments.
+ * Patterns
  */
 
-#ifndef DIMENSION_PIGMENTS_H
-#define DIMENSION_PIGMENTS_H
+#ifndef DIMENSION_PATTERN_H
+#define DIMENSION_PATTERN_H
 
-/* A solid color */
-dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color);
-/* An image map */
-dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas);
+/* Forward-declare dmnsn_pattern */
+typedef struct dmnsn_pattern dmnsn_pattern;
 
-/* Color maps */
-typedef dmnsn_array dmnsn_color_map;
+/* Pattern callback */
+typedef double dmnsn_pattern_fn(const dmnsn_pattern *pattern, dmnsn_vector v);
 
-dmnsn_color_map *dmnsn_new_color_map();
-void dmnsn_delete_color_map(dmnsn_color_map *map);
+/* Generic pattern */
+struct dmnsn_pattern {
+  /* Callbacks */
+  dmnsn_pattern_fn *pattern_fn;
+  dmnsn_free_fn    *free_fn;
 
-void dmnsn_add_color_map_entry(dmnsn_color_map *map, double n, dmnsn_color c);
-dmnsn_color dmnsn_color_map_value(const dmnsn_color_map *map, double n);
+  /* Transformation matrix */
+  dmnsn_matrix trans, trans_inv;
 
-/* Color-mapped pigments */
-dmnsn_pigment *dmnsn_new_color_map_pigment(dmnsn_pattern *pattern,
-                                           dmnsn_color_map *map);
+  /* Generic pointer */
+  void *ptr;
+};
 
-#endif /* DIMENSION_PIGMENTS_H */
+dmnsn_pattern *dmnsn_new_pattern(void);
+void dmnsn_delete_pattern(dmnsn_pattern *pattern);
+
+void dmnsn_pattern_init(dmnsn_pattern *pattern);
+
+/* Invoke the pattern callback with the right transformation */
+double dmnsn_pattern_value(const dmnsn_pattern *pattern, dmnsn_vector v);
+
+#endif /* DIMENSION_PATTERN_H */

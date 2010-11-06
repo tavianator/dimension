@@ -38,6 +38,8 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/malloc.h                                    \
                          dimension/object.h                                    \
                          dimension/objects.h                                   \
+                         dimension/pattern.h                                   \
+                         dimension/patterns.h                                  \
                          dimension/pigments.h                                  \
                          dimension/png.h                                       \
                          dimension/progress.h                                  \
@@ -53,7 +55,9 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           camera.c                                             \
                           canvas.c                                             \
                           canvas_pigment.c                                     \
+                          checker.c                                            \
                           color.c                                              \
+                          color_map.c                                          \
                           cube.c                                               \
                           csg.c                                                \
                           cylinder.c                                           \
@@ -68,6 +72,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           list.c                                               \
                           malloc.c                                             \
                           object.c                                             \
+                          pattern.c                                            \
                           perspective.c                                        \
                           phong.c                                              \
                           plane.c                                              \

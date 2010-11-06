@@ -32,14 +32,16 @@
 /* Forward-declare dmnsn_pigment */
 typedef struct dmnsn_pigment dmnsn_pigment;
 
-/* Pigment callback */
+/* Pigment callbacks */
 typedef dmnsn_color dmnsn_pigment_fn(const dmnsn_pigment *pigment,
                                      dmnsn_vector v);
+typedef void dmnsn_pigment_init_fn(dmnsn_pigment *pigment);
 
 /* dmnsn_pigment definition */
 struct dmnsn_pigment {
   /* Callbacks */
   dmnsn_pigment_fn *pigment_fn;
+  dmnsn_pigment_init_fn *init_fn;
   dmnsn_free_fn *free_fn;
 
   /* Transformation matrix */
