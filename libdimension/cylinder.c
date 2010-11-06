@@ -60,10 +60,9 @@ dmnsn_new_cylinder(double r1, double r2, bool open)
 
 /* Intersections callback for a cylinder */
 static bool
-dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
+dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line l,
                                dmnsn_intersection *intersection)
 {
-  dmnsn_line l = dmnsn_transform_line(cylinder->trans_inv, line);
   const dmnsn_cylinder_payload *payload = cylinder->ptr;
   double r1 = payload->r1, r2 = payload->r2;
 
@@ -128,9 +127,9 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
           && (tcap < t || p.y <= -1.0 || p.y >= 1.0)
           && pcap.x*pcap.x + pcap.z*pcap.z < r*r)
       {
-        intersection->ray      = line;
+        intersection->ray      = l;
         intersection->t        = tcap;
-        intersection->normal   = dmnsn_transform_normal(cylinder->trans, norm);
+        intersection->normal   = norm;
         intersection->texture  = cylinder->texture;
         intersection->interior = cylinder->interior;
         return true;
@@ -141,9 +140,9 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
       dmnsn_vector norm = dmnsn_vector_normalize(
         dmnsn_new_vector(p.x, -(r2 - r1)*sqrt(p.x*p.x + p.z*p.z)/2.0, p.z)
       );
-      intersection->ray      = line;
+      intersection->ray      = l;
       intersection->t        = t;
-      intersection->normal   = dmnsn_transform_normal(cylinder->trans, norm);
+      intersection->normal   = norm;
       intersection->texture  = cylinder->texture;
       intersection->interior = cylinder->interior;
       return true;
@@ -157,7 +156,6 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line line,
 static bool
 dmnsn_cylinder_inside_fn(const dmnsn_object *cylinder, dmnsn_vector point)
 {
-  point = dmnsn_transform_vector(cylinder->trans_inv, point);
   const dmnsn_cylinder_payload *payload = cylinder->ptr;
   double r1 = payload->r1, r2 = payload->r2;
   double r = (point.y*(r2 - r1) + r1 + r2)/2.0;

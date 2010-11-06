@@ -47,11 +47,9 @@ dmnsn_new_sphere()
 
 /* Returns the closest intersection of `line' with `sphere' */
 static bool
-dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
+dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line l,
                              dmnsn_intersection *intersection)
 {
-  dmnsn_line l = dmnsn_transform_line(sphere->trans_inv, line);
-
   /* Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1 */
   double poly[3], x[2];
   poly[2] = dmnsn_vector_dot(l.n, l.n);
@@ -66,10 +64,9 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
     if (n == 2)
       t = dmnsn_min(t, x[1]);
 
-    intersection->ray      = line;
+    intersection->ray      = l;
     intersection->t        = t;
-    intersection->normal   = dmnsn_transform_normal(sphere->trans,
-                                                      dmnsn_line_point(l, t));
+    intersection->normal   = dmnsn_line_point(l, t);
     intersection->texture  = sphere->texture;
     intersection->interior = sphere->interior;
     return true;
@@ -80,6 +77,5 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line line,
 static bool
 dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
 {
-  point = dmnsn_transform_vector(sphere->trans_inv, point);
   return point.x*point.x + point.y*point.y + point.z*point.z < 1.0;
 }

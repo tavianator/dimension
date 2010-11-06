@@ -105,10 +105,9 @@ dmnsn_torus_bound_intersection(const dmnsn_torus_payload *payload, dmnsn_line l)
 
 /* Returns the closest intersection of `line' with `torus' */
 static bool
-dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line line,
+dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line l,
                             dmnsn_intersection *intersection)
 {
-  dmnsn_line l = dmnsn_transform_line(torus->trans_inv, line);
   const dmnsn_torus_payload *payload = torus->ptr;
   double R = payload->major, r = payload->minor;
   double R2 = R*R, r2 = r*r;
@@ -152,9 +151,9 @@ dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line line,
     dmnsn_vector_normalize(dmnsn_new_vector(p.x, 0.0, p.z))
   );
   dmnsn_vector normal = dmnsn_vector_normalize(dmnsn_vector_sub(p, center));
-  intersection->ray      = line;
+  intersection->ray      = l;
   intersection->t        = t;
-  intersection->normal   = dmnsn_transform_normal(torus->trans, normal);
+  intersection->normal   = normal;
   intersection->texture  = torus->texture;
   intersection->interior = torus->interior;
   return true;
@@ -164,7 +163,6 @@ dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line line,
 static bool
 dmnsn_torus_inside_fn(const dmnsn_object *torus, dmnsn_vector point)
 {
-  point = dmnsn_transform_vector(torus->trans_inv, point);
   const dmnsn_torus_payload *payload = torus->ptr;
   double dmajor = payload->major - sqrt(point.x*point.x + point.z*point.z);
   return dmajor*dmajor + point.y*point.y < payload->minor*payload->minor;

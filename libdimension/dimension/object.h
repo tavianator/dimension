@@ -85,22 +85,12 @@ dmnsn_object *dmnsn_new_object(void);
 /* Free an object */
 void dmnsn_delete_object(dmnsn_object *object);
 
+/* Initialize an object and potentially its children */
 void dmnsn_object_init(dmnsn_object *object);
 
-/* Useful function to transform a normal vector */
-DMNSN_INLINE dmnsn_vector
-dmnsn_transform_normal(dmnsn_matrix trans, dmnsn_vector normal)
-{
-  return dmnsn_vector_normalize(
-    dmnsn_vector_sub(
-      dmnsn_transform_vector(trans, normal),
-      /* Optimized form of dmnsn_transform_vector(trans, dmnsn_zero) */
-      dmnsn_vector_div(
-        dmnsn_new_vector(trans.n[0][3], trans.n[1][3], trans.n[2][3]),
-        trans.n[3][3]
-      )
-    )
-  );
-}
+/* Helpers for invoking object callbacks with correct transformations */
+bool dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
+                               dmnsn_intersection *intersection);
+bool dmnsn_object_inside(const dmnsn_object *object, dmnsn_vector point);
 
 #endif /* DIMENSION_OBJECT_H */

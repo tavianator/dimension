@@ -51,13 +51,11 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
 {
   /* Clip the given line against the X, Y, and Z slabs */
 
-  dmnsn_line line_trans = dmnsn_transform_line(cube->trans_inv, line);
-
   dmnsn_vector nmin, nmax;
   double tmin, tmax;
 
-  double tx1 = (-1.0 - line_trans.x0.x)/line_trans.n.x;
-  double tx2 = (+1.0 - line_trans.x0.x)/line_trans.n.x;
+  double tx1 = (-1.0 - line.x0.x)/line.n.x;
+  double tx2 = (+1.0 - line.x0.x)/line.n.x;
 
   if (tx1 < tx2) {
     tmin = tx1;
@@ -74,8 +72,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
   if (tmin > tmax)
     return false;
 
-  double ty1 = (-1.0 - line_trans.x0.y)/line_trans.n.y;
-  double ty2 = (+1.0 - line_trans.x0.y)/line_trans.n.y;
+  double ty1 = (-1.0 - line.x0.y)/line.n.y;
+  double ty2 = (+1.0 - line.x0.y)/line.n.y;
 
   if (ty1 < ty2) {
     if (ty1 > tmin) {
@@ -100,8 +98,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
   if (tmin > tmax)
     return false;
 
-  double tz1 = (-1.0 - line_trans.x0.z)/line_trans.n.z;
-  double tz2 = (+1.0 - line_trans.x0.z)/line_trans.n.z;
+  double tz1 = (-1.0 - line.x0.z)/line.n.z;
+  double tz2 = (+1.0 - line.x0.z)/line.n.z;
 
   if (tz1 < tz2) {
     if (tz1 > tmin) {
@@ -134,7 +132,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
   if (tmin >= 0.0) {
     intersection->ray      = line;
     intersection->t        = tmin;
-    intersection->normal   = dmnsn_transform_normal(cube->trans, nmin);
+    intersection->normal   = nmin;
     intersection->texture  = cube->texture;
     intersection->interior = cube->interior;
     return true;
@@ -147,7 +145,6 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
 static bool
 dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
 {
-  point = dmnsn_transform_vector(cube->trans_inv, point);
   return point.x > -1.0 && point.x < 1.0
       && point.y > -1.0 && point.y < 1.0
       && point.z > -1.0 && point.z < 1.0;

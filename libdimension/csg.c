@@ -116,8 +116,8 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
   const dmnsn_object **params = csg->ptr;
 
   dmnsn_intersection i1, i2;
-  bool is_i1 = (*params[0]->intersection_fn)(params[0], line, &i1);
-  bool is_i2 = (*params[1]->intersection_fn)(params[1], line, &i2);
+  bool is_i1 = dmnsn_object_intersection(params[0], line, &i1);
+  bool is_i2 = dmnsn_object_intersection(params[1], line, &i2);
 
   double oldt = 0.0;
   while (is_i1) {
@@ -126,11 +126,11 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
     oldt = i1.t + dmnsn_epsilon;
 
     dmnsn_vector point = dmnsn_line_point(i1.ray, i1.t);
-    if (inside2 ^ (*params[1]->inside_fn)(params[1], point)) {
+    if (inside2 ^ dmnsn_object_inside(params[1], point)) {
       dmnsn_line newline = line;
       newline.x0 = dmnsn_line_point(line, i1.t);
       newline    = dmnsn_line_add_epsilon(newline);
-      is_i1 = (*params[0]->intersection_fn)(params[0], newline, &i1);
+      is_i1 = dmnsn_object_intersection(params[0], newline, &i1);
     } else {
       break;
     }
@@ -143,11 +143,11 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
     oldt = i2.t + dmnsn_epsilon;
 
     dmnsn_vector point = dmnsn_line_point(i2.ray, i2.t);
-    if (inside1 ^ (*params[0]->inside_fn)(params[0], point)) {
+    if (inside1 ^ dmnsn_object_inside(params[0], point)) {
       dmnsn_line newline = line;
       newline.x0 = dmnsn_line_point(line, i2.t);
       newline    = dmnsn_line_add_epsilon(newline);
-      is_i2 = (*params[1]->intersection_fn)(params[1], newline, &i2);
+      is_i2 = dmnsn_object_intersection(params[1], newline, &i2);
     } else {
       break;
     }
@@ -184,8 +184,8 @@ static bool
 dmnsn_csg_intersection_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
   dmnsn_object **params = csg->ptr;
-  return (*params[0]->inside_fn)(params[0], point)
-      && (*params[1]->inside_fn)(params[1], point);
+  return dmnsn_object_inside(params[0], point)
+      && dmnsn_object_inside(params[1], point);
 }
 
 static void
@@ -240,8 +240,8 @@ static bool
 dmnsn_csg_difference_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
   dmnsn_object **params = csg->ptr;
-  return (*params[0]->inside_fn)(params[0], point)
-     && !(*params[1]->inside_fn)(params[1], point);
+  return dmnsn_object_inside(params[0], point)
+     && !dmnsn_object_inside(params[1], point);
 }
 
 static void
@@ -293,8 +293,8 @@ static bool
 dmnsn_csg_merge_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
   dmnsn_object **params = csg->ptr;
-  return (*params[0]->inside_fn)(params[0], point)
-      || (*params[1]->inside_fn)(params[1], point);
+  return dmnsn_object_inside(params[0], point)
+      || dmnsn_object_inside(params[1], point);
 }
 
 static void

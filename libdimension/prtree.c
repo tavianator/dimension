@@ -605,7 +605,7 @@ dmnsn_prtree_intersection_recursive(const dmnsn_prtree_node *node,
       if (dmnsn_ray_box_intersection(ray, node->bounding_boxes[i], *t)) {
         dmnsn_object *object = node->children[i];
         dmnsn_intersection local_intersection;
-        if ((*object->intersection_fn)(object, ray.line, &local_intersection)) {
+        if (dmnsn_object_intersection(object, ray.line, &local_intersection)) {
           if (local_intersection.t < *t) {
             *intersection = local_intersection;
             *t = local_intersection.t;
@@ -636,7 +636,7 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
   /* Search the unbounded objects */
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, tree->unbounded) {
     dmnsn_intersection local_intersection;
-    if ((*(*object)->intersection_fn)(*object, ray, &local_intersection)) {
+    if (dmnsn_object_intersection(*object, ray, &local_intersection)) {
       if (local_intersection.t < t) {
         *intersection = local_intersection;
         t = local_intersection.t;
@@ -667,7 +667,7 @@ dmnsn_prtree_inside_recursive(const dmnsn_prtree_node *node, dmnsn_vector point)
     if (dmnsn_bounding_box_contains(node->bounding_boxes[i], point)) {
       if (node->is_leaf) {
         dmnsn_object *object = node->children[i];
-        if ((*object->inside_fn)(object, point))
+        if (dmnsn_object_inside(object, point))
           return true;
       } else {
         if (dmnsn_prtree_inside_recursive(node->children[i], point))
@@ -684,7 +684,7 @@ dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point)
 {
   /* Search the unbounded objects */
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, tree->unbounded) {
-    if ((*(*object)->inside_fn)(*object, point))
+    if (dmnsn_object_inside(*object, point))
       return true;
   }
 

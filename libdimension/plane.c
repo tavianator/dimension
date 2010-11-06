@@ -58,14 +58,13 @@ dmnsn_plane_intersection_fn(const dmnsn_object *plane, dmnsn_line line,
 {
   dmnsn_vector *normal = plane->ptr;
 
-  dmnsn_line line_trans = dmnsn_transform_line(plane->trans_inv, line);
-  double den = dmnsn_vector_dot(line_trans.n, *normal);
+  double den = dmnsn_vector_dot(line.n, *normal);
   if (den != 0.0) {
-    double t = -dmnsn_vector_dot(line_trans.x0, *normal)/den;
+    double t = -dmnsn_vector_dot(line.x0, *normal)/den;
     if (t >= 0.0) {
       intersection->ray      = line;
       intersection->t        = t;
-      intersection->normal   = dmnsn_transform_normal(plane->trans, *normal);
+      intersection->normal   = *normal;
       intersection->texture  = plane->texture;
       intersection->interior = plane->interior;
       return true;

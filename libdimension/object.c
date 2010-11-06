@@ -71,3 +71,42 @@ dmnsn_object_init(dmnsn_object *object)
     dmnsn_texture_init(object->texture);
   }
 }
+
+/* Helper function to transform a normal vector */
+static inline dmnsn_vector
+dmnsn_transform_normal(dmnsn_matrix trans, dmnsn_vector normal)
+{
+  return dmnsn_vector_normalize(
+    dmnsn_vector_sub(
+      dmnsn_transform_vector(trans, normal),
+      /* Optimized form of dmnsn_transform_vector(trans, dmnsn_zero) */
+      dmnsn_vector_div(
+        dmnsn_new_vector(trans.n[0][3], trans.n[1][3], trans.n[2][3]),
+        trans.n[3][3]
+      )
+    )
+  );
+}
+
+bool
+dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
+                          dmnsn_intersection *intersection)
+{
+  dmnsn_line line_trans = dmnsn_transform_line(object->trans_inv, line);
+  if ((*object->intersection_fn)(object, line_trans, intersection)) {
+    /* Get us back into world coordinates */
+    intersection->ray    = line;
+    intersection->normal = dmnsn_transform_normal(object->trans,
+                                                  intersection->normal);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool
+dmnsn_object_inside(const dmnsn_object *object, dmnsn_vector point)
+{
+  point = dmnsn_transform_vector(object->trans_inv, point);
+  return (*object->inside_fn)(object, point);
+}
