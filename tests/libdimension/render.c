@@ -148,13 +148,14 @@ dmnsn_new_test_scene(void)
   torii->texture->pigment = dmnsn_new_solid_pigment(dmnsn_blue);
   torii->texture->finish  = dmnsn_new_ambient_finish(dmnsn_white);
   dmnsn_array_push(scene->objects, &torii);
+  dmnsn_delete_array(torus_array);
 
   dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
   plane->texture = dmnsn_new_texture();
   dmnsn_pattern *checker = dmnsn_new_checker_pattern();
   dmnsn_color_map *color_map = dmnsn_new_color_map();
-  dmnsn_add_color_map_entry(color_map, 0.5, dmnsn_black);
+  dmnsn_add_color_map_entry(color_map, 0.0, dmnsn_black);
   dmnsn_add_color_map_entry(color_map, 1.0, dmnsn_white);
   plane->texture->pigment = dmnsn_new_color_map_pigment(checker, color_map);
   dmnsn_array_push(scene->objects, &plane);

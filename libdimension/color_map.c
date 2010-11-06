@@ -85,6 +85,15 @@ typedef struct dmnsn_color_map_payload {
   dmnsn_color_map *map;
 } dmnsn_color_map_payload;
 
+static void
+dmnsn_delete_color_map_payload(void *ptr)
+{
+  dmnsn_color_map_payload *payload = ptr;
+  dmnsn_delete_color_map(payload->map);
+  dmnsn_delete_pattern(payload->pattern);
+  dmnsn_free(payload);
+}
+
 static dmnsn_color
 dmnsn_color_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
@@ -114,7 +123,7 @@ dmnsn_new_color_map_pigment(dmnsn_pattern *pattern, dmnsn_color_map *map)
 
   pigment->pigment_fn = &dmnsn_color_map_pigment_fn;
   pigment->init_fn    = &dmnsn_color_map_init_fn;
-  pigment->free_fn    = &dmnsn_free;
+  pigment->free_fn    = &dmnsn_delete_color_map_payload;
   pigment->ptr        = payload;
   return pigment;
 }
