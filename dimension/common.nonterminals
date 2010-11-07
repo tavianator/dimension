@@ -68,6 +68,7 @@
 %type <astnode> PIGMENT
 %type <astnode> PIGMENT_TYPE
 %type <astnode> PIGMENT_MODIFIERS
+%type <astnode> COLOR_LIST2
 %type <astnode> BITMAP_TYPE
 
 /* Finishes */

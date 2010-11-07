@@ -446,6 +446,99 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
   return camera;
 }
 
+static dmnsn_pattern *
+dmnsn_realize_pattern(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_PATTERN, "Expected a pattern.");
+
+  dmnsn_astnode type;
+  dmnsn_array_get(astnode.children, 0, &type);
+
+  dmnsn_pattern *pattern = NULL;
+
+  switch (type.type) {
+  case DMNSN_AST_CHECKER:
+    pattern = dmnsn_new_checker_pattern();
+    break;
+
+  default:
+    dmnsn_assert(false, "Unexpected pattern type.");
+  }
+
+  return pattern;
+}
+
+static dmnsn_color_map *
+dmnsn_realize_color_list(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_COLOR_LIST, "Expected a color list.");
+
+  dmnsn_astnode array;
+  dmnsn_array_get(astnode.children, 0, &array);
+
+  dmnsn_color_map *color_map = dmnsn_new_color_map();
+
+  double n = 0.0, i = 1.0/(dmnsn_array_size(array.children) - 1);
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, entry, array.children) {
+    dmnsn_color color = dmnsn_realize_color(*entry);
+    dmnsn_add_color_map_entry(color_map, n, color);
+    n += i;
+  }
+
+  return color_map;
+}
+
+static dmnsn_pigment *
+dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
+{
+  dmnsn_assert(modifiers.type == DMNSN_AST_PIGMENT_MODIFIERS,
+               "Expected pigment modifiers");
+
+  dmnsn_pattern *pattern = dmnsn_realize_pattern(type);
+
+  dmnsn_color_map *color_map = NULL;
+
+  /* Set up the color_map */
+  DMNSN_ARRAY_FOREACH_REVERSE (dmnsn_astnode *, modifier, modifiers.children) {
+    switch (modifier->type) {
+    case DMNSN_AST_COLOR_LIST:
+      color_map = dmnsn_realize_color_list(*modifier);
+      break;
+
+    default:
+      break;
+    }
+
+    if (color_map)
+      break;
+  }
+
+  /* Now add the default values */
+  switch (type.type) {
+  case DMNSN_AST_CHECKER:
+    /* Default checker pattern is blue and green */
+    if (!color_map)
+      color_map = dmnsn_new_color_map();
+    if (dmnsn_array_size(color_map) < 1)
+      dmnsn_add_color_map_entry(color_map, 0.0, dmnsn_blue);
+    if (dmnsn_array_size(color_map) < 2)
+      dmnsn_add_color_map_entry(color_map, 1.0, dmnsn_green);
+    break;
+
+  default:
+    /* Default map is grayscale */
+    if (!color_map) {
+      color_map = dmnsn_new_color_map();
+      dmnsn_add_color_map_entry(color_map, 0.0, dmnsn_black);
+      dmnsn_add_color_map_entry(color_map, 1.0, dmnsn_white);
+    }
+    break;
+  }
+
+  dmnsn_pigment *pigment = dmnsn_new_color_map_pigment(pattern, color_map);
+  return pigment;
+}
+
 static void
 dmnsn_realize_pigment_modifiers(dmnsn_astnode astnode, dmnsn_pigment *pigment)
 {
@@ -461,6 +554,10 @@ dmnsn_realize_pigment_modifiers(dmnsn_astnode astnode, dmnsn_pigment *pigment)
       );
       break;
 
+    case DMNSN_AST_COLOR_LIST:
+      /* Already handled by dmnsn_realize_pattern_pigment() */
+      break;
+
     default:
       dmnsn_assert(false, "Invalid pigment modifier.");
     }
@@ -474,18 +571,26 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
 
   dmnsn_pigment *pigment = NULL;
 
-  dmnsn_astnode type_node;
+  dmnsn_astnode type_node, modifiers;
   dmnsn_array_get(astnode.children, 0, &type_node);
+  dmnsn_array_get(astnode.children, 1, &modifiers);
 
-  dmnsn_color color;
   switch (type_node.type) {
   case DMNSN_AST_NONE:
     break;
 
   case DMNSN_AST_VECTOR:
-    color = dmnsn_realize_color(type_node);
-    pigment = dmnsn_new_solid_pigment(color);
-    break;
+    {
+      dmnsn_color color = dmnsn_realize_color(type_node);
+      pigment = dmnsn_new_solid_pigment(color);
+      break;
+    }
+
+  case DMNSN_AST_PATTERN:
+    {
+      pigment = dmnsn_realize_pattern_pigment(type_node, modifiers);
+      break;
+    }
 
   case DMNSN_AST_IMAGE_MAP:
     {
@@ -522,8 +627,6 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
     dmnsn_assert(false, "Invalid pigment type.");
   }
 
-  dmnsn_astnode modifiers;
-  dmnsn_array_get(astnode.children, 1, &modifiers);
   dmnsn_realize_pigment_modifiers(modifiers, pigment);
 
   return pigment;

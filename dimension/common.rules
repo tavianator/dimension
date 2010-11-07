@@ -506,12 +506,20 @@ PIGMENT: "pigment" "{"
        {
          $$ = dmnsn_new_astnode2(DMNSN_AST_PIGMENT, @$, $3, $4);
        }
+       | "pigment" "{"
+           "checker" COLOR_LIST2
+           PIGMENT_MODIFIERS
+         "}"
+       {
+         dmnsn_astnode checker = dmnsn_new_astnode(DMNSN_AST_CHECKER, @3);
+         dmnsn_astnode pattern = dmnsn_new_astnode1(DMNSN_AST_PATTERN, @3,
+                                                    checker);
+         dmnsn_array_push($5.children, &$4);
+         $$ = dmnsn_new_astnode2(DMNSN_AST_PIGMENT, @$, pattern, $5);
+       }
 ;
 
-PIGMENT_TYPE: /* empty */ {
-              $$ = dmnsn_new_astnode(DMNSN_AST_NONE, @$);
-            }
-            | COLOR
+PIGMENT_TYPE: COLOR
             | "image_map" "{"
                 BITMAP_TYPE STRING
               "}"
@@ -540,6 +548,20 @@ PIGMENT_MODIFIERS: /* empty */ {
                    dmnsn_array_push($$.children, &$2);
                  }
 ;
+
+COLOR_LIST2: /* empty */ {
+             dmnsn_astnode list = dmnsn_new_astnode(DMNSN_AST_ARRAY, @$);
+             $$ = dmnsn_new_astnode1(DMNSN_AST_COLOR_LIST, @$, list);
+           }
+           | COLOR {
+             dmnsn_astnode list = dmnsn_new_astnode1(DMNSN_AST_ARRAY, @$, $1);
+             $$ = dmnsn_new_astnode1(DMNSN_AST_COLOR_LIST, @$, list);
+           }
+           | COLOR "," COLOR {
+             dmnsn_astnode list = dmnsn_new_astnode2(DMNSN_AST_ARRAY, @$,
+                                                     $1, $3);
+             $$ = dmnsn_new_astnode1(DMNSN_AST_COLOR_LIST, @$, list);
+           }
 
 /* Finishes */
 FINISH: "finish" "{"

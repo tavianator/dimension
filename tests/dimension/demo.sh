@@ -134,8 +134,14 @@ demo_exp=$(echo -n \
       (integer -2))
     (object-modifiers
       (pigment
-        (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
-        pigment-modifiers))))' \
+        (pattern checker)
+        (pigment-modifiers
+          (color-list
+            (array
+              (vector (integer 0) (integer 0) (integer 0)
+                      (integer 0) (integer 0))
+              (vector (integer 1) (integer 1) (integer 1)
+                      (integer 0) (integer 0)))))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 
 if [ "$demo" != "$demo_exp" ]; then

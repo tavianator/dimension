@@ -182,6 +182,7 @@ unsigned long wchar;
 "blue"                  RETURN_TOKEN(DMNSN_T_BLUE);
 "ceil"                  RETURN_TOKEN(DMNSN_T_CEIL);
 "camera"                RETURN_TOKEN(DMNSN_T_CAMERA);
+"checker"               RETURN_TOKEN(DMNSN_T_CHECKER);
 "color"                 RETURN_TOKEN(DMNSN_T_COLOR);
 "colour"                RETURN_TOKEN(DMNSN_T_COLOR);
 "cone"                  RETURN_TOKEN(DMNSN_T_CONE);

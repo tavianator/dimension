@@ -121,7 +121,7 @@
 %token DMNSN_T_CEIL                     "ceil"
 %token DMNSN_T_CELLS
 %token DMNSN_T_CHARSET
-%token DMNSN_T_CHECKER
+%token DMNSN_T_CHECKER                  "checker"
 %token DMNSN_T_CHR
 %token DMNSN_T_CIRCULAR
 %token DMNSN_T_CLIPPED_BY

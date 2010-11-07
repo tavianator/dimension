@@ -21,7 +21,7 @@
 
 %name-prefix "dmnsn_ld_yy"
 
-%expect 12
+%expect 14
 %expect-rr 6
 
 %parse-param {const char *filename}

@@ -111,6 +111,6 @@ union {
 plane {
   y, -2
   pigment {
-    color rgb 1
+    checker color rgb 0, color rgb 1
   }
 }
