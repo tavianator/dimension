@@ -524,7 +524,6 @@ dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
                "Expected pigment modifiers");
 
   dmnsn_pattern *pattern = dmnsn_realize_pattern(type);
-
   dmnsn_color_map *color_map = NULL;
 
   /* Set up the color_map */
@@ -546,7 +545,11 @@ dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
   }
 
   /* Now add the default values */
-  switch (type.type) {
+
+  dmnsn_astnode pattern_type;
+  dmnsn_array_get(type.children, 0, &pattern_type);
+
+  switch (pattern_type.type) {
   case DMNSN_AST_CHECKER:
     /* Default checker pattern is blue and green */
     if (!color_map)
