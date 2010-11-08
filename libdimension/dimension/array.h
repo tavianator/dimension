@@ -177,9 +177,9 @@ dmnsn_array_remove(dmnsn_array *array, size_t i)
        i - (type)dmnsn_array_first(array) < dmnsn_array_size(array);    \
        ++i)
 
-#define DMNSN_ARRAY_FOREACH_REVERSE(type, i, array)                     \
-  for (type i = dmnsn_array_last(array);                                \
-       (type)dmnsn_array_last(array) - i < dmnsn_array_size(array);     \
+#define DMNSN_ARRAY_FOREACH_REVERSE(type, i, array)     \
+  for (type i = dmnsn_array_last(array);                \
+       i - (type)dmnsn_array_first(array) >= 0;         \
        --i)
 
 #endif /* DIMENSION_ARRAY_H */
