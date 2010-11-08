@@ -85,11 +85,12 @@ dmnsn_texture *
 dmnsn_new_texture()
 {
   dmnsn_texture *texture = dmnsn_malloc(sizeof(dmnsn_texture));
-  texture->pigment   = NULL;
-  texture->finish    = NULL;
-  texture->trans     = dmnsn_identity_matrix();
-  texture->refcount  = dmnsn_malloc(sizeof(unsigned int));
-  *texture->refcount = 1;
+  texture->pigment     = NULL;
+  texture->finish      = NULL;
+  texture->trans       = dmnsn_identity_matrix();
+  texture->refcount    = dmnsn_malloc(sizeof(unsigned int));
+  *texture->refcount   = 1;
+  texture->should_init = true;
   return texture;
 }
 

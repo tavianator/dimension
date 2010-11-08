@@ -57,6 +57,14 @@ dmnsn_delete_object(dmnsn_object *object)
 void
 dmnsn_object_init(dmnsn_object *object)
 {
+  /* Don't double-init textures */
+  bool should_init = false;
+  dmnsn_matrix old_trans = object->trans;
+  if (object->texture) {
+    should_init = object->texture->should_init;
+    object->texture->should_init = false;
+  }
+
   if (object->init_fn) {
     (*object->init_fn)(object);
   }
@@ -65,9 +73,10 @@ dmnsn_object_init(dmnsn_object *object)
     = dmnsn_transform_bounding_box(object->trans, object->bounding_box);
   object->trans_inv = dmnsn_matrix_inverse(object->trans);
 
-  if (object->texture) {
+  if (should_init) {
+    /* Transform the texture with the object */
     object->texture->trans
-      = dmnsn_matrix_mul(object->trans, object->texture->trans);
+      = dmnsn_matrix_mul(old_trans, object->texture->trans);
     dmnsn_texture_init(object->texture);
   }
 }

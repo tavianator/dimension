@@ -107,6 +107,7 @@ typedef struct {
 
   /* Reference count */
   unsigned int *refcount;
+  bool should_init;
 } dmnsn_texture;
 
 dmnsn_texture *dmnsn_new_texture(void);
