@@ -64,7 +64,7 @@ typedef struct {
 
 /* Standard colors */
 extern const dmnsn_color dmnsn_black, dmnsn_white, dmnsn_red, dmnsn_green,
-  dmnsn_blue, dmnsn_magenta, dmnsn_yellow, dmnsn_cyan;
+  dmnsn_blue, dmnsn_magenta, dmnsn_orange, dmnsn_yellow, dmnsn_cyan;
 
 /* Standard whitepoint, determined by the conversion of sRGB white to CIE XYZ */
 extern const dmnsn_CIE_XYZ dmnsn_whitepoint;

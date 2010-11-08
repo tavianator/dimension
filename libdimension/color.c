@@ -69,6 +69,13 @@ const dmnsn_color dmnsn_magenta = {
   .filter = 0.0,
   .trans  = 0.0
 };
+const dmnsn_color dmnsn_orange = {
+  .R = 1.0,
+  .G = 0.5,
+  .B = 0.0,
+  .filter = 0.0,
+  .trans  = 0.0
+};
 const dmnsn_color dmnsn_yellow = {
   .R = 1.0,
   .G = 1.0,
