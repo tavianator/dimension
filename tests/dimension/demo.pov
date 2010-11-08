@@ -81,7 +81,18 @@ union {
   }
 
   pigment {
-    color rgb <1, 0, 0>
+    gradient y
+    color_map {
+      [0    color rgb <1, 0, 0>]
+      [1/6  color rgb <1, 0.5, 0>]
+      [2/6  color rgb <1, 1, 0>]
+      [3/6  color rgb <0, 1, 0>]
+      [4/6  color rgb <0, 0, 1>]
+      [5/6  color rgb <1, 0, 1>]
+      [1    color rgb <1, 0, 0>]
+    }
+    scale <1, 2.75, 1>
+    translate -1.25*y
   }
   rotate -45*x
 }

@@ -472,6 +472,26 @@ OBJECT_MODIFIER: TRANSFORMATION
                | INTERIOR
 ;
 
+/* Patterns */
+
+BLOCK_PATTERN_TYPE: "checker" {
+                    dmnsn_astnode p
+                      = dmnsn_new_astnode(DMNSN_AST_CHECKER, @$);
+                    $$ = dmnsn_new_astnode1(DMNSN_AST_PATTERN, @$, p);
+                  }
+;
+
+CONTINUOUS_PATTERN_TYPE: "gradient" VECTOR {
+                         dmnsn_astnode p
+                           = dmnsn_new_astnode1(DMNSN_AST_GRADIENT, @$, $2);
+                         $$ = dmnsn_new_astnode1(DMNSN_AST_PATTERN, @$, p);
+                       }
+;
+
+PATTERN_TYPE: BLOCK_PATTERN_TYPE
+            | CONTINUOUS_PATTERN_TYPE
+;
+
 /* Textures */
 
 TEXTURE: "texture" "{"
@@ -520,6 +540,7 @@ PIGMENT: "pigment" "{"
 ;
 
 PIGMENT_TYPE: COLOR
+            | CONTINUOUS_PATTERN_TYPE
             | "image_map" "{"
                 BITMAP_TYPE STRING
               "}"
@@ -547,6 +568,10 @@ PIGMENT_MODIFIERS: /* empty */ {
                    $$ = $1;
                    dmnsn_array_push($$.children, &$2);
                  }
+                 | PIGMENT_MODIFIERS COLOR_MAP {
+                   $$ = $1;
+                   dmnsn_array_push($$.children, &$2);
+                 }
 ;
 
 COLOR_LIST2: /* empty */ {
@@ -562,6 +587,29 @@ COLOR_LIST2: /* empty */ {
                                                      $1, $3);
              $$ = dmnsn_new_astnode1(DMNSN_AST_COLOR_LIST, @$, list);
            }
+;
+
+COLOR_MAP: "color_map" "{"
+             COLOR_MAP_ENTRIES
+           "}"
+         {
+           $$ = $3;
+         }
+;
+
+COLOR_MAP_ENTRIES: COLOR_MAP_ENTRY {
+                   $$ = dmnsn_new_astnode1(DMNSN_AST_COLOR_MAP, @$, $1);
+                 }
+                 | COLOR_MAP_ENTRIES COLOR_MAP_ENTRY {
+                   $$ = $1;
+                   dmnsn_array_push($$.children, &$2);
+                 }
+;
+
+COLOR_MAP_ENTRY: "[" FLOAT "color" COLOR_BODY "]" {
+                 $$ = dmnsn_new_astnode2(DMNSN_AST_COLOR_MAP_ENTRY, @$, $2, $4);
+               }
+;
 
 /* Finishes */
 FINISH: "finish" "{"

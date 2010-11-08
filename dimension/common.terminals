@@ -130,7 +130,7 @@
 %token DMNSN_T_CLOCK_ON
 %token DMNSN_T_COLLECT
 %token DMNSN_T_COLOR                    "color"
-%token DMNSN_T_COLOR_MAP
+%token DMNSN_T_COLOR_MAP                "color_map"
 %token DMNSN_T_COMPONENT
 %token DMNSN_T_COMPOSITE
 %token DMNSN_T_CONCAT
@@ -213,7 +213,7 @@
 %token DMNSN_T_GIF
 %token DMNSN_T_GLOBAL_LIGHTS
 %token DMNSN_T_GLOBAL_SETTINGS          "global_settings"
-%token DMNSN_T_GRADIENT
+%token DMNSN_T_GRADIENT                 "gradient"
 %token DMNSN_T_GRANITE
 %token DMNSN_T_GRAY                     "gray"
 %token DMNSN_T_GRAY_THRESHOLD

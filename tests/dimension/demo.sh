@@ -95,9 +95,44 @@ demo_exp=$(echo -n \
         object-modifiers))
     (object-modifiers
       (pigment
-        (vector (integer 1) (integer 0) (integer 0)
-                (integer 0) (integer 0))
-        pigment-modifiers)
+        (pattern (gradient (vector (integer 0) (integer 1) (integer 0)
+                                   (integer 0) (integer 0))))
+        (pigment-modifiers
+          (color_map
+            (color_map-entry
+              (integer 0)
+              (vector (integer 1) (integer 0) (integer 0)
+                      (integer 0) (integer 0)))
+            (color_map-entry
+              (float 0.166667)
+              (vector (integer 1) (float 0.5) (integer 0)
+                      (integer 0) (integer 0)))
+            (color_map-entry
+              (float 0.333333)
+              (vector (integer 1) (integer 1) (integer 0)
+                      (integer 0) (integer 0)))
+            (color_map-entry
+              (float 0.5)
+              (vector (integer 0) (integer 1) (integer 0)
+                      (integer 0) (integer 0)))
+            (color_map-entry
+              (float 0.666667)
+              (vector (integer 0) (integer 0) (integer 1)
+                      (integer 0) (integer 0)))
+            (color_map-entry
+              (float 0.833333)
+              (vector (integer 1) (integer 0) (integer 1)
+                      (integer 0) (integer 0)))
+            (color_map-entry
+              (integer 1)
+              (vector (integer 1) (integer 0) (integer 0)
+                      (integer 0) (integer 0))))
+          (transformation
+            (scale (vector (integer 1) (float 2.75) (integer 1)
+                           (integer 0) (integer 0))))
+          (transformation
+            (translation (vector (float 0) (float -1.25) (float 0)
+                                 (float 0) (float 0))))))
       (transformation
         (rotation (vector (integer -45) (integer 0) (integer 0)
                           (integer 0) (integer 0))))))

@@ -460,6 +460,14 @@ dmnsn_realize_pattern(dmnsn_astnode astnode)
   case DMNSN_AST_CHECKER:
     pattern = dmnsn_new_checker_pattern();
     break;
+  case DMNSN_AST_GRADIENT:
+    {
+      dmnsn_astnode orientation;
+      dmnsn_array_get(type.children, 0, &orientation);
+      dmnsn_vector v = dmnsn_realize_vector(orientation);
+      pattern = dmnsn_new_gradient_pattern(v);
+      break;
+    }
 
   default:
     dmnsn_assert(false, "Unexpected pattern type.");
@@ -488,6 +496,30 @@ dmnsn_realize_color_list(dmnsn_astnode astnode)
   return color_map;
 }
 
+static dmnsn_color_map *
+dmnsn_realize_color_map(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_COLOR_MAP, "Expected a color_map.");
+
+  dmnsn_color_map *color_map = dmnsn_new_color_map();
+
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, entry, astnode.children) {
+    dmnsn_assert(entry->type == DMNSN_AST_COLOR_MAP_ENTRY,
+                 "Expected a color_map entry.");
+
+    dmnsn_astnode n_node, color_node;
+    dmnsn_array_get(entry->children, 0, &n_node);
+    dmnsn_array_get(entry->children, 1, &color_node);
+
+    double n = dmnsn_realize_float(n_node);
+    dmnsn_color color = dmnsn_realize_color(color_node);
+
+    dmnsn_add_color_map_entry(color_map, n, color);
+  }
+
+  return color_map;
+}
+
 static dmnsn_pigment *
 dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
 {
@@ -503,6 +535,9 @@ dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
     switch (modifier->type) {
     case DMNSN_AST_COLOR_LIST:
       color_map = dmnsn_realize_color_list(*modifier);
+      break;
+    case DMNSN_AST_COLOR_MAP:
+      color_map = dmnsn_realize_color_map(*modifier);
       break;
 
     default:
@@ -555,6 +590,7 @@ dmnsn_realize_pigment_modifiers(dmnsn_astnode astnode, dmnsn_pigment *pigment)
       break;
 
     case DMNSN_AST_COLOR_LIST:
+    case DMNSN_AST_COLOR_MAP:
       /* Already handled by dmnsn_realize_pattern_pigment() */
       break;
 
