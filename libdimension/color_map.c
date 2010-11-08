@@ -65,6 +65,10 @@ dmnsn_color_map_value(const dmnsn_color_map *map, double n)
   double n1, n2 = 0.0;
   dmnsn_color c1, c2 = entry->color;
 
+  if (n < n2) {
+    return c2;
+  }
+
   for (; entry <= (dmnsn_color_map_entry *)dmnsn_array_last(map); ++entry) {
     n1 = n2;
     c1 = c2;
