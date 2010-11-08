@@ -104,28 +104,43 @@ dmnsn_new_test_scene(void)
   dmnsn_object *csg = dmnsn_new_csg_difference(cube, sphere);
   dmnsn_array_push(scene->objects, &csg);
 
+  dmnsn_array *arrow_array = dmnsn_new_array(sizeof(dmnsn_object *));
+
   dmnsn_object *cylinder = dmnsn_new_cylinder(0.1, 0.1, false);
-  cylinder->trans =
-    dmnsn_matrix_mul(
-      dmnsn_rotation_matrix(dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)),
-      dmnsn_scale_matrix(dmnsn_new_vector(1.0, 1.25, 1.0))
-    );
-  cylinder->texture = dmnsn_new_texture();
-  cylinder->texture->pigment = dmnsn_new_solid_pigment(dmnsn_red);
-  dmnsn_array_push(scene->objects, &cylinder);
+  cylinder->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.0, 1.25, 1.0));
+  dmnsn_array_push(arrow_array, &cylinder);
 
   dmnsn_object *cone = dmnsn_new_cylinder(0.1, 0.0, true);
   cone->trans =
     dmnsn_matrix_mul(
-      dmnsn_rotation_matrix(dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)),
-      dmnsn_matrix_mul(
-        dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.375, 0.0)),
-        dmnsn_scale_matrix(dmnsn_new_vector(1.0, 0.125, 1.0))
-      )
+      dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.375, 0.0)),
+      dmnsn_scale_matrix(dmnsn_new_vector(1.0, 0.125, 1.0))
     );
-  cone->texture = dmnsn_new_texture();
-  cone->texture->pigment = dmnsn_new_solid_pigment(dmnsn_red);
-  dmnsn_array_push(scene->objects, &cone);
+  dmnsn_array_push(arrow_array, &cone);
+
+  dmnsn_object *arrow = dmnsn_new_csg_union(arrow_array);
+  arrow->trans = dmnsn_rotation_matrix(
+    dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)
+  );
+  dmnsn_pattern *gradient = dmnsn_new_gradient_pattern(dmnsn_y);
+  dmnsn_color_map *gradient_color_map = dmnsn_new_color_map();
+  dmnsn_add_color_map_entry(gradient_color_map, 0.0,     dmnsn_red);
+  dmnsn_add_color_map_entry(gradient_color_map, 1.0/6.0, dmnsn_orange);
+  dmnsn_add_color_map_entry(gradient_color_map, 2.0/6.0, dmnsn_yellow);
+  dmnsn_add_color_map_entry(gradient_color_map, 3.0/6.0, dmnsn_green);
+  dmnsn_add_color_map_entry(gradient_color_map, 4.0/6.0, dmnsn_blue);
+  dmnsn_add_color_map_entry(gradient_color_map, 5.0/6.0, dmnsn_magenta);
+  dmnsn_add_color_map_entry(gradient_color_map, 1.0,     dmnsn_red);
+  arrow->texture = dmnsn_new_texture();
+  arrow->texture->pigment
+    = dmnsn_new_color_map_pigment(gradient, gradient_color_map);
+  arrow->texture->trans =
+    dmnsn_matrix_mul(
+      dmnsn_translation_matrix(dmnsn_new_vector(0.0, -1.25, 0.0)),
+      dmnsn_scale_matrix(dmnsn_new_vector(1.0, 2.75, 1.0))
+    );
+  dmnsn_array_push(scene->objects, &arrow);
+  dmnsn_delete_array(arrow_array);
 
   dmnsn_array *torus_array = dmnsn_new_array(sizeof(dmnsn_object *));
 
@@ -154,10 +169,11 @@ dmnsn_new_test_scene(void)
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
   plane->texture = dmnsn_new_texture();
   dmnsn_pattern *checker = dmnsn_new_checker_pattern();
-  dmnsn_color_map *color_map = dmnsn_new_color_map();
-  dmnsn_add_color_map_entry(color_map, 0.0, dmnsn_black);
-  dmnsn_add_color_map_entry(color_map, 1.0, dmnsn_white);
-  plane->texture->pigment = dmnsn_new_color_map_pigment(checker, color_map);
+  dmnsn_color_map *checker_color_map = dmnsn_new_color_map();
+  dmnsn_add_color_map_entry(checker_color_map, 0.0, dmnsn_black);
+  dmnsn_add_color_map_entry(checker_color_map, 1.0, dmnsn_white);
+  plane->texture->pigment
+    = dmnsn_new_color_map_pigment(checker, checker_color_map);
   dmnsn_array_push(scene->objects, &plane);
 
   return scene;

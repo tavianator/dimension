@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -18,14 +18,33 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+#include "dimension.h"
+
 /*
- * Custom patterns
+ * Gradient pattern
  */
 
-#ifndef DIMENSION_PATTERNS_H
-#define DIMENSION_PATTERNS_H
+static double
+dmnsn_gradient_pattern_fn(const dmnsn_pattern *gradient, dmnsn_vector v)
+{
+  dmnsn_vector *orientation = gradient->ptr;
+  double n = fmod(dmnsn_vector_dot(*orientation, v), 1.0);
+  if (n < -dmnsn_epsilon)
+    n += 1.0;
+  return n;
+}
 
-dmnsn_pattern *dmnsn_new_checker_pattern();
-dmnsn_pattern *dmnsn_new_gradient_pattern(dmnsn_vector orientation);
+dmnsn_pattern *
+dmnsn_new_gradient_pattern(dmnsn_vector orientation)
+{
+  dmnsn_pattern *gradient = dmnsn_new_pattern();
 
-#endif /* DIMENSION_PATTERNS_H */
+  dmnsn_vector *payload = dmnsn_malloc(sizeof(dmnsn_vector));
+  *payload = dmnsn_vector_normalize(orientation);
+
+  gradient->pattern_fn = &dmnsn_gradient_pattern_fn;
+  gradient->free_fn    = &dmnsn_free;
+  gradient->ptr        = payload;
+
+  return gradient;
+}

@@ -66,6 +66,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           error.c                                              \
                           finish_combination.c                                 \
                           geometry.c                                           \
+                          gradient.c                                           \
                           inlines.c                                            \
                           interior.c                                           \
                           light.c                                              \
