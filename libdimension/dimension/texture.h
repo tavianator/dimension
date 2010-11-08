@@ -47,6 +47,9 @@ struct dmnsn_pigment {
   /* Transformation matrix */
   dmnsn_matrix trans, trans_inv;
 
+  /* Quick color */
+  dmnsn_color quick_color;
+
   /* Generic pointer */
   void *ptr;
 };

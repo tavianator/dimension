@@ -239,6 +239,8 @@ unsigned long wchar;
 "plane"                 RETURN_TOKEN(DMNSN_T_PLANE);
 "png"                   RETURN_TOKEN(DMNSN_T_PNG);
 "pow"                   RETURN_TOKEN(DMNSN_T_POW);
+"quick_color"           RETURN_TOKEN(DMNSN_T_QUICK_COLOR);
+"quick_colour"          RETURN_TOKEN(DMNSN_T_QUICK_COLOR);
 "radians"               RETURN_TOKEN(DMNSN_T_RADIANS);
 "red"                   RETURN_TOKEN(DMNSN_T_RED);
 "reflection"            RETURN_TOKEN(DMNSN_T_REFLECTION);

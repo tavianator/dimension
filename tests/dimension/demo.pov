@@ -123,5 +123,6 @@ plane {
   y, -2
   pigment {
     checker color rgb 0, color rgb 1
+    quick_color rgb <1, 0.5, 0.75>
   }
 }

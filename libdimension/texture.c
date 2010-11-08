@@ -26,9 +26,11 @@ dmnsn_pigment *
 dmnsn_new_pigment()
 {
   dmnsn_pigment *pigment = dmnsn_malloc(sizeof(dmnsn_pigment));
-  pigment->init_fn = NULL;
-  pigment->free_fn = NULL;
-  pigment->trans   = dmnsn_identity_matrix();
+  pigment->pigment_fn  = NULL;
+  pigment->init_fn     = NULL;
+  pigment->free_fn     = NULL;
+  pigment->trans       = dmnsn_identity_matrix();
+  pigment->quick_color = dmnsn_black;
   return pigment;
 }
 

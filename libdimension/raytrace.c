@@ -224,8 +224,10 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 #define ITEXTURE(state) (state->intersection->texture)
 #define DTEXTURE(state) (state->scene->default_texture)
 
-#define CAN_CALL(texture, telem, fn)                            \
-  ((texture) && (texture)->telem && (texture)->telem->fn)
+#define CAN_ACCESS(texture, telem)              \
+  ((texture) && (texture)->telem)
+#define CAN_CALL(texture, telem, fn)                    \
+  (CAN_ACCESS(texture, telem) && (texture)->telem->fn)
 
 /* Determine whether a callback may be called */
 #define TEXTURE_HAS_CALLBACK(state, telem, fn)  \
@@ -240,6 +242,14 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
       ? (*DTEXTURE(state)->telem->fn)(DTEXTURE(state)->telem, __VA_ARGS__) \
       : def));
 
+/* Get a property from a texture element */
+#define TEXTURE_PROPERTY(state, telem, prop, def)       \
+  (CAN_ACCESS(ITEXTURE(state), telem)                   \
+   ? ITEXTURE(state)->telem->prop                       \
+   : (CAN_ACCESS(DTEXTURE(state), telem)                \
+      ? DTEXTURE(state)->telem->prop                    \
+      : def))
+
 #define IOR(state)                              \
   ((state)->intersection->interior              \
    ? (state)->intersection->interior->ior       \
@@ -248,8 +258,11 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 static void
 dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
 {
-  state->pigment = TEXTURE_CALLBACK(state, pigment, pigment_fn, dmnsn_black,
-                                    state->r);
+  state->pigment = TEXTURE_PROPERTY(state, pigment, quick_color, dmnsn_black);
+  if (state->scene->quality & DMNSN_RENDER_PIGMENT) {
+    state->pigment = TEXTURE_CALLBACK(state, pigment, pigment_fn,
+                                      state->pigment, state->r);
+  }
   state->diffuse = state->pigment;
 }
 
@@ -453,9 +466,7 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
     state->additional = dmnsn_black;
 
     /* Pigment */
-    if (state->scene->quality & DMNSN_RENDER_PIGMENT) {
-      dmnsn_raytrace_pigment(state);
-    }
+    dmnsn_raytrace_pigment(state);
 
     /* Finishes and shadows */
     if (state->scene->quality & DMNSN_RENDER_LIGHTS) {

@@ -171,6 +171,9 @@ demo_exp=$(echo -n \
       (pigment
         (pattern checker)
         (pigment-modifiers
+          (quick_color
+            (vector (integer 1) (float 0.5) (float 0.75)
+                    (integer 0) (integer 0)))
           (color-list
             (vector (integer 0) (integer 0) (integer 0)
                     (integer 0) (integer 0))

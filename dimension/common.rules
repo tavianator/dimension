@@ -572,6 +572,12 @@ PIGMENT_MODIFIERS: /* empty */ {
                    $$ = $1;
                    dmnsn_array_push($$.children, &$2);
                  }
+                 | PIGMENT_MODIFIERS "quick_color" COLOR {
+                   dmnsn_astnode quick_color
+                     = dmnsn_new_astnode1(DMNSN_AST_QUICK_COLOR, @2, $3);
+                   $$ = $1;
+                   dmnsn_array_push($$.children, &quick_color);
+                 }
 ;
 
 COLOR_LIST2: /* empty */ {

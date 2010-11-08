@@ -174,6 +174,8 @@ dmnsn_new_test_scene(void)
   dmnsn_add_color_map_entry(checker_color_map, 1.0, dmnsn_white);
   plane->texture->pigment
     = dmnsn_new_color_map_pigment(checker, checker_color_map);
+  plane->texture->pigment->quick_color
+    = dmnsn_color_from_sRGB((dmnsn_sRGB){ 1.0, 0.5, 0.75 });
   dmnsn_array_push(scene->objects, &plane);
 
   return scene;

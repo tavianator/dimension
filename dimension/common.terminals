@@ -356,7 +356,7 @@
 %token DMNSN_T_QUADRIC
 %token DMNSN_T_QUARTIC
 %token DMNSN_T_QUATERNION
-%token DMNSN_T_QUICK_COLOR
+%token DMNSN_T_QUICK_COLOR              "quick_color"
 %token DMNSN_T_QUILTED
 %token DMNSN_T_RADIAL
 %token DMNSN_T_RADIANS                  "radians"

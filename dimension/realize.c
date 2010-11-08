@@ -589,6 +589,14 @@ dmnsn_realize_pigment_modifiers(dmnsn_astnode astnode, dmnsn_pigment *pigment)
       );
       break;
 
+    case DMNSN_AST_QUICK_COLOR:
+      {
+        dmnsn_astnode quick_color;
+        dmnsn_array_get(modifier->children, 0, &quick_color);
+        pigment->quick_color = dmnsn_realize_color(quick_color);
+        break;
+      }
+
     case DMNSN_AST_COLOR_LIST:
     case DMNSN_AST_COLOR_MAP:
       /* Already handled by dmnsn_realize_pattern_pigment() */
