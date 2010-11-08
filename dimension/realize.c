@@ -481,13 +481,10 @@ dmnsn_realize_color_list(dmnsn_astnode astnode)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_COLOR_LIST, "Expected a color list.");
 
-  dmnsn_astnode array;
-  dmnsn_array_get(astnode.children, 0, &array);
-
   dmnsn_color_map *color_map = dmnsn_new_color_map();
 
-  double n = 0.0, i = 1.0/(dmnsn_array_size(array.children) - 1);
-  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, entry, array.children) {
+  double n = 0.0, i = 1.0/(dmnsn_array_size(astnode.children) - 1);
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, entry, astnode.children) {
     dmnsn_color color = dmnsn_realize_color(*entry);
     dmnsn_add_color_map_entry(color_map, n, color);
     n += i;
