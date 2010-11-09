@@ -258,10 +258,11 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 static void
 dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
 {
-  state->pigment = TEXTURE_PROPERTY(state, pigment, quick_color, dmnsn_black);
   if (state->scene->quality & DMNSN_RENDER_PIGMENT) {
-    state->pigment = TEXTURE_CALLBACK(state, pigment, pigment_fn,
-                                      state->pigment, state->r);
+    state->pigment = TEXTURE_CALLBACK(state, pigment, pigment_fn, dmnsn_black,
+                                      state->r);
+  } else {
+    state->pigment = TEXTURE_PROPERTY(state, pigment, quick_color, dmnsn_black);
   }
   state->diffuse = state->pigment;
 }
