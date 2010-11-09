@@ -219,13 +219,14 @@ dmnsn_root_bound(double poly[], size_t degree)
 static inline double
 dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
 {
-  double evmin = dmnsn_evaluate_polynomial(poly, degree, min);
-  double evmax = dmnsn_evaluate_polynomial(poly, degree, max);
-  double mid = 0.0, evmid;
-  int lastsign = -1;
-
   if (max - min < dmnsn_epsilon)
     return min;
+
+  double evmin = dmnsn_evaluate_polynomial(poly, degree, min);
+  double evmax = dmnsn_evaluate_polynomial(poly, degree, max);
+  double initial_evmin = evmin, initial_evmax = evmax;
+  double mid = 0.0, evmid;
+  int lastsign = -1;
 
   do {
     mid = (min*evmax - max*evmin)/(evmax - evmin);
@@ -261,7 +262,11 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
     }
 
     lastsign = sign;
-  } while (fabs(evmid) >= fabs(mid)*dmnsn_epsilon);
+  } while (fabs(evmid) >= fabs(mid)*dmnsn_epsilon
+           /* These conditions improve stability when one of the bounds is
+              close to a different root than we are trying to find */
+           || fabs(evmid) > fabs(initial_evmin)
+           || fabs(evmid) > fabs(initial_evmax));
 
   return mid;
 }
