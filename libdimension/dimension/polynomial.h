@@ -41,6 +41,18 @@ dmnsn_evaluate_polynomial(const double poly[], size_t degree, double x)
   return ret;
 }
 
+DMNSN_INLINE double
+dmnsn_evaluate_polynomial_derivative(const double poly[], size_t degree,
+                                     double x)
+{
+  double ret = poly[degree]*degree;
+  size_t i;
+  for (i = degree - 1; i >= 1; --i) {
+    ret = ret*x + poly[i]*i;
+  }
+  return ret;
+}
+
 /* Stores the positive roots of poly[] in x[], and returns the number of such
    roots that were stored */
 size_t dmnsn_solve_polynomial(const double poly[], size_t degree, double x[]);

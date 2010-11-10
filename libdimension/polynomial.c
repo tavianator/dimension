@@ -214,17 +214,39 @@ dmnsn_root_bound(double poly[], size_t degree)
   return bound;
 }
 
+/* Improve a root with Newton's method */
+static inline double
+dmnsn_improve_root(const double poly[], size_t degree, double x)
+{
+  double p;
+  do {
+    /* Calculate the value of the polynomial and its derivative at once */
+    p = poly[degree];
+    double dp = 0.0;
+    for (ssize_t i = degree - 1; i >= 0; --i) {
+      dp = dp*x + p;
+      p  = p*x  + poly[i];
+    }
+
+    x -= p/dp;
+  } while (fabs(p) >= fabs(x)*dmnsn_epsilon);
+
+  return x;
+}
+
 /* Use the false position method to find a root in a range that contains exactly
    one root */
 static inline double
 dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
 {
-  if (max - min < dmnsn_epsilon)
-    return min;
+  if (max - min < dmnsn_epsilon) {
+    /* Bounds are equal, use Newton's method */
+    return dmnsn_improve_root(poly, degree, min);
+  }
 
   double evmin = dmnsn_evaluate_polynomial(poly, degree, min);
   double evmax = dmnsn_evaluate_polynomial(poly, degree, max);
-  double initial_evmin = evmin, initial_evmax = evmax;
+  double initial_evmin = fabs(evmin), initial_evmax = fabs(evmax);
   double mid = 0.0, evmid;
   int lastsign = -1;
 
@@ -265,8 +287,8 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
   } while (fabs(evmid) >= fabs(mid)*dmnsn_epsilon
            /* These conditions improve stability when one of the bounds is
               close to a different root than we are trying to find */
-           || fabs(evmid) > fabs(initial_evmin)
-           || fabs(evmid) > fabs(initial_evmax));
+           || fabs(evmid) > initial_evmin
+           || fabs(evmid) > initial_evmax);
 
   return mid;
 }
