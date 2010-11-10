@@ -47,9 +47,9 @@ dmnsn_add_color_map_entry(dmnsn_color_map *map, double n, dmnsn_color c)
   dmnsn_color_map_entry entry = { .n = n, .color = c };
 
   /* Sorted insertion */
-  ssize_t i;
+  size_t i;
   dmnsn_color_map_entry *other = dmnsn_array_last(map);
-  for (i = dmnsn_array_size(map) - 1; i >= 0; --i, --other) {
+  for (i = dmnsn_array_size(map); i-- > 0;) {
     if (other->n <= n)
       break;
   }

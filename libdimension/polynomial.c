@@ -25,7 +25,7 @@
 static inline size_t
 dmnsn_real_degree(const double poly[], size_t degree)
 {
-  for (ssize_t i = degree; i >= 0; --i) {
+  for (size_t i = degree + 1; i-- > 0;) {
     if (fabs(poly[i]) >= dmnsn_epsilon) {
       return i;
     }
@@ -135,7 +135,7 @@ dmnsn_uspensky_bounds(const double poly[], size_t degree, double bounds[][2],
 
     /* First divide poly[] by (x - 1) to test for a root at x = 1 */
     double pdiv1[degree], rem = poly[degree];
-    for (ssize_t i = degree - 1; i >= 0; --i) {
+    for (size_t i = degree; i-- > 0;) {
       pdiv1[i] = rem;
       rem += poly[i];
     }
@@ -223,7 +223,7 @@ dmnsn_improve_root(const double poly[], size_t degree, double x)
     /* Calculate the value of the polynomial and its derivative at once */
     p = poly[degree];
     double dp = 0.0;
-    for (ssize_t i = degree - 1; i >= 0; --i) {
+    for (size_t i = degree; i-- > 0;) {
       dp = dp*x + p;
       p  = p*x  + poly[i];
     }
@@ -299,7 +299,7 @@ dmnsn_eliminate_root(double poly[], size_t *degree, double r)
 {
   size_t deg = *degree;
   double rem = poly[deg];
-  for (ssize_t i = deg - 1; i >= 0; --i) {
+  for (size_t i = deg; i-- > 0;) {
     double temp = poly[i];
     poly[i] = rem;
     rem = temp + r*rem;
@@ -389,7 +389,7 @@ dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
 void
 dmnsn_print_polynomial(FILE *file, const double poly[], size_t degree)
 {
-  for (ssize_t i = degree; i >= 0; --i) {
+  for (size_t i = degree + 1; i-- > 0;) {
     if (i < degree) {
       fprintf(file, (poly[i] >= 0.0) ? " + " : " - ");
     }

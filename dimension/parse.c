@@ -564,7 +564,7 @@ dmnsn_eval_zeroary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
   switch (astnode.type) {
   case DMNSN_AST_PI:
-    dmnsn_make_ast_float(&ret, M_PI);
+    dmnsn_make_ast_float(&ret, 4.0*atan(1.0));
     break;
   case DMNSN_AST_TRUE:
     dmnsn_make_ast_integer(&ret, 1);

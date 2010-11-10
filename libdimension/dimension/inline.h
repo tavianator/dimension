@@ -19,45 +19,30 @@
  *************************************************************************/
 
 /*
- * Utility functions for working with and numerically solving polynomials.
- * Polynomials are represented as simple arrays where the ith element is the
- * coefficient on x^i.  In general, we are only interested in positive roots.
+ * Handle inlines nicely without cheating and making them static.  The
+ * DMNSN_INLINE macro is set appropriately for the version of C you're using,
+ * and non-inline versions are emitted in exactly one translation unit when
+ * necessary.
  */
 
-#ifndef DIMENSION_POLYNOMIAL_H
-#define DIMENSION_POLYNOMIAL_H
+#ifndef DIMENSION_INLINE_H
+#define DIMENSION_INLINE_H
 
-#include <stddef.h>
-#include <stdio.h>
+#ifndef DMNSN_INLINE
+  #ifdef __cplusplus
+    /* C++ inline semantics */
+    #define DMNSN_INLINE inline
+  #elif __STDC_VERSION__ >= 199901L
+    /* C99 inline semantics */
+    #define DMNSN_INLINE inline
+  #elif defined(__GNUC__)
+    /* GCC inline semantics */
+    #define DMNSN_INLINE __extension__ extern __inline__
+  #else
+    /* Unknown C - mark functions static and hope the compiler is smart enough
+       to inline them */
+    #define DMNSN_INLINE static
+  #endif
+#endif
 
-DMNSN_INLINE double
-dmnsn_evaluate_polynomial(const double poly[], size_t degree, double x)
-{
-  double ret = poly[degree];
-  size_t i;
-  for (i = degree; i-- > 0;) {
-    ret = ret*x + poly[i];
-  }
-  return ret;
-}
-
-DMNSN_INLINE double
-dmnsn_evaluate_polynomial_derivative(const double poly[], size_t degree,
-                                     double x)
-{
-  double ret = poly[degree]*degree;
-  size_t i;
-  for (i = degree - 1; i >= 1; --i) {
-    ret = ret*x + poly[i]*i;
-  }
-  return ret;
-}
-
-/* Stores the positive roots of poly[] in x[], and returns the number of such
-   roots that were stored */
-size_t dmnsn_solve_polynomial(const double poly[], size_t degree, double x[]);
-
-/* Helper function to print a polynomial */
-void dmnsn_print_polynomial(FILE *file, const double poly[], size_t degree);
-
-#endif /* DIMENSION_POLYNOMIAL_H */
+#endif /* DIMENSION_INLINE_H */
