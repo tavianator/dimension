@@ -84,7 +84,7 @@ AC_SUBST(libsandglass_LIBS)
 dnl Platform feature tests
 
 AC_MSG_CHECKING([for sched_getaffinity()])
-AC_LINK_IFELSE(
+AC_LINK_IFELSE([
   AC_LANG_PROGRAM(
     [
       #define _GNU_SOURCE
@@ -94,7 +94,7 @@ AC_LINK_IFELSE(
       cpu_set_t cpuset;
       sched_getaffinity(0, sizeof(cpuset), &cpuset);
     ]
-  ),
+  )],
   [AC_DEFINE([DMNSN_SCHED_GETAFFINITY], [1])
    AC_MSG_RESULT([yes])],
   [AC_DEFINE([DMNSN_SCHED_GETAFFINITY], [0])
@@ -102,11 +102,11 @@ AC_LINK_IFELSE(
 )
 
 AC_MSG_CHECKING([for sysconf(_SC_NPROCESSORS_ONLN)])
-AC_COMPILE_IFELSE(
+AC_COMPILE_IFELSE([
   AC_LANG_PROGRAM(
     [ #include <unistd.h> ],
     [ sysconf(_SC_NPROCESSORS_ONLN); ]
-  ),
+  )],
   [AC_DEFINE([DMNSN_SC_NPROCESSORS_ONLN], [1])
    AC_MSG_RESULT([yes])],
   [AC_DEFINE([DMNSN_SC_NPROCESSORS_ONLN], [0])
@@ -114,11 +114,11 @@ AC_COMPILE_IFELSE(
 )
 
 AC_MSG_CHECKING([for backtrace()])
-AC_LINK_IFELSE(
+AC_LINK_IFELSE([
   AC_LANG_PROGRAM(
     [ #include <execinfo.h> ],
     [ backtrace(0, 0); ]
-  ),
+  )],
   [AC_DEFINE([DMNSN_BACKTRACE], [1])
    AC_MSG_RESULT([yes])],
   [AC_DEFINE([DMNSN_BACKTRACE], [0])
@@ -126,11 +126,11 @@ AC_LINK_IFELSE(
 )
 
 AC_MSG_CHECKING([for gettid()])
-AC_COMPILE_IFELSE(
+AC_COMPILE_IFELSE([
   AC_LANG_PROGRAM(
     [ #include <sys/syscall.h> ],
     [ syscall(SYS_gettid); ]
-  ),
+  )],
   [AC_DEFINE([DMNSN_GETTID], [1])
    AC_MSG_RESULT([yes])],
   [AC_DEFINE([DMNSN_GETTID], [0])
