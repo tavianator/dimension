@@ -99,10 +99,6 @@ libdimension_la_CFLAGS  = $(AM_CFLAGS) -pthread
 libdimension_la_LDFLAGS = -version-info 0:0:0 $(AM_LDFLAGS)
 libdimension_la_LIBADD  = -lm
 
-if JEMALLOC
-libdimension_la_LIBADD += -ljemalloc
-endif
-
 if PNG
 libdimension_la_SOURCES += png.c
 libdimension_la_LIBADD  += -lpng

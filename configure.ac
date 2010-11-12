@@ -37,19 +37,6 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
-dnl Use jemalloc rather than the default malloc implementation
-AC_ARG_ENABLE([jemalloc],
-              [AS_HELP_STRING([--enable-jemalloc],
-                              [Enable the jemalloc allocator [default=check]])],
-              [],
-              [enable_jemalloc=check])
-if test "$enable_jemalloc" = "check"; then
-  AC_CHECK_LIB([jemalloc], [malloc],
-               [enable_jemalloc=yes],
-               [enable_jemalloc=no])
-fi
-AM_CONDITIONAL([JEMALLOC], [test "$enable_jemalloc" != "no"])
-
 dnl PNG canvas export
 AC_ARG_ENABLE([png],
               [AS_HELP_STRING([--enable-png],
