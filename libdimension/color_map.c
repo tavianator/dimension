@@ -86,7 +86,7 @@ dmnsn_color_map_value(const dmnsn_color_map *map, double n)
   return c2;
 }
 
-/** Payload for a color_map pigment */
+/** Payload for a color_map pigment. */
 typedef struct dmnsn_color_map_payload {
   dmnsn_pattern *pattern;
   dmnsn_color_map *map;

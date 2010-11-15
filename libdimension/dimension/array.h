@@ -29,12 +29,12 @@
 #include <stddef.h> /* For size_t */
 #include <string.h> /* For memcpy */
 
-/** Dynamic array type */
+/** Dynamic array type. */
 typedef struct dmnsn_array {
-  void *ptr;       /**< @internal The actual memory */
-  size_t obj_size; /**< @internal The size of each object */
-  size_t length;   /**< @internal The current size of the array */
-  size_t capacity; /**< @internal The size of the allocated space */
+  void *ptr;       /**< @internal The actual memory. */
+  size_t obj_size; /**< @internal The size of each object. */
+  size_t length;   /**< @internal The current size of the array. */
+  size_t capacity; /**< @internal The size of the allocated space. */
 } dmnsn_array;
 
 /**

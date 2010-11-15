@@ -34,10 +34,10 @@
  * A list iterator.
  */
 typedef struct dmnsn_list_iterator {
-  void *ptr;                        /**< @internal The stored object */
-  size_t obj_size;                  /**< @internal The object size */
-  struct dmnsn_list_iterator *prev; /**< @internal The previous iterator */
-  struct dmnsn_list_iterator *next; /**< @internal The next iterator */
+  void *ptr;                        /**< @internal The stored object. */
+  size_t obj_size;                  /**< @internal The object size. */
+  struct dmnsn_list_iterator *prev; /**< @internal The previous iterator. */
+  struct dmnsn_list_iterator *next; /**< @internal The next iterator. */
 } dmnsn_list_iterator;
 
 /**
@@ -75,10 +75,10 @@ dmnsn_delete_list_iterator(dmnsn_list_iterator *i)
 
 /** A doubly-linked list. */
 typedef struct dmnsn_list {
-  dmnsn_list_iterator *first; /**< @internal The first iterator in the list */
-  dmnsn_list_iterator *last;  /**< @internal The last iterator in the list */
-  size_t length;              /**< @internal The size of the list */
-  size_t obj_size;            /**< @internal The size of list objects */
+  dmnsn_list_iterator *first; /**< @internal The first iterator in the list. */
+  dmnsn_list_iterator *last;  /**< @internal The last iterator in the list. */
+  size_t length;              /**< @internal The size of the list. */
+  size_t obj_size;            /**< @internal The size of list objects. */
 } dmnsn_list;
 
 /**
@@ -331,7 +331,7 @@ dmnsn_list_pop(dmnsn_list *list, void *obj)
  */
 dmnsn_list *dmnsn_list_split(dmnsn_list *list);
 
-/** List object comparator function type */
+/** List object comparator function type. */
 typedef bool dmnsn_list_comparator_fn(dmnsn_list_iterator *l,
                                       dmnsn_list_iterator *r);
 

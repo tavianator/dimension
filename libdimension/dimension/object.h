@@ -31,12 +31,15 @@
 /** A type to represent a ray-object intersection. */
 typedef struct dmnsn_intersection {
   dmnsn_line ray; /**< The ray that intersected. */
-  double t;       /**< The line index that intersected */
+  double t;       /**< The line index that intersected. */
 
-  dmnsn_vector normal; /**< The surface normal at the intersection point */
+  /** The surface normal at the intersection point. */
+  dmnsn_vector normal;
 
-  const dmnsn_texture  *texture;  /**< The texture at the intersection point */
-  const dmnsn_interior *interior; /**< The interior at the intersection point */
+  /** The texture at the intersection point. */
+  const dmnsn_texture *texture;
+  /** The interior at the intersection point. */
+  const dmnsn_interior *interior;
 } dmnsn_intersection;
 
 /* Forward-declare dmnsn_object */
@@ -71,13 +74,13 @@ typedef bool dmnsn_object_inside_fn(const dmnsn_object *object,
 
 /** An object. */
 struct dmnsn_object {
-  dmnsn_texture *texture;   /**< Surface properties */
-  dmnsn_interior *interior; /**< Interior properties */
+  dmnsn_texture *texture;   /**< Surface properties. */
+  dmnsn_interior *interior; /**< Interior properties. */
 
-  dmnsn_matrix trans;     /**< Transformation matrix */
-  dmnsn_matrix trans_inv; /**< Inverse of the transformation matrix */
+  dmnsn_matrix trans;     /**< Transformation matrix. */
+  dmnsn_matrix trans_inv; /**< Inverse of the transformation matrix. */
 
-  dmnsn_bounding_box bounding_box; /**< Object bounding box */
+  dmnsn_bounding_box bounding_box; /**< Object bounding box. */
 
   /** Child objects.  This array lists objects that can be split into
       sub-objects for bounding purposes (for unions and meshes, for example). */
@@ -88,7 +91,7 @@ struct dmnsn_object {
   dmnsn_object_inside_fn       *inside_fn; /**< Inside callback. */
   dmnsn_free_fn                *free_fn; /**< Destruction callback. */
 
-  /** Generic pointer for object info */
+  /** Generic pointer for object info. */
   void *ptr;
 };
 

@@ -43,10 +43,10 @@ struct dmnsn_pattern {
   dmnsn_pattern_fn *pattern_fn; /**< The pattern callback. */
   dmnsn_free_fn    *free_fn;    /**< The destructor callback. */
 
-  dmnsn_matrix trans;     /**< The transformation matrix of the pattern */
-  dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix */
+  dmnsn_matrix trans;     /**< The transformation matrix of the pattern. */
+  dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
 
-  void *ptr; /**< Generic pointer */
+  void *ptr; /**< Generic pointer. */
 };
 
 /**

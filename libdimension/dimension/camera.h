@@ -47,7 +47,7 @@ struct dmnsn_camera {
 
   dmnsn_matrix trans; /**< Transformation matrix. */
 
-  /** Generic pointer for camera info */
+  /** Generic pointer for camera info. */
   void *ptr;
 };
 

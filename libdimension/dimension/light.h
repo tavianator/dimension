@@ -39,13 +39,13 @@ typedef dmnsn_color dmnsn_light_fn(const dmnsn_light *light, dmnsn_vector v);
 
 /** A light. */
 struct dmnsn_light {
-  dmnsn_vector x0; /**< Origin of light rays */
+  dmnsn_vector x0; /**< Origin of light rays. */
 
   /* Callbacks */
   dmnsn_light_fn *light_fn; /**< Light callback. */
   dmnsn_free_fn  *free_fn;  /**< Desctructor callback. */
 
-  /** Generic pointer for light info */
+  /** Generic pointer for light info. */
   void *ptr;
 };
 

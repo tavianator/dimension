@@ -48,7 +48,7 @@ typedef dmnsn_color dmnsn_pigment_fn(const dmnsn_pigment *pigment,
  */
 typedef void dmnsn_pigment_init_fn(dmnsn_pigment *pigment);
 
-/** A pigment */
+/** A pigment. */
 struct dmnsn_pigment {
   dmnsn_pigment_fn *pigment_fn;   /**< The pigment callback. */
   dmnsn_pigment_init_fn *init_fn; /**< The initializer callback. */
@@ -60,7 +60,7 @@ struct dmnsn_pigment {
   /** Quick color -- used for low-quality renders. */
   dmnsn_color quick_color;
 
-  /** Generic pointer */
+  /** Generic pointer. */
   void *ptr;
 };
 
@@ -146,7 +146,7 @@ struct dmnsn_finish {
   dmnsn_reflection_fn *reflection_fn; /**< The reflection callback. */
   dmnsn_free_fn       *free_fn;       /**< The destruction callback. */
 
-  /** Generic pointer */
+  /** Generic pointer. */
   void *ptr;
 };
 

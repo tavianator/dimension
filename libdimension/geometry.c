@@ -127,7 +127,7 @@ static dmnsn_matrix2 dmnsn_matrix2_mul(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs);
 /** Invert a matrix with the slower cofactor algorithm, if partitioning
     failed.  */
 static dmnsn_matrix dmnsn_matrix_inverse_generic(dmnsn_matrix A);
-/** Get the [\p row, \p col] cofactor of A */
+/** Get the [\p row, \p col] cofactor of A. */
 static double dmnsn_matrix_cofactor(dmnsn_matrix A,
                                     unsigned int row, unsigned int col);
 

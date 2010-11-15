@@ -29,7 +29,7 @@
 #ifndef DIMENSION_PROGRESS_H
 #define DIMENSION_PROGRESS_H
 
-/** A progress object */
+/** A progress object. */
 typedef struct dmnsn_progress dmnsn_progress;
 
 /**

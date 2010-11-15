@@ -57,8 +57,8 @@ typedef struct {
 
 /** CIE xyY color. */
 typedef struct {
-  double x; /**< x chromaticity coordinate (in [0, 1]) */
-  double y; /**< y chromaticity coordinate (in [0, 1]) */
+  double x; /**< x chromaticity coordinate (in [0, 1]). */
+  double y; /**< y chromaticity coordinate (in [0, 1]). */
   double Y; /**< Luminance, unbounded >= 0; 1 is diffuse white. */
 } dmnsn_CIE_xyY;
 
@@ -71,7 +71,7 @@ typedef struct {
 
 /** CIE 1976 (L*, u*, v*) color. */
 typedef struct {
-  double L; /**< Luminance (same L* as CIE L*, a*, b*) */
+  double L; /**< Luminance (same L* as CIE L*, a*, b*). */
   double u; /**< u* coordinate. */
   double v; /**< v* coordinate. */
 } dmnsn_CIE_Luv;
@@ -91,40 +91,40 @@ extern const dmnsn_color dmnsn_cyan;    /**< Cyan.    */
     CIE XYZ */
 extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
 
-/** Is this color black? */
+/** Is this color black?. */
 bool dmnsn_color_is_black(dmnsn_color color);
 
 /* Color conversions */
 
-/** Convert an sRGB color to a Dimension color */
+/** Convert an sRGB color to a Dimension color. */
 dmnsn_color dmnsn_color_from_sRGB(dmnsn_sRGB sRGB);
-/** Convert a CIE XYZ color to a Dimension color */
+/** Convert a CIE XYZ color to a Dimension color. */
 dmnsn_color dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ);
-/** Convert a CIE xyY color to a Dimension color */
+/** Convert a CIE xyY color to a Dimension color. */
 dmnsn_color dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY);
-/** Convert a CIE L*, a*, b* color to a Dimension color */
+/** Convert a CIE L*, a*, b* color to a Dimension color. */
 dmnsn_color dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white);
-/** Convert a CIE L*, u*, v* color to a Dimension color */
+/** Convert a CIE L*, u*, v* color to a Dimension color. */
 dmnsn_color dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white);
 
-/** Convert a Dimension color to sRGB */
+/** Convert a Dimension color to sRGB. */
 dmnsn_sRGB dmnsn_sRGB_from_color(dmnsn_color color);
-/** Convert a Dimension color to CIE XYZ */
+/** Convert a Dimension color to CIE XYZ. */
 dmnsn_CIE_XYZ dmnsn_XYZ_from_color(dmnsn_color color);
-/** Convert a Dimension color to CIE xyY */
+/** Convert a Dimension color to CIE xyY. */
 dmnsn_CIE_xyY dmnsn_xyY_from_color(dmnsn_color color);
-/** Convert a Dimension color to CIE L*, a*, b* */
+/** Convert a Dimension color to CIE L*, a*, b*. */
 dmnsn_CIE_Lab dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
-/** Convert a Dimension color to CIE L*, u*, v* */
+/** Convert a Dimension color to CIE L*, u*, v*. */
 dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 
 /* Perceptual color manipulation */
 
-/** Add two colors together */
+/** Add two colors together. */
 dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
-/** Multiply a color's intensity by \p n */
+/** Multiply a color's intensity by \p n. */
 dmnsn_color dmnsn_color_mul(double n, dmnsn_color color);
-/** Return the color at \p n on a gradient from \p c1 at 0 to \p c2 at 1 */
+/** Return the color at \p n on a gradient from \p c1 at 0 to \p c2 at 1. */
 dmnsn_color dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n);
 /** Filter \p color through \p filter. */
 dmnsn_color dmnsn_color_filter(dmnsn_color color, dmnsn_color filter);

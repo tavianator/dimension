@@ -29,7 +29,7 @@
 
 /** Number of children per PR-node. */
 #define DMNSN_PRTREE_B 6
-/** Number of children per pseudo-PR-node (must be 2*ndimensions) */
+/** Number of children per pseudo-PR-node (must be 2*ndimensions). */
 #define DMNSN_PSEUDO_PRTREE_B 6
 
 /** Pseudo PR-tree node. */

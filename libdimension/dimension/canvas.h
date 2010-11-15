@@ -30,10 +30,10 @@
 
 /** A canvas, or image. */
 typedef struct {
-  size_t width;  /**< Canvas width */
-  size_t height; /**< Canvas height */
+  size_t width;  /**< Canvas width. */
+  size_t height; /**< Canvas height. */
 
-  /** An array of <tt>dmnsn_canvas_optimizer</tt>s */
+  /** An array of <tt>dmnsn_canvas_optimizer</tt>s. */
   dmnsn_array *optimizers;
 
   /**
@@ -58,10 +58,10 @@ typedef void dmnsn_canvas_optimizer_fn(const dmnsn_canvas *canvas,
                                        dmnsn_canvas_optimizer optimizer,
                                        size_t x, size_t y);
 
-/** Canvas optimizer */
+/** Canvas optimizer. */
 struct dmnsn_canvas_optimizer {
-  dmnsn_canvas_optimizer_fn *optimizer_fn; /**< Optimizer callback */
-  dmnsn_free_fn             *free_fn;      /**< Destructor callback */
+  dmnsn_canvas_optimizer_fn *optimizer_fn; /**< Optimizer callback. */
+  dmnsn_free_fn             *free_fn;      /**< Destructor callback. */
 
   void *ptr; /**< Generic pointer. */
 };

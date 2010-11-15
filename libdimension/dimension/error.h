@@ -29,11 +29,11 @@
 #ifndef DIMENSION_ERROR_H
 #define DIMENSION_ERROR_H
 
-/** Error severity codes */
+/** Error severity codes. */
 typedef enum dmnsn_severity {
-  DMNSN_SEVERITY_LOW,    /**< Only die on low resilience */
-  DMNSN_SEVERITY_MEDIUM, /**< Die on low or medium resilience */
-  DMNSN_SEVERITY_HIGH    /**< Always die */
+  DMNSN_SEVERITY_LOW,    /**< Only die on low resilience. */
+  DMNSN_SEVERITY_MEDIUM, /**< Die on low or medium resilience. */
+  DMNSN_SEVERITY_HIGH    /**< Always die. */
 } dmnsn_severity;
 
 /**

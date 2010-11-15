@@ -26,7 +26,7 @@
 #ifndef DIMENSION_INTERIOR_H
 #define DIMENSION_INTERIOR_H
 
-/** An interior */
+/** An interior. */
 typedef struct dmnsn_interior {
   double ior; /**< Refractive index. */
 

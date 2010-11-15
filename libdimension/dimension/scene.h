@@ -67,7 +67,7 @@ typedef struct dmnsn_scene {
   /** Number of parallel threads. */
   unsigned int nthreads;
 
-  /** Timers */
+  /** Timers. */
   dmnsn_timer *bounding_timer;
   dmnsn_timer *render_timer;
 } dmnsn_scene;

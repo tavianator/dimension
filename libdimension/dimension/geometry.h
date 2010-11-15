@@ -73,8 +73,8 @@ typedef struct dmnsn_line {
 
 /** An axis-aligned bounding box (AABB). */
 typedef struct dmnsn_bounding_box {
-  dmnsn_vector min; /**< The coordinate-wise minimum extent of the box */
-  dmnsn_vector max; /**< The coordinate-wise maximum extent of the box */
+  dmnsn_vector min; /**< The coordinate-wise minimum extent of the box. */
+  dmnsn_vector max; /**< The coordinate-wise maximum extent of the box. */
 } dmnsn_bounding_box;
 
 /** A standard format string for bounding boxes. */
@@ -85,10 +85,10 @@ typedef struct dmnsn_bounding_box {
 
 /* Constants */
 
-/** The smallest value considered non-zero by some numerical algorithms */
+/** The smallest value considered non-zero by some numerical algorithms. */
 #define dmnsn_epsilon 1.0e-10
 
-/** The zero vector */
+/** The zero vector. */
 static const dmnsn_vector dmnsn_zero = { 0.0, 0.0, 0.0 };
 /** The x vector. */
 static const dmnsn_vector dmnsn_x = { 1.0, 0.0, 0.0 };
@@ -113,14 +113,14 @@ dmnsn_max(double a, double b)
   return a > b ? a : b;
 }
 
-/** Convert degrees to radians */
+/** Convert degrees to radians. */
 DMNSN_INLINE double
 dmnsn_radians(double degrees)
 {
   return degrees*atan(1.0)/45.0;
 }
 
-/** Convert radians to degrees */
+/** Convert radians to degrees. */
 DMNSN_INLINE double
 dmnsn_degrees(double radians)
 {
@@ -137,7 +137,7 @@ dmnsn_signbit(double n)
 
 /* Shorthand for vector/matrix construction */
 
-/** Construct a new vector */
+/** Construct a new vector. */
 DMNSN_INLINE dmnsn_vector
 dmnsn_new_vector(double x, double y, double z)
 {
@@ -145,7 +145,7 @@ dmnsn_new_vector(double x, double y, double z)
   return v;
 }
 
-/** Construct a new matrix */
+/** Construct a new matrix. */
 DMNSN_INLINE dmnsn_matrix
 dmnsn_new_matrix(double a0, double a1, double a2, double a3,
                  double b0, double b1, double b2, double b3,
@@ -159,7 +159,7 @@ dmnsn_new_matrix(double a0, double a1, double a2, double a3,
   return m;
 }
 
-/** Return the identity matrix */
+/** Return the identity matrix. */
 dmnsn_matrix dmnsn_identity_matrix(void);
 
 /**
@@ -254,7 +254,7 @@ dmnsn_vector_element(dmnsn_vector n, int elem)
 
 /* Vector and matrix arithmetic */
 
-/** Negate a vector */
+/** Negate a vector. */
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_negate(dmnsn_vector rhs)
 {
@@ -263,7 +263,7 @@ dmnsn_vector_negate(dmnsn_vector rhs)
   return v;
 }
 
-/** Add two vectors */
+/** Add two vectors. */
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
 {
@@ -272,7 +272,7 @@ dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
   return v;
 }
 
-/** Subtract two vectors */
+/** Subtract two vectors. */
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
 {
@@ -422,7 +422,7 @@ dmnsn_line_point(dmnsn_line l, double t)
   return dmnsn_vector_add(l.x0, dmnsn_vector_mul(t, l.n));
 }
 
-/** Add epsilon*l.n to l.x0, to avoid self-intersections */
+/** Add epsilon*l.n to l.x0, to avoid self-intersections. */
 DMNSN_INLINE dmnsn_line
 dmnsn_line_add_epsilon(dmnsn_line l)
 {
@@ -435,7 +435,7 @@ dmnsn_line_add_epsilon(dmnsn_line l)
   );
 }
 
-/** Return whether \p p is within the axis-aligned bounding box */
+/** Return whether \p p is within the axis-aligned bounding box. */
 DMNSN_INLINE bool
 dmnsn_bounding_box_contains(dmnsn_bounding_box box, dmnsn_vector p)
 {
@@ -443,7 +443,7 @@ dmnsn_bounding_box_contains(dmnsn_bounding_box box, dmnsn_vector p)
       && (p.x <= box.max.x && p.y <= box.max.y && p.z <= box.max.z);
 }
 
-/** Return whether a bounding box is infinite */
+/** Return whether a bounding box is infinite. */
 DMNSN_INLINE bool
 dmnsn_bounding_box_is_infinite(dmnsn_bounding_box box)
 {
