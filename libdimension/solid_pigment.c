@@ -18,12 +18,21 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Solid color pigments.
+ */
+
 #include "dimension.h"
 #include <stdlib.h>
 
-/* Solid color pigment callback */
-static dmnsn_color dmnsn_solid_pigment_fn(const dmnsn_pigment *pigment,
-                                          dmnsn_vector v);
+/** Solid color pigment callback. */
+static dmnsn_color
+dmnsn_solid_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
+{
+  dmnsn_color *color = pigment->ptr;
+  return *color;
+}
 
 /* Create a solid color */
 dmnsn_pigment *
@@ -40,12 +49,4 @@ dmnsn_new_solid_pigment(dmnsn_color color)
   pigment->ptr         = solid;
 
   return pigment;
-}
-
-/* Solid color callback */
-static dmnsn_color
-dmnsn_solid_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
-{
-  dmnsn_color *color = pigment->ptr;
-  return *color;
 }

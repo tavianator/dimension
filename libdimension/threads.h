@@ -18,15 +18,28 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Background threading interface.
+ */
+
 #ifndef DIMENSION_IMPL_THREADS_H
 #define DIMENSION_IMPL_THREADS_H
 
-#include <pthread.h>
-
+/**
+ * Thread callback type.
+ * @param[in,out] ptr  An arbitrary pointer.
+ * @return 0 on success, non-zero on failure.
+ */
 typedef int dmnsn_thread_fn(void *ptr);
 
-/* Creates a thread that cleans up after itself on errors */
-void dmnsn_new_thread(dmnsn_progress *progress, const pthread_attr_t *attr,
-                      dmnsn_thread_fn *thread_fn, void *arg);
+/**
+ * Create a thread that cleans up after itself on errors.
+ * @param[in,out] progress   The progress object to associate with the thread.
+ * @param[in]     thread_fn  The thread callback.
+ * @param[in,out] arg        The pointer to pass to the thread callback.
+ */
+void dmnsn_new_thread(dmnsn_progress *progress, dmnsn_thread_fn *thread_fn,
+                      void *arg);
 
 #endif /* DIMENSION_IMPL_THREADS_H */

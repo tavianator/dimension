@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Cameras.
+ */
+
 #include "dimension.h"
 #include <stdlib.h>
 
@@ -27,6 +32,7 @@ dmnsn_new_camera()
 {
   dmnsn_camera *camera = dmnsn_malloc(sizeof(dmnsn_camera));
   camera->free_fn = NULL;
+  camera->trans   = dmnsn_identity_matrix();
   return camera;
 }
 
@@ -40,4 +46,12 @@ dmnsn_delete_camera(dmnsn_camera *camera)
     }
     dmnsn_free(camera);
   }
+}
+
+/* Invoke the camera ray function */
+dmnsn_line
+dmnsn_camera_ray(const dmnsn_camera *camera, double x, double y)
+{
+  dmnsn_line ray = (*camera->ray_fn)(camera, x, y);
+  return dmnsn_transform_line(camera->trans, ray);
 }

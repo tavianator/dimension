@@ -18,7 +18,8 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
+/**
+ * @file
  * An interface for asynchronous tasks.  *_async() versions of functions
  * return a dmnsn_progress* object which can indicate the progress of the
  * background task, and wait for task completion.  The task's return value
@@ -28,15 +29,30 @@
 #ifndef DIMENSION_PROGRESS_H
 #define DIMENSION_PROGRESS_H
 
+/** A progress object */
 typedef struct dmnsn_progress dmnsn_progress;
 
-/* Join the worker thread and return it's integer return value in addition to
-   deleting `progress' */
+/**
+ * Join the worker thread and return it's integer return value in addition to
+ * deleting \p progress.
+ * @param[in,out] progress  The background task to finish.
+ * @return The return value of the background task.
+ */
 int dmnsn_finish_progress(dmnsn_progress *progress);
 
-/* Get the progress of the background task, out of 1.0 */
+/**
+ * Get the progress of the background task.
+ * @param[in] progress  The background task to examine.
+ * @return The progress of the background task, out of 1.0.
+ */
 double dmnsn_get_progress(const dmnsn_progress *progress);
-/* Wait for the progress to be >= prog, in a better way than spinlocking */
+
+/**
+ * Wait for a certain amount of progress.  Always use this rather than
+ * spinlocking.
+ * @param[in] progress  The background task to monitor.
+ * @param[in] prog      The progress value to wait for.
+ */
 void dmnsn_wait_progress(const dmnsn_progress *progress, double prog);
 
 #endif /* DIMENSION_PROGRESS_H */

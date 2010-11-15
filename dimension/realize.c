@@ -435,7 +435,6 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
       );
 
       camera = dmnsn_new_perspective_camera();
-      dmnsn_set_perspective_camera_trans(camera, trans);
       break;
     }
 
@@ -443,6 +442,7 @@ dmnsn_realize_camera(dmnsn_astnode astnode)
     dmnsn_assert(false, "Unsupported camera type.");
   }
 
+  camera->trans = trans;
   return camera;
 }
 
@@ -990,7 +990,7 @@ dmnsn_realize_box(dmnsn_astnode astnode)
 }
 
 static dmnsn_object *
-dmnsn_realize_cylinder(dmnsn_astnode astnode)
+dmnsn_realize_cone(dmnsn_astnode astnode)
 {
   dmnsn_astnode pnode1, rnode1, pnode2, rnode2, open;
 
@@ -1021,28 +1021,27 @@ dmnsn_realize_cylinder(dmnsn_astnode astnode)
   double theta1 = dmnsn_vector_axis_angle(dmnsn_y, dir, dmnsn_x);
   double theta2 = dmnsn_vector_axis_angle(dmnsn_y, dir, dmnsn_z);
 
-  dmnsn_object *cylinder
-    = dmnsn_new_cylinder(r1, r2, dmnsn_realize_integer(open));
-  /* Transformations: lift the cylinder to start at the origin, scale, rotate,
+  dmnsn_object *cone = dmnsn_new_cone(r1, r2, dmnsn_realize_integer(open));
+  /* Transformations: lift the cone to start at the origin, scale, rotate,
      and translate properly */
-  cylinder->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0));
-  cylinder->trans = dmnsn_matrix_mul(
+  cone->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0));
+  cone->trans = dmnsn_matrix_mul(
     dmnsn_scale_matrix(dmnsn_new_vector(1.0, l/2.0, 1.0)),
-    cylinder->trans
+    cone->trans
   );
-  cylinder->trans = dmnsn_matrix_mul(
+  cone->trans = dmnsn_matrix_mul(
     dmnsn_rotation_matrix(dmnsn_new_vector(theta1, 0.0, 0.0)),
-    cylinder->trans
+    cone->trans
   );
-  cylinder->trans = dmnsn_matrix_mul(
+  cone->trans = dmnsn_matrix_mul(
     dmnsn_rotation_matrix(dmnsn_new_vector(0.0, 0.0, theta2)),
-    cylinder->trans
+    cone->trans
   );
-  cylinder->trans = dmnsn_matrix_mul(
+  cone->trans = dmnsn_matrix_mul(
     dmnsn_translation_matrix(p1),
-    cylinder->trans
+    cone->trans
   );
-  return cylinder;
+  return cone;
 }
 
 static dmnsn_object *
@@ -1210,7 +1209,7 @@ dmnsn_realize_object(dmnsn_astnode astnode, dmnsn_array *lights)
     break;
   case DMNSN_AST_CONE:
   case DMNSN_AST_CYLINDER:
-    object = dmnsn_realize_cylinder(onode);
+    object = dmnsn_realize_cone(onode);
     break;
   case DMNSN_AST_DIFFERENCE:
     object = dmnsn_realize_difference(onode, modifiers, lights);

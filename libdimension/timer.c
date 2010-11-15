@@ -18,10 +18,16 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Performance counter.
+ */
+
 #include "dimension.h"
 #include <sys/times.h>
 #include <unistd.h>
 
+/** Clock ticks per second. */
 static long clk_tck = 0;
 
 dmnsn_timer *

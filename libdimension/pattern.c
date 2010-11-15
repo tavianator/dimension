@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Patterns.
+ */
+
 #include "dimension.h"
 
 /* Allocate a dummy pattern */

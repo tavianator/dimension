@@ -18,60 +18,70 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * A scene.
+/**
+ * @file
+ * Entire scenes.
  */
 
 #ifndef DIMENSION_SCENE_H
 #define DIMENSION_SCENE_H
 
-#include <stdbool.h>
-
+/** Render quality flags. */
 enum {
-  DMNSN_RENDER_NONE         = 0,
-  DMNSN_RENDER_PIGMENT      = 1 << 0,
-  DMNSN_RENDER_LIGHTS       = 1 << 1,
-  DMNSN_RENDER_FINISH       = 1 << 2,
-  DMNSN_RENDER_TRANSLUCENCY = 1 << 3,
-  DMNSN_RENDER_REFLECTION   = 1 << 4,
-  DMNSN_RENDER_FULL         = ~DMNSN_RENDER_NONE
+  DMNSN_RENDER_NONE         = 0,      /**< Render nothing. */
+  DMNSN_RENDER_PIGMENT      = 1 << 0, /**< Render pigments. */
+  DMNSN_RENDER_LIGHTS       = 1 << 1, /**< Render lights and shadows. */
+  DMNSN_RENDER_FINISH       = 1 << 2, /**< Render object finishes. */
+  DMNSN_RENDER_TRANSLUCENCY = 1 << 3, /**< Render translucency/refraction. */
+  DMNSN_RENDER_REFLECTION   = 1 << 4, /**< Render specular reflection. */
+  DMNSN_RENDER_FULL         = ~DMNSN_RENDER_NONE /**< Render everything. */
 };
 
+/** Render quality. */
 typedef unsigned int dmnsn_quality;
 
-typedef struct {
+/** An entire scene. */
+typedef struct dmnsn_scene {
   /* World attributes */
-  dmnsn_color background;
-  dmnsn_texture *default_texture;
+  dmnsn_color background;         /**< Background color. */
+  dmnsn_texture *default_texture; /**< Default object texture. */
 
-  /* Camera */
+  /** Camera. */
   dmnsn_camera *camera;
 
-  /* Canvas */
+  /** Canvas. */
   dmnsn_canvas *canvas;
 
-  /* Objects */
+  /** Objects. */
   dmnsn_array *objects;
 
-  /* Lights */
+  /** Lights. */
   dmnsn_array *lights;
 
-  /* Rendering quality */
+  /** Render quality. */
   dmnsn_quality quality;
 
-  /* Recursion limit */
+  /** Recursion limit. */
   unsigned int reclimit;
 
-  /* Number of parallel threads */
+  /** Number of parallel threads. */
   unsigned int nthreads;
 
-  /* Timers */
+  /** Timers */
   dmnsn_timer *bounding_timer;
   dmnsn_timer *render_timer;
 } dmnsn_scene;
 
-/* Create a scene */
+/**
+ * Create a scene.
+ * @return A new empty scene.
+ */
 dmnsn_scene *dmnsn_new_scene(void);
+
+/**
+ * Delete a scene.
+ * @param[in,out] scene  The scene to delete.
+ */
 void dmnsn_delete_scene(dmnsn_scene *scene);
 
 #endif /* DIMENSION_SCENE_H */

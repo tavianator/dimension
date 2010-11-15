@@ -18,33 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Cubes.
+ */
+
 #include "dimension.h"
 #include <math.h>
 
-/*
- * Cube
- */
-
-/* Cube callbacks */
-static bool dmnsn_cube_intersection_fn(const dmnsn_object *cube,
-                                       dmnsn_line line,
-                                       dmnsn_intersection *intersection);
-static bool dmnsn_cube_inside_fn(const dmnsn_object *cube,
-                                 dmnsn_vector point);
-
-/* Allocate a new cube object */
-dmnsn_object *
-dmnsn_new_cube()
-{
-  dmnsn_object *cube = dmnsn_new_object();
-  cube->intersection_fn  = &dmnsn_cube_intersection_fn;
-  cube->inside_fn        = &dmnsn_cube_inside_fn;
-  cube->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
-  cube->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
-  return cube;
-}
-
-/* Intersections callback for a cube */
+/** Intersection callback for a cube. */
 static bool
 dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
                            dmnsn_intersection *intersection)
@@ -141,11 +123,23 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
   }
 }
 
-/* Inside callback for a cube */
+/** Inside callback for a cube. */
 static bool
 dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
 {
   return point.x > -1.0 && point.x < 1.0
       && point.y > -1.0 && point.y < 1.0
       && point.z > -1.0 && point.z < 1.0;
+}
+
+/* Allocate a new cube object */
+dmnsn_object *
+dmnsn_new_cube()
+{
+  dmnsn_object *cube = dmnsn_new_object();
+  cube->intersection_fn  = &dmnsn_cube_intersection_fn;
+  cube->inside_fn        = &dmnsn_cube_inside_fn;
+  cube->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
+  cube->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
+  return cube;
 }

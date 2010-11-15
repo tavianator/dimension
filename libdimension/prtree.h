@@ -18,11 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Priority R-Trees for storing bounding box hierarchies.  PR-trees are a data
- * structure introduced by Arge, de Berg, Haverkort, and Yi, which provides
- * asymptotically optimal worst-case lookup, while remaining efficient with
- * real-world data.  Their structure is derived from B-trees.
+/**
+ * @file.
+ * Priority R-trees.  PR-trees are a data structure introduced by Arge, de Berg,
+ * Haverkort, and Yi, which provides asymptotically optimal worst-case lookup,
+ * while remaining efficient with real-world data.  Their structure is derived
+ * from B-trees.
  */
 
 #ifndef DIMENSION_IMPL_PRTREE_H
@@ -30,19 +31,25 @@
 
 #include <stdbool.h>
 
+/** A PR-tree node. */
 typedef struct dmnsn_prtree_node dmnsn_prtree_node;
 
+/** A priority R-tree. */
 typedef struct dmnsn_prtree {
   dmnsn_bounding_box bounding_box;
   dmnsn_prtree_node *root;
   dmnsn_array *unbounded;
 } dmnsn_prtree;
 
+/** Create a PR-tree. */
 dmnsn_prtree *dmnsn_new_prtree(const dmnsn_array *objects);
+/** Delete a PR-tree. */
 void dmnsn_delete_prtree(dmnsn_prtree *tree);
 
+/** Find the closest ray-object intersection in the tree. */
 bool dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
                                dmnsn_intersection *intersection);
+/** Determine whether a point is inside any object in the tree. */
 bool dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point);
 
 #endif /* DIMENSION_IMPL_PRTREE_H */

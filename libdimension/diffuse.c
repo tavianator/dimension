@@ -18,14 +18,16 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Diffuse finish.
+ */
+
 #include "dimension.h"
 #include <math.h>
 #include <stdlib.h>
 
-/*
- * Diffuse finish
- */
-
+/** Diffuse finish callback. */
 static dmnsn_color
 dmnsn_diffuse_finish_fn(const dmnsn_finish *finish,
                         dmnsn_color light, dmnsn_color color,

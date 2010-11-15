@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Scenes.
+ */
+
 #include "dimension-impl.h"
 #include <stdlib.h>
 

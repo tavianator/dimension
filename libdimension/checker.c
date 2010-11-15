@@ -18,12 +18,14 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
-
-/*
- * Checker pattern
+/**
+ * @file
+ * Checker pattern.
  */
 
+#include "dimension.h"
+
+/** Checker pattern callback. */
 static double
 dmnsn_checker_pattern_fn(const dmnsn_pattern *checker, dmnsn_vector v)
 {
@@ -50,7 +52,7 @@ dmnsn_checker_pattern_fn(const dmnsn_pattern *checker, dmnsn_vector v)
 }
 
 dmnsn_pattern *
-dmnsn_new_checker_pattern()
+dmnsn_new_checker_pattern(void)
 {
   dmnsn_pattern *checker = dmnsn_new_pattern();
   checker->pattern_fn = &dmnsn_checker_pattern_fn;

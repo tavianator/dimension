@@ -28,7 +28,7 @@ EXTRA_DIST = autogen.sh
 
 if PGO
 
-.PHONY: pgo bench
+.PHONY: pgo bench doc
 pgo:
 	@if [ ! -d $(top_builddir)/libdimension/pgo/.libs ] || [ -z "$$(ls $(top_builddir)/libdimension/pgo/.libs/*.gcda 2>/dev/null)" ]; then \
 	  $(MAKE) $(AM_MAKEFLAGS) -C libdimension libdimension-pgo.la && \
@@ -44,8 +44,11 @@ pgo:
 all-recursive check-recursive install-recursive installcheck-recursive distdir: pgo
 
 else  ## PGO
-.PHONY: bench
+.PHONY: bench doc
 endif ## PGO
 
 bench: all-recursive
 	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench
+
+doc:
+	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) doc

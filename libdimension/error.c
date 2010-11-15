@@ -18,17 +18,28 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Error handling.
+ */
+
 #include "dimension-impl.h"
 #include <pthread.h>
 #include <stdio.h>     /* For fprintf() */
 #include <stdlib.h>    /* For exit() */
 
+/** The default fatal error handler. */
 static void dmnsn_default_fatal_error_fn(void);
-static dmnsn_fatal_error_fn *dmnsn_fatal = &dmnsn_default_fatal_error_fn;
 
-static dmnsn_severity dmnsn_resilience = DMNSN_SEVERITY_MEDIUM;
-static pthread_mutex_t dmnsn_resilience_mutex = PTHREAD_MUTEX_INITIALIZER;
+/** The current fatal error handler. */
+static dmnsn_fatal_error_fn *dmnsn_fatal = &dmnsn_default_fatal_error_fn;
+/** Mutex which protects \c dmnsn_fatal. */
 static pthread_mutex_t dmnsn_fatal_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/** The current resilience. */
+static dmnsn_severity dmnsn_resilience = DMNSN_SEVERITY_MEDIUM;
+/** Mutex which protexts \c dmnsn_resilience. */
+static pthread_mutex_t dmnsn_resilience_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* Called by dmnsn_error macro (don't call directly). */
 void

@@ -18,7 +18,8 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
+/**
+ * @file
  * Utility functions for working with and numerically solving polynomials.
  * Polynomials are represented as simple arrays where the ith element is the
  * coefficient on x^i.  In general, we are only interested in positive roots.
@@ -30,6 +31,14 @@
 #include <stddef.h>
 #include <stdio.h>
 
+/**
+ * Evaluate a polynomial at \p x.
+ * @param[in] poly    The coefficients of the polynomial to evaluate, in order
+ *                    from lowest degree to highest degree.  The array should
+ *                    have dimension <tt>degree + 1</tt>.
+ * @param[in] degree  The degree of the polynomial.
+ * @param[in] x       The value of the variable at which to evaluate.
+ */
 DMNSN_INLINE double
 dmnsn_evaluate_polynomial(const double poly[], size_t degree, double x)
 {
@@ -41,6 +50,12 @@ dmnsn_evaluate_polynomial(const double poly[], size_t degree, double x)
   return ret;
 }
 
+/**
+ * Evaluate the derivative of a polynomial at \p x.
+ * @param[in] poly    The coefficients of the polynomial to evaluate.
+ * @param[in] degree  The degree of the polynomial.
+ * @param[in] x       The value of the variable at which to evaluate.
+ */
 DMNSN_INLINE double
 dmnsn_evaluate_polynomial_derivative(const double poly[], size_t degree,
                                      double x)
@@ -53,11 +68,23 @@ dmnsn_evaluate_polynomial_derivative(const double poly[], size_t degree,
   return ret;
 }
 
-/* Stores the positive roots of poly[] in x[], and returns the number of such
-   roots that were stored */
+/**
+ * Find the positive roots of a polynomial.
+ * @param[in]  poly    The coefficients of the polynomial to solve.
+ * @param[in]  degree  The degree of the polynomial.
+ * @param[out] x       An array in which to store the roots.  It should have
+ *                     dimension \p degree.
+ * @return The number of positive roots stored in \c x[].
+ */
 size_t dmnsn_solve_polynomial(const double poly[], size_t degree, double x[]);
 
-/* Helper function to print a polynomial */
+/**
+ * Output a polynomial.  The polynomial is printed as a function of x suitable
+ * for input into a CAS, and without a trailing newline.
+ * @param[in,out] file    The file to write to.
+ * @param[in]     poly    The coefficients of the polynomial to print.
+ * @param[in]     degree  The degree of the polynomial.
+ */
 void dmnsn_print_polynomial(FILE *file, const double poly[], size_t degree);
 
 #endif /* DIMENSION_POLYNOMIAL_H */

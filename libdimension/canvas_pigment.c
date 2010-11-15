@@ -18,12 +18,33 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Image maps.
+ */
+
 #include "dimension.h"
 
-/* Canvas color pigment callback */
-static dmnsn_color dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment,
-                                           dmnsn_vector v);
-static void dmnsn_canvas_pigment_free_fn(void *ptr);
+/** Canvas pigment color callback. */
+static dmnsn_color
+dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
+{
+  v = dmnsn_transform_vector(pigment->trans_inv, v);
+
+  dmnsn_canvas *canvas = pigment->ptr;
+
+  int x = (fmod(v.x, 1.0) + 1.0)*(canvas->width  - 1) + 0.5;
+  int y = (fmod(v.y, 1.0) + 1.0)*(canvas->height - 1) + 0.5;
+  dmnsn_color c = dmnsn_get_pixel(canvas, x%canvas->width, y%canvas->height);
+  return c;
+}
+
+/** Canvas pigment destructor. */
+static void
+dmnsn_canvas_pigment_free_fn(void *ptr)
+{
+  dmnsn_delete_canvas(ptr);
+}
 
 /* Create a canvas color */
 dmnsn_pigment *
@@ -34,24 +55,4 @@ dmnsn_new_canvas_pigment(dmnsn_canvas *canvas)
   pigment->free_fn    = &dmnsn_canvas_pigment_free_fn;
   pigment->ptr        = canvas;
   return pigment;
-}
-
-/* Canvas color callback */
-static dmnsn_color
-dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
-{
-  v = dmnsn_transform_vector(pigment->trans_inv, v);
-
-  dmnsn_canvas *canvas = pigment->ptr;
-
-  int x = (fmod(v.x, 1.0) + 1.0)*(canvas->x - 1) + 0.5;
-  int y = (fmod(v.y, 1.0) + 1.0)*(canvas->y - 1) + 0.5;
-  dmnsn_color c = dmnsn_get_pixel(canvas, x%canvas->x, y%canvas->y);
-  return c;
-}
-
-static void
-dmnsn_canvas_pigment_free_fn(void *ptr)
-{
-  dmnsn_delete_canvas(ptr);
 }

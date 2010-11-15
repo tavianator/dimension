@@ -18,13 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Phong highlights.
+ */
+
 #include "dimension.h"
 #include <stdlib.h>
 
-/*
- * Phong finish
- */
-
+/** Phong specular highlight callback. */
 static dmnsn_color
 dmnsn_phong_specular_fn(const dmnsn_finish *finish,
                         dmnsn_color light, dmnsn_color color,

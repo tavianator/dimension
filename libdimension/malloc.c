@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Dynamic memory.
+ */
+
 #include "dimension.h"
 #include <stdlib.h>
 #include <string.h>

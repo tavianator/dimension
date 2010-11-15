@@ -18,52 +18,26 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Cones/cylinders.
+ */
+
 #include "dimension.h"
 #include <math.h>
 
-/*
- * Cylinder
- */
-
-/* Cylinder callbacks */
-static bool dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder,
-                                           dmnsn_line line,
-                                           dmnsn_intersection *intersection);
-static bool dmnsn_cylinder_inside_fn(const dmnsn_object *cylinder,
-                                     dmnsn_vector point);
-
-/* Payload type */
-typedef struct dmnsn_cylinder_payload {
+/** Cone payload type. */
+typedef struct dmnsn_cone_payload {
   double r1, r2;
   bool open;
-} dmnsn_cylinder_payload;
+} dmnsn_cone_payload;
 
-/* Allocate a new cylinder object */
-dmnsn_object *
-dmnsn_new_cylinder(double r1, double r2, bool open)
-{
-  dmnsn_object *cylinder = dmnsn_new_object();
-  cylinder->intersection_fn  = &dmnsn_cylinder_intersection_fn;
-  cylinder->inside_fn        = &dmnsn_cylinder_inside_fn;
-  cylinder->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
-  cylinder->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
-
-  dmnsn_cylinder_payload *payload
-    = dmnsn_malloc(sizeof(dmnsn_cylinder_payload));
-  payload->r1       = r1;
-  payload->r2       = r2;
-  payload->open     = open;
-  cylinder->ptr     = payload;
-  cylinder->free_fn = &dmnsn_free;
-  return cylinder;
-}
-
-/* Intersections callback for a cylinder */
+/** Intersection callback for a cone. */
 static bool
-dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line l,
-                               dmnsn_intersection *intersection)
+dmnsn_cone_intersection_fn(const dmnsn_object *cone, dmnsn_line l,
+                           dmnsn_intersection *intersection)
 {
-  const dmnsn_cylinder_payload *payload = cylinder->ptr;
+  const dmnsn_cone_payload *payload = cone->ptr;
   double r1 = payload->r1, r2 = payload->r2;
 
   /* Solve (x0 + nx*t)^2 + (z0 + nz*t)^2
@@ -130,8 +104,8 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line l,
         intersection->ray      = l;
         intersection->t        = tcap;
         intersection->normal   = norm;
-        intersection->texture  = cylinder->texture;
-        intersection->interior = cylinder->interior;
+        intersection->texture  = cone->texture;
+        intersection->interior = cone->interior;
         return true;
       }
     }
@@ -143,8 +117,8 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line l,
       intersection->ray      = l;
       intersection->t        = t;
       intersection->normal   = norm;
-      intersection->texture  = cylinder->texture;
-      intersection->interior = cylinder->interior;
+      intersection->texture  = cone->texture;
+      intersection->interior = cone->interior;
       return true;
     }
   }
@@ -152,13 +126,33 @@ dmnsn_cylinder_intersection_fn(const dmnsn_object *cylinder, dmnsn_line l,
   return false;
 }
 
-/* Inside callback for a cylinder */
+/** Inside callback for a cone. */
 static bool
-dmnsn_cylinder_inside_fn(const dmnsn_object *cylinder, dmnsn_vector point)
+dmnsn_cone_inside_fn(const dmnsn_object *cone, dmnsn_vector point)
 {
-  const dmnsn_cylinder_payload *payload = cylinder->ptr;
+  const dmnsn_cone_payload *payload = cone->ptr;
   double r1 = payload->r1, r2 = payload->r2;
   double r = (point.y*(r2 - r1) + r1 + r2)/2.0;
   return point.x*point.x + point.z*point.z < r*r
          && point.y > -1.0 && point.y < 1.0;
+}
+
+/* Allocate a new cone object */
+dmnsn_object *
+dmnsn_new_cone(double r1, double r2, bool open)
+{
+  dmnsn_object *cone = dmnsn_new_object();
+  cone->intersection_fn  = &dmnsn_cone_intersection_fn;
+  cone->inside_fn        = &dmnsn_cone_inside_fn;
+  double rmax = dmnsn_max(r1, r2);
+  cone->bounding_box.min = dmnsn_new_vector(-rmax, -1.0, -rmax);
+  cone->bounding_box.max = dmnsn_new_vector(rmax, 1.0, rmax);
+
+  dmnsn_cone_payload *payload = dmnsn_malloc(sizeof(dmnsn_cone_payload));
+  payload->r1       = r1;
+  payload->r2       = r2;
+  payload->open     = open;
+  cone->ptr     = payload;
+  cone->free_fn = &dmnsn_free;
+  return cone;
 }

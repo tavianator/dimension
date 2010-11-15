@@ -1,0 +1,43 @@
+DOXYFILE_ENCODING      = UTF-8
+PROJECT_NAME           = libdimension
+PROJECT_NUMBER         = @VERSION@
+OUTPUT_DIRECTORY       = @top_builddir@/doc/libdimension
+OUTPUT_LANGUAGE        = English
+FULL_PATH_NAMES        = YES
+OPTIMIZE_OUTPUT_FOR_C  = YES
+IGNORE_PREFIX          = dmnsn_ DMNSN_
+JAVADOC_AUTOBRIEF      = YES
+TYPEDEF_HIDES_STRUCT   = YES
+EXTRACT_LOCAL_CLASSES  = NO
+EXTRACT_STATIC         = YES
+SORT_MEMBER_DOCS       = NO
+ALWAYS_DETAILED_SEC    = YES
+HIDE_UNDOC_MEMBERS     = YES
+INPUT                  = dimension.h dimension
+INPUT_ENCODING         = UTF-8
+# Hack to get DMNSN_INLINE documentation to show up.
+INPUT_FILTER           = "sed 's/#ifndef DMNSN_INLINE/#if 1/g'"
+FILE_PATTERNS          = *.h
+EXCLUDE_PATTERNS       = *-stubs.c
+SOURCE_BROWSER         = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+EXPAND_AS_DEFINED      = "DMNSN_INLINE"
+PREDEFINED             = "__STDC_VERSION__=199901L" "__GNUC__"
+
+INTERNAL_DOCS          = NO
+#INTERNAL_DOCS          = YES
+#INPUT                  = . dimension
+#FILE_PATTERNS          = *.c *.h
+#EXTRACT_LOCAL_CLASSES  = YES
+#REFERENCED_BY_RELATION = YES
+#REFERENCES_RELATION    = YES
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .html
+
+GENERATE_LATEX         = YES
+LATEX_OUTPUT           = latex
+
+PREDEFINED             = "__STDC_VERSION__=199901L" "__GNUC__"

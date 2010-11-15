@@ -31,6 +31,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/finishes.h                                  \
                          dimension/geometry.h                                  \
                          dimension/gl.h                                        \
+                         dimension/inline.h                                    \
                          dimension/interior.h                                  \
                          dimension/light.h                                     \
                          dimension/lights.h                                    \
@@ -42,6 +43,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/patterns.h                                  \
                          dimension/pigments.h                                  \
                          dimension/png.h                                       \
+                         dimension/polynomial.h                                \
                          dimension/progress.h                                  \
                          dimension/raytrace.h                                  \
                          dimension/scene.h                                     \
@@ -58,9 +60,9 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           checker.c                                            \
                           color.c                                              \
                           color_map.c                                          \
+                          cone.c                                               \
                           cube.c                                               \
                           csg.c                                                \
-                          cylinder.c                                           \
                           diffuse.c                                            \
                           dimension-impl.h                                     \
                           error.c                                              \
@@ -128,9 +130,17 @@ all-local: libdimension.la
 	  true; \
 	done
 
-clean-local:
+clean-pgo:
 	rm -rf pgo
+clean-local: clean-docs clean-pgo
+else
+clean-local: clean-docs
 endif
+
+doc:
+	doxygen Doxyfile
+clean-docs:
+	rm -rf $(top_builddir)/doc/libdimension
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libdimension.pc

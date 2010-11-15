@@ -18,15 +18,25 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Render a scene by raytracing
+/**
+ * @file
+ * Ray-trace a scene.
  */
 
 #ifndef DIMENSION_RAYTRACE_H
 #define DIMENSION_RAYTRACE_H
 
-/* Render a scene by raytracing */
+/**
+ * Render a scene by raytracing.
+ * @param[in,out] scene  The scene to render.
+ */
 void dmnsn_raytrace_scene(dmnsn_scene *scene);
+
+/**
+ * Render a scene in the background.
+ * @param[in,out] scene  The scene to render.
+ * @return A \p dmnsn_progress object.
+ */
 dmnsn_progress *dmnsn_raytrace_scene_async(dmnsn_scene *scene);
 
 #endif /* DIMENSION_RAYTRACE_H */

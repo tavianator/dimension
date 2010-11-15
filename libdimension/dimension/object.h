@@ -18,7 +18,8 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
+/**
+ * @file
  * Objects.
  */
 
@@ -27,70 +28,104 @@
 
 #include <stdbool.h>
 
-/* A type to represent a ray-object intersection */
+/** A type to represent a ray-object intersection. */
 typedef struct dmnsn_intersection {
-  /* The ray and point which intersected */
-  dmnsn_line ray;
-  double t;
+  dmnsn_line ray; /**< The ray that intersected. */
+  double t;       /**< The line index that intersected */
 
-  /* The surface normal at the intersection point */
-  dmnsn_vector normal;
+  dmnsn_vector normal; /**< The surface normal at the intersection point */
 
-  /* The object properties at the intersection point */
-  const dmnsn_texture  *texture;
-  const dmnsn_interior *interior;
+  const dmnsn_texture  *texture;  /**< The texture at the intersection point */
+  const dmnsn_interior *interior; /**< The interior at the intersection point */
 } dmnsn_intersection;
 
 /* Forward-declare dmnsn_object */
 typedef struct dmnsn_object dmnsn_object;
 
-/* Object callback types */
-
+/**
+ * Object initialization callback.
+ * @param[in,out] object  The object to initialize.
+ */
 typedef void dmnsn_object_init_fn(dmnsn_object *object);
+
+/**
+ * Ray-object intersection callback.
+ * @param[in]  object        The object to test.
+ * @param[in]  line          The line to test.
+ * @param[out] intersection  Where to store the intersection details of the
+ *                           closest (if any) intersection.
+ * @return Whether \p line intersected \p object.
+ */
 typedef bool dmnsn_object_intersection_fn(const dmnsn_object *object,
                                           dmnsn_line line,
                                           dmnsn_intersection *intersection);
+
+/**
+ * Object inside callback.
+ * @param[in] object  The object to test.
+ * @param[in] point   The point to test.
+ * @return Whether \p point is inside \p object.
+ */
 typedef bool dmnsn_object_inside_fn(const dmnsn_object *object,
                                     dmnsn_vector point);
 
-/* dmnsn_object definition */
+/** An object. */
 struct dmnsn_object {
-  /* Surface properties */
-  dmnsn_texture *texture;
+  dmnsn_texture *texture;   /**< Surface properties */
+  dmnsn_interior *interior; /**< Interior properties */
 
-  /* Interior properties */
-  dmnsn_interior *interior;
+  dmnsn_matrix trans;     /**< Transformation matrix */
+  dmnsn_matrix trans_inv; /**< Inverse of the transformation matrix */
 
-  /* Transformation matrix */
-  dmnsn_matrix trans, trans_inv;
+  dmnsn_bounding_box bounding_box; /**< Object bounding box */
 
-  /* Bounding box */
-  dmnsn_bounding_box bounding_box;
-
-  /* Child objects */
+  /** Child objects.  This array lists objects that can be split into
+      sub-objects for bounding purposes (for unions and meshes, for example). */
   dmnsn_array *children;
 
-  /* Callback functions */
-  dmnsn_object_init_fn         *init_fn;
-  dmnsn_object_intersection_fn *intersection_fn;
-  dmnsn_object_inside_fn       *inside_fn;
-  dmnsn_free_fn                *free_fn;
+  dmnsn_object_init_fn         *init_fn; /**< Initialization callback. */
+  dmnsn_object_intersection_fn *intersection_fn; /**< Intersection callback. */
+  dmnsn_object_inside_fn       *inside_fn; /**< Inside callback. */
+  dmnsn_free_fn                *free_fn; /**< Destruction callback. */
 
-  /* Generic pointer for object info */
+  /** Generic pointer for object info */
   void *ptr;
 };
 
-/* Allocate a dummy object */
+/**
+ * Allocate a dummy object.
+ * @return The allocated object.
+ */
 dmnsn_object *dmnsn_new_object(void);
-/* Free an object */
+
+/**
+ * Free an object
+ * @param[in,out] object  The object to destroy.
+ */
 void dmnsn_delete_object(dmnsn_object *object);
 
-/* Initialize an object and potentially its children */
+/**
+ * Initialize an object and potentially its children.
+ * @param[in,out] object  The object to initialize.
+ */
 void dmnsn_object_init(dmnsn_object *object);
 
-/* Helpers for invoking object callbacks with correct transformations */
+/**
+ * Appropriately transform a ray, then test for an intersection.
+ * @param[in]  object        The object to test.
+ * @param[in]  line          The ray to test.
+ * @param[out] intersection  Where to store the intersection details.
+ * @return Whether there was an intersection.
+ */
 bool dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
                                dmnsn_intersection *intersection);
+
+/**
+ * Appropriately transform a point, then test for containment.
+ * @param[in] object  The object to test.
+ * @param[in] point   The point to test.
+ * @return Whether \p point was inside \p object.
+ */
 bool dmnsn_object_inside(const dmnsn_object *object, dmnsn_vector point);
 
 #endif /* DIMENSION_OBJECT_H */

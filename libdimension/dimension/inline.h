@@ -18,16 +18,22 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Handle inlines nicely without cheating and making them static.  The
- * DMNSN_INLINE macro is set appropriately for the version of C you're using,
- * and non-inline versions are emitted in exactly one translation unit when
- * necessary.
+/**
+ * @file
+ * Inline function support. Handle inlines nicely without cheating and making
+ * them static.  The DMNSN_INLINE macro is set appropriately for the version of
+ * C you're using, and non-inline versions are emitted in exactly one
+ * translation unit when necessary.
  */
 
 #ifndef DIMENSION_INLINE_H
 #define DIMENSION_INLINE_H
 
+/**
+ * @def DMNSN_INLINE
+ * A portable inline specifier. Expands to the correct method of declaring
+ * inline functions for the version of C you are using.
+ */
 #ifndef DMNSN_INLINE
   #ifdef __cplusplus
     /* C++ inline semantics */

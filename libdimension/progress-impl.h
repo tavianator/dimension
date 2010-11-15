@@ -18,17 +18,23 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Progress object implementation.
+ */
+
 #ifndef DIMENSION_IMPL_PROGRESS_H
 #define DIMENSION_IMPL_PROGRESS_H
 
-/* Allocate a new progress object */
+/** Allocate a new progress object. */
 dmnsn_progress *dmnsn_new_progress(void);
 
-/* Create a new level of loop nesting */
+/** Create a new level of loop nesting. */
 void dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total);
-/* Increment the progress counter; should only be called from innermost loop */
+/** Increment the progress counter; should only be called from the innermost
+    loop. */
 void dmnsn_increment_progress(dmnsn_progress *progress);
-/* Instantly complete the progress */
+/** Instantly complete the progress. */
 void dmnsn_done_progress(dmnsn_progress *progress);
 
 struct dmnsn_progress {

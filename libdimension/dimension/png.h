@@ -18,8 +18,9 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Support for exporting/importing canvases to/from PNG files
+/**
+ * @file
+ * PNG import/export of canvases
  */
 
 #ifndef DIMENSION_PNG_H
@@ -27,17 +28,46 @@
 
 #include <stdio.h>
 
-/* Optimize canvas for PNG exporting */
+/**
+ * Optimize a canvas for PNG exporting
+ * @param[in,out] canvas  The canvas to optimize.
+ * @return Whether the canvas was successfully optimized.
+ */
 int dmnsn_png_optimize_canvas(dmnsn_canvas *canvas);
 
-/* Write canvas to file in PNG format.  Returns 0 on success, nonzero on
-   failure */
+/**
+ * Write a canvas to a file in PNG format.
+ * @param[in]     canvas  The canvas to write.
+ * @param[in,out] file    The file to write to.
+ * @return 0 on success, non-zero on failure.
+ */
 int dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file);
+
+/**
+ * Write a canvas to a PNG file in the background.
+ * @param[in]     canvas  The canvas to write.
+ * @param[in,out] file    The file to write to.
+ * @return A \ref dmnsn_progress object, or NULL on failure.
+ */
 dmnsn_progress *dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas,
                                              FILE *file);
 
-/* Read a canvas from a PNG file.  Returns NULL on failure. */
+/**
+ * Read a canvas from a PNG file.
+ * @param[in,out] file  The PNG file to read.
+ * @return The new canvas, or NULL on failure.
+ */
 dmnsn_canvas *dmnsn_png_read_canvas(FILE *file);
+
+/**
+ * Read a canvas from a PNG file in the background.
+ * @param[out]    canvas  The address of a non-allocated canvas object.  The
+ *                        canvas object will be allocated and filled with the
+ *                        contents of \p file.  Do not read from this object
+ *                        until the background task has finished.
+ * @param[in,out] file    The PNG file to read.
+ * @return A \ref dmnsn_progress object, or NULL on failure.
+ */
 dmnsn_progress *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file);
 
 #endif /* DIMENSION_PNG_H */

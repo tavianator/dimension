@@ -18,13 +18,14 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Planes.
+ */
+
 #include "dimension.h"
 #include <math.h>
 #include <stdlib.h>
-
-/*
- * Plane
- */
 
 /* Plane object callbacks */
 

@@ -18,47 +18,19 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
-
-/*
- * Torus - special case of a quartic
+/**
+ * @file
+ * Torii.  A special case of a quartic.
  */
 
-/* Torus object callbacks */
-static bool dmnsn_torus_intersection_fn(const dmnsn_object *torus,
-                                        dmnsn_line line,
-                                        dmnsn_intersection *intersection);
-static bool dmnsn_torus_inside_fn(const dmnsn_object *torus,
-                                  dmnsn_vector point);
+#include "dimension.h"
 
-/* Payload type */
+/** Torus payload type. */
 typedef struct dmnsn_torus_payload {
   double major, minor;
 } dmnsn_torus_payload;
 
-/* Allocate a new torus */
-dmnsn_object *
-dmnsn_new_torus(double major, double minor)
-{
-  dmnsn_object *torus = dmnsn_new_object();
-  torus->intersection_fn  = &dmnsn_torus_intersection_fn;
-  torus->inside_fn        = &dmnsn_torus_inside_fn;
-  torus->bounding_box.min = dmnsn_new_vector(-(major + minor),
-                                             -minor,
-                                             -(major + minor));
-  torus->bounding_box.max = dmnsn_new_vector(major + minor,
-                                             minor,
-                                             major + minor);
-
-  dmnsn_torus_payload *payload = dmnsn_malloc(sizeof(dmnsn_torus_payload));
-  payload->major = major;
-  payload->minor = minor;
-  torus->ptr     = payload;
-  torus->free_fn = &dmnsn_free;
-  return torus;
-}
-
-/* Bound the torus in a cylindrical shell */
+/** Bound the torus in a cylindrical shell. */
 static inline bool
 dmnsn_torus_bound_intersection(const dmnsn_torus_payload *payload, dmnsn_line l)
 {
@@ -103,7 +75,7 @@ dmnsn_torus_bound_intersection(const dmnsn_torus_payload *payload, dmnsn_line l)
   return true;
 }
 
-/* Returns the closest intersection of `line' with `torus' */
+/** Torus intersection callback. */
 static bool
 dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line l,
                             dmnsn_intersection *intersection)
@@ -159,11 +131,33 @@ dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line l,
   return true;
 }
 
-/* Return whether a point is inside a torus */
+/** Torus inside callback. */
 static bool
 dmnsn_torus_inside_fn(const dmnsn_object *torus, dmnsn_vector point)
 {
   const dmnsn_torus_payload *payload = torus->ptr;
   double dmajor = payload->major - sqrt(point.x*point.x + point.z*point.z);
   return dmajor*dmajor + point.y*point.y < payload->minor*payload->minor;
+}
+
+/* Allocate a new torus */
+dmnsn_object *
+dmnsn_new_torus(double major, double minor)
+{
+  dmnsn_object *torus = dmnsn_new_object();
+  torus->intersection_fn  = &dmnsn_torus_intersection_fn;
+  torus->inside_fn        = &dmnsn_torus_inside_fn;
+  torus->bounding_box.min = dmnsn_new_vector(-(major + minor),
+                                             -minor,
+                                             -(major + minor));
+  torus->bounding_box.max = dmnsn_new_vector(major + minor,
+                                             minor,
+                                             major + minor);
+
+  dmnsn_torus_payload *payload = dmnsn_malloc(sizeof(dmnsn_torus_payload));
+  payload->major = major;
+  payload->minor = minor;
+  torus->ptr     = payload;
+  torus->free_fn = &dmnsn_free;
+  return torus;
 }

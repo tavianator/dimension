@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Interiors.
+ */
+
 #include "dimension.h"
 #include <stdlib.h>
 

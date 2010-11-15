@@ -18,10 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Polynomials.
+ */
+
 #include "dimension.h"
 #include <math.h>
 
-/* Get the real degree of a polynomial, ignoring leading zeros */
+/** Get the real degree of a polynomial, ignoring leading zeros. */
 static inline size_t
 dmnsn_real_degree(const double poly[], size_t degree)
 {
@@ -34,7 +39,7 @@ dmnsn_real_degree(const double poly[], size_t degree)
   return 0;
 }
 
-/* Divide each coefficient by the leading coefficient */
+/** Divide each coefficient by the leading coefficient. */
 static inline void
 dmnsn_normalize_polynomial(double poly[], size_t degree)
 {
@@ -44,7 +49,7 @@ dmnsn_normalize_polynomial(double poly[], size_t degree)
   poly[degree] = 1.0;
 }
 
-/* Eliminate trivial zero roots from poly[] */
+/** Eliminate trivial zero roots from \p poly[]. */
 static inline void
 dmnsn_eliminate_zero_roots(double poly[], size_t *degree)
 {
@@ -60,7 +65,7 @@ dmnsn_eliminate_zero_roots(double poly[], size_t *degree)
   *degree -= i;
 }
 
-/* Returns the number of sign changes between coefficients of `poly' */
+/** Returns the number of sign changes between coefficients of \p poly[]. */
 static inline size_t
 dmnsn_descartes_rule(const double poly[], size_t degree)
 {
@@ -85,7 +90,10 @@ dmnsn_descartes_rule(const double poly[], size_t degree)
   return changes;
 }
 
+/** How many levels of Pascal's triangle to precompute. */
 #define DMNSN_NBINOM 11
+
+/** Pre-computed values of Pascal's triangle. */
 static const double dmnsn_pascals_triangle[DMNSN_NBINOM][DMNSN_NBINOM] = {
   { 1.0 },
   { 1.0, 1.0 },
@@ -100,7 +108,7 @@ static const double dmnsn_pascals_triangle[DMNSN_NBINOM][DMNSN_NBINOM] = {
   { 1.0, 10.0, 45.0, 120.0, 210.0, 252.0, 210.0, 120.0, 45.0, 10.0, 1.0 }
 };
 
-/* Get the (n k) binomial coefficient */
+/** Compute the (n k) binomial coefficient. */
 static inline double
 dmnsn_binom(size_t n, size_t k)
 {
@@ -117,7 +125,7 @@ dmnsn_binom(size_t n, size_t k)
   return ret;
 }
 
-/* Find all ranges that contain a single root, with Uspensky's algorithm */
+/** Find ranges that contain a single root, with Uspensky's algorithm. */
 static size_t
 dmnsn_uspensky_bounds(const double poly[], size_t degree, double bounds[][2],
                       size_t max_roots)
@@ -201,7 +209,7 @@ dmnsn_uspensky_bounds(const double poly[], size_t degree, double bounds[][2],
   }
 }
 
-/* Calculate a finite upper bound for the roots of poly[] */
+/** Calculate a finite upper bound for the roots of \p poly[]. */
 static inline double
 dmnsn_root_bound(double poly[], size_t degree)
 {
@@ -214,7 +222,7 @@ dmnsn_root_bound(double poly[], size_t degree)
   return bound;
 }
 
-/* Improve a root with Newton's method */
+/** Improve a root with Newton's method. */
 static inline double
 dmnsn_improve_root(const double poly[], size_t degree, double x)
 {
@@ -234,8 +242,8 @@ dmnsn_improve_root(const double poly[], size_t degree, double x)
   return x;
 }
 
-/* Use the false position method to find a root in a range that contains exactly
-   one root */
+/** Use the false position method to find a root in a range that contains
+    exactly one root. */
 static inline double
 dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
 {
@@ -293,7 +301,7 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
   return mid;
 }
 
-/* Use synthetic division to eliminate the root `r' from poly[] */
+/** Use synthetic division to eliminate the root \p r from \p poly[]. */
 static inline void
 dmnsn_eliminate_root(double poly[], size_t *degree, double r)
 {
@@ -307,8 +315,7 @@ dmnsn_eliminate_root(double poly[], size_t *degree, double r)
   --*degree;
 }
 
-/* Basic solving methods -- assuming normalized polynomial */
-
+/** Solve a normalized linear polynomial algebraically. */
 static inline size_t
 dmnsn_solve_linear(const double poly[2], double x[1])
 {
@@ -316,6 +323,7 @@ dmnsn_solve_linear(const double poly[2], double x[1])
   return (x[0] >= dmnsn_epsilon) ? 1 : 0;
 }
 
+/** Solve a normalized quadratic polynomial algebraically. */
 static inline size_t
 dmnsn_solve_quadratic(const double poly[3], double x[2])
 {
@@ -386,6 +394,7 @@ dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
   return i;
 }
 
+/* Print a polynomial */
 void
 dmnsn_print_polynomial(FILE *file, const double poly[], size_t degree)
 {

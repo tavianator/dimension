@@ -18,14 +18,27 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Custom patterns
+/**
+ * @file
+ * Pre-defined patterns.
  */
 
 #ifndef DIMENSION_PATTERNS_H
 #define DIMENSION_PATTERNS_H
 
-dmnsn_pattern *dmnsn_new_checker_pattern();
+/**
+ * A checker pattern.  The pattern is composed of tesselating unit cubes
+ * alternating between 0 and 1.
+ * @return A checker pattern.
+ */
+dmnsn_pattern *dmnsn_new_checker_pattern(void);
+
+/**
+ * A gradient.  The value starts at 0 at the origin, and goes linearly to 1 in
+ * the direction of \p orientation, then repeats after a distance of 1.
+ * @param[in] orientation  The direction of the gradient.
+ * @return A gradient pattern.
+ */
 dmnsn_pattern *dmnsn_new_gradient_pattern(dmnsn_vector orientation);
 
 #endif /* DIMENSION_PATTERNS_H */

@@ -18,8 +18,22 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * libdimension - a library for photo-realistic 3-D rendering
+/**
+ * @file
+ * The main #include file for libdimension.  This file declares all public
+ * functions and types used by the Dimension library.  You should never attempt
+ * to include any of the component headers in the dimension/ subdirectory
+ * directly; only this file.
+ */
+
+/**
+ * @mainpage libdimension - A library for photo-realistic 3-D rendering
+ *
+ * The Dimension library (libdimension) is the ray-tracing library that handles
+ * all rendering-related tasks for Dimension.  It is written in C and designed
+ * with performance and concurrency in mind.  It is also generic enough to be
+ * used for applications other than Dimension, though that is its primary
+ * purpose.
  */
 
 #ifndef DIMENSION_H
@@ -31,6 +45,11 @@ extern "C" {
 #endif
 
 /* Common types */
+
+/**
+ * Destructor callback type.
+ * @param[in,out] ptr  The pointer to free.
+ */
 typedef void dmnsn_free_fn(void *ptr);
 
 /* Include all the libdimension headers */

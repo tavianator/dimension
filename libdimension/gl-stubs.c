@@ -18,10 +18,13 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Stubs for GL functions when compiled with --disable-gl.
+ */
+
 #include "dimension.h"
 #include <errno.h>
-
-/* Stubs for GL functions when compiled with --disable-gl */
 
 int
 dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)

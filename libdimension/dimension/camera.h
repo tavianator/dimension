@@ -18,8 +18,9 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * A camera.
+/**
+ * @file
+ * Cameras.
  */
 
 #ifndef DIMENSION_CAMERA_H
@@ -28,20 +29,47 @@
 /* Forward-declare dmnsn_camera */
 typedef struct dmnsn_camera dmnsn_camera;
 
-/* Camera callback types */
+/**
+ * Camera ray callback.
+ * @param[in] camera  The camera itself.
+ * @param[in] x       The x coordinate of the pixel (in [0, 1]).
+ * @param[in] y       The y coordinate of the pixel (in [0, 1]).
+ * @return The ray through (\p x, \p y).
+ */
 typedef dmnsn_line dmnsn_camera_ray_fn(const dmnsn_camera *camera,
                                        double x, double y);
 
+/** A camera. */
 struct dmnsn_camera {
   /* Callback functions */
-  dmnsn_camera_ray_fn *ray_fn;
-  dmnsn_free_fn       *free_fn;
+  dmnsn_camera_ray_fn *ray_fn;  /**< Camera ray callback. */
+  dmnsn_free_fn       *free_fn; /**< Destructor callback. */
 
-  /* Generic pointer for camera info */
+  dmnsn_matrix trans; /**< Transformation matrix. */
+
+  /** Generic pointer for camera info */
   void *ptr;
 };
 
+/**
+ * Create a dummy camera.
+ * @return The allocated camera.
+ */
 dmnsn_camera *dmnsn_new_camera(void);
+
+/**
+ * Delete a camera.
+ * @param[in,out] camera  The camera to delete.
+ */
 void dmnsn_delete_camera(dmnsn_camera *camera);
+
+/**
+ * Invoke the camera ray callback, then correctly transform the ray.
+ * @param[in] camera  The camera itself.
+ * @param[in] x       The x coordinate of the pixel (in [0, 1]).
+ * @param[in] y       The y coordinate of the pixel (in [0, 1]).
+ * @return The ray through (\p x, \p y).
+ */
+dmnsn_line dmnsn_camera_ray(const dmnsn_camera *camera, double x, double y);
 
 #endif /* DIMENSION_CAMERA_H */

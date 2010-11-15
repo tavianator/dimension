@@ -18,24 +18,30 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Simple generalized arrays, for returning variable-length arrays from
- * functions, and other fun stuff.  All functions are inline for performance
- * reasons.
+/**
+ * @file
+ * Simple dynamic arrays.
  */
 
 #ifndef DIMENSION_ARRAY_H
 #define DIMENSION_ARRAY_H
 
-#include <stdlib.h> /* For size_t */
+#include <stddef.h> /* For size_t */
 #include <string.h> /* For memcpy */
 
-typedef struct {
-  void *ptr;
-  size_t obj_size, length, capacity;
+/** Dynamic array type */
+typedef struct dmnsn_array {
+  void *ptr;       /**< @internal The actual memory */
+  size_t obj_size; /**< @internal The size of each object */
+  size_t length;   /**< @internal The current size of the array */
+  size_t capacity; /**< @internal The size of the allocated space */
 } dmnsn_array;
 
-/* Array allocation */
+/**
+ * Allocate an array.
+ * @param[in] obj_size  The size of the objects to store in the array.
+ * @return An empty array.
+ */
 DMNSN_INLINE dmnsn_array *
 dmnsn_new_array(size_t obj_size)
 {
@@ -50,7 +56,10 @@ dmnsn_new_array(size_t obj_size)
   return array;
 }
 
-/* Delete an array */
+/**
+ * Delete an array.
+ * @param[in,out] array  The array to delete.
+ */
 DMNSN_INLINE void
 dmnsn_delete_array(dmnsn_array *array)
 {
@@ -60,14 +69,22 @@ dmnsn_delete_array(dmnsn_array *array)
   }
 }
 
-/* Get the size of the array */
+/**
+ * Get the size of the array.
+ * @param[in] array  The array in question.
+ * @return The number of elements in the array.
+ */
 DMNSN_INLINE size_t
 dmnsn_array_size(const dmnsn_array *array)
 {
   return array->length;
 }
 
-/* Set the size of the array */
+/**
+ * Set the size of the array.
+ * @param[in,out] array   The array to resize.
+ * @param[in]     length  The new length of the array.
+ */
 DMNSN_INLINE void
 dmnsn_array_resize(dmnsn_array *array, size_t length)
 {
@@ -80,7 +97,12 @@ dmnsn_array_resize(dmnsn_array *array, size_t length)
   array->length = length;
 }
 
-/* Get the i'th object, bailing out if i is out of range */
+/**
+ * Get the i'th element.
+ * @param[in]  array  The array to access.
+ * @param[in]  i      The index of the element to extract.
+ * @param[out] obj    The location to store the extracted object.
+ */
 DMNSN_INLINE void
 dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
 {
@@ -89,7 +111,12 @@ dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
 }
 
 
-/* Set the i'th object, expanding the array if necessary */
+/**
+ * Set the i'th object, expanding the array if necessary.
+ * @param[in,out] array  The array to modify.
+ * @param[in]     i      The index to update.
+ * @param[in]     obj    The location of the object to copy into the array.
+ */
 DMNSN_INLINE void
 dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj)
 {
@@ -100,21 +127,34 @@ dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj)
   memcpy((char *)array->ptr + array->obj_size*i, obj, array->obj_size);
 }
 
-/* First element */
+/**
+ * First element.
+ * @param[in] array  The array to index.
+ * @return The address of the first element of the array.
+ */
 DMNSN_INLINE void *
 dmnsn_array_first(const dmnsn_array *array)
 {
   return array->ptr;
 }
 
-/* Last element */
+/**
+ * Last element.
+ * @param[in] array  The array to index.
+ * @return The address of the last element of the array.
+ */
 DMNSN_INLINE void *
 dmnsn_array_last(const dmnsn_array *array)
 {
   return (char *)array->ptr + array->obj_size*(array->length - 1);
 }
 
-/* Arbitrary element access */
+/**
+ * Arbitrary element access.
+ * @param[in] array  The array to index.
+ * @param[in] i      The index to access.
+ * @return The address of the i'th element of the array.
+ */
 DMNSN_INLINE void *
 dmnsn_array_at(const dmnsn_array *array, size_t i)
 {
@@ -122,14 +162,22 @@ dmnsn_array_at(const dmnsn_array *array, size_t i)
   return (char *)array->ptr + array->obj_size*i;
 }
 
-/* Push obj to the end of the array */
+/**
+ * Push an object to the end of the array.
+ * @param[in,out] array  The array to append to.
+ * @param[in]     obj    The location of the object to push.
+ */
 DMNSN_INLINE void
 dmnsn_array_push(dmnsn_array *array, const void *obj)
 {
   dmnsn_array_set(array, dmnsn_array_size(array), obj);
 }
 
-/* Pop obj from the end of the array */
+/**
+ * Pop an object from the end of the array.
+ * @param[in,out] array  The array to pop from.
+ * @param[out]    obj    The location to store the extracted object.
+ */
 DMNSN_INLINE void
 dmnsn_array_pop(dmnsn_array *array, void *obj)
 {
@@ -139,7 +187,12 @@ dmnsn_array_pop(dmnsn_array *array, void *obj)
   dmnsn_array_resize(array, size - 1);   /* Shrink the array */
 }
 
-/* Insert an item into the middle of the array */
+/**
+ * Insert an item into the middle of the array.  This is O(n).
+ * @param[in,out] array  The array to insert to.
+ * @param[in]     i      The index at which to insert.
+ * @param[in]     obj    The object to insert.
+ */
 DMNSN_INLINE void
 dmnsn_array_insert(dmnsn_array *array, size_t i, const void *obj)
 {
@@ -156,7 +209,11 @@ dmnsn_array_insert(dmnsn_array *array, size_t i, const void *obj)
   memcpy((char *)array->ptr + array->obj_size*i, obj, array->obj_size);
 }
 
-/* Remove an item from the middle of the array */
+/**
+ * Remove an item from the middle of the array.  This is O(n).
+ * @param[in,out] array  The array to remove from.
+ * @param[in]     i      The index to remove.
+ */
 DMNSN_INLINE void
 dmnsn_array_remove(dmnsn_array *array, size_t i)
 {
@@ -172,11 +229,29 @@ dmnsn_array_remove(dmnsn_array *array, size_t i)
 
 /* Macros to shorten array iteration */
 
+/**
+ * Iterate over an array.  For example,
+ * @code
+ * DMNSN_ARRAY_FOREACH (int *, i, array) {
+ *   printf("%d\n", *i);
+ * }
+ * @endcode
+ *
+ * @param     type   The (pointer) type to use as an iterator.
+ * @param     i      The name of the iterator within the loop body.
+ * @param[in] array  The array to loop over.
+ */
 #define DMNSN_ARRAY_FOREACH(type, i, array)                             \
   for (type i = dmnsn_array_first(array);                               \
        i - (type)dmnsn_array_first(array) < dmnsn_array_size(array);    \
        ++i)
 
+/**
+ * Iterate over an array, in reverse order.
+ * @param     type   The (pointer) type to use as an iterator.
+ * @param     i      The name of the iterator within the loop body.
+ * @param[in] array  The array to loop over.
+ */
 #define DMNSN_ARRAY_FOREACH_REVERSE(type, i, array)     \
   for (type i = dmnsn_array_last(array);                \
        i - (type)dmnsn_array_first(array) >= 0;         \

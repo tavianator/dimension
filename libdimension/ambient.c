@@ -18,14 +18,16 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Ambient finish.
+ */
+
 #include "dimension.h"
 #include <math.h>
 #include <stdlib.h>
 
-/*
- * Ambient finish
- */
-
+/** Ambient finish callback. */
 static dmnsn_color
 dmnsn_ambient_finish_fn(const dmnsn_finish *finish, dmnsn_color pigment)
 {

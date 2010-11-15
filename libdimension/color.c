@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Color handling.
+ */
+
 #include "dimension.h"
 #include <math.h> /* For pow(), sqrt() */
 
@@ -97,7 +102,21 @@ dmnsn_color_is_black(dmnsn_color color)
   return color.R == 0.0 && color.G == 0.0 && color.B == 0.0;
 }
 
-/* sRGB's `C' function */
+/* Convert an sRGB color to a dmnsn_color (actually a no-op) */
+dmnsn_color
+dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
+{
+  dmnsn_color ret = {
+    .R = sRGB.R,
+    .G = sRGB.G,
+    .B = sRGB.B,
+    .filter = 0.0,
+    .trans = 0.0
+  };
+  return ret;
+}
+
+/** sRGB's `C' function. */
 static double
 dmnsn_sRGB_C(double Clinear)
 {
@@ -144,7 +163,8 @@ dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY)
   return dmnsn_color_from_XYZ(ret);
 }
 
-/* Inverse function of CIE L*a*b*'s `f' function, for the reverse conversion */
+/** Inverse function of CIE L*a*b*'s `f' function, for the reverse
+    conversion. */
 static double
 dmnsn_Lab_finv(double t)
 {
@@ -195,21 +215,15 @@ dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white)
   return dmnsn_color_from_XYZ(ret);
 }
 
-/* Convert an sRGB color to a dmnsn_color (actually a no-op) */
-dmnsn_color
-dmnsn_color_from_sRGB(dmnsn_sRGB sRGB)
+/* Convert a dmnsn_color to an sRGB color (actually a no-op) */
+dmnsn_sRGB
+dmnsn_sRGB_from_color(dmnsn_color color)
 {
-  dmnsn_color ret = {
-    .R = sRGB.R,
-    .G = sRGB.G,
-    .B = sRGB.B,
-    .filter = 0.0,
-    .trans = 0.0
-  };
-  return ret;
+  dmnsn_sRGB sRGB = { .R = color.R, .G = color.G, .B = color.B };
+  return sRGB;
 }
 
-/* Inverse function of sRGB's `C' function, for the reverse conversion */
+/** Inverse function of sRGB's `C' function, for the reverse conversion. */
 static double
 dmnsn_sRGB_Cinv(double CsRGB)
 {
@@ -260,7 +274,7 @@ dmnsn_xyY_from_color(dmnsn_color color)
   return ret;
 }
 
-/* CIE L*a*b*'s `f' function */
+/** CIE L*a*b*'s `f' function. */
 static double
 dmnsn_Lab_f(double t)
 {
@@ -305,14 +319,7 @@ dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white)
   return ret;
 }
 
-/* Convert a dmnsn_color to an sRGB color (actually a no-op) */
-dmnsn_sRGB
-dmnsn_sRGB_from_color(dmnsn_color color)
-{
-  dmnsn_sRGB sRGB = { .R = color.R, .G = color.G, .B = color.B };
-  return sRGB;
-}
-
+/** Greyscale color intensity. */
 static double
 dmnsn_color_intensity(dmnsn_color color)
 {

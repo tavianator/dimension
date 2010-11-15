@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Doubly-linked lists.
+ */
+
 #include "dimension.h"
 
 dmnsn_list *

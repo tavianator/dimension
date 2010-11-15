@@ -18,17 +18,43 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * A platform-agnostic timer abstraction
+/**
+ * @file
+ * A platform-agnostic timer abstraction.
  */
 
+/** A platform-agnotic timer. */
 typedef struct dmnsn_timer {
-  double real, user, system;
+  double real;   /**< Wall-clock time. */
+  double user;   /**< Time spent executing. */
+  double system; /**< Time spent waiting for the system. */
 } dmnsn_timer;
 
+/** A standard format string for timers. */
 #define DMNSN_TIMER_FORMAT "%.2fs (user: %.2fs; system: %.2fs)"
+/**
+ * The appropriate arguments to printf() a timer.  For example:
+ * @code
+ *   printf(DMNSN_TIMER_FORMAT "\n", DMNSN_TIMER_PRINTF(timer));
+ * @endcode
+ * will print something like "1.00s (user: 0.99s; system: 0.01s)".
+ */
 #define DMNSN_TIMER_PRINTF(t) (t)->real, (t)->user, (t)->system
 
+/**
+ * Create a new timer.  Timing starts right before this function returns.
+ * @return A new timer object.
+ */
 dmnsn_timer *dmnsn_new_timer(void);
+
+/**
+ * Finish timing.  The members of the timer struct will now contain timing data.
+ * @param[in,out] timer  The timer to stop.
+ */
 void dmnsn_complete_timer(dmnsn_timer *timer);
+
+/**
+ * Delete a timer.
+ * @param[in,out] timer  The timer to delete.
+ */
 void dmnsn_delete_timer(dmnsn_timer *timer);

@@ -18,6 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * The internal libdimension API.  These functions and types are used to
+ * implement libdimension, but are not part of its public API.
+ */
+
 #ifndef DIMENSION_IMPL_H
 #define DIMENSION_IMPL_H
 

@@ -18,15 +18,20 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * The ray-tracing algorithm.
+ */
+
 #include "dimension-impl.h"
 #include <stdlib.h>
+#include <pthread.h>
 
 /*
  * Boilerplate for multithreading
  */
 
-/* Payload type for passing arguments to worker thread */
-
+/** Payload type for passing arguments to worker threads. */
 typedef struct {
   dmnsn_progress *progress;
   dmnsn_scene *scene;
@@ -36,7 +41,7 @@ typedef struct {
   unsigned int index, threads;
 } dmnsn_raytrace_payload;
 
-/* Thread callback */
+/** Background thread callback. */
 static int dmnsn_raytrace_scene_thread(void *ptr);
 
 /* Raytrace a scene */
@@ -58,12 +63,12 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
   payload->progress = progress;
   payload->scene    = scene;
 
-  dmnsn_new_thread(progress, NULL, &dmnsn_raytrace_scene_thread, payload);
+  dmnsn_new_thread(progress, &dmnsn_raytrace_scene_thread, payload);
 
   return progress;
 }
 
-/* Thread callback */
+/** Worker thread callback. */
 static void *dmnsn_raytrace_scene_multithread_thread(void *ptr);
 
 /* Thread callback -- set up the multithreaded engine */
@@ -95,7 +100,7 @@ dmnsn_raytrace_scene_thread(void *ptr)
 
   /* Set up the progress object */
   dmnsn_new_progress_element(payload->progress,
-                             payload->scene->canvas->y);
+                             payload->scene->canvas->height);
 
   /* Create the payloads */
   for (int i = 0; i < nthreads; ++i) {
@@ -136,7 +141,7 @@ dmnsn_raytrace_scene_thread(void *ptr)
   return 0;
 }
 
-/* Actual raytracing implementation */
+/** Actual raytracing implementation. */
 static void dmnsn_raytrace_scene_impl(dmnsn_progress *progress,
                                       dmnsn_scene *scene,
                                       dmnsn_prtree *prtree,
@@ -156,6 +161,7 @@ dmnsn_raytrace_scene_multithread_thread(void *ptr)
  * Raytracing algorithm
  */
 
+/** The current state of the ray-tracing engine. */
 typedef struct dmnsn_raytrace_state {
   const struct dmnsn_raytrace_state *parent;
 
@@ -175,7 +181,7 @@ typedef struct dmnsn_raytrace_state {
   double ior;
 } dmnsn_raytrace_state;
 
-/* Main helper for dmnsn_raytrace_scene_impl - shoot a ray */
+/** Main helper for dmnsn_raytrace_scene_impl - shoot a ray. */
 static dmnsn_color dmnsn_raytrace_shoot(dmnsn_raytrace_state *state,
                                         dmnsn_line ray);
 
@@ -192,21 +198,18 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
     .ior    = 1.0
   };
 
-  size_t width  = scene->canvas->x;
-  size_t height = scene->canvas->y;
-
   /* Iterate through each pixel */
-  for (size_t y = index; y < height; y += threads) {
-    for (size_t x = 0; x < width; ++x) {
+  for (size_t y = index; y < scene->canvas->height; y += threads) {
+    for (size_t x = 0; x < scene->canvas->width; ++x) {
       /* Set the pixel to the background color */
       dmnsn_color color = scene->background;
 
       if (scene->quality) {
         /* Get the ray corresponding to the (x,y)'th pixel */
-        dmnsn_line ray = (*scene->camera->ray_fn)(
+        dmnsn_line ray = dmnsn_camera_ray(
           scene->camera,
-          ((double)x)/(scene->canvas->x - 1),
-          ((double)y)/(scene->canvas->y - 1)
+          ((double)x)/(scene->canvas->width - 1),
+          ((double)y)/(scene->canvas->height - 1)
         );
 
         /* Shoot a ray */
@@ -221,20 +224,24 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   }
 }
 
+/** Get the intersection texture. */
 #define ITEXTURE(state) (state->intersection->texture)
+/** Get the default texture. */
 #define DTEXTURE(state) (state->scene->default_texture)
 
+/** Can a texture element be accessed? */
 #define CAN_ACCESS(texture, telem)              \
   ((texture) && (texture)->telem)
+/** Can a texture element callback be called? */
 #define CAN_CALL(texture, telem, fn)                    \
   (CAN_ACCESS(texture, telem) && (texture)->telem->fn)
 
-/* Determine whether a callback may be called */
+/** Determine whether a callback may be called. */
 #define TEXTURE_HAS_CALLBACK(state, telem, fn)  \
   (CAN_CALL(ITEXTURE(state), telem, fn)         \
    || CAN_CALL(DTEXTURE(state), telem, fn))
 
-/* Call the appropriate overloaded texture callback */
+/** Call the appropriate overloaded texture callback. */
 #define TEXTURE_CALLBACK(state, telem, fn, def, ...)                       \
   (CAN_CALL(ITEXTURE(state), telem, fn)                                    \
    ? (*ITEXTURE(state)->telem->fn)(ITEXTURE(state)->telem, __VA_ARGS__)    \
@@ -242,7 +249,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
       ? (*DTEXTURE(state)->telem->fn)(DTEXTURE(state)->telem, __VA_ARGS__) \
       : def));
 
-/* Get a property from a texture element */
+/** Get a property from a texture element. */
 #define TEXTURE_PROPERTY(state, telem, prop, def)       \
   (CAN_ACCESS(ITEXTURE(state), telem)                   \
    ? ITEXTURE(state)->telem->prop                       \
@@ -250,11 +257,13 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
       ? DTEXTURE(state)->telem->prop                    \
       : def))
 
+/** Get the current index of refraction. */
 #define IOR(state)                              \
   ((state)->intersection->interior              \
    ? (state)->intersection->interior->ior       \
    : 1.0)
 
+/** Calculate the base pigment at the intersection. */
 static void
 dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
 {
@@ -267,7 +276,7 @@ dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
   state->diffuse = state->pigment;
 }
 
-/* Get the color of a light ray at an intersection point */
+/** Get the color of a light ray at an intersection point. */
 static dmnsn_color
 dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
                          const dmnsn_light *light)
@@ -315,6 +324,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
   return color;
 }
 
+/** Handle light, shadow, and shading. */
 static void
 dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
 {
@@ -357,6 +367,7 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
   }
 }
 
+/** Trace a reflected ray. */
 static dmnsn_color
 dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
 {
@@ -379,7 +390,7 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
   return reflected;
 }
 
-/* Handle translucency - must be called last to work correctly */
+/** Handle translucency - must be called last to work correctly. */
 static void
 dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
 {
@@ -435,7 +446,7 @@ dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
   }
 }
 
-/* Shoot a ray, and calculate the color, using `color' as the background */
+/* Shoot a ray, and calculate the color */
 static dmnsn_color
 dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
 {

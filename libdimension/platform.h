@@ -18,8 +18,13 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#ifndef DIMENSION_IMPL_UTILITIES_H
-#define DIMENSION_IMPL_UTILITIES_H
+/**
+ * @file
+ * Platform abstractions.
+ */
+
+#ifndef DIMENSION_IMPL_PLATFORM_H
+#define DIMENSION_IMPL_PLATFORM_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -37,4 +42,4 @@ bool dmnsn_is_little_endian(void);
 /* Return the number of CPUs available to dimension */
 size_t dmnsn_ncpus(void);
 
-#endif /* DIMENSION_IMPL_UTILITIES_H */
+#endif /* DIMENSION_IMPL_PLATFORM_H */

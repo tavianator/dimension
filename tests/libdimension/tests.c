@@ -86,7 +86,7 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
   swa.event_mask = StructureNotifyMask;
   display->win = XCreateWindow(display->dpy,
                                RootWindow(display->dpy, display->vi->screen),
-                               0, 0, canvas->x, canvas->y,
+                               0, 0, canvas->width, canvas->height,
                                0, display->vi->depth, InputOutput,
                                display->vi->visual,
                                CWBorderPixel|CWColormap|CWEventMask, &swa);

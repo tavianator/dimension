@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Geometrical function implementations.
+ */
+
 #include "dimension.h"
 #include <math.h>
 
@@ -58,7 +63,7 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
   /* Two trig calls, 25 multiplications, 13 additions */
 
   double angle = dmnsn_vector_norm(theta);
-  if (angle == 0.0) {
+  if (fabs(angle) < dmnsn_epsilon) {
     return dmnsn_identity_matrix();
   }
   dmnsn_vector axis = dmnsn_vector_div(theta, angle);
@@ -88,14 +93,14 @@ dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2, dmnsn_vector axis)
   dmnsn_vector proj = dmnsn_vector_add(dmnsn_vector_proj(d, axis), v2);
 
   double projn = dmnsn_vector_norm(proj);
-  if (!projn)
+  if (fabs(projn) < dmnsn_epsilon)
     return 0.0;
 
   double c = dmnsn_vector_dot(dmnsn_vector_normalize(v1),
                               dmnsn_vector_div(proj, projn));
   double angle = acos(c);
 
-  if (dmnsn_vector_dot(dmnsn_vector_cross(v1, proj), axis) > 0) {
+  if (dmnsn_vector_dot(dmnsn_vector_cross(v1, proj), axis) > 0.0) {
     return angle;
   } else {
     return -angle;
@@ -104,16 +109,25 @@ dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2, dmnsn_vector axis)
 
 /* Matrix inversion helper functions */
 
+/** A 2x2 matrix for inversion by partitioning. */
 typedef struct { double n[2][2]; } dmnsn_matrix2;
 
+/** Construct a 2x2 matrix. */
 static dmnsn_matrix2 dmnsn_new_matrix2(double a1, double a2,
                                        double b1, double b2);
+/** Invert a 2x2 matrix. */
 static dmnsn_matrix2 dmnsn_matrix2_inverse(dmnsn_matrix2 A);
+/** Negate a 2x2 matrix. */
 static dmnsn_matrix2 dmnsn_matrix2_negate(dmnsn_matrix2 A);
+/** Subtract two 2x2 matricies. */
 static dmnsn_matrix2 dmnsn_matrix2_sub(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs);
+/** Add two 2x2 matricies. */
 static dmnsn_matrix2 dmnsn_matrix2_mul(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs);
 
+/** Invert a matrix with the slower cofactor algorithm, if partitioning
+    failed.  */
 static dmnsn_matrix dmnsn_matrix_inverse_generic(dmnsn_matrix A);
+/** Get the [\p row, \p col] cofactor of A */
 static double dmnsn_matrix_cofactor(dmnsn_matrix A,
                                     unsigned int row, unsigned int col);
 
@@ -394,30 +408,4 @@ dmnsn_transform_bounding_box(dmnsn_matrix trans, dmnsn_bounding_box box)
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   return ret;
-}
-
-/* Solve for the t value such that x0 + t*n = x */
-double
-dmnsn_line_index(dmnsn_line l, dmnsn_vector x)
-{
-  /* nz + 1 divisions, nz additions */
-  double d = 0.0;
-  unsigned int nz = 0;
-
-  if (l.n.x != 0.0) {
-    d += (x.x - l.x0.x)/l.n.x;
-    ++nz;
-  }
-
-  if (l.n.y != 0.0) {
-    d += (x.y - l.x0.y)/l.n.y;
-    ++nz;
-  }
-
-  if (l.n.z != 0.0) {
-    d += (x.z - l.x0.z)/l.n.z;
-    ++nz;
-  }
-
-  return d/nz;
 }

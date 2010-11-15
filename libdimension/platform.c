@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Platform abstractions.
+ */
+
 #include "dimension-impl.h"
 #if HAVE_UNISTD_H
   #include <unistd.h>
@@ -40,7 +45,10 @@ dmnsn_backtrace(FILE *file)
   void *buffer[size];
 
   int nptrs = backtrace(buffer, size);
-  backtrace_symbols_fd(buffer, nptrs, fileno(file));
+  int fd = fileno(file);
+  if (fd != -1) {
+    backtrace_symbols_fd(buffer, nptrs, fd);
+  }
 #endif
 }
 

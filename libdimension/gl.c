@@ -18,13 +18,18 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * OpenGL import/export.
+ */
+
 #include "dimension.h"
 #include <GL/gl.h>
 #include <stdlib.h>
 #include <stdint.h>
 
-/* GL optimizer callback */
-static void dmnsn_gl_optimizer_fn(dmnsn_canvas *canvas,
+/** GL optimizer callback. */
+static void dmnsn_gl_optimizer_fn(const dmnsn_canvas *canvas,
                                   dmnsn_canvas_optimizer optimizer,
                                   size_t x, size_t y);
 
@@ -44,7 +49,7 @@ dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
   optimizer.free_fn = &dmnsn_free;
 
   /* Allocate a buffer to hold RGB values */
-  optimizer.ptr = dmnsn_malloc(4*canvas->x*canvas->y*sizeof(GLushort));
+  optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(GLushort));
 
   /* Set a new optimizer */
   dmnsn_optimize_canvas(canvas, optimizer);
@@ -60,8 +65,8 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   dmnsn_sRGB sRGB;
   dmnsn_color color;
 
-  size_t width = canvas->x;
-  size_t height = canvas->y;
+  size_t width = canvas->width;
+  size_t height = canvas->height;
 
   /* Check if we can optimize this */
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
@@ -160,12 +165,12 @@ dmnsn_gl_read_canvas(size_t x0, size_t y0,
 
 /* GL optimizer callback */
 static void
-dmnsn_gl_optimizer_fn(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer,
-                      size_t x, size_t y)
+dmnsn_gl_optimizer_fn(const dmnsn_canvas *canvas,
+                      dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
 {
   dmnsn_color color;
   dmnsn_sRGB sRGB;
-  GLushort *pixel = (GLushort *)optimizer.ptr + 4*(y*canvas->x + x);
+  GLushort *pixel = (GLushort *)optimizer.ptr + 4*(y*canvas->width + x);
 
   color = dmnsn_get_pixel(canvas, x, y);
   sRGB = dmnsn_sRGB_from_color(color);

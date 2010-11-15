@@ -18,19 +18,22 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Reflective finish.
+ */
+
 #include "dimension.h"
 #include <math.h>
 #include <stdlib.h>
 
-/*
- * Reflective finish
- */
-
+/** Reflective finish payload. */
 typedef struct dmnsn_reflection_params {
   dmnsn_color min, max;
   double falloff;
 } dmnsn_reflection_params;
 
+/** Reflective finish callback. */
 static dmnsn_color
 dmnsn_reflective_finish_fn(const dmnsn_finish *finish,
                            dmnsn_color reflect, dmnsn_color color,

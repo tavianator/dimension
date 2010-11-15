@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Textures, pigments, and finishes.
+ */
+
 #include "dimension.h"
 #include <stdlib.h>
 

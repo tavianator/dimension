@@ -18,14 +18,16 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Finish combinations.
+ */
+
 #include "dimension.h"
 #include <math.h>
 #include <stdlib.h>
 
-/*
- * Finish combinations
- */
-
+/** Diffuse combination callback. */
 static dmnsn_color
 dmnsn_finish_combination_diffuse_fn(const dmnsn_finish *finish,
                                     dmnsn_color light, dmnsn_color color,
@@ -46,6 +48,7 @@ dmnsn_finish_combination_diffuse_fn(const dmnsn_finish *finish,
   }
 }
 
+/** Specular combination callback. */
 static dmnsn_color
 dmnsn_finish_combination_specular_fn(const dmnsn_finish *finish,
                                      dmnsn_color light, dmnsn_color color,
@@ -69,6 +72,7 @@ dmnsn_finish_combination_specular_fn(const dmnsn_finish *finish,
   }
 }
 
+/** Ambient combination callback. */
 static dmnsn_color
 dmnsn_finish_combination_ambient_fn(const dmnsn_finish *finish,
                                     dmnsn_color pigment)
@@ -86,6 +90,7 @@ dmnsn_finish_combination_ambient_fn(const dmnsn_finish *finish,
   }
 }
 
+/** Reflection combination callback. */
 static dmnsn_color
 dmnsn_finish_combination_reflection_fn(const dmnsn_finish *finish,
                                        dmnsn_color reflect, dmnsn_color color,
@@ -106,6 +111,7 @@ dmnsn_finish_combination_reflection_fn(const dmnsn_finish *finish,
   }
 }
 
+/** Finish combination destructor callback. */
 static void
 dmnsn_finish_combination_free_fn(void *ptr)
 {

@@ -18,13 +18,21 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Priority R-tree implementation.  These are the hottest code paths in
+ * libdimension.
+ */
+
 #include "dimension-impl.h"
 #include <stdlib.h>
 
-/* Number of children per node */
+/** Number of children per PR-node. */
 #define DMNSN_PRTREE_B 6
+/** Number of children per pseudo-PR-node (must be 2*ndimensions) */
 #define DMNSN_PSEUDO_PRTREE_B 6
 
+/** Pseudo PR-tree node. */
 struct dmnsn_prtree_node {
   dmnsn_bounding_box bounding_box;
 
@@ -34,6 +42,7 @@ struct dmnsn_prtree_node {
   dmnsn_bounding_box bounding_boxes[DMNSN_PRTREE_B];
 };
 
+/** Pseudo PR-tree leaf node. */
 typedef struct dmnsn_pseudo_prleaf {
   void *children[DMNSN_PRTREE_B];
   bool is_leaf;
@@ -42,11 +51,13 @@ typedef struct dmnsn_pseudo_prleaf {
 
 typedef struct dmnsn_pseudo_prtree dmnsn_pseudo_prtree;
 
+/** Pseudo PR-tree internal node. */
 typedef struct dmnsn_pseudo_prnode {
   dmnsn_pseudo_prtree *left, *right;
   dmnsn_pseudo_prleaf children[DMNSN_PSEUDO_PRTREE_B];
 } dmnsn_pseudo_prnode;
 
+/** Pseudo PR-tree. */
 struct dmnsn_pseudo_prtree {
   bool is_leaf;
   union {
@@ -55,7 +66,7 @@ struct dmnsn_pseudo_prtree {
   } pseudo;
 };
 
-/* Expand node to contain the bounding box from min to max */
+/** Expand a node to contain the bounding box \p box. */
 static void
 dmnsn_pseudo_prleaf_swallow(dmnsn_pseudo_prleaf *leaf, dmnsn_bounding_box box)
 {
@@ -63,7 +74,7 @@ dmnsn_pseudo_prleaf_swallow(dmnsn_pseudo_prleaf *leaf, dmnsn_bounding_box box)
   leaf->bounding_box.max = dmnsn_vector_max(leaf->bounding_box.max, box.max);
 }
 
-/* Comparator types */
+/** Comparator types. */
 enum {
   DMNSN_XMIN,
   DMNSN_YMIN,
@@ -73,6 +84,7 @@ enum {
   DMNSN_ZMAX
 };
 
+/** Get a coordinate of the bounding box of a node. */
 static inline double
 dmnsn_priority_get(dmnsn_list_iterator *i, bool is_object, int comparator)
 {
@@ -205,6 +217,7 @@ dmnsn_zmax_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
   return lval < rval;
 }
 
+/** Leaf node comparators. */
 static dmnsn_list_comparator_fn *dmnsn_object_comparators[6] = {
   [DMNSN_XMIN] = &dmnsn_xmin_object_comp,
   [DMNSN_YMIN] = &dmnsn_ymin_object_comp,
@@ -214,6 +227,7 @@ static dmnsn_list_comparator_fn *dmnsn_object_comparators[6] = {
   [DMNSN_ZMAX] = &dmnsn_zmax_object_comp
 };
 
+/** Internal node comparators. */
 static dmnsn_list_comparator_fn *dmnsn_prnode_comparators[6] = {
   [DMNSN_XMIN] = &dmnsn_xmin_prnode_comp,
   [DMNSN_YMIN] = &dmnsn_ymin_prnode_comp,
@@ -223,6 +237,7 @@ static dmnsn_list_comparator_fn *dmnsn_prnode_comparators[6] = {
   [DMNSN_ZMAX] = &dmnsn_zmax_prnode_comp
 };
 
+/** Select an extreme node based on a comparator. */
 static dmnsn_list_iterator *
 dmnsn_priority_search(dmnsn_list *leaves, bool are_objects, int comparator)
 {
@@ -245,7 +260,7 @@ dmnsn_priority_search(dmnsn_list *leaves, bool are_objects, int comparator)
   return i;
 }
 
-/* Build a pseudo PR-tree */
+/** Build a pseudo PR-tree. */
 static dmnsn_pseudo_prtree *
 dmnsn_new_pseudo_prtree(dmnsn_list *leaves, bool are_objects, int comparator)
 {
@@ -349,6 +364,7 @@ dmnsn_new_pseudo_prtree(dmnsn_list *leaves, bool are_objects, int comparator)
   return pseudo;
 }
 
+/** Delete a pseudo-PR-tree. */
 static void
 dmnsn_delete_pseudo_prtree(dmnsn_pseudo_prtree *pseudo)
 {
@@ -361,7 +377,7 @@ dmnsn_delete_pseudo_prtree(dmnsn_pseudo_prtree *pseudo)
   }
 }
 
-/* Construct a node from a pseudo leaf */
+/** Construct a node from a pseudo leaf. */
 static dmnsn_prtree_node *
 dmnsn_new_prtree_node(const dmnsn_pseudo_prleaf *leaf)
 {
@@ -386,6 +402,7 @@ dmnsn_new_prtree_node(const dmnsn_pseudo_prleaf *leaf)
   return node;
 }
 
+/** Add a pseudo leaf to a list of leaves. */
 static void
 dmnsn_pseudo_prtree_add_leaf(const dmnsn_pseudo_prleaf *leaf,
                              dmnsn_list *leaves)
@@ -397,6 +414,7 @@ dmnsn_pseudo_prtree_add_leaf(const dmnsn_pseudo_prleaf *leaf,
   }
 }
 
+/** Recursively extract the leaves of a pseudo-PR-tree. */
 static void
 dmnsn_pseudo_prtree_leaves_recursive(const dmnsn_pseudo_prtree *node,
                                      dmnsn_list *leaves)
@@ -412,7 +430,7 @@ dmnsn_pseudo_prtree_leaves_recursive(const dmnsn_pseudo_prtree *node,
   }
 }
 
-/* Extract the leaves of a pseudo PR-tree */
+/** Extract the leaves of a pseudo PR-tree. */
 static dmnsn_list *
 dmnsn_pseudo_prtree_leaves(const dmnsn_pseudo_prtree *pseudo)
 {
@@ -427,8 +445,7 @@ dmnsn_pseudo_prtree_leaves(const dmnsn_pseudo_prtree *pseudo)
   return leaves;
 }
 
-/* Add objects from an array to a list, splitting unions etc. */
-
+/** Add an object or its children, if any, to a list. */
 static void
 dmnsn_list_add_object(dmnsn_list *objects, const dmnsn_object *object)
 {
@@ -441,6 +458,7 @@ dmnsn_list_add_object(dmnsn_list *objects, const dmnsn_object *object)
   }
 }
 
+/** Add objects from an array to a list, splitting unions etc. */
 static dmnsn_list *
 dmnsn_object_list(const dmnsn_array *objects)
 {
@@ -451,7 +469,7 @@ dmnsn_object_list(const dmnsn_array *objects)
   return list;
 }
 
-/* Split the unbounded objects into a new list */
+/** Split unbounded objects into a new list. */
 static dmnsn_list *
 dmnsn_split_unbounded(dmnsn_list *objects)
 {
@@ -516,7 +534,7 @@ dmnsn_new_prtree(const dmnsn_array *objects)
   return prtree;
 }
 
-/* Free a PR-tree node */
+/** Free a PR-tree node. */
 static void
 dmnsn_delete_prtree_node(dmnsn_prtree_node *node)
 {
@@ -541,12 +559,13 @@ dmnsn_delete_prtree(dmnsn_prtree *tree)
   }
 }
 
+/** A line with pre-calculated reciprocals to avoid divisions. */
 typedef struct dmnsn_optimized_line {
   dmnsn_line line;
   dmnsn_vector n_inv;
 } dmnsn_optimized_line;
 
-/* Precompute inverses for faster ray-box intersection tests */
+/** Precompute inverses for faster ray-box intersection tests. */
 static inline dmnsn_optimized_line
 dmnsn_optimize_line(dmnsn_line line)
 {
@@ -557,7 +576,7 @@ dmnsn_optimize_line(dmnsn_line line)
   return optline;
 }
 
-/* Ray-AABB intersection test, by the slab method */
+/** Ray-AABB intersection test, by the slab method.  Highly optimized. */
 static inline bool
 dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
                            dmnsn_bounding_box box, double t)
@@ -592,6 +611,7 @@ dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
   return tmax >= dmnsn_max(0.0, tmin) && tmin < t;
 }
 
+/** Recursive component of PR-tree intersection traversal. */
 static void
 dmnsn_prtree_intersection_recursive(const dmnsn_prtree_node *node,
                                     dmnsn_optimized_line ray,
@@ -657,6 +677,7 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
   return !isinf(t);
 }
 
+/** Recursive component of PR-tree containment traversal. */
 static bool
 dmnsn_prtree_inside_recursive(const dmnsn_prtree_node *node, dmnsn_vector point)
 {

@@ -18,20 +18,21 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Types of cameras.
+/**
+ * @file
+ * Pre-defined camera types.
  */
 
 #ifndef DIMENSION_CAMERAS_H
 #define DIMENSION_CAMERAS_H
 
-/* A perspective camera, at the origin, looking at (0, 0, 1).  The feild of view
-   is the section of the plane z = 1 from (-0.5, -0.5) to (0.5, 0.5).  Rays are
-   transformed by the camera's transformation matrix. */
+/**
+ * A perspective camera.  The camera is located at the origin, looking at
+ * (0, 0, 1).  The feild of view is the section of the plane z = 1 from
+ * (-0.5, -0.5) to (0.5, 0.5).  Rays are transformed by the camera's
+ * transformation matrix.
+ * @return A perspective camera.
+ */
 dmnsn_camera *dmnsn_new_perspective_camera(void);
-
-/* Get or set the transformation matrix */
-dmnsn_matrix dmnsn_get_perspective_camera_trans(const dmnsn_camera *camera);
-void dmnsn_set_perspective_camera_trans(dmnsn_camera *camera, dmnsn_matrix T);
 
 #endif /* DIMENSION_CAMERAS_H */

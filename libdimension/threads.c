@@ -18,15 +18,22 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Background threading.
+ */
+
 #include "dimension-impl.h"
 #include <pthread.h>
 
+/** The payload to pass to the pthread callback. */
 typedef struct dmnsn_thread_payload {
   dmnsn_thread_fn *thread_fn;
   void *arg;
   dmnsn_progress *progress;
 } dmnsn_thread_payload;
 
+/** Clean up after a thread. */
 static void
 dmnsn_thread_cleanup(void *arg)
 {
@@ -37,6 +44,7 @@ dmnsn_thread_cleanup(void *arg)
   dmnsn_done_progress(progress);
 }
 
+/** pthread callback -- call the real thread callback. */
 static void *
 dmnsn_thread(void *arg)
 {
@@ -51,15 +59,15 @@ dmnsn_thread(void *arg)
 }
 
 void
-dmnsn_new_thread(dmnsn_progress *progress, const pthread_attr_t *attr,
-                 dmnsn_thread_fn *thread_fn, void *arg)
+dmnsn_new_thread(dmnsn_progress *progress, dmnsn_thread_fn *thread_fn,
+                 void *arg)
 {
   dmnsn_thread_payload *payload = dmnsn_malloc(sizeof(dmnsn_thread_payload));
   payload->thread_fn = thread_fn;
   payload->arg       = arg;
   payload->progress  = progress;
 
-  if (pthread_create(&progress->thread, attr, &dmnsn_thread, payload) != 0) {
+  if (pthread_create(&progress->thread, NULL, &dmnsn_thread, payload) != 0) {
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start thread.");
   }
 }

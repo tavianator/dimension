@@ -18,28 +18,37 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
+/**
+ * @file
  * Object interiors.
  */
 
 #ifndef DIMENSION_INTERIOR_H
 #define DIMENSION_INTERIOR_H
 
+/** An interior */
 typedef struct dmnsn_interior {
-  /* Refractive index */
-  double ior;
+  double ior; /**< Refractive index. */
 
-  /* Callbacks */
-  dmnsn_free_fn *free_fn;
+  dmnsn_free_fn *free_fn; /**< Destructor callback. */
 
-  /* Generic pointer */
+  /** Generic pointer. */
   void *ptr;
 
-  /* Reference count */
+  /** @internal Reference count. */
   unsigned int *refcount;
 } dmnsn_interior;
 
+/**
+ * Create an interior object.
+ * @return The new interior.
+ */
 dmnsn_interior *dmnsn_new_interior(void);
+
+/**
+ * Delete an interior.
+ * @param[in,out] interior  The interior to delete.
+ */
 void dmnsn_delete_interior(dmnsn_interior *interior);
 
 #endif /* DIMENSION_INTERIOR_H */

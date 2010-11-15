@@ -18,12 +18,14 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
-
-/*
- * Gradient pattern
+/**
+ * @file
+ * Gradient pattern.
  */
 
+#include "dimension.h"
+
+/** Gradient pattern callback. */
 static double
 dmnsn_gradient_pattern_fn(const dmnsn_pattern *gradient, dmnsn_vector v)
 {

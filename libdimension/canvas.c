@@ -18,25 +18,30 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Canveses.
+ */
+
 #include "dimension.h"
 #include <stdlib.h> /* For dmnsn_free() */
 
 /* Allocate a new canvas, of width x and height y */
 dmnsn_canvas *
-dmnsn_new_canvas(size_t x, size_t y)
+dmnsn_new_canvas(size_t width, size_t height)
 {
   /* Allocate the dmnsn_canvas struct */
   dmnsn_canvas *canvas = dmnsn_malloc(sizeof(dmnsn_canvas));
 
   /* Set the width and height */
-  canvas->x = x;
-  canvas->y = y;
+  canvas->width  = width;
+  canvas->height = height;
 
   /* Allocate room for the optimizers */
   canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
 
   /* Allocate the pixels */
-  canvas->pixels = dmnsn_malloc(sizeof(dmnsn_color)*x*y);
+  canvas->pixels = dmnsn_malloc(sizeof(dmnsn_color)*width*height);
 
   return canvas;
 }
@@ -72,8 +77,11 @@ void
 dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
                 dmnsn_color color)
 {
+  dmnsn_assert(x < canvas->width && y < canvas->height,
+               "Canvas access out of bounds.");
+
   /* Set the pixel */
-  canvas->pixels[y*canvas->x + x] = color;
+  canvas->pixels[y*canvas->width + x] = color;
 
   /* Call the optimizers */
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
@@ -85,8 +93,8 @@ dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
 void
 dmnsn_clear_canvas(dmnsn_canvas *canvas, dmnsn_color color)
 {
-  for (size_t x = 0; x < canvas->x; ++x) {
-    for (size_t y = 0; y < canvas->y; ++y) {
+  for (size_t x = 0; x < canvas->width; ++x) {
+    for (size_t y = 0; y < canvas->height; ++y) {
       dmnsn_set_pixel(canvas, x, y, color);
     }
   }

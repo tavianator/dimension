@@ -45,7 +45,7 @@ dmnsn_new_test_scene(void)
   /* Set up the transformation matrix for the perspective camera */
   dmnsn_matrix trans = dmnsn_scale_matrix(
     dmnsn_new_vector(
-      ((double)scene->canvas->x)/scene->canvas->y, 1.0, 1.0
+      ((double)scene->canvas->width)/scene->canvas->height, 1.0, 1.0
     )
   );
   trans = dmnsn_matrix_mul(
@@ -63,7 +63,7 @@ dmnsn_new_test_scene(void)
 
   /* Create a perspective camera */
   scene->camera = dmnsn_new_perspective_camera();
-  dmnsn_set_perspective_camera_trans(scene->camera, trans);
+  scene->camera->trans = trans;
 
   /* Background color */
   scene->background = dmnsn_color_from_sRGB((dmnsn_sRGB){ 0.0, 0.1, 0.2 });
@@ -106,11 +106,11 @@ dmnsn_new_test_scene(void)
 
   dmnsn_array *arrow_array = dmnsn_new_array(sizeof(dmnsn_object *));
 
-  dmnsn_object *cylinder = dmnsn_new_cylinder(0.1, 0.1, false);
+  dmnsn_object *cylinder = dmnsn_new_cone(0.1, 0.1, false);
   cylinder->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.0, 1.25, 1.0));
   dmnsn_array_push(arrow_array, &cylinder);
 
-  dmnsn_object *cone = dmnsn_new_cylinder(0.1, 0.0, true);
+  dmnsn_object *cone = dmnsn_new_cone(0.1, 0.0, true);
   cone->trans =
     dmnsn_matrix_mul(
       dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.375, 0.0)),

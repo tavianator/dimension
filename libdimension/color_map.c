@@ -18,19 +18,21 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
-
-/*
- * Color-mapped patterned pigments
+/**
+ * @file
+ * Color-mapped pigment patterns.
  */
 
+#include "dimension.h"
+
+/** An [index, color] pair. */
 typedef struct dmnsn_color_map_entry {
   double n;
   dmnsn_color color;
 } dmnsn_color_map_entry;
 
 dmnsn_color_map *
-dmnsn_new_color_map()
+dmnsn_new_color_map(void)
 {
   return dmnsn_new_array(sizeof(dmnsn_color_map_entry));
 }
@@ -84,11 +86,13 @@ dmnsn_color_map_value(const dmnsn_color_map *map, double n)
   return c2;
 }
 
+/** Payload for a color_map pigment */
 typedef struct dmnsn_color_map_payload {
   dmnsn_pattern *pattern;
   dmnsn_color_map *map;
 } dmnsn_color_map_payload;
 
+/** Free a color_map payload. */
 static void
 dmnsn_delete_color_map_payload(void *ptr)
 {
@@ -98,6 +102,7 @@ dmnsn_delete_color_map_payload(void *ptr)
   dmnsn_free(payload);
 }
 
+/** color_map pigment callback. */
 static dmnsn_color
 dmnsn_color_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
@@ -106,6 +111,7 @@ dmnsn_color_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
                                dmnsn_pattern_value(payload->pattern, v));
 }
 
+/** color_map initialization callback. */
 static void
 dmnsn_color_map_init_fn(dmnsn_pigment *pigment)
 {

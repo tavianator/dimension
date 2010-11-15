@@ -18,10 +18,13 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Stubs for PNG functions when compiled with --disable-png.
+ */
+
 #include "dimension.h"
 #include <errno.h>
-
-/* Stubs for PNG functions when compiled with --disable-png */
 
 int
 dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)

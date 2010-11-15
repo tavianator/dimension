@@ -18,10 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Constructive solid geometry.
+ */
+
 #include "dimension-impl.h"
 #include <stdlib.h>
 
-/* Apply the properties of `csg' to its children */
+/** Apply the properties of \p csg to its children. */
 static void
 dmnsn_csg_cascade(const dmnsn_object *csg, dmnsn_object *object)
 {
@@ -38,8 +43,11 @@ dmnsn_csg_cascade(const dmnsn_object *csg, dmnsn_object *object)
   object->trans = dmnsn_matrix_mul(csg->trans, object->trans);
 }
 
-/* Unions */
+/*
+ * Unions
+ */
 
+/** CSG union intersection callback. */
 static bool
 dmnsn_csg_union_intersection_fn(const dmnsn_object *csg,
                                 dmnsn_line line,
@@ -49,6 +57,7 @@ dmnsn_csg_union_intersection_fn(const dmnsn_object *csg,
   return dmnsn_prtree_intersection(prtree, line, intersection);
 }
 
+/** CSG union inside callback. */
 static bool
 dmnsn_csg_union_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
@@ -56,6 +65,7 @@ dmnsn_csg_union_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
   return dmnsn_prtree_inside(prtree, point);
 }
 
+/** CSG union initialization callback. */
 static void
 dmnsn_csg_union_init_fn(dmnsn_object *csg)
 {
@@ -70,6 +80,7 @@ dmnsn_csg_union_init_fn(dmnsn_object *csg)
   csg->bounding_box = prtree->bounding_box;
 }
 
+/** CSG union destruction callback. */
 static void
 dmnsn_csg_union_free_fn(void *ptr)
 {
@@ -78,7 +89,7 @@ dmnsn_csg_union_free_fn(void *ptr)
 
 /* Bulk-load a union */
 dmnsn_object *
-dmnsn_new_csg_union(dmnsn_array *objects)
+dmnsn_new_csg_union(const dmnsn_array *objects)
 {
   dmnsn_object *csg = dmnsn_new_object();
 
@@ -94,7 +105,7 @@ dmnsn_new_csg_union(dmnsn_array *objects)
   return csg;
 }
 
-/* Generic CSG free function */
+/** Generic CSG destruction callback. */
 static void
 dmnsn_csg_free_fn(void *ptr)
 {
@@ -104,15 +115,22 @@ dmnsn_csg_free_fn(void *ptr)
   dmnsn_free(ptr);
 }
 
-/* Generic CSG intersection function */
+/**
+ * Generic CSG intersection callback.
+ * @param[in]  csg           The CSG object.
+ * @param[in]  line          The intersection ray.
+ * @param[out] intersection  The intersection data.
+ * @param[in]  inside1       Whether the first object is allowed inside the
+ *                           second object.
+ * @param[in]  inside2       Whether the second object is allowed inside the
+ *                           first object.
+ * @return Whether \p line intersected \p csg.
+ */
 static bool
 dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
                           dmnsn_intersection *intersection,
                           bool inside1, bool inside2)
 {
-  /* inside1 is whether the second object is allowed inside the first object;
-     respectively for inside2 */
-
   const dmnsn_object **params = csg->ptr;
 
   dmnsn_intersection i1, i2;
@@ -170,8 +188,11 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
   return true;
 }
 
-/* Intersections */
+/*
+ * Intersections
+ */
 
+/** CSG intersection intersection callback. */
 static bool
 dmnsn_csg_intersection_intersection_fn(const dmnsn_object *csg,
                                        dmnsn_line line,
@@ -180,6 +201,7 @@ dmnsn_csg_intersection_intersection_fn(const dmnsn_object *csg,
   return dmnsn_csg_intersection_fn(csg, line, intersection, true, true);
 }
 
+/** CSG intersection inside callback. */
 static bool
 dmnsn_csg_intersection_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
@@ -188,6 +210,7 @@ dmnsn_csg_intersection_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
       && dmnsn_object_inside(params[1], point);
 }
 
+/** CSG intersection initialization callback. */
 static void
 dmnsn_csg_intersection_init_fn(dmnsn_object *csg)
 {
@@ -226,8 +249,11 @@ dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
   return csg;
 }
 
-/* Differences */
+/*
+ * Differences
+ */
 
+/** CSG difference intersection callback. */
 static bool
 dmnsn_csg_difference_intersection_fn(const dmnsn_object *csg,
                                      dmnsn_line line,
@@ -236,6 +262,7 @@ dmnsn_csg_difference_intersection_fn(const dmnsn_object *csg,
   return dmnsn_csg_intersection_fn(csg, line, intersection, true, false);
 }
 
+/** CSG difference inside callback. */
 static bool
 dmnsn_csg_difference_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
@@ -244,6 +271,7 @@ dmnsn_csg_difference_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
      && !dmnsn_object_inside(params[1], point);
 }
 
+/** CSG difference initialization callback. */
 static void
 dmnsn_csg_difference_init_fn(dmnsn_object *csg)
 {
@@ -279,8 +307,11 @@ dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
   return csg;
 }
 
-/* Merges */
+/*
+ * Merges
+ */
 
+/** CSG merge intersection callback. */
 static bool
 dmnsn_csg_merge_intersection_fn(const dmnsn_object *csg,
                                 dmnsn_line line,
@@ -289,6 +320,7 @@ dmnsn_csg_merge_intersection_fn(const dmnsn_object *csg,
   return dmnsn_csg_intersection_fn(csg, line, intersection, false, false);
 }
 
+/** CSG merge inside callback. */
 static bool
 dmnsn_csg_merge_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
@@ -297,6 +329,7 @@ dmnsn_csg_merge_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
       || dmnsn_object_inside(params[1], point);
 }
 
+/** CSG merge initialization callback. */
 static void
 dmnsn_csg_merge_init_fn(dmnsn_object *csg)
 {

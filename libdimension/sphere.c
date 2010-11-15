@@ -18,34 +18,14 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
-#include <math.h>   /* For sqrt */
-
-/*
- * Sphere
+/**
+ * @file
+ * Spheres.
  */
 
-/* Sphere object callbacks */
+#include "dimension.h"
 
-static bool dmnsn_sphere_intersection_fn(const dmnsn_object *sphere,
-                                         dmnsn_line line,
-                                         dmnsn_intersection *intersection);
-static bool dmnsn_sphere_inside_fn(const dmnsn_object *sphere,
-                                   dmnsn_vector point);
-
-/* Allocate a new sphere */
-dmnsn_object *
-dmnsn_new_sphere()
-{
-  dmnsn_object *sphere = dmnsn_new_object();
-  sphere->intersection_fn  = &dmnsn_sphere_intersection_fn;
-  sphere->inside_fn        = &dmnsn_sphere_inside_fn;
-  sphere->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
-  sphere->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
-  return sphere;
-}
-
-/* Returns the closest intersection of `line' with `sphere' */
+/** Sphere intersection callback. */
 static bool
 dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line l,
                              dmnsn_intersection *intersection)
@@ -73,9 +53,21 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line l,
   }
 }
 
-/* Return whether a point is inside a sphere (x**2 + y**2 + z**2 < 1.0) */
+/** Sphere inside callback. */
 static bool
 dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
 {
   return point.x*point.x + point.y*point.y + point.z*point.z < 1.0;
+}
+
+/* Allocate a new sphere */
+dmnsn_object *
+dmnsn_new_sphere()
+{
+  dmnsn_object *sphere = dmnsn_new_object();
+  sphere->intersection_fn  = &dmnsn_sphere_intersection_fn;
+  sphere->inside_fn        = &dmnsn_sphere_inside_fn;
+  sphere->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
+  sphere->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
+  return sphere;
 }

@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * PNG import/export.
+ */
+
 #include "dimension-impl.h"
 #include <pthread.h>
 #include <png.h>
@@ -26,8 +31,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-/* PNG optimizer callback */
-static void dmnsn_png_optimizer_fn(dmnsn_canvas *canvas,
+/** PNG optimizer callback. */
+static void dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
                                    dmnsn_canvas_optimizer optimizer,
                                    size_t x, size_t y);
 
@@ -46,7 +51,7 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
   optimizer.optimizer_fn = &dmnsn_png_optimizer_fn;
   optimizer.free_fn = &dmnsn_free;
 
-  optimizer.ptr = dmnsn_malloc(4*canvas->x*canvas->y*sizeof(uint16_t));
+  optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(uint16_t));
 
   dmnsn_optimize_canvas(canvas, optimizer);
   return 0;
@@ -54,12 +59,12 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
 
 /* PNG optimizer callback */
 static void
-dmnsn_png_optimizer_fn(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer,
-                       size_t x, size_t y)
+dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
+                       dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
 {
   dmnsn_color color;
   dmnsn_sRGB sRGB;
-  uint16_t *pixel = (uint16_t *)optimizer.ptr + 4*(y*canvas->x + x);
+  uint16_t *pixel = (uint16_t *)optimizer.ptr + 4*(y*canvas->width + x);
 
   color = dmnsn_get_pixel(canvas, x, y);
   sRGB = dmnsn_sRGB_from_color(color);
@@ -100,22 +105,23 @@ dmnsn_png_optimizer_fn(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer,
   }
 }
 
-/* Payload to store function arguments for thread callbacks */
-
+/** Payload type for PNG write thread callback. */
 typedef struct {
   dmnsn_progress *progress;
   const dmnsn_canvas *canvas;
   FILE *file;
 } dmnsn_png_write_payload;
 
+/** Payload type for PNG read thread callback. */
 typedef struct {
   dmnsn_progress *progress;
   dmnsn_canvas **canvas;
   FILE *file;
 } dmnsn_png_read_payload;
 
-/* Thread callbacks */
+/** PNG write thread callback. */
 static int dmnsn_png_write_canvas_thread(void *ptr);
+/** PNG read thread callback. */
 static int dmnsn_png_read_canvas_thread(void *ptr);
 
 /* Write a canvas to a png file, using libpng.  Return 0 on success, nonzero on
@@ -140,7 +146,7 @@ dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
   payload->file     = file;
 
   /* Create the worker thread */
-  dmnsn_new_thread(progress, NULL, &dmnsn_png_write_canvas_thread, payload);
+  dmnsn_new_thread(progress, &dmnsn_png_write_canvas_thread, payload);
 
   return progress;
 }
@@ -168,7 +174,7 @@ dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
   payload->file     = file;
 
   /* Create the worker thread */
-  dmnsn_new_thread(progress, NULL, &dmnsn_png_read_canvas_thread, payload);
+  dmnsn_new_thread(progress, &dmnsn_png_read_canvas_thread, payload);
 
   return progress;
 }
@@ -190,8 +196,8 @@ dmnsn_png_write_canvas_thread(void *ptr)
     return -1;
   }
 
-  png_uint_32 width = payload->canvas->x;
-  png_uint_32 height = payload->canvas->y;
+  png_uint_32 width = payload->canvas->width;
+  png_uint_32 height = payload->canvas->height;
 
   dmnsn_new_progress_element(payload->progress, height);
 
@@ -321,11 +327,11 @@ dmnsn_png_write_canvas_thread(void *ptr)
   return 0;
 }
 
-/* Thread-specific pointer to the appropriate dmnsn_progress* for
-   dmnsn_png_read_row_callback */
+/** Thread-specific pointer to the appropriate dmnsn_progress* for
+    dmnsn_png_read_row_callback. */
 static __thread dmnsn_progress *dmnsn_tl_png_read_progress;
 
-/* Callback to increment the progress after a row has been read */
+/** Callback to increment the progress after a row has been read. */
 static void
 dmnsn_png_read_row_callback(png_structp png_ptr, png_uint_32 row, int pass)
 {

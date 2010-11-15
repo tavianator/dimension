@@ -18,60 +18,30 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Perspective cameras.
+ */
+
 #include "dimension.h"
 #include <stdlib.h>
 
-/*
- * Perspective camera
- */
-
-/* Perspective camera ray callback */
-static dmnsn_line dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
-                                                  double x, double y);
-
-/* Create a new perspective camera.  Rays are aimed from the origin to a screen
-   located on the z = 1 plane, from (-0.5, -0.5) to (0.5, 0.5).  Rays are then
-   transformed by the camera's transformation matrix. */
-dmnsn_camera *
-dmnsn_new_perspective_camera()
-{
-  dmnsn_camera *camera = dmnsn_new_camera();
-
-  dmnsn_matrix *ptr = dmnsn_malloc(sizeof(dmnsn_matrix));
-  *ptr = dmnsn_identity_matrix();
-
-  camera->ray_fn  = &dmnsn_perspective_camera_ray_fn;
-  camera->free_fn = &dmnsn_free;
-  camera->ptr     = ptr;
-
-  return camera;
-}
-
-/* Get the transformation matrix */
-dmnsn_matrix
-dmnsn_get_perspective_camera_trans(const dmnsn_camera *camera)
-{
-  dmnsn_matrix *trans = camera->ptr;
-  return *trans;
-}
-
-/* Set the transformation matrix */
-void
-dmnsn_set_perspective_camera_trans(dmnsn_camera *camera, dmnsn_matrix T)
-{
-  dmnsn_matrix *trans = camera->ptr;
-  *trans = T;
-}
-
-/* Perspective camera ray callback */
+/** Perspective camera ray callback. */
 static dmnsn_line
-dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera,
-                                double x, double y)
+dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera, double x, double y)
 {
-  dmnsn_matrix *trans = camera->ptr;
   dmnsn_line l = dmnsn_new_line(
     dmnsn_zero,
     dmnsn_new_vector(x - 0.5, y - 0.5, 1.0)
   );
-  return dmnsn_transform_line(*trans, l);
+  return l;
+}
+
+/* Create a new perspective camera. */
+dmnsn_camera *
+dmnsn_new_perspective_camera()
+{
+  dmnsn_camera *camera = dmnsn_new_camera();
+  camera->ray_fn  = &dmnsn_perspective_camera_ray_fn;
+  return camera;
 }

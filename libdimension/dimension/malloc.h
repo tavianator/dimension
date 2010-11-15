@@ -18,15 +18,41 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Seriously, how often does malloc fail?  And how often can you do something
- * better than bail out when it does?  dmnsn_malloc() is like malloc in every
- * way except it calls dmnsn_error() on failure.
+/**
+ * @file
+ * Dynamic memory.  dmnsn_malloc() and friends behave like their
+ * non-dmnsn_-prefixed counterparts, but never return NULL.  If allocation
+ * fails, they instead call dmnsn_error(DMNSN_SEVERITY_HIGH).
  */
 
 #include <stddef.h> /* For size_t */
 
+/**
+ * Allocate some memory.  Always use dmnsn_free() to free this memory, never
+ * free().
+ * @param[in] size  The size of the memory block to allocate.
+ * @return The allocated memory area.
+ */
 void *dmnsn_malloc(size_t size);
+
+/**
+ * Expand or shrink an allocation created by dmnsn_malloc().
+ * @param[in] ptr   The block to resize.
+ * @param[in] size  The new size.
+ * @return The resized memory area.
+ */
 void *dmnsn_realloc(void *ptr, size_t size);
+
+/**
+ * Duplicate a string.
+ * @param[in] s  The string to duplicate.
+ * @return A string with the same contents as \p s, suitable for release by
+ *         dmnsn_free().
+ */
 char *dmnsn_strdup(const char *s);
-void  dmnsn_free(void *ptr);
+
+/**
+ * Free memory allocated by dmnsn_malloc() or dmnsn_strdup().
+ * @param[in] ptr  The memory block to free, or NULL.
+ */
+void dmnsn_free(void *ptr);

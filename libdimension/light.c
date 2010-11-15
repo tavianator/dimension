@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Lights.
+ */
+
 #include "dimension.h"
 #include <stdlib.h>
 

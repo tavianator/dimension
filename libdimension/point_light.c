@@ -18,13 +18,15 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Point lights.
+ */
+
 #include "dimension.h"
 #include <stdlib.h>
 
-/*
- * Point light source
- */
-
+/** Point light callback. */
 static dmnsn_color
 dmnsn_point_light_fn(const dmnsn_light *light, dmnsn_vector v)
 {

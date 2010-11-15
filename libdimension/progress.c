@@ -18,30 +18,38 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+/**
+ * @file
+ * Progress objects.
+ */
+
 #include "dimension-impl.h"
 #include <pthread.h>
 
-/* A single element in an array for dmnsn_progress.  Progress of this item is
-   progress/total. */
+/** A single element in an array for dmnsn_progress.  Progress of this item is
+    \p progress/\p total. */
 typedef struct {
   unsigned int progress, total;
 } dmnsn_progress_element;
 
-/* For thread synchronization */
-
+/** Read-lock a progress object. */
 static void dmnsn_progress_rdlock_impl(const dmnsn_progress *progress);
+/** Write-lock a progress object. */
 static void dmnsn_progress_wrlock_impl(dmnsn_progress *progress);
+/** Unlock a progress object. */
 static void dmnsn_progress_unlock_impl(void *arg);
 
+/** Read-lock a progress object and ensure that it will unlock upon error. */
 #define dmnsn_progress_rdlock(progress)                                 \
   dmnsn_progress_rdlock_impl(progress);                                 \
   pthread_cleanup_push(&dmnsn_progress_unlock_impl, (void *)progress);
+/** Write-lock a progress object and ensure that it will unlock upon error. */
 #define dmnsn_progress_wrlock(progress)                                 \
   dmnsn_progress_wrlock_impl(progress);                                 \
   pthread_cleanup_push(&dmnsn_progress_unlock_impl, (void *)progress);
+/** Unlock a progress object. */
 #define dmnsn_progress_unlock(progress)         \
   pthread_cleanup_pop(1);
-
 
 /* Allocate a new dmnsn_progress* */
 dmnsn_progress *

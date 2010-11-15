@@ -18,8 +18,9 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Simple generalized doubly-linked lists.
+/**
+ * @file
+ * Simple doubly-linked lists.
  */
 
 #ifndef DIMENSION_LIST_H
@@ -29,14 +30,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * A list iterator.
+ */
 typedef struct dmnsn_list_iterator {
-  void *ptr;
-  size_t obj_size;
-  struct dmnsn_list_iterator *prev, *next;
+  void *ptr;                        /**< @internal The stored object */
+  size_t obj_size;                  /**< @internal The object size */
+  struct dmnsn_list_iterator *prev; /**< @internal The previous iterator */
+  struct dmnsn_list_iterator *next; /**< @internal The next iterator */
 } dmnsn_list_iterator;
 
-/* Internal iterator allocation */
-
+/**
+ * @internal
+ * Iterator allocation.
+ * @param[in] obj       The location of the object to store in the iterator.
+ * @param[in] obj_size  The size of the object to store in the iterator.
+ */
 DMNSN_INLINE dmnsn_list_iterator *
 dmnsn_new_list_iterator(const void *obj, size_t obj_size)
 {
@@ -50,6 +59,11 @@ dmnsn_new_list_iterator(const void *obj, size_t obj_size)
   return i;
 }
 
+/**
+ * @internal
+ * Iterator release.
+ * @param[in,out] i  The iterator to free.
+ */
 DMNSN_INLINE void
 dmnsn_delete_list_iterator(dmnsn_list_iterator *i)
 {
@@ -59,12 +73,19 @@ dmnsn_delete_list_iterator(dmnsn_list_iterator *i)
   }
 }
 
+/** A doubly-linked list. */
 typedef struct dmnsn_list {
-  dmnsn_list_iterator *first, *last;
-  size_t obj_size, length;
+  dmnsn_list_iterator *first; /**< @internal The first iterator in the list */
+  dmnsn_list_iterator *last;  /**< @internal The last iterator in the list */
+  size_t length;              /**< @internal The size of the list */
+  size_t obj_size;            /**< @internal The size of list objects */
 } dmnsn_list;
 
-/* List allocation */
+/**
+ * Allocate a list.
+ * @param[in] obj_size  The size of the objects to be stored.
+ * @return An empty list.
+ */
 DMNSN_INLINE dmnsn_list *
 dmnsn_new_list(size_t obj_size)
 {
@@ -76,25 +97,53 @@ dmnsn_new_list(size_t obj_size)
   return list;
 }
 
-/* Construction to/from arrays */
-dmnsn_list  *dmnsn_list_from_array(const dmnsn_array *array);
-dmnsn_array *dmnsn_array_from_list(const dmnsn_list *list);
-
-/* Delete a list */
+/**
+ * Delete a list.
+ * @param[in,out] list  The list to delete.
+ */
 void dmnsn_delete_list(dmnsn_list *list);
 
+/**
+ * Construct a list from an array.
+ * @param[in] array  The array to copy.
+ * @return A list with the same contents as \p array.
+ */
+dmnsn_list  *dmnsn_list_from_array(const dmnsn_array *array);
+
+/**
+ * Construct an array from a list.
+ * @param[in] list  The list to copy.
+ * @return An array with the same contents as \p list.
+ */
+dmnsn_array *dmnsn_array_from_list(const dmnsn_list *list);
+
+/**
+ * First element.
+ * @param[in] list  The list to index.
+ * @return An iterator to the first list element, or NULL if the list is empty.
+ */
 DMNSN_INLINE dmnsn_list_iterator *
 dmnsn_list_first(const dmnsn_list *list)
 {
   return list->first;
 }
 
+/**
+ * Last element.
+ * @param[in] list  The list to index.
+ * @return An iterator to the last list element, or NULL if the list is empty.
+ */
 DMNSN_INLINE dmnsn_list_iterator *
 dmnsn_list_last(const dmnsn_list *list)
 {
   return list->last;
 }
 
+/**
+ * Previous element.
+ * @param[in] i  The iterator to follow.
+ * @return The iterator preceding \c i.
+ */
 DMNSN_INLINE dmnsn_list_iterator *
 dmnsn_list_prev(const dmnsn_list_iterator *i)
 {
@@ -102,6 +151,11 @@ dmnsn_list_prev(const dmnsn_list_iterator *i)
   return i->prev;
 }
 
+/**
+ * Next element.
+ * @param[in] i  The iterator to follow.
+ * @return The iterator following \c i.
+ */
 DMNSN_INLINE dmnsn_list_iterator *
 dmnsn_list_next(const dmnsn_list_iterator *i)
 {
@@ -109,13 +163,22 @@ dmnsn_list_next(const dmnsn_list_iterator *i)
   return i->next;
 }
 
+/**
+ * Get the size of the list.
+ * @param[in] list  The list in question.
+ * @return The number of elements in the list.
+ */
 DMNSN_INLINE size_t
 dmnsn_list_size(const dmnsn_list *list)
 {
   return list->length;
 }
 
-/* Get the i'th object */
+/**
+ * Get the i'th object.
+ * @param[in]  i   The iterator to dereference.
+ * @param[out] obj The location to store the object.
+ */
 DMNSN_INLINE void
 dmnsn_list_get(const dmnsn_list_iterator *i, void *obj)
 {
@@ -123,7 +186,11 @@ dmnsn_list_get(const dmnsn_list_iterator *i, void *obj)
   memcpy(obj, i->ptr, i->obj_size);
 }
 
-/* Get a pointer to the i'th object */
+/**
+ * Get a pointer to the i'th object.
+ * @param[in] i  The iterator to dereference.
+ * @return A pointer to the object stored at \c i.
+ */
 DMNSN_INLINE void *
 dmnsn_list_at(const dmnsn_list_iterator *i)
 {
@@ -131,7 +198,11 @@ dmnsn_list_at(const dmnsn_list_iterator *i)
   return i->ptr;
 }
 
-/* Set the i'th object, expanding the list if necessary */
+/**
+ * Set the i'th object.
+ * @param[in,out] i    The iterator to dereference.
+ * @param[in]     obj  The object to store at \c i.
+ */
 DMNSN_INLINE void
 dmnsn_list_set(dmnsn_list_iterator *i, const void *obj)
 {
@@ -139,7 +210,11 @@ dmnsn_list_set(dmnsn_list_iterator *i, const void *obj)
   memcpy(i->ptr, obj, i->obj_size);
 }
 
-/* Swap two iterators */
+/**
+ * Swap the objects in two iterators.
+ * @param[in,out] a  The first iterator.
+ * @param[in,out] b  The second iterator.
+ */
 DMNSN_INLINE void
 dmnsn_list_swap(dmnsn_list_iterator *a, dmnsn_list_iterator *b)
 {
@@ -148,7 +223,13 @@ dmnsn_list_swap(dmnsn_list_iterator *a, dmnsn_list_iterator *b)
   b->ptr = temp;
 }
 
-/* Insert `j' before `i' */
+/**
+ * Insert a detached iterator into a list.
+ * @param[in,out] list  The list to insert into.
+ * @param[in,out] i     The detached iterator to insert.
+ * @param[in,out] j     The iterator before which to insert, or NULL for the end
+ *                      of the list.
+ */
 DMNSN_INLINE void
 dmnsn_list_iterator_insert(dmnsn_list *list,
                            dmnsn_list_iterator *i, dmnsn_list_iterator *j)
@@ -170,7 +251,13 @@ dmnsn_list_iterator_insert(dmnsn_list *list,
   ++list->length;
 }
 
-/* Insert an item before `i' (NULL means at the end) */
+/**
+ * Insert an object.
+ * @param[in,out] list  The list to insert into.
+ * @param[in,out] i     The iterator before which to insert, or NULL for the end
+ *                      of the list.
+ * @param[in]     obj   The location of the object to insert.
+ */
 DMNSN_INLINE void
 dmnsn_list_insert(dmnsn_list *list, dmnsn_list_iterator *i, const void *obj)
 {
@@ -178,7 +265,11 @@ dmnsn_list_insert(dmnsn_list *list, dmnsn_list_iterator *i, const void *obj)
   dmnsn_list_iterator_insert(list, i, j);
 }
 
-/* Remove the given iterator */
+/**
+ * Detach an iterator from a list.
+ * @param[in,out] list  The list to remove from.
+ * @param[in,out] i     The iterator to detach.
+ */
 DMNSN_INLINE void
 dmnsn_list_iterator_remove(dmnsn_list *list, dmnsn_list_iterator *i)
 {
@@ -197,7 +288,11 @@ dmnsn_list_iterator_remove(dmnsn_list *list, dmnsn_list_iterator *i)
   --list->length;
 }
 
-/* Remove the specified item */
+/**
+ * Remove the specified item from a list.
+ * @param[in,out] list  The list to remove from.
+ * @param[in,out] i     The iterator to delete.
+ */
 DMNSN_INLINE void
 dmnsn_list_remove(dmnsn_list *list, dmnsn_list_iterator *i)
 {
@@ -205,14 +300,22 @@ dmnsn_list_remove(dmnsn_list *list, dmnsn_list_iterator *i)
   dmnsn_delete_list_iterator(i);
 }
 
-/* Push obj to the end of the list */
+/**
+ * Push an object to the end of the list.
+ * @param[in,out] list  The list to append to.
+ * @param[in]     obj   The location of the object to push.
+ */
 DMNSN_INLINE void
 dmnsn_list_push(dmnsn_list *list, const void *obj)
 {
   dmnsn_list_insert(list, NULL, obj);
 }
 
-/* Pop obj from the end of the list */
+/**
+ * Pop an object from the end of the list.
+ * @param[in,out] list  The list to extract from.
+ * @param[out]    obj   The location to store the extracted object.
+ */
 DMNSN_INLINE void
 dmnsn_list_pop(dmnsn_list *list, void *obj)
 {
@@ -221,11 +324,22 @@ dmnsn_list_pop(dmnsn_list *list, void *obj)
   dmnsn_list_remove(list, list->last);
 }
 
-/* Splits a list in half, and returns the second half */
+/**
+ * Split a list in half, and return the second half.
+ * @param[in,out] list  The list to split.
+ * @return A the second half of the list.
+ */
 dmnsn_list *dmnsn_list_split(dmnsn_list *list);
-/* Sort a list */
+
+/** List object comparator function type */
 typedef bool dmnsn_list_comparator_fn(dmnsn_list_iterator *l,
                                       dmnsn_list_iterator *r);
+
+/**
+ * Sort a list, with O(n*log(n)) comparisons.
+ * @param[in,out] list       The list to sort.
+ * @param[in]     comparator The comparator to use for comparisons.
+ */
 void dmnsn_list_sort(dmnsn_list *list, dmnsn_list_comparator_fn *comparator);
 
 #endif /* DIMENSION_LIST_H */

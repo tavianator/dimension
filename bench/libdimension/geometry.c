@@ -169,11 +169,5 @@ main(void)
   });
   printf("dmnsn_line_point(): %ld\n", sandglass.grains);
 
-  /* dmnsn_line_index() */
-  sandglass_bench_fine(&sandglass, {
-    result = dmnsn_line_index(line, vector);
-  });
-  printf("dmnsn_line_index(): %ld\n", sandglass.grains);
-
   return EXIT_SUCCESS;
 }

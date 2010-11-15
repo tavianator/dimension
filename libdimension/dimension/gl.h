@@ -18,21 +18,36 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-/*
- * Draw a canvas to a GL framebuffer with glDrawPixels, or read one with
- * glReadPixels.  Should be fast, so no _async() versions.
+/**
+ * @file
+ * OpenGL export/import of canvases.
  */
 
 #ifndef DIMENSION_GL_H
 #define DIMENSION_GL_H
 
-/* Optimize canvas for GL drawing */
+/**
+ * Optimize a canvas for GL drawing
+ * @param[in,out] canvas  The canvas to optimize.
+ * @return Whether the canvas was successfully optimized.
+ */
 int dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas);
 
-/* Write canvas to GL framebuffer.  Returns 0 on success, nonzero on failure. */
+/**
+ * Write canvas to GL framebuffer.
+ * @param[in] canvas  The canvas to write.
+ * @return 0 on success, non-zero on failure.
+ */
 int dmnsn_gl_write_canvas(const dmnsn_canvas *canvas);
 
-/* Read a canvas from a GL framebuffer.  Returns NULL on failure. */
+/**
+ * Read a canvas from a GL framebuffer.
+ * @param[in] x0      The \a x screen coordinate to start copying from.
+ * @param[in] y0      The \a y screen coordinate to start copying from.
+ * @param[in] width   The width of the read area.
+ * @param[in] height  The height of the read area.
+ * @return The allocated canvas, or NULL on failure.
+ */
 dmnsn_canvas *dmnsn_gl_read_canvas(size_t x0, size_t y0,
                                    size_t width, size_t height);
 
