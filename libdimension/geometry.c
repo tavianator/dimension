@@ -282,7 +282,7 @@ dmnsn_matrix_inverse_generic(dmnsn_matrix A)
   /* Find the translational component of the inverse */
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      inv.n[i][3] -= inv.n[i][j]*A.n[i][3];
+      inv.n[i][3] -= inv.n[i][j]*A.n[j][3];
     }
   }
 
