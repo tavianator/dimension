@@ -188,11 +188,6 @@ dmnsn_realize_matrix(dmnsn_astnode astnode)
   trans.n[2][2] = dmnsn_realize_float(children[8]);
   trans.n[2][3] = dmnsn_realize_float(children[11]);
 
-  trans.n[3][0] = 0.0;
-  trans.n[3][1] = 0.0;
-  trans.n[3][2] = 0.0;
-  trans.n[3][3] = 1.0;
-
   return trans;
 }
 

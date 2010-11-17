@@ -45,8 +45,7 @@ main(void)
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_new_matrix(1.0, 1.0, 0.0, 0.0,
                               1.0, 1.0, 1.0, 0.0,
-                              0.0, 1.0, 1.0, 0.0,
-                              0.0, 0.0, 0.0, 1.0);
+                              0.0, 1.0, 1.0, 0.0);
   });
   printf("dmnsn_new_matrix(): %ld\n", sandglass.grains);
 
@@ -138,8 +137,7 @@ main(void)
   /* dmnsn_matrix_inverse(HARD) */
   matrix2 = dmnsn_new_matrix(1.0, 1.0, 0.0, 0.0,
                              1.0, 1.0, 1.0, 0.0,
-                             0.0, 1.0, 1.0, 0.0,
-                             0.0, 0.0, 0.0, 1.0);
+                             0.0, 1.0, 1.0, 0.0);
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_matrix_inverse(matrix2);
   });

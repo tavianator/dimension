@@ -94,10 +94,7 @@ dmnsn_transform_normal(dmnsn_matrix trans, dmnsn_vector normal)
     dmnsn_vector_sub(
       dmnsn_transform_vector(trans, normal),
       /* Optimized form of dmnsn_transform_vector(trans, dmnsn_zero) */
-      dmnsn_vector_div(
-        dmnsn_new_vector(trans.n[0][3], trans.n[1][3], trans.n[2][3]),
-        trans.n[3][3]
-      )
+      dmnsn_new_vector(trans.n[0][3], trans.n[1][3], trans.n[2][3])
     )
   );
 }

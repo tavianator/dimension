@@ -41,9 +41,9 @@ typedef struct dmnsn_vector {
 /** The appropriate arguements to printf() a vector. */
 #define DMNSN_VECTOR_PRINTF(v) (v).x, (v).y, (v).z
 
-/** A 4x4 affine transformation matrix. */
+/** A 4x4 affine transformation matrix, with implied [0 0 0 1] bottom row. */
 typedef struct dmnsn_matrix {
-  double n[4][4]; /**< The matrix elements in row-major order. */
+  double n[3][4]; /**< The matrix elements in row-major order. */
 } dmnsn_matrix;
 
 /** A standard format string for matricies. */
@@ -57,7 +57,7 @@ typedef struct dmnsn_matrix {
   (m).n[0][0], (m).n[0][1], (m).n[0][2], (m).n[0][3],   \
   (m).n[1][0], (m).n[1][1], (m).n[1][2], (m).n[1][3],   \
   (m).n[2][0], (m).n[2][1], (m).n[2][2], (m).n[2][3],   \
-  (m).n[3][0], (m).n[3][1], (m).n[3][2], (m).n[3][3]
+  0.0, 0.0, 0.0, 1.0
 
 /** A line, or ray. */
 typedef struct dmnsn_line {
@@ -145,17 +145,15 @@ dmnsn_new_vector(double x, double y, double z)
   return v;
 }
 
-/** Construct a new matrix. */
+/** Construct a new transformation matrix. */
 DMNSN_INLINE dmnsn_matrix
 dmnsn_new_matrix(double a0, double a1, double a2, double a3,
                  double b0, double b1, double b2, double b3,
-                 double c0, double c1, double c2, double c3,
-                 double d0, double d1, double d2, double d3)
+                 double c0, double c1, double c2, double c3)
 {
   dmnsn_matrix m = { { { a0, a1, a2, a3 },
                        { b0, b1, b2, b3 },
-                       { c0, c1, c2, c3 },
-                       { d0, d1, d2, d3 } } };
+                       { c0, c1, c2, c3 } } };
   return m;
 }
 
@@ -378,16 +376,12 @@ dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
 DMNSN_INLINE dmnsn_vector
 dmnsn_transform_vector(dmnsn_matrix T, dmnsn_vector v)
 {
-  /* 12 multiplications, 3 divisions, 12 additions */
+  /* 9 multiplications, 9 additions */
   dmnsn_vector r;
-  double w;
-
   r.x = T.n[0][0]*v.x + T.n[0][1]*v.y + T.n[0][2]*v.z + T.n[0][3];
   r.y = T.n[1][0]*v.x + T.n[1][1]*v.y + T.n[1][2]*v.z + T.n[1][3];
   r.z = T.n[2][0]*v.x + T.n[2][1]*v.y + T.n[2][2]*v.z + T.n[2][3];
-  w   = T.n[3][0]*v.x + T.n[3][1]*v.y + T.n[3][2]*v.z + T.n[3][3];
-
-  return dmnsn_vector_div(r, w);
+  return r;
 }
 
 /** Transform a bounding box by a matrix. */
@@ -402,7 +396,7 @@ dmnsn_bounding_box dmnsn_transform_bounding_box(dmnsn_matrix T,
 DMNSN_INLINE dmnsn_line
 dmnsn_transform_line(dmnsn_matrix T, dmnsn_line l)
 {
-  /* 24 multiplications, 6 divisions, 30 additions */
+  /* 18 multiplications, 24 additions */
   dmnsn_line ret;
   ret.x0 = dmnsn_transform_vector(T, l.x0);
   ret.n  = dmnsn_vector_sub(

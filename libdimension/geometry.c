@@ -32,8 +32,7 @@ dmnsn_identity_matrix()
 {
   return dmnsn_new_matrix(1.0, 0.0, 0.0, 0.0,
                           0.0, 1.0, 0.0, 0.0,
-                          0.0, 0.0, 1.0, 0.0,
-                          0.0, 0.0, 0.0, 1.0);
+                          0.0, 0.0, 1.0, 0.0);
 }
 
 /* Scaling matrix */
@@ -42,8 +41,7 @@ dmnsn_scale_matrix(dmnsn_vector s)
 {
   return dmnsn_new_matrix(s.x, 0.0, 0.0, 0.0,
                           0.0, s.y, 0.0, 0.0,
-                          0.0, 0.0, s.z, 0.0,
-                          0.0, 0.0, 0.0, 1.0);
+                          0.0, 0.0, s.z, 0.0);
 }
 
 /* Translation matrix */
@@ -52,8 +50,7 @@ dmnsn_translation_matrix(dmnsn_vector d)
 {
   return dmnsn_new_matrix(1.0, 0.0, 0.0, d.x,
                           0.0, 1.0, 0.0, d.y,
-                          0.0, 0.0, 1.0, d.z,
-                          0.0, 0.0, 0.0, 1.0);
+                          0.0, 0.0, 1.0, d.z);
 }
 
 /* Left-handed rotation matrix; theta/|theta| = axis, |theta| = angle */
@@ -80,8 +77,7 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
   return dmnsn_new_matrix(
     1.0 + t*(x*x - 1.0), -z*s + t*x*y,        y*s + t*x*z,         0.0,
     z*s + t*x*y,         1.0 + t*(y*y - 1.0), -x*s + t*y*z,        0.0,
-    -y*s + t*x*z,        x*s + t*y*z,         1.0 + t*(z*z - 1.0), 0.0,
-    0.0,                 0.0,                 0.0,                 1.0
+    -y*s + t*x*z,        x*s + t*y*z,         1.0 + t*(z*z - 1.0), 0.0
   );
 }
 
@@ -138,11 +134,11 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   /*
    * Use partitioning to invert a matrix:
    *
-   *     ( P Q ) -1
-   *     ( R S )
+   *     [ P Q ] -1
+   *     [ R S ]
    *
-   *   = ( PP QQ )
-   *     ( RR SS ),
+   *   = [ PP QQ ]
+   *     [ RR SS ],
    *
    * with PP = inv(P) - inv(P)*Q*RR,
    *      QQ = -inv(P)*Q*SS,
@@ -173,9 +169,9 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   Q = dmnsn_new_matrix2(A.n[0][2], A.n[0][3],
                         A.n[1][2], A.n[1][3]);
   R = dmnsn_new_matrix2(A.n[2][0], A.n[2][1],
-                        A.n[3][0], A.n[3][1]);
+                        0.0,       0.0);
   S = dmnsn_new_matrix2(A.n[2][2], A.n[2][3],
-                        A.n[3][2], A.n[3][3]);
+                        0.0,       1.0);
 
   /* Do this inversion ourselves, since we already have the determinant */
   Pi = dmnsn_new_matrix2( P.n[1][1]/Pdet, -P.n[0][1]/Pdet,
@@ -195,8 +191,7 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   /* Reconstruct the matrix */
   return dmnsn_new_matrix(PP.n[0][0], PP.n[0][1], QQ.n[0][0], QQ.n[0][1],
                           PP.n[1][0], PP.n[1][1], QQ.n[1][0], QQ.n[1][1],
-                          RR.n[0][0], RR.n[0][1], SS.n[0][0], SS.n[0][1],
-                          RR.n[1][0], RR.n[1][1], SS.n[1][0], SS.n[1][1]);
+                          RR.n[0][0], RR.n[0][1], SS.n[0][0], SS.n[0][1]);
 }
 
 /* For nice shorthand */
@@ -255,48 +250,56 @@ static dmnsn_matrix
 dmnsn_matrix_inverse_generic(dmnsn_matrix A)
 {
   /*
-   * Simply form the matrix's adjugate and divide each element by the
-   * determinant as we go.  The routine itself has 4 additions and 16 divisions
-   * plus 16 cofactor calculations, giving 144 multiplications, 84 additions,
-   * and 16 divisions.
+   * For A = [ A'      b ], A^-1 = [ A'^-1   -(A'^-1)*b ].
+   *         [ 0 ... 0 1 ]         [ 0 ... 0      1     ]
+   *
+   * Invert A' by calculating its adjucate.
    */
   dmnsn_matrix inv;
   double det = 0.0, C;
 
   /* Perform a Laplace expansion along the first row to give us the adjugate's
      first column and the determinant */
-  for (size_t j = 0; j < 4; ++j) {
+  for (size_t j = 0; j < 3; ++j) {
     C = dmnsn_matrix_cofactor(A, 0, j);
     det += A.n[0][j]*C;
     inv.n[j][0] = C;
   }
 
   /* Divide the first column by the determinant */
-  for (size_t j = 0; j < 4; ++j) {
+  for (size_t j = 0; j < 3; ++j) {
     inv.n[j][0] /= det;
   }
 
-  /* Find columns 2 through 4 */
-  for (size_t i = 1; i < 4; ++i) {
-    for (size_t j = 0; j < 4; ++j) {
+  /* Find the rest of A' */
+  for (size_t j = 0; j < 3; ++j) {
+    for (size_t i = 1; i < 3; ++i) {
       inv.n[j][i] = dmnsn_matrix_cofactor(A, i, j)/det;
+    }
+    inv.n[j][3] = 0.0;
+  }
+
+  /* Find the translational component of the inverse */
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      inv.n[i][3] -= inv.n[i][j]*A.n[i][3];
     }
   }
 
   return inv;
 }
 
-/* Gives the cofactor at row, col; the determinant of the matrix formed from A
-   by ignoring row `row' and column `col', times (-1)**(row + col) */
+/* Gives the cofactor at row, col; the determinant of the matrix formed from the
+   upper-left 3x3 corner of A by ignoring row `row' and column `col',
+   times (-1)^(row + col) */
 static double
 dmnsn_matrix_cofactor(dmnsn_matrix A, unsigned int row, unsigned int col)
 {
-  /* 9 multiplications, 5 additions */
-  double n[9], C;
-  unsigned int k = 0;
-
-  for (size_t i = 0; i < 4; ++i) {
-    for (size_t j = 0; j < 4; ++j) {
+  /* 2 multiplications, 1 addition */
+  double n[4];
+  size_t k = 0;
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
       if (i != row && j != col) {
         n[k] = A.n[i][j];
         ++k;
@@ -304,8 +307,7 @@ dmnsn_matrix_cofactor(dmnsn_matrix A, unsigned int row, unsigned int col)
     }
   }
 
-  C = n[0]*(n[4]*n[8] - n[5]*n[7]) + n[1]*(n[5]*n[6] - n[3]*n[8])
-    + n[2]*(n[3]*n[7] - n[4]*n[6]);
+  double C = n[0]*n[3] - n[1]*n[2];
   if ((row + col)%2 == 0) {
     return C;
   } else {
@@ -317,44 +319,35 @@ dmnsn_matrix_cofactor(dmnsn_matrix A, unsigned int row, unsigned int col)
 dmnsn_matrix
 dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs)
 {
-  /* 64 multiplications, 48 additions */
+  /* 36 multiplications, 27 additions */
   dmnsn_matrix r;
 
   r.n[0][0] = lhs.n[0][0]*rhs.n[0][0] + lhs.n[0][1]*rhs.n[1][0]
-    + lhs.n[0][2]*rhs.n[2][0] + lhs.n[0][3]*rhs.n[3][0];
+    + lhs.n[0][2]*rhs.n[2][0];
   r.n[0][1] = lhs.n[0][0]*rhs.n[0][1] + lhs.n[0][1]*rhs.n[1][1]
-    + lhs.n[0][2]*rhs.n[2][1] + lhs.n[0][3]*rhs.n[3][1];
+    + lhs.n[0][2]*rhs.n[2][1];
   r.n[0][2] = lhs.n[0][0]*rhs.n[0][2] + lhs.n[0][1]*rhs.n[1][2]
-    + lhs.n[0][2]*rhs.n[2][2] + lhs.n[0][3]*rhs.n[3][2];
+    + lhs.n[0][2]*rhs.n[2][2];
   r.n[0][3] = lhs.n[0][0]*rhs.n[0][3] + lhs.n[0][1]*rhs.n[1][3]
-    + lhs.n[0][2]*rhs.n[2][3] + lhs.n[0][3]*rhs.n[3][3];
+    + lhs.n[0][2]*rhs.n[2][3] + lhs.n[0][3];
 
   r.n[1][0] = lhs.n[1][0]*rhs.n[0][0] + lhs.n[1][1]*rhs.n[1][0]
-    + lhs.n[1][2]*rhs.n[2][0] + lhs.n[1][3]*rhs.n[3][0];
+    + lhs.n[1][2]*rhs.n[2][0];
   r.n[1][1] = lhs.n[1][0]*rhs.n[0][1] + lhs.n[1][1]*rhs.n[1][1]
-    + lhs.n[1][2]*rhs.n[2][1] + lhs.n[1][3]*rhs.n[3][1];
+    + lhs.n[1][2]*rhs.n[2][1];
   r.n[1][2] = lhs.n[1][0]*rhs.n[0][2] + lhs.n[1][1]*rhs.n[1][2]
-    + lhs.n[1][2]*rhs.n[2][2] + lhs.n[1][3]*rhs.n[3][2];
+    + lhs.n[1][2]*rhs.n[2][2];
   r.n[1][3] = lhs.n[1][0]*rhs.n[0][3] + lhs.n[1][1]*rhs.n[1][3]
-    + lhs.n[1][2]*rhs.n[2][3] + lhs.n[1][3]*rhs.n[3][3];
+    + lhs.n[1][2]*rhs.n[2][3] + lhs.n[1][3];
 
   r.n[2][0] = lhs.n[2][0]*rhs.n[0][0] + lhs.n[2][1]*rhs.n[1][0]
-    + lhs.n[2][2]*rhs.n[2][0] + lhs.n[2][3]*rhs.n[3][0];
+    + lhs.n[2][2]*rhs.n[2][0];
   r.n[2][1] = lhs.n[2][0]*rhs.n[0][1] + lhs.n[2][1]*rhs.n[1][1]
-    + lhs.n[2][2]*rhs.n[2][1] + lhs.n[2][3]*rhs.n[3][1];
+    + lhs.n[2][2]*rhs.n[2][1];
   r.n[2][2] = lhs.n[2][0]*rhs.n[0][2] + lhs.n[2][1]*rhs.n[1][2]
-    + lhs.n[2][2]*rhs.n[2][2] + lhs.n[2][3]*rhs.n[3][2];
+    + lhs.n[2][2]*rhs.n[2][2];
   r.n[2][3] = lhs.n[2][0]*rhs.n[0][3] + lhs.n[2][1]*rhs.n[1][3]
-    + lhs.n[2][2]*rhs.n[2][3] + lhs.n[2][3]*rhs.n[3][3];
-
-  r.n[3][0] = lhs.n[3][0]*rhs.n[0][0] + lhs.n[3][1]*rhs.n[1][0]
-    + lhs.n[3][2]*rhs.n[2][0] + lhs.n[3][3]*rhs.n[3][0];
-  r.n[3][1] = lhs.n[3][0]*rhs.n[0][1] + lhs.n[3][1]*rhs.n[1][1]
-    + lhs.n[3][2]*rhs.n[2][1] + lhs.n[3][3]*rhs.n[3][1];
-  r.n[3][2] = lhs.n[3][0]*rhs.n[0][2] + lhs.n[3][1]*rhs.n[1][2]
-    + lhs.n[3][2]*rhs.n[2][2] + lhs.n[3][3]*rhs.n[3][2];
-  r.n[3][3] = lhs.n[3][0]*rhs.n[0][3] + lhs.n[3][1]*rhs.n[1][3]
-    + lhs.n[3][2]*rhs.n[2][3] + lhs.n[3][3]*rhs.n[3][3];
+    + lhs.n[2][2]*rhs.n[2][3] + lhs.n[2][3];
 
   return r;
 }
