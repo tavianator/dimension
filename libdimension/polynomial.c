@@ -320,11 +320,10 @@ static inline size_t
 dmnsn_solve_linear(const double poly[2], double x[1])
 {
   x[0] = -poly[0];
-  if (x[0] >= dmnsn_epsilon) {
+  if (x[0] >= dmnsn_epsilon)
     return 1;
-  } else {
+  else
     return 0;
-  }
 }
 
 /** Solve a normalized quadratic polynomial algebraically. */
@@ -336,13 +335,13 @@ dmnsn_solve_quadratic(const double poly[3], double x[2])
     double s = sqrt(disc);
     x[0] = (-poly[1] + s)/2.0;
     x[1] = (-poly[1] - s)/2.0;
-    if (x[1] >= dmnsn_epsilon) {
+
+    if (x[1] >= dmnsn_epsilon)
       return 2;
-    } else if (x[0] >= dmnsn_epsilon) {
+    else if (x[0] >= dmnsn_epsilon)
       return 1;
-    } else {
+    else
       return 0;
-    }
   } else {
     return 0;
   }
@@ -370,20 +369,12 @@ dmnsn_solve_cubic(double poly[4], double x[3])
     x[0] = -2.0*msqrtp3*cos(4.0*atan(1.0)/3.0 - theta) - bdiv3;
     x[1] = -(x[0] + x[2] + poly[2]);
 
-    if (x[2] >= dmnsn_epsilon) {
+    if (x[2] >= dmnsn_epsilon)
       return 3;
-    } else if (x[1] >= dmnsn_epsilon) {
+    else if (x[1] >= dmnsn_epsilon)
       return 2;
-    } else if (x[0] >= dmnsn_epsilon) {
-      return 1;
-    } else {
-      return 0;
-    }
-  } else {
+  } else if (disc >= dmnsn_epsilon) {
     /* One real root */
-    if (disc < 0.0)
-      disc = 0.0;
-
     double cbrtdiscq = cbrt(sqrt(disc/108.0) + fabs(q)/2.0);
     double abst = cbrtdiscq - p/(3.0*cbrtdiscq);
 
@@ -392,13 +383,22 @@ dmnsn_solve_cubic(double poly[4], double x[3])
     } else {
       x[0] = abst - bdiv3;
     }
-
-    if (x[0] >= dmnsn_epsilon) {
-      return 1;
-    } else {
-      return 0;
-    }
+  } else if (fabs(p) < dmnsn_epsilon) {
+    /* Equation is a perfect cube */
+    x[0] = -bdiv3;
+  } else {
+    /* Two real roots; one duplicate */
+    double t1 = 3.0*q/p, t2 = -t1/2.0;
+    x[0] = dmnsn_max(t1, t2);
+    x[1] = dmnsn_min(t1, t2);
+    if (x[1] >= dmnsn_epsilon)
+      return 2;
   }
+
+  if (x[0] >= dmnsn_epsilon)
+    return 1;
+  else
+    return 0;
 }
 
 /* Uspensky's algorithm */
