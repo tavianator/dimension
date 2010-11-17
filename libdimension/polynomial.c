@@ -320,7 +320,11 @@ static inline size_t
 dmnsn_solve_linear(const double poly[2], double x[1])
 {
   x[0] = -poly[0];
-  return (x[0] >= dmnsn_epsilon) ? 1 : 0;
+  if (x[0] >= dmnsn_epsilon) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 /** Solve a normalized quadratic polynomial algebraically. */
@@ -332,9 +336,68 @@ dmnsn_solve_quadratic(const double poly[3], double x[2])
     double s = sqrt(disc);
     x[0] = (-poly[1] + s)/2.0;
     x[1] = (-poly[1] - s)/2.0;
-    return (x[0] >= dmnsn_epsilon) ? ((x[1] >= dmnsn_epsilon) ? 2 : 1) : 0;
+    if (x[1] >= dmnsn_epsilon) {
+      return 2;
+    } else if (x[0] >= dmnsn_epsilon) {
+      return 1;
+    } else {
+      return 0;
+    }
   } else {
     return 0;
+  }
+}
+
+/** Solve a normalized cubic polynomial algebraically. */
+static inline size_t
+dmnsn_solve_cubic(double poly[4], double x[3])
+{
+  /* Reduce to a monic trinomial (t^3 + p*t + q, t = x + b/3) */
+  double b2 = poly[2]*poly[2];
+  double p = poly[1] - b2/3.0;
+  double q = poly[0] - poly[2]*(9.0*poly[1] - 2.0*b2)/27.0;
+
+  double det = 4.0*p*p*p + 27.0*q*q;
+  double bdiv3 = poly[2]/3;
+
+  if (det <= -dmnsn_epsilon) {
+    /* Three real roots -- this implies p < 0 */
+    double msqrtp3 = -sqrt(-p/3.0);
+    double theta = acos(3*q/(2*p*msqrtp3))/3.0;
+
+    /* Store the roots in order from largest to smallest */
+    x[2] = 2.0*msqrtp3*cos(theta) - bdiv3;
+    x[0] = -2.0*msqrtp3*cos(4.0*atan(1.0)/3.0 - theta) - bdiv3;
+    x[1] = -(x[0] + x[2] + poly[2]);
+
+    if (x[2] >= dmnsn_epsilon) {
+      return 3;
+    } else if (x[1] >= dmnsn_epsilon) {
+      return 2;
+    } else if (x[0] >= dmnsn_epsilon) {
+      return 1;
+    } else {
+      return 0;
+    }
+  } else {
+    /* One real root */
+    if (det < 0.0)
+      det = 0.0;
+
+    double cbrtdet = cbrt(sqrt(det/108.0) + fabs(q)/2.0);
+    double abst = cbrtdet - p/(3.0*cbrtdet);
+
+    if (q >= 0) {
+      x[0] = -abst - bdiv3;
+    } else {
+      x[0] = abst - bdiv3;
+    }
+
+    if (x[0] >= dmnsn_epsilon) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
 }
 
@@ -358,10 +421,11 @@ dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
   /* Eliminate simple zero roots */
   dmnsn_eliminate_zero_roots(p, &degree);
 
-  if (degree >= 3) {
-    /* Find isolating intervals for (degree - 2) roots of p[] */
-    double ranges[degree - 2][2];
-    size_t n = dmnsn_uspensky_bounds(p, degree, ranges, degree - 2);
+  static const size_t max_algebraic = 3;
+  if (degree > max_algebraic) {
+    /* Find isolating intervals for (degree - max_algebraic) roots of p[] */
+    double ranges[degree - max_algebraic][2];
+    size_t n = dmnsn_uspensky_bounds(p, degree, ranges, degree - max_algebraic);
 
     /* Calculate a finite upper bound for the roots of p[] */
     double absmax = dmnsn_root_bound(p, degree);
@@ -388,6 +452,9 @@ dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
     break;
   case 2:
     i += dmnsn_solve_quadratic(p, x + i);
+    break;
+  case 3:
+    i += dmnsn_solve_cubic(p, x + i);
     break;
   }
 
