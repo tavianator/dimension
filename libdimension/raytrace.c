@@ -122,14 +122,23 @@ dmnsn_raytrace_scene_thread(void *ptr)
         }
     }
 
+    /* Join the rest of the threads after detecting an error, so we don't
+       free anything out from under them */
+    bool join_failed = false;
+    bool error_seen = false;
     for (int i = 0; i < nthreads; ++i) {
       void *ptr = NULL;
-      if (pthread_join(threads[i], &ptr)) {
+      if (pthread_join(threads[i], &ptr) != 0)
+        join_failed = true;
+      if (!ptr)
+        error_seen = true;
+    }
+    if (join_failed) {
         dmnsn_error(DMNSN_SEVERITY_MEDIUM,
                     "Couldn't join worker thread in raytrace engine.");
-      }
-      if (!ptr)
-        dmnsn_error(DMNSN_SEVERITY_HIGH, "Error occurred in worker thread.");
+    }
+    if (error_seen) {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Error occurred in worker thread.");
     }
   dmnsn_complete_timer(payload->scene->render_timer);
 
