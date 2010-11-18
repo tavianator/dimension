@@ -359,7 +359,7 @@ dmnsn_solve_cubic(double poly[4], double x[3])
   double disc = 4.0*p*p*p + 27.0*q*q;
   double bdiv3 = poly[2]/3;
 
-  if (disc <= -dmnsn_epsilon) {
+  if (disc < 0.0) {
     /* Three real roots -- this implies p < 0 */
     double msqrtp3 = -sqrt(-p/3.0);
     double theta = acos(3*q/(2*p*msqrtp3))/3.0;
@@ -373,7 +373,7 @@ dmnsn_solve_cubic(double poly[4], double x[3])
       return 3;
     else if (x[1] >= dmnsn_epsilon)
       return 2;
-  } else if (disc >= dmnsn_epsilon) {
+  } else if (disc > 0.0) {
     /* One real root */
     double cbrtdiscq = cbrt(sqrt(disc/108.0) + fabs(q)/2.0);
     double abst = cbrtdiscq - p/(3.0*cbrtdiscq);
