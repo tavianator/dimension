@@ -241,9 +241,9 @@ dmnsn_array_remove(dmnsn_array *array, size_t i)
  * @param     i      The name of the iterator within the loop body.
  * @param[in] array  The array to loop over.
  */
-#define DMNSN_ARRAY_FOREACH(type, i, array)                             \
-  for (type i = dmnsn_array_first(array);                               \
-       i - (type)dmnsn_array_first(array) < dmnsn_array_size(array);    \
+#define DMNSN_ARRAY_FOREACH(type, i, array)                                    \
+  for (type i = dmnsn_array_first(array);                                      \
+       (size_t)(i - (type)dmnsn_array_first(array)) < dmnsn_array_size(array); \
        ++i)
 
 /**
