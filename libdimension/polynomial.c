@@ -69,17 +69,9 @@ dmnsn_eliminate_zero_roots(double poly[], size_t *degree)
 static inline size_t
 dmnsn_descartes_rule(const double poly[], size_t degree)
 {
-  int lastsign = 0;
-  size_t i;
-  for (i = 0; i <= degree; ++i) {
-    if (fabs(poly[i]) >= dmnsn_epsilon) {
-      lastsign = dmnsn_signbit(poly[i]);
-      break;
-    }
-  }
-
   size_t changes = 0;
-  for (++i; i <= degree; ++i) {
+  int lastsign = dmnsn_signbit(poly[degree]);
+  for (size_t i = degree; i-- > 0;) {
     int sign = dmnsn_signbit(poly[i]);
     if (fabs(poly[i]) >= dmnsn_epsilon && sign != lastsign) {
       lastsign = sign;
@@ -209,15 +201,15 @@ dmnsn_uspensky_bounds(const double poly[], size_t degree, double bounds[][2],
   }
 }
 
-/** Calculate a finite upper bound for the roots of \p poly[]. */
+/** Calculate a finite upper bound for the roots of the normalized polynomial
+    \p poly[]. */
 static inline double
-dmnsn_root_bound(double poly[], size_t degree)
+dmnsn_root_bound(const double poly[], size_t degree)
 {
   double bound = 0.0;
   for (size_t i = 0; i < degree; ++i) {
     bound = dmnsn_max(bound, fabs(poly[i]));
   }
-  bound /= fabs(poly[degree]);
   bound += 1.0;
   return bound;
 }
