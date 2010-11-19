@@ -19,8 +19,11 @@
 
 #include "parse.h"
 #include "utility.h"
+#include <errno.h>
 #include <fenv.h>
+#include <limits.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 /*
@@ -698,7 +701,11 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
 
     case DMNSN_AST_NEGATE:
-      dmnsn_make_ast_integer(&ret, -n);
+      if ((n >= 0 && LONG_MIN + n <= 0) || (n < 0 && LONG_MAX + n >= 0)) {
+        dmnsn_make_ast_integer(&ret, -n);
+      } else {
+        dmnsn_make_ast_float(&ret, -(double)n);
+      }
       break;
 
     case DMNSN_AST_NOT:
@@ -706,7 +713,11 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
 
     case DMNSN_AST_ABS:
-      dmnsn_make_ast_integer(&ret, labs(n));
+      if (n >= 0 || LONG_MAX + n >= 0) {
+        dmnsn_make_ast_integer(&ret, labs(n));
+      } else {
+        dmnsn_make_ast_float(&ret, fabs(n));
+      }
       break;
     case DMNSN_AST_ACOS:
       dmnsn_make_ast_float(&ret, acos(n));
@@ -904,13 +915,20 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
     case DMNSN_AST_VAL:
       {
+        errno = 0;
         char *endptr;
         long l = strtol(rhs.ptr, &endptr, 0);
-        if (*endptr != '\0' || endptr == rhs.ptr) {
+        if (*endptr != '\0' || endptr == rhs.ptr
+            || (l != 0 && errno == ERANGE))
+        {
+          errno = 0;
           double d = strtod(rhs.ptr, &endptr);
           if (*endptr != '\0' || endptr == rhs.ptr) {
             dmnsn_diagnostic(astnode.location, "invalid numeric string '%s'",
                              (const char *)rhs.ptr);
+            ret.type = DMNSN_AST_NONE;
+          } else if (d != 0 && errno == ERANGE) {
+            dmnsn_diagnostic(astnode.location, "float value overflowed");
             ret.type = DMNSN_AST_NONE;
           } else {
             dmnsn_make_ast_float(&ret, d);
@@ -1313,16 +1331,40 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
 
     switch (astnode.type) {
     case DMNSN_AST_ADD:
-      dmnsn_make_ast_integer(&ret, l + r);
+      if ((r < 0 && LONG_MIN - r <= l) || (r >= 0 && LONG_MAX - r >= l)) {
+        dmnsn_make_ast_integer(&ret, l + r);
+      } else {
+        dmnsn_make_ast_float(&ret, (double)l + r);
+      }
       break;
     case DMNSN_AST_SUB:
-      dmnsn_make_ast_integer(&ret, l - r);
+      if ((r >= 0 && LONG_MIN + r <= l) || (r < 0 && LONG_MAX + r >= l)) {
+        dmnsn_make_ast_integer(&ret, l - r);
+      } else {
+        dmnsn_make_ast_float(&ret, (double)l - r);
+      }
       break;
     case DMNSN_AST_MUL:
-      dmnsn_make_ast_integer(&ret, l*r);
-      break;
+      {
+#if (ULONG_MAX > 4294967295)
+        __int128_t prod = l;
+#else
+        int64_t prod = l;
+#endif
+        prod *= r;
+        if (prod >= LONG_MIN && prod <= LONG_MAX) {
+          dmnsn_make_ast_integer(&ret, prod);
+        } else {
+          dmnsn_make_ast_float(&ret, prod);
+        }
+        break;
+      }
     case DMNSN_AST_DIV:
-      if (r == 0) {
+      if (r == -1
+          && ((l >= 0 && LONG_MIN + l <= 0) || (l < 0 && LONG_MAX + l >= 0)))
+      {
+        dmnsn_make_ast_float(&ret, -(double)l);
+      } else if (r == 0) {
         dmnsn_diagnostic(astnode.location, "WARNING: division by zero");
         dmnsn_make_ast_float(&ret, (double)l/0.0);
       } else if (l%r == 0) {
@@ -1361,7 +1403,11 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_float(&ret, atan2(l, r));
       break;
     case DMNSN_AST_INT_DIV:
-      if (r == 0) {
+      if (r == -1
+          && ((l >= 0 && LONG_MIN + l <= 0) || (l < 0 && LONG_MAX + l >= 0)))
+      {
+        dmnsn_make_ast_float(&ret, -(double)l);
+      } else if (r == 0) {
         dmnsn_diagnostic(astnode.location, "WARNING: division by zero");
         dmnsn_make_ast_float(&ret, (double)l/0.0);
       } else {
@@ -1375,7 +1421,10 @@ dmnsn_eval_binary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       dmnsn_make_ast_integer(&ret, l < r ? l : r);
       break;
     case DMNSN_AST_MOD:
-      if (r == 0) {
+      if (r == -1) {
+        /* LONG_MIN % -1 is potentially an overflow */
+        dmnsn_make_ast_integer(&ret, 0);
+      } else if (r == 0) {
         dmnsn_diagnostic(astnode.location, "WARNING: division by zero");
         dmnsn_make_ast_float(&ret, fmod(l, 0.0));
       } else {

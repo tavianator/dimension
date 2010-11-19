@@ -28,6 +28,7 @@ TESTS = punctuation.sh                                                         \
         transformations.sh                                                     \
         invalid-macro.sh                                                       \
         tbuffer-overlap.sh                                                     \
+        integer-overflow.sh                                                    \
         csg.sh                                                                 \
         demo.sh
 TESTS_ENVIRONMENT = top_builddir=$(top_builddir)
@@ -46,6 +47,7 @@ EXTRA_DIST = $(TESTS)                                                          \
              transformations.pov                                               \
              invalid-macro.pov                                                 \
              tbuffer-overlap.pov                                               \
+             integer-overflow.pov                                              \
              csg.pov                                                           \
              demo.pov
 
