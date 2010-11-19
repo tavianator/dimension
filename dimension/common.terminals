@@ -80,7 +80,7 @@
 %token DMNSN_T_ALTITUDE
 %token DMNSN_T_ALWAYS_SAMPLE
 %token DMNSN_T_AMBIENT                  "ambient"
-%token DMNSN_T_AMBIENT_LIGHT
+%token DMNSN_T_AMBIENT_LIGHT            "ambient_light"
 %token DMNSN_T_ANGLE                    "angle"
 %token DMNSN_T_APERTURE
 %token DMNSN_T_APPEND

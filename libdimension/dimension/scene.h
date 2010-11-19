@@ -44,6 +44,7 @@ typedef unsigned int dmnsn_quality;
 typedef struct dmnsn_scene {
   /* World attributes */
   dmnsn_color background;         /**< Background color. */
+  dmnsn_color ambient;            /**< Global ambient color. */
   dmnsn_texture *default_texture; /**< Default object texture. */
 
   /** Camera. */

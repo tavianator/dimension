@@ -169,6 +169,7 @@ unsigned long wchar;
 "acos"                  RETURN_TOKEN(DMNSN_T_ACOS);
 "acosh"                 RETURN_TOKEN(DMNSN_T_ACOSH);
 "ambient"               RETURN_TOKEN(DMNSN_T_AMBIENT);
+"ambient_light"         RETURN_TOKEN(DMNSN_T_AMBIENT_LIGHT);
 "angle"                 RETURN_TOKEN(DMNSN_T_ANGLE);
 "asc"                   RETURN_TOKEN(DMNSN_T_ASC);
 "ascii"                 RETURN_TOKEN(DMNSN_T_ASCII);

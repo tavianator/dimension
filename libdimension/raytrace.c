@@ -337,9 +337,11 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
 static void
 dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
 {
-  /* The illuminated color */
+  /* The ambient color */
   state->diffuse = TEXTURE_CALLBACK(state, finish, ambient_fn, dmnsn_black,
                                     state->pigment);
+  state->diffuse = dmnsn_color_illuminate(state->scene->ambient,
+                                          state->diffuse);
 
   if (!TEXTURE_HAS_CALLBACK(state, finish, diffuse_fn)
       && !TEXTURE_HAS_CALLBACK(state, finish, specular_fn))

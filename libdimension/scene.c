@@ -32,6 +32,8 @@ dmnsn_new_scene()
 {
   dmnsn_scene *scene = dmnsn_malloc(sizeof(dmnsn_scene));
 
+  scene->background      = dmnsn_black;
+  scene->ambient         = dmnsn_white;
   scene->default_texture = dmnsn_new_texture();
   scene->camera          = NULL;
   scene->canvas          = NULL;
