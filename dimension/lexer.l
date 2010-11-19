@@ -222,6 +222,7 @@ unsigned long wchar;
 "light_source"          RETURN_TOKEN(DMNSN_T_LIGHT_SOURCE);
 "matrix"                RETURN_TOKEN(DMNSN_T_MATRIX);
 "max"                   RETURN_TOKEN(DMNSN_T_MAX);
+"max_intersections"     RETURN_TOKEN(DMNSN_T_MAX_INTERSECTIONS);
 "max_trace_level"       RETURN_TOKEN(DMNSN_T_MAX_TRACE_LEVEL);
 "merge"                 RETURN_TOKEN(DMNSN_T_MERGE);
 "min"                   RETURN_TOKEN(DMNSN_T_MIN);

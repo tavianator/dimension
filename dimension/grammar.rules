@@ -61,8 +61,15 @@ GLOBAL_SETTINGS_ITEM: "assumed_gamma" FLOAT {
                       $$ = dmnsn_new_astnode1(DMNSN_AST_ASSUMED_GAMMA, @$, $2);
                     }
                     | "max_trace_level" INT {
-                      $$ = dmnsn_new_astnode1(DMNSN_AST_MAX_TRACE_LEVEL,
-                                              @$, $2);
+                      $$ = dmnsn_new_astnode1(DMNSN_AST_MAX_TRACE_LEVEL, @$,
+                                              $2);
+                    }
+                    | "max_intersections" INT {
+                      dmnsn_diagnostic(@1,
+                                       "WARNING: max_intersections is"
+                                       " unnecessary for Dimension");
+                      $$ = dmnsn_new_astnode1(DMNSN_AST_MAX_INTERSECTIONS, @$,
+                                              $2);
                     }
 ;
 

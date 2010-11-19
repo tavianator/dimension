@@ -239,13 +239,14 @@ dmnsn_realize_global_settings(dmnsn_astnode astnode, dmnsn_scene *scene)
     dmnsn_astnode child;
 
     switch (item->type) {
-    case DMNSN_AST_ASSUMED_GAMMA:
-      /* assumed_gamma not supported */
-      break;
-
     case DMNSN_AST_MAX_TRACE_LEVEL:
       dmnsn_array_get(item->children, 0, &child);
       scene->reclimit = dmnsn_realize_integer(child);
+      break;
+
+    case DMNSN_AST_ASSUMED_GAMMA:
+    case DMNSN_AST_MAX_INTERSECTIONS:
+      /* Ignored settings */
       break;
 
     default:

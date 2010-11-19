@@ -274,7 +274,7 @@
 %token DMNSN_T_MAX                      "max"
 %token DMNSN_T_MAX_EXTENT
 %token DMNSN_T_MAX_GRADIENT
-%token DMNSN_T_MAX_INTERSECTIONS
+%token DMNSN_T_MAX_INTERSECTIONS        "max_intersections"
 %token DMNSN_T_MAX_ITERATION
 %token DMNSN_T_MAX_SAMPLE
 %token DMNSN_T_MAX_TRACE
