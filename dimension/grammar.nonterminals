@@ -26,6 +26,7 @@
 %type <astnode> GLOBAL_SETTINGS
 %type <astnode> GLOBAL_SETTINGS_ITEMS
 %type <astnode> GLOBAL_SETTINGS_ITEM
+%type <astnode> GLOBAL_CHARSET
 
 /* Atmospheric effects */
 %type <astnode> ATMOSPHERIC_EFFECT

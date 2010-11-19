@@ -245,6 +245,7 @@ dmnsn_realize_global_settings(dmnsn_astnode astnode, dmnsn_scene *scene)
       break;
 
     case DMNSN_AST_ASSUMED_GAMMA:
+    case DMNSN_AST_CHARSET:
     case DMNSN_AST_MAX_INTERSECTIONS:
       /* Ignored settings */
       break;

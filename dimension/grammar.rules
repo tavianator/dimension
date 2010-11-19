@@ -60,9 +60,10 @@ GLOBAL_SETTINGS_ITEM: "assumed_gamma" FLOAT {
                                        "WARNING: assumed_gamma not supported");
                       $$ = dmnsn_new_astnode1(DMNSN_AST_ASSUMED_GAMMA, @$, $2);
                     }
-                    | "max_trace_level" INT {
-                      $$ = dmnsn_new_astnode1(DMNSN_AST_MAX_TRACE_LEVEL, @$,
-                                              $2);
+                    | "charset" GLOBAL_CHARSET {
+                      dmnsn_diagnostic(@1,
+                                       "WARNING: charset not supported");
+                      $$ = dmnsn_new_astnode1(DMNSN_AST_CHARSET, @$, $2);
                     }
                     | "max_intersections" INT {
                       dmnsn_diagnostic(@1,
@@ -71,7 +72,21 @@ GLOBAL_SETTINGS_ITEM: "assumed_gamma" FLOAT {
                       $$ = dmnsn_new_astnode1(DMNSN_AST_MAX_INTERSECTIONS, @$,
                                               $2);
                     }
+                    | "max_trace_level" INT {
+                      $$ = dmnsn_new_astnode1(DMNSN_AST_MAX_TRACE_LEVEL, @$,
+                                              $2);
+                    }
 ;
+
+GLOBAL_CHARSET: "ascii" {
+                $$ = dmnsn_new_astnode(DMNSN_AST_ASCII, @$);
+              }
+              | "utf8" {
+                $$ = dmnsn_new_astnode(DMNSN_AST_UTF8, @$);
+              }
+              | "sys" {
+                $$ = dmnsn_new_astnode(DMNSN_AST_SYS, @$);
+              }
 
 /* Atmospheric effects */
 

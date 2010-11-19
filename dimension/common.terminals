@@ -88,7 +88,7 @@
 %token DMNSN_T_AREA_LIGHT
 %token DMNSN_T_ARRAY
 %token DMNSN_T_ASC                      "asc"
-%token DMNSN_T_ASCII
+%token DMNSN_T_ASCII                    "ascii"
 %token DMNSN_T_ASIN                     "asin"
 %token DMNSN_T_ASINH                    "asinh"
 %token DMNSN_T_ASSUMED_GAMMA            "assumed_gamma"
@@ -120,7 +120,7 @@
 %token DMNSN_T_CAUSTICS
 %token DMNSN_T_CEIL                     "ceil"
 %token DMNSN_T_CELLS
-%token DMNSN_T_CHARSET
+%token DMNSN_T_CHARSET                  "charset"
 %token DMNSN_T_CHECKER                  "checker"
 %token DMNSN_T_CHR
 %token DMNSN_T_CIRCULAR
@@ -425,7 +425,7 @@
 %token DMNSN_T_SUBSTR
 %token DMNSN_T_SUM
 %token DMNSN_T_SUPERELLIPSOID
-%token DMNSN_T_SYS
+%token DMNSN_T_SYS                      "sys"
 %token DMNSN_T_T                        "t"
 %token DMNSN_T_TAN                      "tan"
 %token DMNSN_T_TANH                     "tanh"
@@ -463,7 +463,7 @@
 %token DMNSN_T_USE_ALPHA
 %token DMNSN_T_USE_COLOR
 %token DMNSN_T_USE_INDEX
-%token DMNSN_T_UTF8
+%token DMNSN_T_UTF8                     "utf8"
 %token DMNSN_T_UV_INDICES
 %token DMNSN_T_UV_MAPPING
 %token DMNSN_T_UV_VECTORS
