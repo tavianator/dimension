@@ -886,6 +886,10 @@ dmnsn_realize_object_modifiers(dmnsn_astnode astnode, dmnsn_object *object)
       object->interior = dmnsn_realize_interior(*modifier);
       break;
 
+    case DMNSN_AST_STURM:
+      /* Ignored */
+      break;
+
     default:
       dmnsn_assert(false, "Invalid object modifier.");
     }

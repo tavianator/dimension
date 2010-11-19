@@ -362,14 +362,20 @@ TORUS_MODIFIERS: /* empty */ {
                  dmnsn_diagnostic(@2,
                                   "WARNING: Dimension does not use 'sturm';"
                                   " ignored.");
+                 dmnsn_astnode on = dmnsn_new_ast_integer(true);
+                 dmnsn_astnode sturm = dmnsn_new_astnode1(DMNSN_AST_STURM, @2,
+                                                          on);
                  $$ = $1;
+                 dmnsn_array_push($$.children, &sturm);
                }
-               | TORUS_MODIFIERS "sturm" FLOAT {
+               | TORUS_MODIFIERS "sturm" INT {
                  dmnsn_diagnostic(@2,
                                   "WARNING: Dimension does not use 'sturm';"
                                   " ignored.");
-                 dmnsn_delete_astnode($3);
+                 dmnsn_astnode sturm = dmnsn_new_astnode1(DMNSN_AST_STURM, @2,
+                                                          $3);
                  $$ = $1;
+                 dmnsn_array_push($$.children, &sturm);
                }
 ;
 

@@ -146,6 +146,7 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_UNION,        "union");
 
   dmnsn_astnode_map(DMNSN_AST_OBJECT_MODIFIERS, "object-modifiers");
+  dmnsn_astnode_map(DMNSN_AST_STURM,            "sturm");
 
   dmnsn_astnode_map(DMNSN_AST_PATTERN,  "pattern");
   dmnsn_astnode_map(DMNSN_AST_CHECKER,  "checker");
