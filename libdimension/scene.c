@@ -34,6 +34,7 @@ dmnsn_new_scene()
 
   scene->background      = dmnsn_black;
   scene->ambient         = dmnsn_white;
+  scene->sky_sphere      = NULL;
   scene->default_texture = dmnsn_new_texture();
   scene->camera          = NULL;
   scene->canvas          = NULL;
@@ -68,6 +69,19 @@ dmnsn_delete_scene(dmnsn_scene *scene)
     dmnsn_delete_canvas(scene->canvas);
     dmnsn_delete_camera(scene->camera);
     dmnsn_delete_texture(scene->default_texture);
+    dmnsn_delete_sky_sphere(scene->sky_sphere);
     dmnsn_free(scene);
+  }
+}
+
+void
+dmnsn_scene_init(dmnsn_scene *scene)
+{
+  if (scene->sky_sphere) {
+    dmnsn_sky_sphere_init(scene->sky_sphere);
+  }
+
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
+    dmnsn_object_init(*object);
   }
 }

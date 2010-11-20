@@ -258,6 +258,7 @@ unsigned long wchar;
 "sin"                   RETURN_TOKEN(DMNSN_T_SIN);
 "sinh"                  RETURN_TOKEN(DMNSN_T_SINH);
 "sky"                   RETURN_TOKEN(DMNSN_T_SKY);
+"sky_sphere"            RETURN_TOKEN(DMNSN_T_SKY_SPHERE);
 "sphere"                RETURN_TOKEN(DMNSN_T_SPHERE);
 "sqrt"                  RETURN_TOKEN(DMNSN_T_SQRT);
 "strcmp"                RETURN_TOKEN(DMNSN_T_STRCMP);

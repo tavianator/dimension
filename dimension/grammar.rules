@@ -94,9 +94,31 @@ GLOBAL_CHARSET: "ascii" {
 /* Atmospheric effects */
 
 ATMOSPHERIC_EFFECT: BACKGROUND
+                  | SKY_SPHERE
 ;
 
 BACKGROUND: "background" "{" COLOR "}" {
             $$ = dmnsn_new_astnode1(DMNSN_AST_BACKGROUND, @$, $3);
           }
+;
+
+SKY_SPHERE: "sky_sphere" "{"
+              SKY_SPHERE_ITEMS
+            "}"
+          {
+            $$ = $3;
+          }
+;
+
+SKY_SPHERE_ITEMS: /* empty */ {
+                  $$ = dmnsn_new_astnode(DMNSN_AST_SKY_SPHERE, @$);
+                }
+                | SKY_SPHERE_ITEMS PIGMENT {
+                  $$ = $1;
+                  dmnsn_array_push($$.children, &$2);
+                }
+                | SKY_SPHERE_ITEMS TRANSFORMATION {
+                  $$ = $1;
+                  dmnsn_array_push($$.children, &$2);
+                }
 ;

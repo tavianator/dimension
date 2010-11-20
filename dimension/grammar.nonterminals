@@ -31,3 +31,5 @@
 /* Atmospheric effects */
 %type <astnode> ATMOSPHERIC_EFFECT
 %type <astnode> BACKGROUND
+%type <astnode> SKY_SPHERE
+%type <astnode> SKY_SPHERE_ITEMS

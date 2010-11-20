@@ -77,13 +77,11 @@ dmnsn_raytrace_scene_thread(void *ptr)
 {
   dmnsn_raytrace_payload *payload = ptr;
 
+  /* Pre-calculate bounding box transformations, etc. */
+  dmnsn_scene_init(payload->scene);
+
   /* Time the bounding tree construction */
   payload->scene->bounding_timer = dmnsn_new_timer();
-    /* Pre-calculate bounding box transformations, etc. */
-    DMNSN_ARRAY_FOREACH (dmnsn_object **, object, payload->scene->objects) {
-      dmnsn_object_init(*object);
-    }
-
     payload->prtree = dmnsn_new_prtree(payload->scene->objects);
   dmnsn_complete_timer(payload->scene->bounding_timer);
 
@@ -210,21 +208,16 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   /* Iterate through each pixel */
   for (size_t y = index; y < scene->canvas->height; y += threads) {
     for (size_t x = 0; x < scene->canvas->width; ++x) {
-      /* Set the pixel to the background color */
-      dmnsn_color color = scene->background;
+      /* Get the ray corresponding to the (x,y)'th pixel */
+      dmnsn_line ray = dmnsn_camera_ray(
+        scene->camera,
+        ((double)x)/(scene->canvas->width - 1),
+        ((double)y)/(scene->canvas->height - 1)
+      );
 
-      if (scene->quality) {
-        /* Get the ray corresponding to the (x,y)'th pixel */
-        dmnsn_line ray = dmnsn_camera_ray(
-          scene->camera,
-          ((double)x)/(scene->canvas->width - 1),
-          ((double)y)/(scene->canvas->height - 1)
-        );
-
-        /* Shoot a ray */
-        state.reclevel = scene->reclimit;
-        color = dmnsn_raytrace_shoot(&state, ray);
-      }
+      /* Shoot a ray */
+      state.reclevel = scene->reclimit;
+      dmnsn_color color = dmnsn_raytrace_shoot(&state, ray);
 
       dmnsn_set_pixel(scene->canvas, x, y, color);
     }
@@ -271,6 +264,22 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
   ((state)->intersection->interior              \
    ? (state)->intersection->interior->ior       \
    : 1.0)
+
+/** Calculate the background color. */
+static dmnsn_color
+dmnsn_raytrace_background(dmnsn_raytrace_state *state, dmnsn_line ray)
+{
+  dmnsn_color color = state->scene->background;
+  if (state->scene->sky_sphere
+      && (state->scene->quality & DMNSN_RENDER_PIGMENT))
+  {
+    dmnsn_color sky = dmnsn_sky_sphere_color(state->scene->sky_sphere,
+                                             dmnsn_vector_normalize(ray.n));
+    color = dmnsn_color_add(dmnsn_color_filter(color, sky), sky);
+  }
+
+  return color;
+}
 
 /** Calculate the base pigment at the intersection. */
 static void
@@ -465,12 +474,11 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
     return dmnsn_black;
   --state->reclevel;
 
-  dmnsn_intersection intersection;
-  bool intersected
-    = dmnsn_prtree_intersection(state->prtree, ray, &intersection);
+  /* Calculate the background color */
+  dmnsn_color color = dmnsn_raytrace_background(state, ray);
 
-  dmnsn_color color = state->scene->background;
-  if (intersected) {
+  dmnsn_intersection intersection;
+  if (dmnsn_prtree_intersection(state->prtree, ray, &intersection)) {
     state->intersection = &intersection;
     state->r = dmnsn_line_point(state->intersection->ray,
                                 state->intersection->t);

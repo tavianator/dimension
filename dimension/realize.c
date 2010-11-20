@@ -680,6 +680,37 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
   return pigment;
 }
 
+static dmnsn_sky_sphere *
+dmnsn_realize_sky_sphere(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_SKY_SPHERE, "Expected a sky sphere.");
+
+  dmnsn_sky_sphere *sky_sphere = dmnsn_new_sky_sphere();
+
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, item, astnode.children) {
+    switch (item->type) {
+    case DMNSN_AST_PIGMENT:
+      {
+        dmnsn_pigment *pigment = dmnsn_realize_pigment(*item);
+        dmnsn_array_push(sky_sphere->pigments, &pigment);
+        break;
+      }
+
+    case DMNSN_AST_TRANSFORMATION:
+      sky_sphere->trans = dmnsn_matrix_mul(
+        dmnsn_realize_transformation(*item),
+        sky_sphere->trans
+      );
+      break;
+
+    default:
+      dmnsn_assert(false, "Invalid sky sphere item.");
+    }
+  }
+
+  return sky_sphere;
+}
+
 static dmnsn_finish *
 dmnsn_realize_reflection(dmnsn_astnode astnode)
 {
@@ -1294,6 +1325,10 @@ dmnsn_realize_astree(const dmnsn_astree *astree)
     case DMNSN_AST_BACKGROUND:
       dmnsn_array_get(astnode->children, 0, &child);
       scene->background = dmnsn_realize_color(child);
+      break;
+    case DMNSN_AST_SKY_SPHERE:
+      dmnsn_delete_sky_sphere(scene->sky_sphere);
+      scene->sky_sphere = dmnsn_realize_sky_sphere(*astnode);
       break;
 
     case DMNSN_AST_CAMERA:

@@ -66,8 +66,19 @@ dmnsn_new_test_scene(void)
   scene->camera->trans = trans;
 
   /* Background color */
-  scene->background = dmnsn_color_from_sRGB((dmnsn_sRGB){ 0.0, 0.1, 0.2 });
-  scene->background.filter = 0.1;
+  scene->background = dmnsn_clear;
+
+  /* Sky sphere */
+  scene->sky_sphere = dmnsn_new_sky_sphere();
+  dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(dmnsn_y);
+  dmnsn_color_map *sky_gradient_color_map = dmnsn_new_color_map();
+  dmnsn_add_color_map_entry(sky_gradient_color_map, 0.0, dmnsn_orange);
+  dmnsn_color background = dmnsn_color_from_sRGB((dmnsn_sRGB){ 0.0, 0.1, 0.2 });
+  background.filter = 0.1;
+  dmnsn_add_color_map_entry(sky_gradient_color_map, 0.35, background);
+  dmnsn_pigment *sky_pigment
+    = dmnsn_new_color_map_pigment(sky_gradient, sky_gradient_color_map);
+  dmnsn_array_push(scene->sky_sphere->pigments, &sky_pigment);
 
   /* Light source */
   dmnsn_light *light = dmnsn_new_point_light(

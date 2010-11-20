@@ -47,6 +47,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/progress.h                                  \
                          dimension/raytrace.h                                  \
                          dimension/scene.h                                     \
+                         dimension/sky_sphere.h                                \
                          dimension/texture.h                                   \
                          dimension/timer.h
 
@@ -90,6 +91,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           raytrace.c                                           \
                           reflective.c                                         \
                           scene.c                                              \
+                          sky_sphere.c                                         \
                           solid_pigment.c                                      \
                           sphere.c                                             \
                           texture.c                                            \

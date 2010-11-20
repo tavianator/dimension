@@ -79,6 +79,7 @@ typedef struct {
 /* Standard colors */
 extern const dmnsn_color dmnsn_black;   /**< Black.   */
 extern const dmnsn_color dmnsn_white;   /**< White.   */
+extern const dmnsn_color dmnsn_clear;   /**< Clear.   */
 extern const dmnsn_color dmnsn_red;     /**< Red.     */
 extern const dmnsn_color dmnsn_green;   /**< Green.   */
 extern const dmnsn_color dmnsn_blue;    /**< Blue.    */

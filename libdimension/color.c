@@ -46,6 +46,13 @@ const dmnsn_color dmnsn_white = {
   .filter = 0.0,
   .trans  = 0.0
 };
+const dmnsn_color dmnsn_clear = {
+  .R = 0.0,
+  .G = 0.0,
+  .B = 0.0,
+  .filter = 0.0,
+  .trans  = 1.0
+};
 const dmnsn_color dmnsn_red = {
   .R = 1.0,
   .G = 0.0,

@@ -32,7 +32,22 @@ demo_exp=$(echo -n \
       (rotation (vector (integer 0) (integer 53) (integer 0)
                         (integer 0) (integer 0)))))
   (background
-    (vector (integer 0) (float 0.1) (float 0.2) (float 0.1) (integer 0)))
+    (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 1)))
+  (sky_sphere
+    (pigment
+      (pattern
+        (gradient (vector (integer 0) (integer 1)
+                  (integer 0) (integer 0) (integer 0))))
+      (pigment-modifiers
+        (color_map
+          (color_map-entry
+            (float 0)
+            (vector (integer 1) (float 0.5) (integer 0)
+                    (integer 0) (integer 0)))
+          (color_map-entry
+            (float 0.35)
+            (vector (integer 0) (float 0.1) (float 0.2)
+                    (float 0.1) (integer 0)))))))
   (light_source
     (vector (integer -15) (integer 20) (integer 10) (integer 0) (integer 0))
     (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))

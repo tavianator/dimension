@@ -394,7 +394,7 @@
 %token DMNSN_T_SINH                     "sinh"
 %token DMNSN_T_SIZE
 %token DMNSN_T_SKY                      "sky"
-%token DMNSN_T_SKY_SPHERE
+%token DMNSN_T_SKY_SPHERE               "sky_sphere"
 %token DMNSN_T_SLICE
 %token DMNSN_T_SLOPE
 %token DMNSN_T_SLOPE_MAP

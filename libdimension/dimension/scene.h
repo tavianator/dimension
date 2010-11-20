@@ -45,6 +45,7 @@ typedef struct dmnsn_scene {
   /* World attributes */
   dmnsn_color background;         /**< Background color. */
   dmnsn_color ambient;            /**< Global ambient color. */
+  dmnsn_sky_sphere *sky_sphere;   /**< Sky sphere. */
   dmnsn_texture *default_texture; /**< Default object texture. */
 
   /** Camera. */
@@ -84,5 +85,11 @@ dmnsn_scene *dmnsn_new_scene(void);
  * @param[in,out] scene  The scene to delete.
  */
 void dmnsn_delete_scene(dmnsn_scene *scene);
+
+/**
+ * Initialize a scene.
+ * @param[in,out] scene  The scene to initalize.
+ */
+void dmnsn_scene_init(dmnsn_scene *scene);
 
 #endif /* DIMENSION_SCENE_H */

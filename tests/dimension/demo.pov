@@ -29,7 +29,17 @@ camera {
 }
 
 background {
-  color rgbf <0, 0.1, 0.2, 0.1>
+  color transmit 1
+}
+
+sky_sphere {
+  pigment {
+    gradient y
+    color_map {
+      [0.0   color rgb <1, 0.5, 0>]
+      [0.35  color rgbf <0, 0.1, 0.2, 0.1>]
+    }
+  }
 }
 
 light_source {
