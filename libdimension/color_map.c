@@ -25,71 +25,16 @@
 
 #include "dimension.h"
 
-/** An [index, color] pair. */
-typedef struct dmnsn_color_map_entry {
-  double n;
-  dmnsn_color color;
-} dmnsn_color_map_entry;
-
-dmnsn_color_map *
-dmnsn_new_color_map(void)
+dmnsn_map *
+dmnsn_new_color_map()
 {
-  return dmnsn_new_array(sizeof(dmnsn_color_map_entry));
-}
-
-void
-dmnsn_delete_color_map(dmnsn_color_map *map)
-{
-  dmnsn_delete_array(map);
-}
-
-void
-dmnsn_add_color_map_entry(dmnsn_color_map *map, double n, dmnsn_color c)
-{
-  dmnsn_color_map_entry entry = { .n = n, .color = c };
-
-  /* Sorted insertion */
-  size_t i;
-  dmnsn_color_map_entry *other = dmnsn_array_last(map);
-  for (i = dmnsn_array_size(map); i-- > 0;) {
-    if (other->n <= n)
-      break;
-  }
-
-  dmnsn_array_insert(map, i + 1, &entry);
-}
-
-dmnsn_color
-dmnsn_color_map_value(const dmnsn_color_map *map, double n)
-{
-  dmnsn_color_map_entry *entry = dmnsn_array_first(map);
-
-  double n1, n2 = 0.0;
-  dmnsn_color c1, c2 = entry->color;
-
-  if (n < n2) {
-    return c2;
-  }
-
-  for (; entry <= (dmnsn_color_map_entry *)dmnsn_array_last(map); ++entry) {
-    n1 = n2;
-    c1 = c2;
-
-    n2 = entry->n;
-    c2 = entry->color;
-
-    if (n < n2) {
-      return dmnsn_color_gradient(c1, c2, (n - n1)/(n2 - n1));
-    }
-  }
-
-  return c2;
+  return dmnsn_new_map(sizeof(dmnsn_color));
 }
 
 /** Payload for a color_map pigment. */
 typedef struct dmnsn_color_map_payload {
   dmnsn_pattern *pattern;
-  dmnsn_color_map *map;
+  dmnsn_map *map;
 } dmnsn_color_map_payload;
 
 /** Free a color_map payload. */
@@ -97,7 +42,7 @@ static void
 dmnsn_delete_color_map_payload(void *ptr)
 {
   dmnsn_color_map_payload *payload = ptr;
-  dmnsn_delete_color_map(payload->map);
+  dmnsn_delete_map(payload->map);
   dmnsn_delete_pattern(payload->pattern);
   dmnsn_free(payload);
 }
@@ -107,8 +52,11 @@ static dmnsn_color
 dmnsn_color_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
   const dmnsn_color_map_payload *payload = pigment->ptr;
-  return dmnsn_color_map_value(payload->map,
-                               dmnsn_pattern_value(payload->pattern, v));
+  double n;
+  dmnsn_color color1, color2;
+  dmnsn_evaluate_map(payload->map, dmnsn_pattern_value(payload->pattern, v),
+                     &n, &color1, &color2);
+  return dmnsn_color_gradient(color1, color2, n);
 }
 
 /** color_map initialization callback. */
@@ -122,7 +70,7 @@ dmnsn_color_map_initialize_fn(dmnsn_pigment *pigment)
 }
 
 dmnsn_pigment *
-dmnsn_new_color_map_pigment(dmnsn_pattern *pattern, dmnsn_color_map *map)
+dmnsn_new_color_map_pigment(dmnsn_pattern *pattern, dmnsn_map *map)
 {
   dmnsn_pigment *pigment = dmnsn_new_pigment();
 

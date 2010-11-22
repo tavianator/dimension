@@ -480,29 +480,29 @@ dmnsn_realize_pattern(dmnsn_astnode astnode)
   return pattern;
 }
 
-static dmnsn_color_map *
+static dmnsn_map *
 dmnsn_realize_color_list(dmnsn_astnode astnode)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_COLOR_LIST, "Expected a color list.");
 
-  dmnsn_color_map *color_map = dmnsn_new_color_map();
+  dmnsn_map *color_map = dmnsn_new_color_map();
 
   double n = 0.0, i = 1.0/(dmnsn_array_size(astnode.children) - 1);
   DMNSN_ARRAY_FOREACH (dmnsn_astnode *, entry, astnode.children) {
     dmnsn_color color = dmnsn_realize_color(*entry);
-    dmnsn_add_color_map_entry(color_map, n, color);
+    dmnsn_add_map_entry(color_map, n, &color);
     n += i;
   }
 
   return color_map;
 }
 
-static dmnsn_color_map *
+static dmnsn_map *
 dmnsn_realize_color_map(dmnsn_astnode astnode)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_COLOR_MAP, "Expected a color_map.");
 
-  dmnsn_color_map *color_map = dmnsn_new_color_map();
+  dmnsn_map *color_map = dmnsn_new_color_map();
 
   DMNSN_ARRAY_FOREACH (dmnsn_astnode *, entry, astnode.children) {
     dmnsn_assert(entry->type == DMNSN_AST_COLOR_MAP_ENTRY,
@@ -515,7 +515,7 @@ dmnsn_realize_color_map(dmnsn_astnode astnode)
     double n = dmnsn_realize_float(n_node);
     dmnsn_color color = dmnsn_realize_color(color_node);
 
-    dmnsn_add_color_map_entry(color_map, n, color);
+    dmnsn_add_map_entry(color_map, n, &color);
   }
 
   return color_map;
@@ -528,7 +528,7 @@ dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
                "Expected pigment modifiers");
 
   dmnsn_pattern *pattern = dmnsn_realize_pattern(type);
-  dmnsn_color_map *color_map = NULL;
+  dmnsn_map *color_map = NULL;
 
   /* Set up the color_map */
   DMNSN_ARRAY_FOREACH_REVERSE (dmnsn_astnode *, modifier, modifiers.children) {
@@ -558,18 +558,18 @@ dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
     /* Default checker pattern is blue and green */
     if (!color_map)
       color_map = dmnsn_new_color_map();
-    if (dmnsn_array_size(color_map) < 1)
-      dmnsn_add_color_map_entry(color_map, 0.0, dmnsn_blue);
-    if (dmnsn_array_size(color_map) < 2)
-      dmnsn_add_color_map_entry(color_map, 1.0, dmnsn_green);
+    if (dmnsn_map_size(color_map) < 1)
+      dmnsn_add_map_entry(color_map, 0.0, &dmnsn_blue);
+    if (dmnsn_map_size(color_map) < 2)
+      dmnsn_add_map_entry(color_map, 1.0, &dmnsn_green);
     break;
 
   default:
     /* Default map is grayscale */
     if (!color_map) {
       color_map = dmnsn_new_color_map();
-      dmnsn_add_color_map_entry(color_map, 0.0, dmnsn_black);
-      dmnsn_add_color_map_entry(color_map, 1.0, dmnsn_white);
+      dmnsn_add_map_entry(color_map, 0.0, &dmnsn_black);
+      dmnsn_add_map_entry(color_map, 1.0, &dmnsn_white);
     }
     break;
   }

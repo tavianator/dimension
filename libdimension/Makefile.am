@@ -37,6 +37,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/lights.h                                    \
                          dimension/list.h                                      \
                          dimension/malloc.h                                    \
+                         dimension/map.h                                       \
                          dimension/object.h                                    \
                          dimension/objects.h                                   \
                          dimension/pattern.h                                   \
@@ -75,6 +76,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           light.c                                              \
                           list.c                                               \
                           malloc.c                                             \
+                          map.c                                                \
                           object.c                                             \
                           pattern.c                                            \
                           perspective.c                                        \

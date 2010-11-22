@@ -71,11 +71,11 @@ dmnsn_new_test_scene(void)
   /* Sky sphere */
   scene->sky_sphere = dmnsn_new_sky_sphere();
   dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(dmnsn_y);
-  dmnsn_color_map *sky_gradient_color_map = dmnsn_new_color_map();
-  dmnsn_add_color_map_entry(sky_gradient_color_map, 0.0, dmnsn_orange);
+  dmnsn_map *sky_gradient_color_map = dmnsn_new_color_map();
+  dmnsn_add_map_entry(sky_gradient_color_map, 0.0, &dmnsn_orange);
   dmnsn_color background = dmnsn_color_from_sRGB((dmnsn_sRGB){ 0.0, 0.1, 0.2 });
   background.filter = 0.1;
-  dmnsn_add_color_map_entry(sky_gradient_color_map, 0.35, background);
+  dmnsn_add_map_entry(sky_gradient_color_map, 0.35, &background);
   dmnsn_pigment *sky_pigment
     = dmnsn_new_color_map_pigment(sky_gradient, sky_gradient_color_map);
   dmnsn_array_push(scene->sky_sphere->pigments, &sky_pigment);
@@ -134,14 +134,14 @@ dmnsn_new_test_scene(void)
     dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)
   );
   dmnsn_pattern *gradient = dmnsn_new_gradient_pattern(dmnsn_y);
-  dmnsn_color_map *gradient_color_map = dmnsn_new_color_map();
-  dmnsn_add_color_map_entry(gradient_color_map, 0.0,     dmnsn_red);
-  dmnsn_add_color_map_entry(gradient_color_map, 1.0/6.0, dmnsn_orange);
-  dmnsn_add_color_map_entry(gradient_color_map, 2.0/6.0, dmnsn_yellow);
-  dmnsn_add_color_map_entry(gradient_color_map, 3.0/6.0, dmnsn_green);
-  dmnsn_add_color_map_entry(gradient_color_map, 4.0/6.0, dmnsn_blue);
-  dmnsn_add_color_map_entry(gradient_color_map, 5.0/6.0, dmnsn_magenta);
-  dmnsn_add_color_map_entry(gradient_color_map, 1.0,     dmnsn_red);
+  dmnsn_map *gradient_color_map = dmnsn_new_color_map();
+  dmnsn_add_map_entry(gradient_color_map, 0.0,     &dmnsn_red);
+  dmnsn_add_map_entry(gradient_color_map, 1.0/6.0, &dmnsn_orange);
+  dmnsn_add_map_entry(gradient_color_map, 2.0/6.0, &dmnsn_yellow);
+  dmnsn_add_map_entry(gradient_color_map, 3.0/6.0, &dmnsn_green);
+  dmnsn_add_map_entry(gradient_color_map, 4.0/6.0, &dmnsn_blue);
+  dmnsn_add_map_entry(gradient_color_map, 5.0/6.0, &dmnsn_magenta);
+  dmnsn_add_map_entry(gradient_color_map, 1.0,     &dmnsn_red);
   arrow->texture = dmnsn_new_texture();
   arrow->texture->pigment
     = dmnsn_new_color_map_pigment(gradient, gradient_color_map);
@@ -180,9 +180,9 @@ dmnsn_new_test_scene(void)
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
   plane->texture = dmnsn_new_texture();
   dmnsn_pattern *checker = dmnsn_new_checker_pattern();
-  dmnsn_color_map *checker_color_map = dmnsn_new_color_map();
-  dmnsn_add_color_map_entry(checker_color_map, 0.0, dmnsn_black);
-  dmnsn_add_color_map_entry(checker_color_map, 1.0, dmnsn_white);
+  dmnsn_map *checker_color_map = dmnsn_new_color_map();
+  dmnsn_add_map_entry(checker_color_map, 0.0, &dmnsn_black);
+  dmnsn_add_map_entry(checker_color_map, 1.0, &dmnsn_white);
   plane->texture->pigment
     = dmnsn_new_color_map_pigment(checker, checker_color_map);
   plane->texture->pigment->quick_color

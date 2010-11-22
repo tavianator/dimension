@@ -18,42 +18,59 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+
 /**
  * @file
- * Pre-defined pigments.
+ * Generic maps (backend for color_maps, pigment_maps, etc.).
  */
 
-#ifndef DIMENSION_PIGMENTS_H
-#define DIMENSION_PIGMENTS_H
+#ifndef DIMENSION_MAP_H
+#define DIMENSION_MAP_H
+
+/** A map. */
+typedef struct dmnsn_map {
+  dmnsn_free_fn *free_fn; /**< Destructor callback. */
+  size_t obj_size; /**< @internal The size of the mapped objects. */
+  dmnsn_array *array; /**< @internal The map entries. */
+} dmnsn_map;
 
 /**
- * A solid color.
- * @param[in] color  The color of the pigment.
- * @return A pigment with the color \p color everywhere.
+ * Create an empty map.
+ * @param[in] size  The size of the objects to store in the map.
+ * @return A map with no entries.
  */
-dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color);
+dmnsn_map *dmnsn_new_map(size_t size);
 
 /**
- * An image map.  The image (regardless of its real dimensions) is projected
- * on the x-y plane in tesselating unit squares.
- * @param[in] canvas  The canvas holding the image.
- * @return An image-mapped pigment.
+ * Delete a map.
+ * @param[in,out] map  The map to delete.
  */
-dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas);
+void dmnsn_delete_map(dmnsn_map *map);
 
 /**
- * Construct a color map.
- * @return An empty color map.
+ * Add an entry (a scalar-object pair) to a color map.
+ * @param[in,out] map     The color map to add to.
+ * @param[in]     n       The index of the entry.
+ * @param[in]     object  The value of the entry.
  */
-dmnsn_map *dmnsn_new_color_map();
+void dmnsn_add_map_entry(dmnsn_map *map, double n, const void *obj);
 
 /**
- * A color-mapped pigment.
- * @param[in,out] pattern  The pattern of the pigment.
- * @param[in,out] map      The color map to apply to the pattern.
- * @return A pigment mapping the pattern to color values.
+ * Return the number of entries in a map.
+ * @param[in] map  The map to measure.
+ * @return The size of \p map.
  */
-dmnsn_pigment *dmnsn_new_color_map_pigment(dmnsn_pattern *pattern,
-                                           dmnsn_map *map);
+size_t dmnsn_map_size(const dmnsn_map *map);
 
-#endif /* DIMENSION_PIGMENTS_H */
+/**
+ * Evaluate a map.
+ * @param[in]  map   The map to evaluate.
+ * @param[in]  n     The index to evaluate.
+ * @param[out] val   The normalized distance of \p n from \p obj1.
+ * @param[out] obj1  The first object.
+ * @param[out] obj2  The second object.
+ */
+void dmnsn_evaluate_map(const dmnsn_map *map, double n,
+                        double *val, void *obj1, void *obj2);
+
+#endif /* DIMENSION_MAP_H */
