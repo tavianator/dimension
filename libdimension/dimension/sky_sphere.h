@@ -49,7 +49,7 @@ void dmnsn_delete_sky_sphere(dmnsn_sky_sphere *sky_sphere);
  * Initialize a sky sphere.
  * @param[in,out] sky_sphere  The sky sphere to initialize.
  */
-void dmnsn_sky_sphere_init(dmnsn_sky_sphere *sky_sphere);
+void dmnsn_initialize_sky_sphere(dmnsn_sky_sphere *sky_sphere);
 
 /**
  * Evaluate the color of the sky sphere.

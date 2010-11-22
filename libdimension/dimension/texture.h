@@ -46,13 +46,13 @@ typedef dmnsn_color dmnsn_pigment_fn(const dmnsn_pigment *pigment,
  * Pigment initializer callback.
  * @param[in,out] pigment  The pigment to initialize.
  */
-typedef void dmnsn_pigment_init_fn(dmnsn_pigment *pigment);
+typedef void dmnsn_pigment_initialize_fn(dmnsn_pigment *pigment);
 
 /** A pigment. */
 struct dmnsn_pigment {
-  dmnsn_pigment_fn *pigment_fn;   /**< The pigment callback. */
-  dmnsn_pigment_init_fn *init_fn; /**< The initializer callback. */
-  dmnsn_free_fn *free_fn;         /**< The destructor callback. */
+  dmnsn_pigment_fn *pigment_fn;               /**< The pigment callback. */
+  dmnsn_pigment_initialize_fn *initialize_fn; /**< The initializer callback. */
+  dmnsn_free_fn *free_fn;                     /**< The destructor callback. */
 
   dmnsn_matrix trans;     /**< Transformation matrix. */
   dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
@@ -82,7 +82,7 @@ void dmnsn_delete_pigment(dmnsn_pigment *pigment);
  * initialized for you.
  * @param[in,out] pigment  The pigment to initialize.
  */
-void dmnsn_pigment_init(dmnsn_pigment *pigment);
+void dmnsn_initialize_pigment(dmnsn_pigment *pigment);
 
 /*
  * Finishes
@@ -175,7 +175,7 @@ typedef struct {
   dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
 
   unsigned int *refcount; /**< @internal Reference count. */
-  bool should_init;       /**< @internal Whether to init the texture. */
+  bool should_init;       /**< @internal Whether to initialize the texture. */
 } dmnsn_texture;
 
 /**
@@ -196,6 +196,6 @@ void dmnsn_delete_texture(dmnsn_texture *texture);
  * initialized for you.
  * @param[in,out] texture  The texture to initialize.
  */
-void dmnsn_texture_init(dmnsn_texture *texture);
+void dmnsn_initialize_texture(dmnsn_texture *texture);
 
 #endif /* DIMENSION_TEXTURE_H */

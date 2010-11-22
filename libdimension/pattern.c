@@ -47,7 +47,7 @@ dmnsn_delete_pattern(dmnsn_pattern *pattern)
 
 /* Precompute the transformation matrix inverse */
 void
-dmnsn_pattern_init(dmnsn_pattern *pattern)
+dmnsn_initialize_pattern(dmnsn_pattern *pattern)
 {
   pattern->trans_inv = dmnsn_matrix_inverse(pattern->trans);
 }

@@ -46,11 +46,11 @@ dmnsn_delete_sky_sphere(dmnsn_sky_sphere *sky_sphere)
 }
 
 void
-dmnsn_sky_sphere_init(dmnsn_sky_sphere *sky_sphere)
+dmnsn_initialize_sky_sphere(dmnsn_sky_sphere *sky_sphere)
 {
   DMNSN_ARRAY_FOREACH (dmnsn_pigment **, pigment, sky_sphere->pigments) {
     (*pigment)->trans = dmnsn_matrix_mul(sky_sphere->trans, (*pigment)->trans);
-    dmnsn_pigment_init(*pigment);
+    dmnsn_initialize_pigment(*pigment);
   }
 }
 

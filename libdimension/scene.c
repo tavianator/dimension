@@ -75,13 +75,13 @@ dmnsn_delete_scene(dmnsn_scene *scene)
 }
 
 void
-dmnsn_scene_init(dmnsn_scene *scene)
+dmnsn_initialize_scene(dmnsn_scene *scene)
 {
   if (scene->sky_sphere) {
-    dmnsn_sky_sphere_init(scene->sky_sphere);
+    dmnsn_initialize_sky_sphere(scene->sky_sphere);
   }
 
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
-    dmnsn_object_init(*object);
+    dmnsn_initialize_object(*object);
   }
 }

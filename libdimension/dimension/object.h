@@ -49,7 +49,7 @@ typedef struct dmnsn_object dmnsn_object;
  * Object initialization callback.
  * @param[in,out] object  The object to initialize.
  */
-typedef void dmnsn_object_init_fn(dmnsn_object *object);
+typedef void dmnsn_object_initialize_fn(dmnsn_object *object);
 
 /**
  * Ray-object intersection callback.
@@ -86,7 +86,7 @@ struct dmnsn_object {
       sub-objects for bounding purposes (for unions and meshes, for example). */
   dmnsn_array *children;
 
-  dmnsn_object_init_fn         *init_fn; /**< Initialization callback. */
+  dmnsn_object_initialize_fn   *initialize_fn; /**< Initialization callback. */
   dmnsn_object_intersection_fn *intersection_fn; /**< Intersection callback. */
   dmnsn_object_inside_fn       *inside_fn; /**< Inside callback. */
   dmnsn_free_fn                *free_fn; /**< Destruction callback. */
@@ -111,7 +111,7 @@ void dmnsn_delete_object(dmnsn_object *object);
  * Initialize an object and potentially its children.
  * @param[in,out] object  The object to initialize.
  */
-void dmnsn_object_init(dmnsn_object *object);
+void dmnsn_initialize_object(dmnsn_object *object);
 
 /**
  * Appropriately transform a ray, then test for an intersection.

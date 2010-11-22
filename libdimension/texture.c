@@ -31,11 +31,11 @@ dmnsn_pigment *
 dmnsn_new_pigment()
 {
   dmnsn_pigment *pigment = dmnsn_malloc(sizeof(dmnsn_pigment));
-  pigment->pigment_fn  = NULL;
-  pigment->init_fn     = NULL;
-  pigment->free_fn     = NULL;
-  pigment->trans       = dmnsn_identity_matrix();
-  pigment->quick_color = dmnsn_black;
+  pigment->pigment_fn    = NULL;
+  pigment->initialize_fn = NULL;
+  pigment->free_fn       = NULL;
+  pigment->trans         = dmnsn_identity_matrix();
+  pigment->quick_color   = dmnsn_black;
   return pigment;
 }
 
@@ -53,10 +53,10 @@ dmnsn_delete_pigment(dmnsn_pigment *pigment)
 
 /* Precompute pigment properties */
 void
-dmnsn_pigment_init(dmnsn_pigment *pigment)
+dmnsn_initialize_pigment(dmnsn_pigment *pigment)
 {
-  if (pigment->init_fn) {
-    (*pigment->init_fn)(pigment);
+  if (pigment->initialize_fn) {
+    (*pigment->initialize_fn)(pigment);
   }
 
   pigment->trans_inv = dmnsn_matrix_inverse(pigment->trans);
@@ -119,12 +119,12 @@ dmnsn_delete_texture(dmnsn_texture *texture)
 
 /* Calculate matrix inverses */
 void
-dmnsn_texture_init(dmnsn_texture *texture)
+dmnsn_initialize_texture(dmnsn_texture *texture)
 {
   texture->trans_inv = dmnsn_matrix_inverse(texture->trans);
   if (texture->pigment) {
     texture->pigment->trans
       = dmnsn_matrix_mul(texture->trans, texture->pigment->trans);
-    dmnsn_pigment_init(texture->pigment);
+    dmnsn_initialize_pigment(texture->pigment);
   }
 }

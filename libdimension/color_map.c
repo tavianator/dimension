@@ -113,12 +113,12 @@ dmnsn_color_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 
 /** color_map initialization callback. */
 static void
-dmnsn_color_map_init_fn(dmnsn_pigment *pigment)
+dmnsn_color_map_initialize_fn(dmnsn_pigment *pigment)
 {
   dmnsn_color_map_payload *payload = pigment->ptr;
   payload->pattern->trans = dmnsn_matrix_mul(pigment->trans,
                                              payload->pattern->trans);
-  dmnsn_pattern_init(payload->pattern);
+  dmnsn_initialize_pattern(payload->pattern);
 }
 
 dmnsn_pigment *
@@ -131,9 +131,9 @@ dmnsn_new_color_map_pigment(dmnsn_pattern *pattern, dmnsn_color_map *map)
   payload->pattern = pattern;
   payload->map     = map;
 
-  pigment->pigment_fn = &dmnsn_color_map_pigment_fn;
-  pigment->init_fn    = &dmnsn_color_map_init_fn;
-  pigment->free_fn    = &dmnsn_delete_color_map_payload;
-  pigment->ptr        = payload;
+  pigment->pigment_fn    = &dmnsn_color_map_pigment_fn;
+  pigment->initialize_fn = &dmnsn_color_map_initialize_fn;
+  pigment->free_fn       = &dmnsn_delete_color_map_payload;
+  pigment->ptr           = payload;
   return pigment;
 }

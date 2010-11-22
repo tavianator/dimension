@@ -77,7 +77,7 @@ main(void)
   dmnsn_array *objects = dmnsn_new_array(sizeof(dmnsn_object *));
   for (size_t i = 0; i < nobjects; ++i) {
     dmnsn_object *object = dmnsn_new_fake_object();
-    dmnsn_object_init(object);
+    dmnsn_initialize_object(object);
     dmnsn_array_push(objects, &object);
   }
 

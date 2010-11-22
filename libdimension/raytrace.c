@@ -78,7 +78,7 @@ dmnsn_raytrace_scene_thread(void *ptr)
   dmnsn_raytrace_payload *payload = ptr;
 
   /* Pre-calculate bounding box transformations, etc. */
-  dmnsn_scene_init(payload->scene);
+  dmnsn_initialize_scene(payload->scene);
 
   /* Time the bounding tree construction */
   payload->scene->bounding_timer = dmnsn_new_timer();

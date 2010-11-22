@@ -67,11 +67,11 @@ dmnsn_csg_union_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 
 /** CSG union initialization callback. */
 static void
-dmnsn_csg_union_init_fn(dmnsn_object *csg)
+dmnsn_csg_union_initialize_fn(dmnsn_object *csg)
 {
   DMNSN_ARRAY_FOREACH (dmnsn_object **, child, csg->children) {
     dmnsn_csg_cascade(csg, *child);
-    dmnsn_object_init(*child);
+    dmnsn_initialize_object(*child);
   }
   csg->trans = dmnsn_identity_matrix();
 
@@ -99,7 +99,7 @@ dmnsn_new_csg_union(const dmnsn_array *objects)
 
   csg->intersection_fn = &dmnsn_csg_union_intersection_fn;
   csg->inside_fn       = &dmnsn_csg_union_inside_fn;
-  csg->init_fn         = &dmnsn_csg_union_init_fn;
+  csg->initialize_fn   = &dmnsn_csg_union_initialize_fn;
   csg->free_fn         = &dmnsn_csg_union_free_fn;
 
   return csg;
@@ -212,7 +212,7 @@ dmnsn_csg_intersection_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 
 /** CSG intersection initialization callback. */
 static void
-dmnsn_csg_intersection_init_fn(dmnsn_object *csg)
+dmnsn_csg_intersection_initialize_fn(dmnsn_object *csg)
 {
   dmnsn_object **params = csg->ptr;
   dmnsn_object *A = params[0];
@@ -221,8 +221,8 @@ dmnsn_csg_intersection_init_fn(dmnsn_object *csg)
   dmnsn_csg_cascade(csg, A);
   dmnsn_csg_cascade(csg, B);
 
-  dmnsn_object_init(A);
-  dmnsn_object_init(B);
+  dmnsn_initialize_object(A);
+  dmnsn_initialize_object(B);
 
   csg->trans = dmnsn_identity_matrix();
   csg->bounding_box.min
@@ -243,7 +243,7 @@ dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
   csg->ptr             = params;
   csg->intersection_fn = &dmnsn_csg_intersection_intersection_fn;
   csg->inside_fn       = &dmnsn_csg_intersection_inside_fn;
-  csg->init_fn         = &dmnsn_csg_intersection_init_fn;
+  csg->initialize_fn   = &dmnsn_csg_intersection_initialize_fn;
   csg->free_fn         = &dmnsn_csg_free_fn;
 
   return csg;
@@ -273,7 +273,7 @@ dmnsn_csg_difference_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 
 /** CSG difference initialization callback. */
 static void
-dmnsn_csg_difference_init_fn(dmnsn_object *csg)
+dmnsn_csg_difference_initialize_fn(dmnsn_object *csg)
 {
   dmnsn_object **params = csg->ptr;
   dmnsn_object *A = params[0];
@@ -282,8 +282,8 @@ dmnsn_csg_difference_init_fn(dmnsn_object *csg)
   dmnsn_csg_cascade(csg, A);
   dmnsn_csg_cascade(csg, B);
 
-  dmnsn_object_init(A);
-  dmnsn_object_init(B);
+  dmnsn_initialize_object(A);
+  dmnsn_initialize_object(B);
 
   csg->trans = dmnsn_identity_matrix();
   csg->bounding_box = A->bounding_box;
@@ -301,7 +301,7 @@ dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
   csg->ptr             = params;
   csg->intersection_fn = &dmnsn_csg_difference_intersection_fn;
   csg->inside_fn       = &dmnsn_csg_difference_inside_fn;
-  csg->init_fn         = &dmnsn_csg_difference_init_fn;
+  csg->initialize_fn   = &dmnsn_csg_difference_initialize_fn;
   csg->free_fn         = &dmnsn_csg_free_fn;
 
   return csg;
@@ -331,7 +331,7 @@ dmnsn_csg_merge_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 
 /** CSG merge initialization callback. */
 static void
-dmnsn_csg_merge_init_fn(dmnsn_object *csg)
+dmnsn_csg_merge_initialize_fn(dmnsn_object *csg)
 {
   dmnsn_object **params = csg->ptr;
   dmnsn_object *A = params[0];
@@ -340,8 +340,8 @@ dmnsn_csg_merge_init_fn(dmnsn_object *csg)
   dmnsn_csg_cascade(csg, A);
   dmnsn_csg_cascade(csg, B);
 
-  dmnsn_object_init(A);
-  dmnsn_object_init(B);
+  dmnsn_initialize_object(A);
+  dmnsn_initialize_object(B);
 
   csg->trans = dmnsn_identity_matrix();
   csg->bounding_box.min
@@ -362,7 +362,7 @@ dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B)
   csg->ptr             = params;
   csg->intersection_fn = &dmnsn_csg_merge_intersection_fn;
   csg->inside_fn       = &dmnsn_csg_merge_inside_fn;
-  csg->init_fn         = &dmnsn_csg_merge_init_fn;
+  csg->initialize_fn   = &dmnsn_csg_merge_initialize_fn;
   csg->free_fn         = &dmnsn_csg_free_fn;
 
   return csg;

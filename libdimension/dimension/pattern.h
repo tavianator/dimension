@@ -68,7 +68,7 @@ void dmnsn_delete_pattern(dmnsn_pattern *pattern);
  * initialized for you.
  * @param[in,out] pattern  The pattern to initialize.
  */
-void dmnsn_pattern_init(dmnsn_pattern *pattern);
+void dmnsn_initialize_pattern(dmnsn_pattern *pattern);
 
 /**
  * Invoke the pattern callback with the right transformation.
