@@ -124,3 +124,12 @@ dmnsn_evaluate_map(const dmnsn_map *map, double n,
   memcpy(obj1, o2, map->obj_size);
   memcpy(obj2, o2, map->obj_size);
 }
+
+void
+dmnsn_map_apply(dmnsn_map *map, dmnsn_callback_fn *callback)
+{
+  for (size_t i = 0; i < dmnsn_array_size(map->array); ++i) {
+    dmnsn_map_entry *entry = dmnsn_array_at(map->array, i);
+    (*callback)(entry->object);
+  }
+}

@@ -73,4 +73,11 @@ size_t dmnsn_map_size(const dmnsn_map *map);
 void dmnsn_evaluate_map(const dmnsn_map *map, double n,
                         double *val, void *obj1, void *obj2);
 
+/**
+ * Apply a callback to each element of a map.
+ * @param[in,out] map       The map.
+ * @param[in]     callback  The callback to apply to the elements.
+ */
+void dmnsn_map_apply(dmnsn_map *map, dmnsn_callback_fn *callback);
+
 #endif /* DIMENSION_MAP_H */

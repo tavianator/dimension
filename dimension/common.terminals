@@ -332,7 +332,7 @@
 %token DMNSN_T_PHOTONS
 %token DMNSN_T_PI                       "pi"
 %token DMNSN_T_PIGMENT                  "pigment"
-%token DMNSN_T_PIGMENT_MAP
+%token DMNSN_T_PIGMENT_MAP              "pigment_map"
 %token DMNSN_T_PIGMENT_PATTERN
 %token DMNSN_T_PLANAR
 %token DMNSN_T_PLANE                    "plane"

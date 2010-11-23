@@ -81,6 +81,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           pattern.c                                            \
                           perspective.c                                        \
                           phong.c                                              \
+                          pigment_map.c                                        \
                           plane.c                                              \
                           platform.c                                           \
                           platform.h                                           \

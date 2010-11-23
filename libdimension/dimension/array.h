@@ -227,6 +227,20 @@ dmnsn_array_remove(dmnsn_array *array, size_t i)
   dmnsn_array_resize(array, size - 1);
 }
 
+/**
+ * Apply a callback to each element of an array.
+ * @param[in,out] array     The array.
+ * @param[in]     callback  The callback to apply to the elements.
+ */
+DMNSN_INLINE void
+dmnsn_array_apply(dmnsn_array *array, dmnsn_callback_fn *callback)
+{
+  char *i, *last = (char *)dmnsn_array_last(array);
+  for (i = (char *)dmnsn_array_first(array); i <= last; i += array->obj_size) {
+    (*callback)((void *)i);
+  }
+}
+
 /* Macros to shorten array iteration */
 
 /**

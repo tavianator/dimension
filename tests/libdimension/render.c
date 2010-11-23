@@ -179,12 +179,21 @@ dmnsn_new_test_scene(void)
   dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
   plane->texture = dmnsn_new_texture();
-  dmnsn_pattern *checker = dmnsn_new_checker_pattern();
+  dmnsn_pattern *checker1 = dmnsn_new_checker_pattern();
+  dmnsn_pattern *checker2 = dmnsn_new_checker_pattern();
   dmnsn_map *checker_color_map = dmnsn_new_color_map();
   dmnsn_add_map_entry(checker_color_map, 0.0, &dmnsn_black);
   dmnsn_add_map_entry(checker_color_map, 1.0, &dmnsn_white);
+  dmnsn_pigment *pigment1 = dmnsn_new_solid_pigment(dmnsn_white);
+  dmnsn_pigment *pigment2
+    = dmnsn_new_color_map_pigment(checker1, checker_color_map);
+  pigment2->trans
+    = dmnsn_scale_matrix(dmnsn_new_vector(1.0/3.0, 1.0/3.0, 1.0/3.0));
+  dmnsn_map *checker_pigment_map = dmnsn_new_pigment_map();
+  dmnsn_add_map_entry(checker_pigment_map, 0.0, &pigment1);
+  dmnsn_add_map_entry(checker_pigment_map, 1.0, &pigment2);
   plane->texture->pigment
-    = dmnsn_new_color_map_pigment(checker, checker_color_map);
+    = dmnsn_new_pigment_map_pigment(checker2, checker_pigment_map);
   plane->texture->pigment->quick_color
     = dmnsn_color_from_sRGB((dmnsn_sRGB){ 1.0, 0.5, 0.75 });
   dmnsn_array_push(scene->objects, &plane);

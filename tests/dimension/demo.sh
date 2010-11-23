@@ -189,11 +189,23 @@ demo_exp=$(echo -n \
           (quick_color
             (vector (integer 1) (float 0.5) (float 0.75)
                     (integer 0) (integer 0)))
-          (color-list
-            (vector (integer 0) (integer 0) (integer 0)
-                    (integer 0) (integer 0))
-            (vector (integer 1) (integer 1) (integer 1)
-                    (integer 0) (integer 0))))))))' \
+          (pigment-list
+            (pigment
+              (vector (integer 1) (integer 1) (integer 1)
+                      (integer 0) (integer 0))
+              pigment-modifiers)
+            (pigment
+              (pattern checker)
+              (pigment-modifiers
+                (transformation
+                  (scale (vector (float 0.333333) (float 0.333333)
+                                 (float 0.333333) (float 0.333333)
+                                 (float 0.333333))))
+                (color-list
+                  (vector (integer 0) (integer 0) (integer 0)
+                          (integer 0) (integer 0))
+                  (vector (integer 1) (integer 1) (integer 1)
+                          (integer 0) (integer 0)))))))))))' \
 | tr '\n' ' ' | sed -r 's/[[:space:]]+/ /g')
 
 if [ "$demo" != "$demo_exp" ]; then

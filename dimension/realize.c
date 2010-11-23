@@ -263,6 +263,39 @@ dmnsn_realize_global_settings(dmnsn_astnode astnode, dmnsn_scene *scene)
   }
 }
 
+static dmnsn_pigment *dmnsn_realize_pigment(dmnsn_astnode astnode);
+
+static dmnsn_sky_sphere *
+dmnsn_realize_sky_sphere(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_SKY_SPHERE, "Expected a sky sphere.");
+
+  dmnsn_sky_sphere *sky_sphere = dmnsn_new_sky_sphere();
+
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, item, astnode.children) {
+    switch (item->type) {
+    case DMNSN_AST_PIGMENT:
+      {
+        dmnsn_pigment *pigment = dmnsn_realize_pigment(*item);
+        dmnsn_array_push(sky_sphere->pigments, &pigment);
+        break;
+      }
+
+    case DMNSN_AST_TRANSFORMATION:
+      sky_sphere->trans = dmnsn_matrix_mul(
+        dmnsn_realize_transformation(*item),
+        sky_sphere->trans
+      );
+      break;
+
+    default:
+      dmnsn_assert(false, "Invalid sky sphere item.");
+    }
+  }
+
+  return sky_sphere;
+}
+
 static dmnsn_camera *
 dmnsn_realize_camera(dmnsn_astnode astnode)
 {
@@ -521,6 +554,49 @@ dmnsn_realize_color_map(dmnsn_astnode astnode)
   return color_map;
 }
 
+static dmnsn_map *
+dmnsn_realize_pigment_list(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_PIGMENT_LIST,
+               "Expected a pigment list.");
+
+  dmnsn_map *pigment_map = dmnsn_new_pigment_map();
+
+  double n = 0.0, i = 1.0/(dmnsn_array_size(astnode.children) - 1);
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, entry, astnode.children) {
+    dmnsn_pigment *pigment = dmnsn_realize_pigment(*entry);
+    dmnsn_add_map_entry(pigment_map, n, &pigment);
+    n += i;
+  }
+
+  return pigment_map;
+}
+
+static dmnsn_map *
+dmnsn_realize_pigment_map(dmnsn_astnode astnode)
+{
+  dmnsn_assert(astnode.type == DMNSN_AST_PIGMENT_MAP,
+               "Expected a pigment_map.");
+
+  dmnsn_map *pigment_map = dmnsn_new_pigment_map();
+
+  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, entry, astnode.children) {
+    dmnsn_assert(entry->type == DMNSN_AST_PIGMENT_MAP_ENTRY,
+                 "Expected a pigment_map entry.");
+
+    dmnsn_astnode n_node, pigment_node;
+    dmnsn_array_get(entry->children, 0, &n_node);
+    dmnsn_array_get(entry->children, 1, &pigment_node);
+
+    double n = dmnsn_realize_float(n_node);
+    dmnsn_pigment *pigment = dmnsn_realize_pigment(pigment_node);
+
+    dmnsn_add_map_entry(pigment_map, n, &pigment);
+  }
+
+  return pigment_map;
+}
+
 static dmnsn_pigment *
 dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
 {
@@ -528,9 +604,9 @@ dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
                "Expected pigment modifiers");
 
   dmnsn_pattern *pattern = dmnsn_realize_pattern(type);
-  dmnsn_map *color_map = NULL;
+  dmnsn_map *color_map = NULL, *pigment_map = NULL;
 
-  /* Set up the color_map */
+  /* Set up the map */
   DMNSN_ARRAY_FOREACH_REVERSE (dmnsn_astnode *, modifier, modifiers.children) {
     switch (modifier->type) {
     case DMNSN_AST_COLOR_LIST:
@@ -540,11 +616,18 @@ dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
       color_map = dmnsn_realize_color_map(*modifier);
       break;
 
+    case DMNSN_AST_PIGMENT_LIST:
+      pigment_map = dmnsn_realize_pigment_list(*modifier);
+      break;
+    case DMNSN_AST_PIGMENT_MAP:
+      pigment_map = dmnsn_realize_pigment_map(*modifier);
+      break;
+
     default:
       break;
     }
 
-    if (color_map)
+    if (color_map || pigment_map)
       break;
   }
 
@@ -556,17 +639,18 @@ dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
   switch (pattern_type.type) {
   case DMNSN_AST_CHECKER:
     /* Default checker pattern is blue and green */
-    if (!color_map)
+    if (!color_map && !pigment_map) {
       color_map = dmnsn_new_color_map();
-    if (dmnsn_map_size(color_map) < 1)
-      dmnsn_add_map_entry(color_map, 0.0, &dmnsn_blue);
-    if (dmnsn_map_size(color_map) < 2)
-      dmnsn_add_map_entry(color_map, 1.0, &dmnsn_green);
+      if (dmnsn_map_size(color_map) < 1)
+        dmnsn_add_map_entry(color_map, 0.0, &dmnsn_blue);
+      if (dmnsn_map_size(color_map) < 2)
+        dmnsn_add_map_entry(color_map, 1.0, &dmnsn_green);
+    }
     break;
 
   default:
     /* Default map is grayscale */
-    if (!color_map) {
+    if (!color_map && !pigment_map) {
       color_map = dmnsn_new_color_map();
       dmnsn_add_map_entry(color_map, 0.0, &dmnsn_black);
       dmnsn_add_map_entry(color_map, 1.0, &dmnsn_white);
@@ -574,7 +658,14 @@ dmnsn_realize_pattern_pigment(dmnsn_astnode type, dmnsn_astnode modifiers)
     break;
   }
 
-  dmnsn_pigment *pigment = dmnsn_new_color_map_pigment(pattern, color_map);
+  dmnsn_pigment *pigment = NULL;
+  if (color_map) {
+    pigment = dmnsn_new_color_map_pigment(pattern, color_map);
+  } else if (pigment_map) {
+    pigment = dmnsn_new_pigment_map_pigment(pattern, pigment_map);
+  } else {
+    dmnsn_assert(false, "No appropriate map constructed.");
+  }
   return pigment;
 }
 
@@ -603,6 +694,8 @@ dmnsn_realize_pigment_modifiers(dmnsn_astnode astnode, dmnsn_pigment *pigment)
 
     case DMNSN_AST_COLOR_LIST:
     case DMNSN_AST_COLOR_MAP:
+    case DMNSN_AST_PIGMENT_LIST:
+    case DMNSN_AST_PIGMENT_MAP:
       /* Already handled by dmnsn_realize_pattern_pigment() */
       break;
 
@@ -678,37 +771,6 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
   dmnsn_realize_pigment_modifiers(modifiers, pigment);
 
   return pigment;
-}
-
-static dmnsn_sky_sphere *
-dmnsn_realize_sky_sphere(dmnsn_astnode astnode)
-{
-  dmnsn_assert(astnode.type == DMNSN_AST_SKY_SPHERE, "Expected a sky sphere.");
-
-  dmnsn_sky_sphere *sky_sphere = dmnsn_new_sky_sphere();
-
-  DMNSN_ARRAY_FOREACH (dmnsn_astnode *, item, astnode.children) {
-    switch (item->type) {
-    case DMNSN_AST_PIGMENT:
-      {
-        dmnsn_pigment *pigment = dmnsn_realize_pigment(*item);
-        dmnsn_array_push(sky_sphere->pigments, &pigment);
-        break;
-      }
-
-    case DMNSN_AST_TRANSFORMATION:
-      sky_sphere->trans = dmnsn_matrix_mul(
-        dmnsn_realize_transformation(*item),
-        sky_sphere->trans
-      );
-      break;
-
-    default:
-      dmnsn_assert(false, "Invalid sky sphere item.");
-    }
-  }
-
-  return sky_sphere;
 }
 
 static dmnsn_finish *

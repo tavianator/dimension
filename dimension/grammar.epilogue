@@ -165,6 +165,9 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_COLOR_LIST,        "color-list");
   dmnsn_astnode_map(DMNSN_AST_COLOR_MAP,         "color_map");
   dmnsn_astnode_map(DMNSN_AST_COLOR_MAP_ENTRY,   "color_map-entry");
+  dmnsn_astnode_map(DMNSN_AST_PIGMENT_LIST,      "pigment-list");
+  dmnsn_astnode_map(DMNSN_AST_PIGMENT_MAP,       "pigment_map");
+  dmnsn_astnode_map(DMNSN_AST_PIGMENT_MAP_ENTRY, "pigment_map-entry");
   dmnsn_astnode_map(DMNSN_AST_QUICK_COLOR,       "quick_color");
   dmnsn_astnode_map(DMNSN_AST_IMAGE_MAP,         "image_map");
   dmnsn_astnode_map(DMNSN_AST_PNG,               "png");

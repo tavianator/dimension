@@ -71,12 +71,17 @@
 
 /* Pigments */
 %type <astnode> PIGMENT
+%type <astnode> PIGMENT_BODY
 %type <astnode> PIGMENT_TYPE
 %type <astnode> PIGMENT_MODIFIERS
 %type <astnode> COLOR_LIST2
 %type <astnode> COLOR_MAP
 %type <astnode> COLOR_MAP_ENTRIES
 %type <astnode> COLOR_MAP_ENTRY
+%type <astnode> PIGMENT_LIST2
+%type <astnode> PIGMENT_MAP
+%type <astnode> PIGMENT_MAP_ENTRIES
+%type <astnode> PIGMENT_MAP_ENTRY
 %type <astnode> BITMAP_TYPE
 
 /* Finishes */

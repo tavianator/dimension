@@ -47,6 +47,12 @@ extern "C" {
 /* Common types */
 
 /**
+ * Generic callback type.
+ * @param[in,out] ptr  A pointer to an object to act on.
+ */
+typedef void dmnsn_callback_fn(void *ptr);
+
+/**
  * Destructor callback type.
  * @param[in,out] ptr  The pointer to free.
  */

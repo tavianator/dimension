@@ -56,4 +56,19 @@ dmnsn_map *dmnsn_new_color_map();
 dmnsn_pigment *dmnsn_new_color_map_pigment(dmnsn_pattern *pattern,
                                            dmnsn_map *map);
 
+/**
+ * Construct a pigment map.
+ * @return An empty pigment map.
+ */
+dmnsn_map *dmnsn_new_pigment_map();
+
+/**
+ * A pigment-mapped pigment.
+ * @param[in,out] pattern  The pattern of the pigment.
+ * @param[in,out] map      The pigment map to apply to the pattern.
+ * @return A pigment mapping the pattern to other pigments.
+ */
+dmnsn_pigment *dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern,
+                                             dmnsn_map *map);
+
 #endif /* DIMENSION_PIGMENTS_H */

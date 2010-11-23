@@ -240,6 +240,7 @@ unsigned long wchar;
 "phong_size"            RETURN_TOKEN(DMNSN_T_PHONG_SIZE);
 "pi"                    RETURN_TOKEN(DMNSN_T_PI);
 "pigment"               RETURN_TOKEN(DMNSN_T_PIGMENT);
+"pigment_map"           RETURN_TOKEN(DMNSN_T_PIGMENT_MAP);
 "plane"                 RETURN_TOKEN(DMNSN_T_PLANE);
 "png"                   RETURN_TOKEN(DMNSN_T_PNG);
 "pow"                   RETURN_TOKEN(DMNSN_T_POW);
