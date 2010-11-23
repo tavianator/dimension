@@ -41,6 +41,7 @@ dmnsn_delete_sky_sphere(dmnsn_sky_sphere *sky_sphere)
     DMNSN_ARRAY_FOREACH (dmnsn_pigment **, pigment, sky_sphere->pigments) {
       dmnsn_delete_pigment(*pigment);
     }
+    dmnsn_delete_array(sky_sphere->pigments);
     dmnsn_free(sky_sphere);
   }
 }
