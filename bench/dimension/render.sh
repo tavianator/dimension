@@ -19,12 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-echo "Single POV-Ray"
-time povray -w1920 -h1080 +Q1 -UL -UV -D bench.pov >/dev/null 2>&1
-echo -e "\nSingle Dimension"
+echo -e "Single-threaded"
 time ${top_builddir}/dimension/dimension -w1920 -h1080 --quality=1 --threads=1 bench.pov >/dev/null
-
-echo -e "\nMulti POV-Ray"
-time ${top_builddir}/../povray-3.7.0.beta*/unix/povray -w1920 -h1080 +Q1 -UL -UV -D bench.pov >/dev/null 2>&1
-echo -e "\nMulti Dimension"
+echo -e "\nMulti-threaded"
 time ${top_builddir}/dimension/dimension -w1920 -h1080 --quality=1 bench.pov >/dev/null
