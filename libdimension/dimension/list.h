@@ -226,9 +226,9 @@ dmnsn_list_swap(dmnsn_list_iterator *a, dmnsn_list_iterator *b)
 /**
  * Insert a detached iterator into a list.
  * @param[in,out] list  The list to insert into.
- * @param[in,out] i     The detached iterator to insert.
- * @param[in,out] j     The iterator before which to insert, or NULL for the end
+ * @param[in,out] i     The iterator before which to insert, or NULL for the end
  *                      of the list.
+ * @param[in,out] j     The detached iterator to insert.
  */
 DMNSN_INLINE void
 dmnsn_list_iterator_insert(dmnsn_list *list,
