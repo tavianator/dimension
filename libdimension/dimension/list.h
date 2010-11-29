@@ -331,9 +331,14 @@ dmnsn_list_pop(dmnsn_list *list, void *obj)
  */
 dmnsn_list *dmnsn_list_split(dmnsn_list *list);
 
-/** List object comparator function type. */
-typedef bool dmnsn_list_comparator_fn(dmnsn_list_iterator *l,
-                                      dmnsn_list_iterator *r);
+/**
+ * List object comparator function type.
+ * @param[in] l  The first iterator.
+ * @param[in] r  The second iterator.
+ * @return Whether \p l < \p r.
+ */
+typedef bool dmnsn_list_comparator_fn(const dmnsn_list_iterator *l,
+                                      const dmnsn_list_iterator *r);
 
 /**
  * Sort a list, with O(n*log(n)) comparisons.

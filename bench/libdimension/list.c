@@ -24,12 +24,12 @@
 #include <stdint.h>
 
 static bool
-dmnsn_comparator(dmnsn_list_iterator *i, dmnsn_list_iterator *j)
+dmnsn_comparator(const dmnsn_list_iterator *i, const dmnsn_list_iterator *j)
 {
-  uint32_t a, b;
-  dmnsn_list_get(i, &a);
-  dmnsn_list_get(j, &b);
-  return a < b;
+  uint32_t *a, *b;
+  a = dmnsn_list_at(i);
+  b = dmnsn_list_at(j);
+  return *a < *b;
 }
 
 int

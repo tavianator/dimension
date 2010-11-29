@@ -86,7 +86,7 @@ enum {
 
 /** Get a coordinate of the bounding box of a node. */
 static inline double
-dmnsn_priority_get(dmnsn_list_iterator *i, bool is_object, int comparator)
+dmnsn_priority_get(const dmnsn_list_iterator *i, bool is_object, int comparator)
 {
   dmnsn_bounding_box box;
 
@@ -122,7 +122,8 @@ dmnsn_priority_get(dmnsn_list_iterator *i, bool is_object, int comparator)
 /* List sorting comparators */
 
 static bool
-dmnsn_xmin_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_xmin_object_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, true, DMNSN_XMIN);
   double rval = dmnsn_priority_get(r, true, DMNSN_XMIN);
@@ -130,7 +131,8 @@ dmnsn_xmin_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_xmin_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_xmin_prnode_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, false, DMNSN_XMIN);
   double rval = dmnsn_priority_get(r, false, DMNSN_XMIN);
@@ -138,7 +140,8 @@ dmnsn_xmin_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_ymin_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_ymin_object_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, true, DMNSN_YMIN);
   double rval = dmnsn_priority_get(r, true, DMNSN_YMIN);
@@ -146,7 +149,8 @@ dmnsn_ymin_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_ymin_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_ymin_prnode_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, false, DMNSN_YMIN);
   double rval = dmnsn_priority_get(r, false, DMNSN_YMIN);
@@ -154,7 +158,8 @@ dmnsn_ymin_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_zmin_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_zmin_object_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, true, DMNSN_ZMIN);
   double rval = dmnsn_priority_get(r, true, DMNSN_ZMIN);
@@ -162,7 +167,8 @@ dmnsn_zmin_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_zmin_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_zmin_prnode_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, false, DMNSN_ZMIN);
   double rval = dmnsn_priority_get(r, false, DMNSN_ZMIN);
@@ -170,7 +176,8 @@ dmnsn_zmin_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_xmax_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_xmax_object_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, true, DMNSN_XMAX);
   double rval = dmnsn_priority_get(r, true, DMNSN_XMAX);
@@ -178,7 +185,8 @@ dmnsn_xmax_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_xmax_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_xmax_prnode_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, false, DMNSN_XMAX);
   double rval = dmnsn_priority_get(r, false, DMNSN_XMAX);
@@ -186,7 +194,8 @@ dmnsn_xmax_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_ymax_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_ymax_object_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, true, DMNSN_YMAX);
   double rval = dmnsn_priority_get(r, true, DMNSN_YMAX);
@@ -194,7 +203,8 @@ dmnsn_ymax_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_ymax_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_ymax_prnode_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, false, DMNSN_YMAX);
   double rval = dmnsn_priority_get(r, false, DMNSN_YMAX);
@@ -202,7 +212,8 @@ dmnsn_ymax_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_zmax_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_zmax_object_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, true, DMNSN_ZMAX);
   double rval = dmnsn_priority_get(r, true, DMNSN_ZMAX);
@@ -210,7 +221,8 @@ dmnsn_zmax_object_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
 }
 
 static bool
-dmnsn_zmax_prnode_comp(dmnsn_list_iterator *l, dmnsn_list_iterator *r)
+dmnsn_zmax_prnode_comp(const dmnsn_list_iterator *l,
+                       const dmnsn_list_iterator *r)
 {
   double lval = dmnsn_priority_get(l, false, DMNSN_ZMAX);
   double rval = dmnsn_priority_get(r, false, DMNSN_ZMAX);
