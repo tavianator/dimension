@@ -39,7 +39,7 @@ if !GL
 XFAIL_TESTS += gl-test
 endif
 
-libdimension_tests_la_SOURCES = tests.c tests.h
+libdimension_tests_la_SOURCES = tests.h
 
 if PGO
 libdimension_tests_la_LIBADD = $(top_builddir)/libdimension/libdimension-pgo.la
@@ -47,7 +47,12 @@ else
 libdimension_tests_la_LIBADD = $(top_builddir)/libdimension/libdimension.la
 endif
 
+if GLX
+libdimension_tests_la_SOURCES += display.c
 libdimension_tests_la_LIBADD += -lX11 -lGL
+else
+libdimension_tests_la_SOURCES += display-stubs.c
+endif
 
 error_test_SOURCES = error.c
 error_test_LDADD   = libdimension-tests.la

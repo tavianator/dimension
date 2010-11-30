@@ -17,32 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#ifndef TESTS_H
-#define TESTS_H
+#include "tests.h"
 
-#include "dimension.h"
-#include <unistd.h>
-#include <stdio.h>
-
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
-
-/*
- * Windowing
- */
-
-typedef struct dmnsn_display dmnsn_display;
-
-dmnsn_display *dmnsn_new_display(const dmnsn_canvas *canvas);
-void dmnsn_delete_display(dmnsn_display *display);
-
-/* Flush the GL buffers */
-void dmnsn_display_flush(dmnsn_display *display);
-
-#ifdef __cplusplus
+dmnsn_display *
+dmnsn_new_display(const dmnsn_canvas *canvas)
+{
+  return NULL;
 }
-#endif
 
-#endif /* TESTS_H */
+void
+dmnsn_delete_display(dmnsn_display *display)
+{
+}
+
+void
+dmnsn_display_flush(dmnsn_display *display)
+{
+}

@@ -125,6 +125,9 @@ AC_COMPILE_IFELSE([
    AC_MSG_RESULT([no])]
 )
 
+AC_CHECK_HEADER([GL/glx.h], [enable_glx=yes], [enable_glx=no])
+AM_CONDITIONAL([GLX], [test "$enable_glx" != "no"])
+
 dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile

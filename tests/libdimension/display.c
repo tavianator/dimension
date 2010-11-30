@@ -18,7 +18,18 @@
  *************************************************************************/
 
 #include "tests.h"
+#include <GL/glx.h>
+#include <GL/gl.h>
 #include <stdlib.h>
+
+struct dmnsn_display {
+  Display *dpy;
+  Window win;
+  Colormap cmap;
+  GLXContext cx;
+  XEvent event;
+  XVisualInfo *vi;
+};
 
 /* XIfEvent callback */
 static Bool
