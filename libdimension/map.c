@@ -24,7 +24,6 @@
  */
 
 #include "dimension.h"
-#include <alloca.h>
 
 /** An [index, object] pair. */
 typedef struct dmnsn_map_entry {
@@ -61,7 +60,8 @@ dmnsn_delete_map(dmnsn_map *map)
 void
 dmnsn_add_map_entry(dmnsn_map *map, double n, const void *obj)
 {
-  dmnsn_map_entry *entry = alloca(sizeof(dmnsn_map_entry) + map->obj_size);
+  dmnsn_map_entry *entry
+    = dmnsn_malloc(sizeof(dmnsn_map_entry) + map->obj_size);
   entry->n = n;
   memcpy(entry->object, obj, map->obj_size);
 
@@ -74,6 +74,7 @@ dmnsn_add_map_entry(dmnsn_map *map, double n, const void *obj)
   }
 
   dmnsn_array_insert(map->array, i + 1, entry);
+  dmnsn_free(entry);
 }
 
 size_t
