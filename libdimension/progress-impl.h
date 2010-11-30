@@ -26,6 +26,8 @@
 #ifndef DIMENSION_IMPL_PROGRESS_H
 #define DIMENSION_IMPL_PROGRESS_H
 
+#include <pthread.h>
+
 /** Allocate a new progress object. */
 dmnsn_progress *dmnsn_new_progress(void);
 
