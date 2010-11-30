@@ -30,16 +30,29 @@
 #include <stddef.h>
 #include <stdio.h>
 
-/* Provide a stack trace if possible */
+/**
+ * Print a stack trace, if implemented for the current platform.
+ * @param[in,out] file  The file to which to write the stack trace.
+ */
 void dmnsn_backtrace(FILE *file);
 
-/* Return whether this is the main execution thread, if we can tell */
+/**
+ * Is the calling thread the main thread?
+ * @return Whether this is the main execution thread, or \c true if we can't
+ *         tell.
+ */
 bool dmnsn_is_main_thread(void);
 
-/* Return true if we are little-endian */
+/**
+ * Are we running on a little-endian computer?
+ * @return Whether the current architecture is little-endian.
+ */
 bool dmnsn_is_little_endian(void);
 
-/* Return the number of CPUs available to dimension */
+/**
+ * How many CPUs are available?
+ * @return The number of CPUs available to dimension.
+ */
 size_t dmnsn_ncpus(void);
 
 #endif /* DIMENSION_IMPL_PLATFORM_H */
