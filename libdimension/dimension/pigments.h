@@ -45,7 +45,7 @@ dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas);
  * Construct a color map.
  * @return An empty color map.
  */
-dmnsn_map *dmnsn_new_color_map();
+dmnsn_map *dmnsn_new_color_map(void);
 
 /**
  * A color-mapped pigment.
@@ -60,7 +60,7 @@ dmnsn_pigment *dmnsn_new_color_map_pigment(dmnsn_pattern *pattern,
  * Construct a pigment map.
  * @return An empty pigment map.
  */
-dmnsn_map *dmnsn_new_pigment_map();
+dmnsn_map *dmnsn_new_pigment_map(void);
 
 /**
  * A pigment-mapped pigment.

@@ -28,7 +28,7 @@
 
 /* Allocate a new dummy light */
 dmnsn_light *
-dmnsn_new_light()
+dmnsn_new_light(void)
 {
   dmnsn_light *light = dmnsn_malloc(sizeof(dmnsn_light));
   light->light_fn = NULL;

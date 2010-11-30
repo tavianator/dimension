@@ -134,7 +134,7 @@ dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
 
 /* Allocate a new cube object */
 dmnsn_object *
-dmnsn_new_cube()
+dmnsn_new_cube(void)
 {
   dmnsn_object *cube = dmnsn_new_object();
   cube->intersection_fn  = &dmnsn_cube_intersection_fn;

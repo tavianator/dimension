@@ -28,7 +28,7 @@
 
 /* Allocate a dummy pigment */
 dmnsn_pigment *
-dmnsn_new_pigment()
+dmnsn_new_pigment(void)
 {
   dmnsn_pigment *pigment = dmnsn_malloc(sizeof(dmnsn_pigment));
   pigment->pigment_fn    = NULL;
@@ -64,7 +64,7 @@ dmnsn_initialize_pigment(dmnsn_pigment *pigment)
 
 /* Allocate a dummy finish */
 dmnsn_finish *
-dmnsn_new_finish()
+dmnsn_new_finish(void)
 {
   dmnsn_finish *finish = dmnsn_malloc(sizeof(dmnsn_finish));
   finish->diffuse_fn    = NULL;
@@ -89,7 +89,7 @@ dmnsn_delete_finish(dmnsn_finish *finish)
 
 /* Allocate a dummy texture */
 dmnsn_texture *
-dmnsn_new_texture()
+dmnsn_new_texture(void)
 {
   dmnsn_texture *texture = dmnsn_malloc(sizeof(dmnsn_texture));
   texture->pigment     = NULL;

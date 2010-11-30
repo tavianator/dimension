@@ -39,7 +39,7 @@ dmnsn_perspective_camera_ray_fn(const dmnsn_camera *camera, double x, double y)
 
 /* Create a new perspective camera. */
 dmnsn_camera *
-dmnsn_new_perspective_camera()
+dmnsn_new_perspective_camera(void)
 {
   dmnsn_camera *camera = dmnsn_new_camera();
   camera->ray_fn  = &dmnsn_perspective_camera_ray_fn;

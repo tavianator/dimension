@@ -42,7 +42,7 @@ dmnsn_delete_mapped_pigment(void *ptr)
 }
 
 dmnsn_map *
-dmnsn_new_pigment_map()
+dmnsn_new_pigment_map(void)
 {
   dmnsn_map *pigment_map = dmnsn_new_map(sizeof(dmnsn_pigment *));
   pigment_map->free_fn = &dmnsn_delete_mapped_pigment;

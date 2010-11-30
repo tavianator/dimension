@@ -63,7 +63,7 @@ dmnsn_report_error(dmnsn_severity severity,
 
 /* Return the current resilience, thread-safely. */
 dmnsn_severity
-dmnsn_get_resilience()
+dmnsn_get_resilience(void)
 {
   dmnsn_severity resilience;
   if (pthread_mutex_lock(&dmnsn_resilience_mutex) != 0) {
@@ -113,7 +113,7 @@ dmnsn_set_resilience(dmnsn_severity resilience)
 }
 
 dmnsn_fatal_error_fn *
-dmnsn_get_fatal_error_fn()
+dmnsn_get_fatal_error_fn(void)
 {
   dmnsn_fatal_error_fn *fatal;
   if (pthread_mutex_lock(&dmnsn_fatal_mutex) != 0) {
@@ -147,7 +147,7 @@ dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal)
 }
 
 static void
-dmnsn_default_fatal_error_fn()
+dmnsn_default_fatal_error_fn(void)
 {
   /* Prevent infinite recursion if the fatal error function itself calls
      dmnsn_error() */

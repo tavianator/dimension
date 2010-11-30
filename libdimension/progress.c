@@ -53,7 +53,7 @@ static void dmnsn_progress_unlock_impl(void *arg);
 
 /* Allocate a new dmnsn_progress* */
 dmnsn_progress *
-dmnsn_new_progress()
+dmnsn_new_progress(void)
 {
   dmnsn_progress *progress = dmnsn_malloc(sizeof(dmnsn_progress));
   progress->elements = dmnsn_new_array(sizeof(dmnsn_progress_element));

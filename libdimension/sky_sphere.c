@@ -26,7 +26,7 @@
 #include "dimension.h"
 
 dmnsn_sky_sphere *
-dmnsn_new_sky_sphere()
+dmnsn_new_sky_sphere(void)
 {
   dmnsn_sky_sphere *sky_sphere = dmnsn_malloc(sizeof(dmnsn_sky_sphere));
   sky_sphere->pigments = dmnsn_new_array(sizeof(dmnsn_pigment *));

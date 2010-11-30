@@ -26,7 +26,7 @@
 #include "dimension.h"
 
 dmnsn_map *
-dmnsn_new_color_map()
+dmnsn_new_color_map(void)
 {
   return dmnsn_new_map(sizeof(dmnsn_color));
 }

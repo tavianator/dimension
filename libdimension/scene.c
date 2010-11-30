@@ -28,7 +28,7 @@
 
 /* Allocate an empty scene */
 dmnsn_scene *
-dmnsn_new_scene()
+dmnsn_new_scene(void)
 {
   dmnsn_scene *scene = dmnsn_malloc(sizeof(dmnsn_scene));
 

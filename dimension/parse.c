@@ -232,7 +232,7 @@ dmnsn_patricia_find(dmnsn_patricia_trie *trie, const char *id)
 }
 
 dmnsn_symbol_table *
-dmnsn_new_symbol_table()
+dmnsn_new_symbol_table(void)
 {
   dmnsn_symbol_table *symtable = dmnsn_new_array(sizeof(dmnsn_patricia_trie *));
   dmnsn_push_scope(symtable);
@@ -335,7 +335,7 @@ dmnsn_new_astnode(dmnsn_astnode_type type)
 }
 
 dmnsn_astnode
-dmnsn_new_ast_array()
+dmnsn_new_ast_array(void)
 {
   dmnsn_astnode astnode = dmnsn_new_astnode(DMNSN_AST_ARRAY);
   astnode.children = dmnsn_new_array(sizeof(dmnsn_astnode));

@@ -28,7 +28,7 @@
 
 /* Allocate an interior */
 dmnsn_interior *
-dmnsn_new_interior()
+dmnsn_new_interior(void)
 {
   dmnsn_interior *interior = dmnsn_malloc(sizeof(dmnsn_interior));
   interior->ior       = 1.0;

@@ -53,7 +53,7 @@ dmnsn_backtrace(FILE *file)
 }
 
 bool
-dmnsn_is_main_thread()
+dmnsn_is_main_thread(void)
 {
 #if DMNSN_GETTID
   return getpid() == syscall(SYS_gettid);
@@ -63,7 +63,7 @@ dmnsn_is_main_thread()
 }
 
 bool
-dmnsn_is_little_endian()
+dmnsn_is_little_endian(void)
 {
   /* Undefined behaviour, but quite portable */
   union {
@@ -74,7 +74,7 @@ dmnsn_is_little_endian()
 }
 
 size_t
-dmnsn_ncpus()
+dmnsn_ncpus(void)
 {
 #if DMNSN_SCHED_GETAFFINITY
   cpu_set_t cpuset;

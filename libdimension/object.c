@@ -28,7 +28,7 @@
 
 /* Allocate a dummy object */
 dmnsn_object *
-dmnsn_new_object()
+dmnsn_new_object(void)
 {
   dmnsn_object *object = dmnsn_malloc(sizeof(dmnsn_object));
   object->texture         = NULL;

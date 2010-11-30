@@ -37,7 +37,7 @@ typedef struct dmnsn_sky_sphere {
  * Create a sky sphere.
  * @return A new blank sky sphere.
  */
-dmnsn_sky_sphere *dmnsn_new_sky_sphere();
+dmnsn_sky_sphere *dmnsn_new_sky_sphere(void);
 
 /**
  * Delete a sky sphere.

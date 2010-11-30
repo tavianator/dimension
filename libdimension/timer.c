@@ -31,7 +31,7 @@
 static long clk_tck = 0;
 
 dmnsn_timer *
-dmnsn_new_timer()
+dmnsn_new_timer(void)
 {
   /* Figure out the clock ticks per second */
   if (!clk_tck) {

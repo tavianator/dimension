@@ -28,7 +28,7 @@
 
 /* Identity matrix */
 dmnsn_matrix
-dmnsn_identity_matrix()
+dmnsn_identity_matrix(void)
 {
   return dmnsn_new_matrix(1.0, 0.0, 0.0, 0.0,
                           0.0, 1.0, 0.0, 0.0,

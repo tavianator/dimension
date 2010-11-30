@@ -62,7 +62,7 @@ dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
 
 /* Allocate a new sphere */
 dmnsn_object *
-dmnsn_new_sphere()
+dmnsn_new_sphere(void)
 {
   dmnsn_object *sphere = dmnsn_new_object();
   sphere->intersection_fn  = &dmnsn_sphere_intersection_fn;
