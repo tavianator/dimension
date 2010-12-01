@@ -36,6 +36,9 @@
 #if DMNSN_SCHED_GETAFFINITY
   #include <sched.h>       /* For sched_getaffinity() */
 #endif
+#if DMNSN_TIMES
+  #include <sys/times.h>
+#endif
 
 void
 dmnsn_backtrace(FILE *file)
@@ -94,5 +97,35 @@ dmnsn_ncpus(void)
   }
 #else
   return 1;
+#endif
+}
+
+#if DMNSN_TIMES
+/** Clock ticks per second. */
+static long clk_tck = 0;
+#endif
+
+void
+dmnsn_get_times(dmnsn_timer *timer)
+{
+#if DMNSN_TIMES
+  /* Figure out the clock ticks per second */
+  if (!clk_tck) {
+    clk_tck = sysconf(_SC_CLK_TCK);
+    if (clk_tck == -1) {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sysconf(_SC_CLK_TCK) failed.");
+      clk_tck = 1000000L;
+    }
+  }
+
+  struct tms buf;
+  clock_t real = times(&buf);
+  timer->real   = (double)real/clk_tck;
+  timer->user   = (double)buf.tms_utime/clk_tck;
+  timer->system = (double)buf.tms_stime/clk_tck;
+#else
+  timer->real   = 0.0;
+  timer->user   = 0.0;
+  timer->system = 0.0;
 #endif
 }

@@ -23,44 +23,24 @@
  * Performance counter.
  */
 
-#include "dimension.h"
-#include <sys/times.h>
-#include <unistd.h>
-
-/** Clock ticks per second. */
-static long clk_tck = 0;
+#include "dimension-impl.h"
 
 dmnsn_timer *
 dmnsn_new_timer(void)
 {
-  /* Figure out the clock ticks per second */
-  if (!clk_tck) {
-    clk_tck = sysconf(_SC_CLK_TCK);
-    if (clk_tck == -1) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sysconf(_SC_CLK_TCK) failed.");
-      clk_tck = 1000000L;
-    }
-  }
-
   dmnsn_timer *timer = dmnsn_malloc(sizeof(dmnsn_timer));
-
-  struct tms buf;
-  clock_t real = times(&buf);
-  timer->real   = (double)real/clk_tck;
-  timer->user   = (double)buf.tms_utime/clk_tck;
-  timer->system = (double)buf.tms_stime/clk_tck;
-
+  dmnsn_get_times(timer);
   return timer;
 }
 
 void
 dmnsn_complete_timer(dmnsn_timer *timer)
 {
-  struct tms buf;
-  clock_t real = times(&buf);
-  timer->real   = (double)real/clk_tck - timer->real;
-  timer->user   = (double)buf.tms_utime/clk_tck - timer->user;
-  timer->system = (double)buf.tms_stime/clk_tck - timer->system;
+  dmnsn_timer now;
+  dmnsn_get_times(&now);
+  timer->real   = now.real   - timer->real;
+  timer->user   = now.user   - timer->user;
+  timer->system = now.system - timer->system;
 }
 
 void

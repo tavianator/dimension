@@ -55,4 +55,11 @@ bool dmnsn_is_little_endian(void);
  */
 size_t dmnsn_ncpus(void);
 
+/**
+ * Calculate process times.
+ * @param[out] timer  The timer in which to store the current total process
+ *                    times.
+ */
+void dmnsn_get_times(dmnsn_timer *timer);
+
 #endif /* DIMENSION_IMPL_PLATFORM_H */

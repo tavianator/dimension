@@ -125,6 +125,25 @@ AC_COMPILE_IFELSE([
    AC_MSG_RESULT([no])]
 )
 
+AC_MSG_CHECKING([for times()])
+AC_COMPILE_IFELSE([
+  AC_LANG_PROGRAM(
+    [
+      #include <sys/times.h>
+      #include <unistd.h>
+    ],
+    [
+      long clk_tck = sysconf(_SC_CLK_TCK);
+      struct tms buf;
+      clock_t real = times(&buf);
+    ]
+  )],
+  [AC_DEFINE([DMNSN_TIMES], [1])
+   AC_MSG_RESULT([yes])],
+  [AC_DEFINE([DMNSN_TIMES], [0])
+   AC_MSG_RESULT([no])]
+)
+
 AC_MSG_CHECKING([for ioctl(TIOCGWINSZ)])
 AC_COMPILE_IFELSE([
   AC_LANG_PROGRAM(
