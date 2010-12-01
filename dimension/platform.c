@@ -17,35 +17,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include "progressbar.h"
 #include "platform.h"
-#include <stdarg.h>
-#include <stdio.h>
 
-void
-dmnsn_progressbar(const char *format, const dmnsn_progress *progress, ...)
+#if DMNSN_TIOCGWINSZ
+  #include <sys/ioctl.h>
+  #include <unistd.h>
+#endif
+
+unsigned int
+dmnsn_terminal_width()
 {
-  va_list ap;
-  va_start(ap, progress);
-
-  int len = vprintf(format, ap) + 1;
-  if (len < 1)
-    len = 1;
-  printf(" ");
-
-  va_end(ap);
-
-  fflush(stdout);
-
-  /* Try to fill the terminal with the progress bar */
-  unsigned int width = dmnsn_terminal_width();
-  unsigned int increments = width - (len % width);
-  for (unsigned int i = 0; i < increments; ++i) {
-    dmnsn_wait_progress(progress, ((double)(i + 1))/increments);
-
-    printf(".");
-    fflush(stdout);
+#if DMNSN_TIOCGWINSZ
+  struct winsize ws;
+  unsigned int width = 80;
+  if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0) {
+    width = ws.ws_col;
   }
-  printf("\n");
-  fflush(stdout);
+  return width;
+#else
+  return 80;
+#endif
 }

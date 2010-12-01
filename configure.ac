@@ -125,6 +125,24 @@ AC_COMPILE_IFELSE([
    AC_MSG_RESULT([no])]
 )
 
+AC_MSG_CHECKING([for ioctl(TIOCGWINSZ)])
+AC_COMPILE_IFELSE([
+  AC_LANG_PROGRAM(
+    [
+      #include <sys/ioctl.h>
+      #include <unistd.h>
+    ],
+    [
+      struct winsize ws;
+      ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
+    ]
+  )],
+  [AC_DEFINE([DMNSN_TIOCGWINSZ], [1])
+   AC_MSG_RESULT([yes])],
+  [AC_DEFINE([DMNSN_TIOCGWINSZ], [0])
+   AC_MSG_RESULT([no])]
+)
+
 AC_CHECK_HEADER([GL/glx.h], [enable_glx=yes], [enable_glx=no])
 AM_CONDITIONAL([GLX], [test "$enable_glx" != "no"])
 

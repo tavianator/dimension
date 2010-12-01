@@ -65,6 +65,8 @@ dimension_SOURCES = directives.y                                               \
                     main.c                                                     \
                     parse.c                                                    \
                     parse.h                                                    \
+                    platform.c                                                 \
+                    platform.h                                                 \
                     progressbar.c                                              \
                     progressbar.h                                              \
                     realize.c                                                  \
