@@ -29,7 +29,7 @@
 #endif
 #ifdef _WIN32
   #include <windows.h>
-#endif  
+#endif
 #if DMNSN_BACKTRACE
   #include <execinfo.h>    /* For backtrace() etc. */
 #endif
