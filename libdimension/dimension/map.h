@@ -49,9 +49,9 @@ void dmnsn_delete_map(dmnsn_map *map);
 
 /**
  * Add an entry (a scalar-object pair) to a color map.
- * @param[in,out] map     The color map to add to.
- * @param[in]     n       The index of the entry.
- * @param[in]     object  The value of the entry.
+ * @param[in,out] map  The color map to add to.
+ * @param[in]     n    The index of the entry.
+ * @param[in]     obj  The value of the entry.
  */
 void dmnsn_add_map_entry(dmnsn_map *map, double n, const void *obj);
 
