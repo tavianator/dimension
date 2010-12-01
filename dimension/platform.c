@@ -18,10 +18,11 @@
  *************************************************************************/
 
 #include "platform.h"
-
+#if HAVE_UNISTD_H
+  #include <unistd.h>
+#endif
 #if DMNSN_TIOCGWINSZ
   #include <sys/ioctl.h>
-  #include <unistd.h>
 #endif
 
 unsigned int

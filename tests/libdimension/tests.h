@@ -21,8 +21,6 @@
 #define TESTS_H
 
 #include "dimension.h"
-#include <unistd.h>
-#include <stdio.h>
 
 #ifdef __cplusplus
 /* We've been included from a C++ file; mark everything here as extern "C" */
