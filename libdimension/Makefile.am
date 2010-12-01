@@ -102,9 +102,9 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           threads.h                                            \
                           timer.c                                              \
                           torus.c
-libdimension_la_CFLAGS  = $(AM_CFLAGS) -pthread
+libdimension_la_CFLAGS  = $(AM_CFLAGS)
 libdimension_la_LDFLAGS = -version-info 0:0:0 -no-undefined $(AM_LDFLAGS)
-libdimension_la_LIBADD  = -lm
+libdimension_la_LIBADD  = -lm -lpthread
 
 if PNG
 libdimension_la_SOURCES += png.c
@@ -125,7 +125,7 @@ if PGO
 noinst_LTLIBRARIES = libdimension-pgo.la
 libdimension_pgo_la_SOURCES = $(libdimension_la_SOURCES)
 libdimension_pgo_la_LIBADD  = $(libdimension_la_LIBADD) -lgcov
-libdimension_pgo_la_CFLAGS  = $(AM_CFLAGS) -pthread -fprofile-generate=$$(readlink -f $(builddir))/pgo
+libdimension_pgo_la_CFLAGS  = $(AM_CFLAGS) -fprofile-generate=$$(readlink -f $(builddir))/pgo
 
 libdimension_la_CFLAGS += -fprofile-correction -fprofile-use=./pgo
 

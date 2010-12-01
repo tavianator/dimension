@@ -23,7 +23,7 @@ AM_INIT_AUTOMAKE([parallel-tests color-tests std-options])
 AM_SILENT_RULES([yes])
 
 dnl Use C99 mode with GNU extensions
-CFLAGS="-std=gnu99 $CFLAGS"
+CFLAGS="-std=gnu99 -D_REENTRANT $CFLAGS"
 
 dnl Programs
 AC_PROG_CC
