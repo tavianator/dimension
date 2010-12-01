@@ -215,7 +215,7 @@ main(void)
   /* Optimize the canvas for PNG export */
   errno = 0;
   if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
-    if (errno == ENOTSUP) {
+    if (errno == ENOSYS) {
       have_png = false;
     } else {
       dmnsn_delete_scene(scene);
@@ -227,7 +227,7 @@ main(void)
   /* Optimize the canvas for GL drawing */
   errno = 0;
   if (dmnsn_gl_optimize_canvas(scene->canvas) != 0) {
-    if (errno == ENOTSUP) {
+    if (errno == ENOSYS) {
       have_gl = false;
     } else {
       dmnsn_delete_scene(scene);

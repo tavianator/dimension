@@ -29,14 +29,14 @@
 int
 dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 {
-  errno = ENOTSUP;
+  errno = ENOSYS;
   return -1;
 }
 
 int
 dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 {
-  errno = ENOTSUP;
+  errno = ENOSYS;
   return -1;
 }
 
@@ -44,6 +44,6 @@ dmnsn_canvas *
 dmnsn_gl_read_canvas(size_t x0, size_t y0,
                      size_t width, size_t height)
 {
-  errno = ENOTSUP;
+  errno = ENOSYS;
   return NULL;
 }

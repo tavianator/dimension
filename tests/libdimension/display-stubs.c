@@ -18,10 +18,12 @@
  *************************************************************************/
 
 #include "tests.h"
+#include <errno.h>
 
 dmnsn_display *
 dmnsn_new_display(const dmnsn_canvas *canvas)
 {
+  errno = ENOSYS;
   return NULL;
 }
 

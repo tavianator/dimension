@@ -29,34 +29,34 @@
 int
 dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
 {
-  errno = ENOTSUP;
+  errno = ENOSYS;
   return -1;
 }
 
 int
 dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
 {
-  errno = ENOTSUP;
+  errno = ENOSYS;
   return -1;
 }
 
 dmnsn_progress *
 dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
 {
-  errno = ENOTSUP;
+  errno = ENOSYS;
   return NULL;
 }
 
 dmnsn_canvas *
 dmnsn_png_read_canvas(FILE *file)
 {
-  errno = ENOTSUP;
+  errno = ENOSYS;
   return NULL;
 }
 
 dmnsn_progress *
 dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
 {
-  errno = ENOTSUP;
+  errno = ENOSYS;
   return NULL;
 }
