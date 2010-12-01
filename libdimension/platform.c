@@ -27,6 +27,9 @@
 #if HAVE_UNISTD_H
   #include <unistd.h>
 #endif
+#ifdef _WIN32
+  #include <windows.h>
+#endif  
 #if DMNSN_BACKTRACE
   #include <execinfo.h>    /* For backtrace() etc. */
 #endif
@@ -95,6 +98,10 @@ dmnsn_ncpus(void)
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sysconf(_SC_NPROCESSORS_ONLN) failed.");
     return 1;
   }
+#elif defined(_WIN32)
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+  return sysinfo.dwNumberOfProcessors;
 #else
   return 1;
 #endif
