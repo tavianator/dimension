@@ -20,49 +20,32 @@
 
 /**
  * @file
- * Textures.
+ * Finishes.
  */
 
 #include "dimension.h"
 
-/* Allocate a dummy texture */
-dmnsn_texture *
-dmnsn_new_texture(void)
+/* Allocate a dummy finish */
+dmnsn_finish *
+dmnsn_new_finish(void)
 {
-  dmnsn_texture *texture = dmnsn_malloc(sizeof(dmnsn_texture));
-  texture->pigment     = NULL;
-  texture->finish      = NULL;
-  texture->trans       = dmnsn_identity_matrix();
-  texture->refcount    = dmnsn_malloc(sizeof(unsigned int));
-  *texture->refcount   = 1;
-  texture->should_init = true;
-  return texture;
+  dmnsn_finish *finish = dmnsn_malloc(sizeof(dmnsn_finish));
+  finish->diffuse_fn    = NULL;
+  finish->specular_fn   = NULL;
+  finish->ambient_fn    = NULL;
+  finish->reflection_fn = NULL;
+  finish->free_fn       = NULL;
+  return finish;
 }
 
-/* Free a texture */
+/* Free a finish */
 void
-dmnsn_delete_texture(dmnsn_texture *texture)
+dmnsn_delete_finish(dmnsn_finish *finish)
 {
-  if (texture) {
-    if (*texture->refcount <= 1) {
-      dmnsn_delete_finish(texture->finish);
-      dmnsn_delete_pigment(texture->pigment);
-      dmnsn_free(texture->refcount);
-      dmnsn_free(texture);
-    } else {
-      --*texture->refcount;
+  if (finish) {
+    if (finish->free_fn) {
+      (*finish->free_fn)(finish->ptr);
     }
-  }
-}
-
-/* Calculate matrix inverses */
-void
-dmnsn_initialize_texture(dmnsn_texture *texture)
-{
-  texture->trans_inv = dmnsn_matrix_inverse(texture->trans);
-  if (texture->pigment) {
-    texture->pigment->trans
-      = dmnsn_matrix_mul(texture->trans, texture->pigment->trans);
-    dmnsn_initialize_pigment(texture->pigment);
+    dmnsn_free(finish);
   }
 }

@@ -75,9 +75,11 @@ typedef void dmnsn_free_fn(void *ptr);
 #include <dimension/pattern.h>
 #include <dimension/patterns.h>
 #include <dimension/map.h>
-#include <dimension/texture.h>
+#include <dimension/pigment.h>
 #include <dimension/pigments.h>
+#include <dimension/finish.h>
 #include <dimension/finishes.h>
+#include <dimension/texture.h>
 #include <dimension/interior.h>
 #include <dimension/object.h>
 #include <dimension/objects.h>

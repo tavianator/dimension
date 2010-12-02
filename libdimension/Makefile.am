@@ -28,6 +28,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/color.h                                     \
                          dimension/csg.h                                       \
                          dimension/error.h                                     \
+                         dimension/finish.h                                    \
                          dimension/finishes.h                                  \
                          dimension/geometry.h                                  \
                          dimension/gl.h                                        \
@@ -42,6 +43,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/objects.h                                   \
                          dimension/pattern.h                                   \
                          dimension/patterns.h                                  \
+                         dimension/pigment.h                                   \
                          dimension/pigments.h                                  \
                          dimension/png.h                                       \
                          dimension/polynomial.h                                \
@@ -68,6 +70,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           diffuse.c                                            \
                           dimension-impl.h                                     \
                           error.c                                              \
+                          finish.c                                             \
                           finish_combination.c                                 \
                           geometry.c                                           \
                           gradient.c                                           \
@@ -81,6 +84,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           pattern.c                                            \
                           perspective.c                                        \
                           phong.c                                              \
+                          pigment.c                                            \
                           pigment_map.c                                        \
                           plane.c                                              \
                           platform.c                                           \

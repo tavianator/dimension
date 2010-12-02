@@ -20,42 +20,64 @@
 
 /**
  * @file
- * Object textures.
+ * Object pigments.
  */
 
-#ifndef DIMENSION_TEXTURE_H
-#define DIMENSION_TEXTURE_H
+#ifndef DIMENSION_PIGMENT_H
+#define DIMENSION_PIGMENT_H
 
-/** A complete texture. */
-typedef struct {
-  dmnsn_pigment *pigment; /**< Pigment. */
-  dmnsn_finish  *finish;  /**< Finish. */
+/* Forward-declare dmnsn_pigment */
+typedef struct dmnsn_pigment dmnsn_pigment;
+
+/**
+ * Pigment callback.
+ * @param[in] pigment  The pigment itself.
+ * @param[in] v        The point to color.
+ * @return The color of the pigment at \p v.
+ */
+typedef dmnsn_color dmnsn_pigment_fn(const dmnsn_pigment *pigment,
+                                     dmnsn_vector v);
+
+/**
+ * Pigment initializer callback.
+ * @param[in,out] pigment  The pigment to initialize.
+ */
+typedef void dmnsn_pigment_initialize_fn(dmnsn_pigment *pigment);
+
+/** A pigment. */
+struct dmnsn_pigment {
+  dmnsn_pigment_fn *pigment_fn;               /**< The pigment callback. */
+  dmnsn_pigment_initialize_fn *initialize_fn; /**< The initializer callback. */
+  dmnsn_free_fn *free_fn;                     /**< The destructor callback. */
 
   dmnsn_matrix trans;     /**< Transformation matrix. */
   dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
 
-  unsigned int *refcount; /**< @internal Reference count. */
-  bool should_init;       /**< @internal Whether to initialize the texture. */
-} dmnsn_texture;
+  /** Quick color -- used for low-quality renders. */
+  dmnsn_color quick_color;
+
+  /** Generic pointer. */
+  void *ptr;
+};
 
 /**
- * Create a blank texture.
- * @return The new texture.
+ * Allocate a new dummy pigment.
+ * @return The allocated pigment.
  */
-dmnsn_texture *dmnsn_new_texture(void);
+dmnsn_pigment *dmnsn_new_pigment(void);
 
 /**
- * Delete a texture.
- * @param[in,out] texture  The texture to delete.
+ * Delete a pigment.
+ * @param[in,out] pigment  The pigment to delete.
  */
-void dmnsn_delete_texture(dmnsn_texture *texture);
+void dmnsn_delete_pigment(dmnsn_pigment *pigment);
 
 /**
- * Initialize a texture.  Textures should not be used before being initialized,
- * but should not be modified after being initialized.  Textures are generally
+ * Initialize a pigment.  Pigments should not be used before being initialized,
+ * but should not be modified after being initialized.  Pigments are generally
  * initialized for you.
- * @param[in,out] texture  The texture to initialize.
+ * @param[in,out] pigment  The pigment to initialize.
  */
-void dmnsn_initialize_texture(dmnsn_texture *texture);
+void dmnsn_initialize_pigment(dmnsn_pigment *pigment);
 
-#endif /* DIMENSION_TEXTURE_H */
+#endif /* DIMENSION_PIGMENT_H */
