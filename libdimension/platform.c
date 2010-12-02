@@ -130,6 +130,27 @@ dmnsn_get_times(dmnsn_timer *timer)
   timer->real   = (double)real/clk_tck;
   timer->user   = (double)buf.tms_utime/clk_tck;
   timer->system = (double)buf.tms_stime/clk_tck;
+#elif defined(_WIN32)
+  FILETIME real;
+  GetSystemTimeAsFileTime(&real);
+
+  FILETIME user, system, creation, exit;
+  HANDLE current_process = GetCurrentProcess();
+  if (GetProcessTimes(current_process,
+                      &creation, &exit, &system, &user) != 0)
+  {
+    timer->real
+      = (((uint64_t)real.dwHighDateTime << 32) + real.dwLowDateTime)/1.0e7;
+    timer->user
+      = (((uint64_t)user.dwHighDateTime << 32) + user.dwLowDateTime)/1.0e7;
+    timer->system
+      = (((uint64_t)system.dwHighDateTime << 32) + system.dwLowDateTime)/1.0e7;
+  } else {
+    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "GetProcessTimes() failed.");
+    timer->real   = 0.0;
+    timer->user   = 0.0;
+    timer->system = 0.0;
+  }
 #else
   timer->real   = 0.0;
   timer->user   = 0.0;
