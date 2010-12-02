@@ -22,6 +22,7 @@ Doxyfile
 *.pc
 
 # Files created by `make'
+*.exe
 /dimension/dimension
 /dimension/directives.c
 /dimension/directives.h
