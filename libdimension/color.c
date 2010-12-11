@@ -350,13 +350,12 @@ dmnsn_color_add(dmnsn_color c1, dmnsn_color c2)
 
   dmnsn_color ret = dmnsn_color_from_sRGB(sRGB);
 
-  /* Weighted average of transparencies by intensity */
-  double L1 = dmnsn_color_intensity(c1)*(1.0 - c1.filter - c1.trans);
-  double L2 = dmnsn_color_intensity(c2)*(1.0 - c2.filter - c2.trans);
-  if (L1 + L2) {
-    ret.filter = (L1*c1.filter + L2*c2.filter)/(L1 + L2);
-    ret.trans  = (L1*c1.trans  + L2*c2.trans) /(L1 + L2);
+  double n1 = dmnsn_color_intensity(c1), n2 = dmnsn_color_intensity(c2);
+  if (n1 + n2 != 0.0) {
+    ret.filter = (n1*c1.filter + n2*c2.filter)/(n1 + n2);
   }
+  ret.trans = c1.trans + c2.trans;
+
   return ret;
 }
 
@@ -403,8 +402,8 @@ dmnsn_color_filter(dmnsn_color color, dmnsn_color filter)
                                          dmnsn_color_illuminate(filter, color));
 
   dmnsn_color ret = dmnsn_color_add(transmitted, filtered);
-  ret.filter = filter.filter*(color.filter + color.trans)/2
-               + color.filter*(filter.filter + filter.trans)/2;
+  ret.filter = color.filter*dmnsn_color_intensity(filtered)
+               + filter.filter*color.trans + filter.trans*color.filter;
   ret.trans  = filter.trans*color.trans;
   return ret;
 }
