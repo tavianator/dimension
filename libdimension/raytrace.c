@@ -202,7 +202,6 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
     .parent = NULL,
     .scene  = scene,
     .prtree = prtree,
-    .ior    = 1.0
   };
 
   /* Iterate through each pixel */
@@ -217,6 +216,7 @@ dmnsn_raytrace_scene_impl(dmnsn_progress *progress, dmnsn_scene *scene,
 
       /* Shoot a ray */
       state.reclevel = scene->reclimit;
+      state.ior = 1.0;
       dmnsn_color color = dmnsn_raytrace_shoot(&state, ray);
 
       dmnsn_set_pixel(scene->canvas, x, y, color);
