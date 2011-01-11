@@ -63,11 +63,10 @@ dmnsn_delete_list(dmnsn_list *list)
   }
 }
 
-dmnsn_list *
-dmnsn_list_split(dmnsn_list *list)
+/** Split the second half of a list into a new list. */
+static void
+dmnsn_list_split_impl(dmnsn_list *list, dmnsn_list *half)
 {
-  dmnsn_list *half = dmnsn_new_list(list->obj_size);
-
   /* Find the halfway point */
   size_t i, max = dmnsn_list_size(list)/2;
   dmnsn_list_iterator *ii;
@@ -85,6 +84,13 @@ dmnsn_list_split(dmnsn_list *list)
 
   list->length -= max;
   half->length = max;
+}
+
+dmnsn_list *
+dmnsn_list_split(dmnsn_list *list)
+{
+  dmnsn_list *half = dmnsn_new_list(list->obj_size);
+  dmnsn_list_split_impl(list, half);
   return half;
 }
 
@@ -99,32 +105,31 @@ dmnsn_list_sort(dmnsn_list *list, dmnsn_list_comparator_fn *comparator)
       dmnsn_list_swap(list->first, list->last);
     }
   } else {
-    dmnsn_list *half = dmnsn_list_split(list);
+    dmnsn_list half;
+    dmnsn_list_split_impl(list, &half);
     dmnsn_list_sort(list, comparator);
-    dmnsn_list_sort(half, comparator);
+    dmnsn_list_sort(&half, comparator);
 
-    dmnsn_list_iterator *i = list->first, *j = half->first;
+    dmnsn_list_iterator *i = list->first, *j = half.first;
     while (i || j) {
       if (!i) {
         j->prev = list->last;
         list->last->next = j;
-        list->last = half->last;
-        list->length += half->length;
-        half->first = half->last = NULL;
-        half->length = 0;
+        list->last = half.last;
+        list->length += half.length;
+        half.first = half.last = NULL;
+        half.length = 0;
         break;
       } else if (!j) {
         break;
       } else if ((*comparator)(j, i)) {
         dmnsn_list_iterator *temp = dmnsn_list_next(j);
-        dmnsn_list_iterator_remove(half, j);
+        dmnsn_list_iterator_remove(&half, j);
         dmnsn_list_iterator_insert(list, i, j);
         j = temp;
       } else {
         i = dmnsn_list_next(i);
       }
     }
-
-    dmnsn_delete_list(half);
   }
 }
