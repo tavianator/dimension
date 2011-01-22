@@ -20,6 +20,6 @@
 #########################################################################
 
 echo -e "Single-threaded"
-time ${top_builddir}/dimension/dimension -w1920 -h1080 --quality=1 --threads=1 bench.pov >/dev/null
+time ${top_builddir}/dimension/dimension -w1920 -h1080 --quality=1 --threads=1 bench.pov
 echo -e "\nMulti-threaded"
-time ${top_builddir}/dimension/dimension -w1920 -h1080 --quality=1 bench.pov >/dev/null
+time ${top_builddir}/dimension/dimension -w1920 -h1080 --quality=1 bench.pov
