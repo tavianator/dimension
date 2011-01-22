@@ -18,7 +18,7 @@
  *************************************************************************/
 
 /*
- * Basic tests of PR-trees
+ * Basic test of numerical polynomial root-finder
  */
 
 #include "dimension.h"
