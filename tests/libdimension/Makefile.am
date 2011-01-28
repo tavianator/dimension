@@ -22,6 +22,7 @@ INCLUDES = -I$(top_srcdir)/libdimension
 check_LTLIBRARIES = libdimension-tests.la
 check_PROGRAMS    = error-test                                                 \
                     warning-test                                               \
+                    list-test                                                  \
                     polynomial-test                                            \
                     prtree-test                                                \
                     png-test                                                   \
@@ -59,6 +60,9 @@ error_test_LDADD   = libdimension-tests.la
 
 warning_test_SOURCES = warning.c
 warning_test_LDADD   = libdimension-tests.la
+
+list_test_SOURCES = list.c
+list_test_LDADD   = libdimension-tests.la
 
 polynomial_test_SOURCES = polynomial.c
 polynomial_test_LDADD   = libdimension-tests.la

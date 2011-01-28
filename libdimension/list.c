@@ -56,8 +56,8 @@ void
 dmnsn_delete_list(dmnsn_list *list)
 {
   if (list) {
-    while (list->first) {
-      dmnsn_list_remove(list, list->first);
+    while (dmnsn_list_first(list)) {
+      dmnsn_list_remove(list, dmnsn_list_first(list));
     }
     dmnsn_free(list);
   }
@@ -97,23 +97,39 @@ dmnsn_list_split(dmnsn_list *list)
 void
 dmnsn_list_sort(dmnsn_list *list, dmnsn_list_comparator_fn *comparator)
 {
-  /* Recursive merge sort */
   if (dmnsn_list_size(list) < 2) {
     return;
-  } else if (dmnsn_list_size(list) == 2) {
-    if ((*comparator)(list->last, list->first)) {
-      dmnsn_list_swap(list->first, list->last);
-    }
+  } else if (dmnsn_list_size(list) <= 16) {
+    /* Use insertion sort on small lists */
+    dmnsn_list_iterator *current = dmnsn_list_next(dmnsn_list_first(list));
+    do {
+      dmnsn_list_iterator *next = dmnsn_list_next(current);
+      dmnsn_list_iterator_remove(list, current);
+
+      dmnsn_list_iterator *i = next;
+      do {
+        dmnsn_list_iterator *prev = i ? dmnsn_list_prev(i)
+                                      : dmnsn_list_last(list);
+        if (!(*comparator)(current, prev))
+          break;
+        i = prev;
+      } while (i != dmnsn_list_first(list));
+      dmnsn_list_iterator_insert(list, i, current);
+
+      current = next;
+    } while (current);
   } else {
+    /* Recursive merge sort */
     dmnsn_list half;
     dmnsn_list_split_impl(list, &half);
     dmnsn_list_sort(list, comparator);
     dmnsn_list_sort(&half, comparator);
 
-    dmnsn_list_iterator *i = list->first, *j = half.first;
+    dmnsn_list_iterator *i = dmnsn_list_first(list);
+    dmnsn_list_iterator *j = dmnsn_list_first(&half);
     while (i || j) {
       if (!i) {
-        j->prev = list->last;
+        j->prev = dmnsn_list_last(list);
         list->last->next = j;
         list->last = half.last;
         list->length += half.length;

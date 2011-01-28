@@ -61,6 +61,7 @@ main(void)
 
   for (size_t i = 0; i < count; ++i) {
     sandglass_bench_noprecache(&sandglass, dmnsn_list_push(list, &object));
+    ++object;
     printf(" %ld", sandglass.grains);
   }
   printf("\n");
