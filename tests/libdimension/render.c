@@ -204,8 +204,6 @@ dmnsn_new_test_scene(void)
 int
 main(void)
 {
-  bool have_png = true, have_gl = true;
-
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
 
@@ -213,6 +211,7 @@ main(void)
   dmnsn_scene *scene = dmnsn_new_test_scene();
 
   /* Optimize the canvas for PNG export */
+  bool have_png = true;
   errno = 0;
   if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
     if (errno == ENOSYS) {
@@ -225,6 +224,7 @@ main(void)
   }
 
   /* Optimize the canvas for GL drawing */
+  bool have_gl = true;
   errno = 0;
   if (dmnsn_gl_optimize_canvas(scene->canvas) != 0) {
     if (errno == ENOSYS) {

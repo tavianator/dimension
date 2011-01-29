@@ -28,6 +28,9 @@
 int
 main()
 {
+  /* Set the resilience low for tests */
+  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
+
   double poly[6], x[5];
   /* poly[] = (x + 1)*(x - 1.2345)*(x - 2.3456)*(x - 5)*(x - 100) */
   poly[5] =  1.0;
