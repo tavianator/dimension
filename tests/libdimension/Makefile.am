@@ -41,12 +41,7 @@ XFAIL_TESTS += gl-test
 endif
 
 libdimension_tests_la_SOURCES = tests.h
-
-if PGO
-libdimension_tests_la_LIBADD = $(top_builddir)/libdimension/libdimension-pgo.la
-else
-libdimension_tests_la_LIBADD = $(top_builddir)/libdimension/libdimension.la
-endif
+libdimension_tests_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
 if GLX
 libdimension_tests_la_SOURCES += display.c

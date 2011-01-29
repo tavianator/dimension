@@ -54,14 +54,6 @@ AC_ARG_ENABLE([gl],
               [enable_gl=yes])
 AM_CONDITIONAL([GL], [test "$enable_gl" != "no"])
 
-dnl Profile-guided optimization (default disabled)
-AC_ARG_ENABLE([pgo],
-              [AS_HELP_STRING([--enable-pgo],
-                              [Enable profile-guided optimization [default=no]])],
-              [],
-              [enable_pgo=no])
-AM_CONDITIONAL([PGO], [test "$enable_pgo" != "no"])
-
 dnl Timing library for benchmarks
 PKG_CHECK_MODULES([libsandglass], [libsandglass >= 0.2],
                   [],

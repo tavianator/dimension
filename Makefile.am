@@ -26,29 +26,10 @@ SUBDIRS = libdimension                                                         \
 
 EXTRA_DIST = autogen.sh
 
-if PGO
-
-.PHONY: pgo bench doc
-pgo:
-	@if [ ! -d $(top_builddir)/libdimension/pgo/.libs ] || [ -z "$$(ls $(top_builddir)/libdimension/pgo/.libs/*.gcda 2>/dev/null)" ]; then \
-	  $(MAKE) $(AM_MAKEFLAGS) -C libdimension libdimension-pgo.la && \
-	  $(MAKE) $(AM_MAKEFLAGS) -C tests/libdimension check; \
-	fi
-	@for pgo in $(top_builddir)/libdimension/pgo/.libs/*; do \
-	  replacement="$${pgo/_pgo_la/_la}"; \
-	  if [ "$$pgo" != "$$replacement" ]; then \
-	    mv "$$pgo" "$$replacement"; \
-	  fi \
-	done
-
-all-recursive check-recursive install-recursive installcheck-recursive distdir: pgo
-
-else  ## PGO
-.PHONY: bench doc
-endif ## PGO
-
 bench: all-recursive
 	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench
 
 doc:
 	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) doc
+
+.PHONY: bench doc

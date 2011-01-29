@@ -124,27 +124,7 @@ else
 libdimension_la_SOURCES += gl-stubs.c
 endif
 
-if PGO
-
-noinst_LTLIBRARIES = libdimension-pgo.la
-libdimension_pgo_la_SOURCES = $(libdimension_la_SOURCES)
-libdimension_pgo_la_LIBADD  = $(libdimension_la_LIBADD) -lgcov
-libdimension_pgo_la_CFLAGS  = $(AM_CFLAGS) -fprofile-generate=$$(readlink -f $(builddir))/pgo
-
-libdimension_la_CFLAGS += -fprofile-correction -fprofile-use=./pgo
-
-all-local: libdimension.la
-	@for Plo in .deps/libdimension_la*.Plo; do \
-	  [ -f "pgo/.libs/$$(basename $$Plo .Plo).gcda" ] && sed -ri 's|^(libdimension_la-.*).lo: ([^ ])|\1.lo:  pgo/.libs/\1.gcda \2|g' "$$Plo"; \
-	  true; \
-	done
-
-clean-pgo:
-	rm -rf pgo
-clean-local: clean-docs clean-pgo
-else
 clean-local: clean-docs
-endif
 
 doc:
 	doxygen Doxyfile
