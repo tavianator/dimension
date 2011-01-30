@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -20,20 +20,25 @@
 
 /**
  * @file
- * The internal libdimension API.  These functions and types are used to
- * implement libdimension, but are not part of its public API.
+ * Built-in branch profiler.
  */
 
-#ifndef DIMENSION_IMPL_H
-#define DIMENSION_IMPL_H
+#ifndef DIMENSION_IMPL_PROFILE_H
+#define DIMENSION_IMPL_PROFILE_H
 
-#define _GNU_SOURCE
-#include "dimension.h"
-#include "compiler.h"
-#include "profile.h"
-#include "platform.h"
-#include "progress-impl.h"
-#include "threads.h"
-#include "prtree.h"
+#include <stdbool.h>
 
-#endif /* DIMENSION_IMPL_H */
+/**
+ * Record an test and its expected result.  Called by dmnsn_[un]likely();
+ * don't call directly.
+ * @param[in] value     The result of the test.
+ * @param[in] expected  The expected result of the test.
+ * @param[in] func      The name of the function the test occurs in.
+ * @param[in] file      The name of the file the test occurs in.
+ * @param[in] line      The line number on which the test occurs.
+ * @return \p value.
+ */
+bool dmnsn_expect(bool result, bool expected,
+                  const char *func, const char *file, unsigned int line);
+
+#endif /* DIMENSION_IMPL_PROFILE_H */

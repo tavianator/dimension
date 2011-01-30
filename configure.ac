@@ -54,6 +54,19 @@ AC_ARG_ENABLE([gl],
               [enable_gl=yes])
 AM_CONDITIONAL([GL], [test "$enable_gl" != "no"])
 
+dnl Built-in profiling support
+AC_ARG_ENABLE([profile],
+              [AS_HELP_STRING([--enable-profile],
+                              [Enable built-in branch profiling support [default=no]])],
+              [],
+              [enable_profile=no])
+AM_CONDITIONAL([PROFILE], [test "$enable_profile" = "yes"])
+if test "$enable_profile" = "yes"; then
+  AC_DEFINE([DMNSN_PROFILE], [1])
+else
+  AC_DEFINE([DMNSN_PROFILE], [0])
+fi
+
 dnl Timing library for benchmarks
 PKG_CHECK_MODULES([libsandglass], [libsandglass >= 0.2],
                   [],

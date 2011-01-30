@@ -65,6 +65,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           checker.c                                            \
                           color.c                                              \
                           color_map.c                                          \
+                          compiler.h                                           \
                           cone.c                                               \
                           cube.c                                               \
                           csg.c                                                \
@@ -91,6 +92,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           plane.c                                              \
                           platform.c                                           \
                           platform.h                                           \
+                          profile.h                                            \
                           point_light.c                                        \
                           polynomial.c                                         \
                           progress.c                                           \
@@ -124,6 +126,10 @@ libdimension_la_SOURCES += gl.c
 libdimension_la_LIBADD  += -lGL
 else
 libdimension_la_SOURCES += gl-stubs.c
+endif
+
+if PROFILE
+libdimension_la_SOURCES += profile.c
 endif
 
 clean-local: clean-docs

@@ -24,7 +24,6 @@
  */
 
 #include "dimension-impl.h"
-#include <pthread.h>
 #include <png.h>
 #include <errno.h>
 #include <setjmp.h>

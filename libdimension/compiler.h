@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -20,20 +20,25 @@
 
 /**
  * @file
- * The internal libdimension API.  These functions and types are used to
- * implement libdimension, but are not part of its public API.
+ * Compiler abstractions.
  */
 
-#ifndef DIMENSION_IMPL_H
-#define DIMENSION_IMPL_H
+#ifndef DIMENSION_IMPL_COMPILER_H
+#define DIMENSION_IMPL_COMPILER_H
 
-#define _GNU_SOURCE
-#include "dimension.h"
-#include "compiler.h"
-#include "profile.h"
-#include "platform.h"
-#include "progress-impl.h"
-#include "threads.h"
-#include "prtree.h"
+#include <stdbool.h>
 
-#endif /* DIMENSION_IMPL_H */
+#if DMNSN_PROFILE
+#define dmnsn_likely(test)                                      \
+  dmnsn_expect((test), true, DMNSN_FUNC, __FILE__, __LINE__)
+#define dmnsn_unlikely(test)                                    \
+  dmnsn_expect((test), false, DMNSN_FUNC, __FILE__, __LINE__)
+#elif defined(__GNUC__)
+#define dmnsn_likely(test)   __builtin_expect(!!(test), true)
+#define dmnsn_unlikely(test) __builtin_expect(!!(test), false)
+#else
+#define dmnsn_likely(test)   (test)
+#define dmnsn_unlikely(test) (test)
+#endif
+
+#endif /* DIMENSION_IMPL_COMPILER_H */

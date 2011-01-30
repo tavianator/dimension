@@ -37,19 +37,6 @@ typedef enum dmnsn_severity {
 } dmnsn_severity;
 
 /**
- * @internal
- * @def DMNSN_FUNC
- * @brief Expands to the name of the current function
- */
-#ifdef __GNUC__
-  #define DMNSN_FUNC __PRETTY_FUNCTION__
-#elif __STDC_VERSION__ >= 199901L
-  #define DMNSN_FUNC __func__
-#else
-  #define DMNSN_FUNC "<unknown function>"
-#endif
-
-/**
  * Report an error.
  * @param[in] severity  A @ref dmnsn_severity representing the severity of the
  *                      error.  DMNSN_SEVERITY_HIGH will always terminate the
