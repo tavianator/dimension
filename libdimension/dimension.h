@@ -20,7 +20,7 @@
 
 /**
  * @file
- * The main #include file for libdimension.  This file declares all public
+ * The main \#include file for libdimension.  This file declares all public
  * functions and types used by the Dimension library.  You should never attempt
  * to include any of the component headers in the dimension/ subdirectory
  * directly; only this file.
