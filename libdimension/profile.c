@@ -28,16 +28,102 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-/** Info for one predicted branch. */
+/** Information on one predicted branch. */
 typedef struct {
   char *location;
   uint64_t predicted, branches;
-} dmnsn_profile_info;
+} dmnsn_branch;
 
 /** Count of mispredicted branches. */
-static dmnsn_dictionary *dmnsn_profile_data = NULL;
-/** Mutex which protects \c dmnsn_profile_data. */
+static dmnsn_dictionary *dmnsn_profile = NULL;
+/** Mutex which protects \c dmnsn_profile. */
 static pthread_mutex_t dmnsn_profile_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/** Thread-local count of mispredicted branches. */
+static pthread_key_t dmnsn_thread_profile;
+/** Initialize the thread-specific pointer exactly once. */
+static pthread_once_t dmnsn_thread_profile_once = PTHREAD_ONCE_INIT;
+
+/** Add thread-specific profile data to the global counts. */
+static void
+dmnsn_profile_globalize(void *ptr)
+{
+  dmnsn_branch *branch = ptr;
+  if (dmnsn_profile) {
+    dmnsn_branch *global
+      = dmnsn_dictionary_at(dmnsn_profile, branch->location);
+    if (global) {
+      global->predicted += branch->predicted;
+      global->branches  += branch->branches;
+      dmnsn_free(branch->location);
+    } else {
+      dmnsn_dictionary_insert(dmnsn_profile, branch->location,
+                              branch);
+    }
+  } else {
+    dmnsn_free(branch->location);
+  }
+}
+
+/** Destructor function for thread-specific profile data. */
+static void
+dmnsn_delete_thread_profile(void *ptr)
+{
+  dmnsn_dictionary *thread_profile = ptr;
+
+  if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't lock mutex.");
+  }
+  dmnsn_dictionary_apply(thread_profile, &dmnsn_profile_globalize);
+  if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't unlock mutex.");
+  }
+
+  dmnsn_delete_dictionary(thread_profile);
+}
+
+/** Initialize the thread-specific pointer. */
+static void
+dmnsn_initialize_thread_profile(void)
+{
+  if (pthread_key_create(&dmnsn_thread_profile,
+                         &dmnsn_delete_thread_profile)
+      != 0)
+  {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "pthread_key_create() failed.");
+  }
+
+  if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't lock mutex.");
+  }
+  dmnsn_profile = dmnsn_new_dictionary(sizeof(dmnsn_branch));
+  if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't unlock mutex.");
+  }
+}
+
+/** Get the thread-specific profile data. */
+static dmnsn_dictionary *
+dmnsn_get_thread_profile(void)
+{
+  if (pthread_once(&dmnsn_thread_profile_once,
+                   &dmnsn_initialize_thread_profile)
+      != 0)
+  {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "pthread_once() failed.");
+  }
+
+  return pthread_getspecific(dmnsn_thread_profile);
+}
+
+/** Set the thread-specific profile data. */
+static void
+dmnsn_set_thread_profile(dmnsn_dictionary *thread_profile)
+{
+  if (pthread_setspecific(dmnsn_thread_profile, thread_profile) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "pthread_setspecific() failed.");
+  }
+}
 
 bool
 dmnsn_expect(bool result, bool expected, const char *func, const char *file,
@@ -45,38 +131,33 @@ dmnsn_expect(bool result, bool expected, const char *func, const char *file,
 {
   int size = snprintf(NULL, 0, "%s:%s:%u", file, func, line) + 1;
   if (size < 1) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sprintf() failed.");
-  } else {
-    char key[size];
-    if (snprintf(key, size, "%s:%s:%u", file, func, line) > 0) {
-      if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
-        dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock mutex.");
-      }
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "sprintf() failed.");
+  }
 
-      if (!dmnsn_profile_data) {
-        dmnsn_profile_data = dmnsn_new_dictionary(sizeof(dmnsn_profile_info));
-      }
-      dmnsn_profile_info *info = dmnsn_dictionary_at(dmnsn_profile_data, key);
-      if (info) {
-        ++info->branches;
-        if (result == expected) {
-          ++info->predicted;
-        }
-      } else {
-        dmnsn_profile_info info = {
-          .location  = dmnsn_strdup(key),
-          .predicted = (result == expected) ? 1 : 0,
-          .branches  = 1
-        };
-        dmnsn_dictionary_insert(dmnsn_profile_data, key, &info);
-      }
+  char key[size];
+  if (snprintf(key, size, "%s:%s:%u", file, func, line) < 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "sprintf() failed.");
+  }
 
-      if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
-        dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock mutex.");
-      }
-    } else {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sprintf() failed.");
+  dmnsn_dictionary *thread_profile = dmnsn_get_thread_profile();
+  if (!thread_profile) {
+    thread_profile = dmnsn_new_dictionary(sizeof(dmnsn_branch));
+    dmnsn_set_thread_profile(thread_profile);
+  }
+
+  dmnsn_branch *branch = dmnsn_dictionary_at(thread_profile, key);
+  if (branch) {
+    ++branch->branches;
+    if (result == expected) {
+      ++branch->predicted;
     }
+  } else {
+    dmnsn_branch branch = {
+      .location  = dmnsn_strdup(key),
+      .predicted = (result == expected) ? 1 : 0,
+      .branches  = 1
+    };
+    dmnsn_dictionary_insert(thread_profile, key, &branch);
   }
 
   return result;
@@ -85,22 +166,33 @@ dmnsn_expect(bool result, bool expected, const char *func, const char *file,
 static void
 dmnsn_print_bad_prediction(void *ptr)
 {
-  dmnsn_profile_info *info = ptr;
-  double rate = ((double)info->predicted)/info->branches;
-  if (rate < 0.75 || info->branches < 100000) {
+  dmnsn_branch *branch = ptr;
+  double rate = ((double)branch->predicted)/branch->branches;
+  if (rate < 0.75 || branch->branches < 100000) {
     fprintf(stderr,
             "Bad branch prediction: %s: %" PRIu64 "/%" PRIu64 " (%g%%)\n",
-            info->location, info->predicted, info->branches, 100.0*rate);
+            branch->location, branch->predicted, branch->branches, 100.0*rate);
   }
 
-  dmnsn_free(info->location);
+  dmnsn_free(branch->location);
 }
 
 static void __attribute__((destructor))
 dmnsn_print_bad_predictions(void)
 {
-  if (dmnsn_profile_data) {
-    dmnsn_dictionary_apply(dmnsn_profile_data, &dmnsn_print_bad_prediction);
-    dmnsn_delete_dictionary(dmnsn_profile_data);
+  dmnsn_dictionary *thread_profile = dmnsn_get_thread_profile();
+  if (thread_profile) {
+    dmnsn_delete_thread_profile(thread_profile);
+    dmnsn_set_thread_profile(NULL);
+  }
+
+  if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't lock mutex.");
+  }
+  dmnsn_dictionary_apply(dmnsn_profile, &dmnsn_print_bad_prediction);
+  dmnsn_delete_dictionary(dmnsn_profile);
+  dmnsn_profile = NULL;
+  if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
+    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't unlock mutex.");
   }
 }
