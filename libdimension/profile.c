@@ -89,8 +89,8 @@ dmnsn_print_bad_prediction(void *ptr)
   double rate = ((double)info->predicted)/info->branches;
   if (rate < 0.75 || info->branches < 100000) {
     fprintf(stderr,
-            "Bad branch prediction: %s: %" PRIu64 "/%" PRIu64 "\n",
-            info->location, info->predicted, info->branches);
+            "Bad branch prediction: %s: %" PRIu64 "/%" PRIu64 " (%g%%)\n",
+            info->location, info->predicted, info->branches, 100.0*rate);
   }
 
   dmnsn_free(info->location);
