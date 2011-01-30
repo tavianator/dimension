@@ -49,19 +49,14 @@ static void
 dmnsn_profile_globalize(void *ptr)
 {
   dmnsn_branch *branch = ptr;
-  if (dmnsn_profile) {
-    dmnsn_branch *global
-      = dmnsn_dictionary_at(dmnsn_profile, branch->location);
-    if (global) {
-      global->predicted += branch->predicted;
-      global->branches  += branch->branches;
-      dmnsn_free(branch->location);
-    } else {
-      dmnsn_dictionary_insert(dmnsn_profile, branch->location,
-                              branch);
-    }
-  } else {
+  dmnsn_branch *global = dmnsn_dictionary_at(dmnsn_profile, branch->location);
+  if (global) {
+    global->predicted += branch->predicted;
+    global->branches  += branch->branches;
     dmnsn_free(branch->location);
+  } else {
+    dmnsn_dictionary_insert(dmnsn_profile, branch->location,
+                            branch);
   }
 }
 
