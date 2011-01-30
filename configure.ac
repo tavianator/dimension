@@ -61,11 +61,6 @@ AC_ARG_ENABLE([profile],
               [],
               [enable_profile=no])
 AM_CONDITIONAL([PROFILE], [test "$enable_profile" = "yes"])
-if test "$enable_profile" = "yes"; then
-  AC_DEFINE([DMNSN_PROFILE], [1])
-else
-  AC_DEFINE([DMNSN_PROFILE], [0])
-fi
 
 dnl Timing library for benchmarks
 PKG_CHECK_MODULES([libsandglass], [libsandglass >= 0.2],
