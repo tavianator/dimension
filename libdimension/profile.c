@@ -55,8 +55,7 @@ dmnsn_profile_globalize(void *ptr)
     global->branches  += branch->branches;
     dmnsn_free(branch->location);
   } else {
-    dmnsn_dictionary_insert(dmnsn_profile, branch->location,
-                            branch);
+    dmnsn_dictionary_insert(dmnsn_profile, branch->location, branch);
   }
 }
 
