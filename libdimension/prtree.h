@@ -31,14 +31,10 @@
 
 #include <stdbool.h>
 
-/** A PR-tree node. */
-typedef struct dmnsn_prtree_node dmnsn_prtree_node;
-
-/** A priority R-tree. */
 typedef struct dmnsn_prtree {
   dmnsn_bounding_box bounding_box;
-  dmnsn_prtree_node *root;
   dmnsn_array *unbounded;
+  dmnsn_array *bounded;
 } dmnsn_prtree;
 
 /** Create a PR-tree. */
