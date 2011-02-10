@@ -26,6 +26,7 @@ dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line,
                            dmnsn_intersection *intersection)
 {
   intersection->t = (object->bounding_box.min.z - line.x0.z)/line.n.z;
+  intersection->normal = dmnsn_x;
   return true;
 }
 
