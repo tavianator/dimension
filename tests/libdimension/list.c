@@ -38,7 +38,7 @@ dmnsn_comparator(const dmnsn_list_iterator *i, const dmnsn_list_iterator *j)
 }
 
 int
-main()
+main(void)
 {
   /* Set the resilience low for tests */
   dmnsn_set_resilience(DMNSN_SEVERITY_LOW);

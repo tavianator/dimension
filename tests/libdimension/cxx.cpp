@@ -24,7 +24,7 @@
  * Ensure that dimension.h can be included in a C++ program and behave properly.
  */
 int
-main()
+main(void)
 {
   /* Make sure we can to bit-ops on this enum type */
   dmnsn_quality quality = DMNSN_RENDER_PIGMENT | DMNSN_RENDER_LIGHTS;

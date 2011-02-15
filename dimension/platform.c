@@ -26,7 +26,7 @@
 #endif
 
 unsigned int
-dmnsn_terminal_width()
+dmnsn_terminal_width(void)
 {
 #if DMNSN_TIOCGWINSZ
   struct winsize ws;
