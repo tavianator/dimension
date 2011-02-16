@@ -26,6 +26,6 @@
  * Get the width of the terminal.
  * @return The width (in characters) of the terminal, defaulting to 80.
  */
-unsigned int dmnsn_terminal_width();
+unsigned int dmnsn_terminal_width(void);
 
 #endif /* PLATFORM_H */
