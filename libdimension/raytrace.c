@@ -97,8 +97,7 @@ dmnsn_raytrace_scene_thread(void *ptr)
   threads  = dmnsn_malloc(nthreads*sizeof(pthread_t));
 
   /* Set up the progress object */
-  dmnsn_new_progress_element(payload->progress,
-                             payload->scene->canvas->height);
+  dmnsn_set_progress_total(payload->progress, payload->scene->canvas->height);
 
   /* Create the payloads */
   for (int i = 0; i < nthreads; ++i) {

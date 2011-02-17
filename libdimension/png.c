@@ -198,7 +198,7 @@ dmnsn_png_write_canvas_thread(void *ptr)
   png_uint_32 width = payload->canvas->width;
   png_uint_32 height = payload->canvas->height;
 
-  dmnsn_new_progress_element(payload->progress, height);
+  dmnsn_set_progress_total(payload->progress, height);
 
   png_structp png_ptr
     = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -398,7 +398,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
                &interlace_type, &compression_type, &filter_method);
   int number_of_passes = png_set_interlace_handling(png_ptr);
 
-  dmnsn_new_progress_element(payload->progress, (number_of_passes + 1)*height);
+  dmnsn_set_progress_total(payload->progress, (number_of_passes + 1)*height);
   png_set_read_status_fn(png_ptr, &dmnsn_png_read_row_callback);
 
   /*

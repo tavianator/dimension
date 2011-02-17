@@ -31,18 +31,16 @@
 /** Allocate a new progress object. */
 dmnsn_progress *dmnsn_new_progress(void);
 
-/** Create a new level of loop nesting. */
-void dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total);
-/** Increment the progress counter; should only be called from the innermost
-    loop. */
+/** Set the total number of loop iterations. */
+void dmnsn_set_progress_total(dmnsn_progress *progress, size_t total);
+/** Increment the progress counter. */
 void dmnsn_increment_progress(dmnsn_progress *progress);
 /** Instantly complete the progress. */
 void dmnsn_done_progress(dmnsn_progress *progress);
 
 struct dmnsn_progress {
-  /* Array of progress elements.  Progress is given by P(0), where
-     P(i) = (elements[i].progress + P(i + 1))/elements[i].total. */
-  dmnsn_array *elements;
+  size_t progress; /**< Completed loop iterations. */
+  size_t total;    /**< Total expected loop iterations. */
 
   /* The worker thread */
   pthread_t thread;

@@ -26,40 +26,20 @@
 #include "dimension-impl.h"
 #include <pthread.h>
 
-/** A single element in an array for dmnsn_progress.  Progress of this item is
-    \p progress/\p total. */
-typedef struct {
-  unsigned int progress, total;
-} dmnsn_progress_element;
-
 /** Read-lock a progress object. */
-static void dmnsn_progress_rdlock_impl(const dmnsn_progress *progress);
+static void dmnsn_progress_rdlock(const dmnsn_progress *progress);
 /** Write-lock a progress object. */
-static void dmnsn_progress_wrlock_impl(dmnsn_progress *progress);
+static void dmnsn_progress_wrlock(dmnsn_progress *progress);
 /** Unlock a progress object. */
-static void dmnsn_progress_unlock_impl(void *arg);
-
-/** Read-lock a progress object and ensure that it will unlock upon error. */
-#define dmnsn_progress_rdlock(progress)                                 \
-  dmnsn_progress_rdlock_impl(progress);                                 \
-  pthread_cleanup_push(&dmnsn_progress_unlock_impl, (void *)progress);
-/** Write-lock a progress object and ensure that it will unlock upon error. */
-#define dmnsn_progress_wrlock(progress)                                 \
-  dmnsn_progress_wrlock_impl(progress);                                 \
-  pthread_cleanup_push(&dmnsn_progress_unlock_impl, (void *)progress);
-/** Unlock a progress object. */
-#define dmnsn_progress_unlock(progress)         \
-  pthread_cleanup_pop(1);
+static void dmnsn_progress_unlock(const dmnsn_progress *progress);
 
 /* Allocate a new dmnsn_progress* */
 dmnsn_progress *
 dmnsn_new_progress(void)
 {
   dmnsn_progress *progress = dmnsn_malloc(sizeof(dmnsn_progress));
-  progress->elements = dmnsn_new_array(sizeof(dmnsn_progress_element));
-
-  dmnsn_progress_element element = { .progress = 0, .total = 1 };
-  dmnsn_array_push(progress->elements, &element);
+  progress->progress = 0;
+  progress->total    = 1;
 
   /* Initialize the rwlock, condition variable, and mutex */
 
@@ -115,7 +95,6 @@ dmnsn_finish_progress(dmnsn_progress *progress)
     dmnsn_free(progress->rwlock);
     dmnsn_free(progress->mutex);
     dmnsn_free(progress->cond);
-    dmnsn_delete_array(progress->elements);
     dmnsn_free(progress);
   }
 
@@ -126,16 +105,10 @@ dmnsn_finish_progress(dmnsn_progress *progress)
 double
 dmnsn_get_progress(const dmnsn_progress *progress)
 {
-  dmnsn_progress_element *element;
-  double prog = 0.0;
+  double prog;
 
   dmnsn_progress_rdlock(progress);
-    size_t size = dmnsn_array_size(progress->elements);
-    for (size_t i = 0; i < size; ++i) {
-      element = dmnsn_array_at(progress->elements, size - i - 1);
-      prog += element->progress;
-      prog /= element->total;
-    }
+    prog = (double)progress->progress/progress->total;
   dmnsn_progress_unlock(progress);
 
   return prog;
@@ -167,35 +140,21 @@ dmnsn_wait_progress(const dmnsn_progress *progress, double prog)
   }
 }
 
-/* Start a new level of algorithmic nesting */
+/* Set the total number of loop iterations */
 void
-dmnsn_new_progress_element(dmnsn_progress *progress, unsigned int total)
+dmnsn_set_progress_total(dmnsn_progress *progress, size_t total)
 {
-  dmnsn_progress_element element = { .progress = 0, .total = total };
   dmnsn_progress_wrlock(progress);
-    dmnsn_array_push(progress->elements, &element);
+    progress->total = total;
   dmnsn_progress_unlock(progress);
 }
 
-/* Only the innermost loop needs to call this function - it handles the rest
-   upon loop completion (progress == total) */
+/* Increment the number of completed loop iterations */
 void
 dmnsn_increment_progress(dmnsn_progress *progress)
 {
-  dmnsn_progress_element *element;
-
   dmnsn_progress_wrlock(progress);
-    size_t size = dmnsn_array_size(progress->elements);
-    element = dmnsn_array_at(progress->elements, size - 1);
-    ++element->progress; /* Increment the last element */
-
-    while (element->progress >= element->total && size > 1) {
-      /* As long as the last element is complete, pop it */
-      --size;
-      dmnsn_array_resize(progress->elements, size);
-      element = dmnsn_array_at(progress->elements, size - 1);
-      ++element->progress; /* Increment the next element */
-    }
+    ++progress->progress;
   dmnsn_progress_unlock(progress);
 
   if (pthread_mutex_lock(progress->mutex) != 0) {
@@ -219,12 +178,8 @@ dmnsn_increment_progress(dmnsn_progress *progress)
 void
 dmnsn_done_progress(dmnsn_progress *progress)
 {
-  dmnsn_progress_element *element;
-
   dmnsn_progress_wrlock(progress);
-    dmnsn_array_resize(progress->elements, 1);
-    element = dmnsn_array_at(progress->elements, 0);
-    element->progress = element->total;
+    progress->progress = progress->total;
   dmnsn_progress_unlock(progress);
 
   if (pthread_mutex_lock(progress->mutex) != 0) {
@@ -241,7 +196,7 @@ dmnsn_done_progress(dmnsn_progress *progress)
 /* Thread synchronization */
 
 static void
-dmnsn_progress_rdlock_impl(const dmnsn_progress *progress)
+dmnsn_progress_rdlock(const dmnsn_progress *progress)
 {
   if (pthread_rwlock_rdlock(progress->rwlock) != 0) {
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't acquire read-lock.");
@@ -249,7 +204,7 @@ dmnsn_progress_rdlock_impl(const dmnsn_progress *progress)
 }
 
 static void
-dmnsn_progress_wrlock_impl(dmnsn_progress *progress)
+dmnsn_progress_wrlock(dmnsn_progress *progress)
 {
   if (pthread_rwlock_wrlock(progress->rwlock) != 0) {
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't acquire write-lock.");
@@ -257,9 +212,8 @@ dmnsn_progress_wrlock_impl(dmnsn_progress *progress)
 }
 
 static void
-dmnsn_progress_unlock_impl(void *arg)
+dmnsn_progress_unlock(const dmnsn_progress *progress)
 {
-  const dmnsn_progress *progress = arg;
   if (pthread_rwlock_unlock(progress->rwlock) != 0) {
     dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock read-write lock.");
   }
