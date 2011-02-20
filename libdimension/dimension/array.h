@@ -110,7 +110,6 @@ dmnsn_array_get(const dmnsn_array *array, size_t i, void *obj)
   memcpy(obj, (char *)array->ptr + array->obj_size*i, array->obj_size);
 }
 
-
 /**
  * Set the i'th object, expanding the array if necessary.
  * @param[in,out] array  The array to modify.
