@@ -307,6 +307,7 @@ main(int argc, char **argv)
                     scene->nthreads);
 
   if (dmnsn_finish_progress(render_progress) != 0) {
+    fclose(output_file);
     dmnsn_delete_timer(parse_timer);
     dmnsn_delete_scene(scene);
     fprintf(stderr, "Error rendering scene!\n");
@@ -318,8 +319,8 @@ main(int argc, char **argv)
     dmnsn_progress *output_progress
       = dmnsn_png_write_canvas_async(scene->canvas, output_file);
     if (!output_progress) {
-      dmnsn_delete_timer(parse_timer);
       fclose(output_file);
+      dmnsn_delete_timer(parse_timer);
       dmnsn_delete_scene(scene);
       fprintf(stderr, "Couldn't initialize PNG export!\n");
       return EXIT_FAILURE;
