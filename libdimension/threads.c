@@ -71,3 +71,54 @@ dmnsn_new_thread(dmnsn_progress *progress, dmnsn_thread_fn *thread_fn,
     dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start thread.");
   }
 }
+
+typedef struct dmnsn_concurrent_thread_payload {
+  dmnsn_concurrent_thread_fn *thread_fn;
+  void *arg;
+  unsigned int thread, nthreads;
+  int ret;
+} dmnsn_concurrent_thread_payload;
+
+static void *
+dmnsn_concurrent_thread(void *ptr)
+{
+  dmnsn_concurrent_thread_payload *payload = ptr;
+  payload->ret = (*payload->thread_fn)(payload->arg, payload->thread,
+                                       payload->nthreads);
+  return NULL;
+}
+
+int
+dmnsn_execute_concurrently(dmnsn_concurrent_thread_fn *thread_fn,
+                           void *arg, unsigned int nthreads)
+{
+  pthread_t threads[nthreads];
+  dmnsn_concurrent_thread_payload payloads[nthreads];
+
+  for (unsigned int i = 0; i < nthreads; ++i) {
+    payloads[i].thread_fn = thread_fn;
+    payloads[i].arg       = arg;
+    payloads[i].thread    = i;
+    payloads[i].nthreads  = nthreads;
+    payloads[i].ret       = -1;
+    if (pthread_create(&threads[i], NULL, &dmnsn_concurrent_thread,
+                       &payloads[i]) != 0)
+    {
+      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start worker thread.");
+    }
+  }
+
+  int ret = 0;
+  for (unsigned int i = 0; i < nthreads; ++i) {
+    if (pthread_join(threads[i], NULL) == 0) {
+      if (payloads[i].ret != 0) {
+        ret = payloads[i].ret;
+      }
+    } else {
+      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't join worker thread.");
+      ret = -1;
+    }
+  }
+
+  return ret;
+}
