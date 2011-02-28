@@ -677,7 +677,7 @@ dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
   return tmax >= dmnsn_max(0.0, tmin) && tmin < t;
 }
 
-bool
+DMNSN_HOT bool
 dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
                           dmnsn_intersection *intersection)
 {
@@ -722,7 +722,7 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
   return !isinf(t);
 }
 
-bool
+DMNSN_HOT bool
 dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point)
 {
   /* Search the unbounded objects */

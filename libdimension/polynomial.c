@@ -23,7 +23,7 @@
  * Polynomials.
  */
 
-#include "dimension.h"
+#include "dimension-impl.h"
 #include <math.h>
 
 /** Get the real degree of a polynomial, ignoring leading zeros. */
@@ -394,7 +394,7 @@ dmnsn_solve_cubic(double poly[4], double x[3])
 }
 
 /* Uspensky's algorithm */
-size_t
+DMNSN_HOT size_t
 dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
 {
   /* Copy the polynomial so we can be destructive */

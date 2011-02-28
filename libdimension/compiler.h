@@ -29,16 +29,22 @@
 #include <stdbool.h>
 
 #ifdef DMNSN_PROFILE
-#define dmnsn_likely(test)                                      \
-  dmnsn_expect(!!(test), true, DMNSN_FUNC, __FILE__, __LINE__)
-#define dmnsn_unlikely(test)                                    \
-  dmnsn_expect(!!(test), false, DMNSN_FUNC, __FILE__, __LINE__)
+  #define dmnsn_likely(test)                                      \
+    dmnsn_expect(!!(test), true, DMNSN_FUNC, __FILE__, __LINE__)
+  #define dmnsn_unlikely(test)                                    \
+    dmnsn_expect(!!(test), false, DMNSN_FUNC, __FILE__, __LINE__)
 #elif defined(__GNUC__)
-#define dmnsn_likely(test)   __builtin_expect(!!(test), true)
-#define dmnsn_unlikely(test) __builtin_expect(!!(test), false)
+  #define dmnsn_likely(test)   __builtin_expect(!!(test), true)
+  #define dmnsn_unlikely(test) __builtin_expect(!!(test), false)
 #else
-#define dmnsn_likely(test)   (test)
-#define dmnsn_unlikely(test) (test)
+  #define dmnsn_likely(test)   (test)
+  #define dmnsn_unlikely(test) (test)
+#endif
+
+#ifdef __GNUC__
+  #define DMNSN_HOT __attribute__((hot))
+#else
+  #define DMNSN_HOT
 #endif
 
 #endif /* DIMENSION_IMPL_COMPILER_H */
