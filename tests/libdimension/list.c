@@ -40,8 +40,8 @@ dmnsn_comparator(const dmnsn_list_iterator *i, const dmnsn_list_iterator *j)
 int
 main(void)
 {
-  /* Set the resilience low for tests */
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
+  /* Treat warnings as errors for tests */
+  dmnsn_die_on_warnings(true);
 
   dmnsn_list *list = dmnsn_new_list(sizeof(dmnsn_item));
 

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
+ * Copyright (C) 2010-2011 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -32,7 +32,7 @@ dmnsn_malloc(size_t size)
 {
   void *ptr = malloc(size);
   if (!ptr) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Memory allocation failed.");
+    dmnsn_error("Memory allocation failed.");
   }
   return ptr;
 }
@@ -42,7 +42,7 @@ dmnsn_realloc(void *ptr, size_t size)
 {
   ptr = realloc(ptr, size);
   if (!ptr) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Memory allocation failed.");
+    dmnsn_error("Memory allocation failed.");
   }
   return ptr;
 }

@@ -58,8 +58,8 @@ dmnsn_randomize_bounding_box(dmnsn_object *object)
 int
 main(void)
 {
-  /* Set the resilience low for tests */
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
+  /* Treat warnings as errors for tests */
+  dmnsn_die_on_warnings(true);
 
   const size_t nobjects = 128;
   dmnsn_scene *scene = dmnsn_new_scene();

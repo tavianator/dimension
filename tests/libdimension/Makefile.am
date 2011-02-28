@@ -20,8 +20,9 @@
 INCLUDES = -I$(top_srcdir)/libdimension
 
 check_LTLIBRARIES = libdimension-tests.la
-check_PROGRAMS    = error-test                                                 \
-                    warning-test                                               \
+check_PROGRAMS    = warning-test                                               \
+                    warning-as-error-test                                      \
+                    error-test                                                 \
                     list-test                                                  \
                     polynomial-test                                            \
                     prtree-test                                                \
@@ -30,7 +31,7 @@ check_PROGRAMS    = error-test                                                 \
                     render-test                                                \
                     cxx-test
 TESTS             = $(check_PROGRAMS)
-XFAIL_TESTS       = error-test
+XFAIL_TESTS       = warning-as-error-test error-test
 
 if !PNG
 XFAIL_TESTS += png-test
@@ -50,11 +51,14 @@ else
 libdimension_tests_la_SOURCES += display-stubs.c
 endif
 
-error_test_SOURCES = error.c
-error_test_LDADD   = libdimension-tests.la
-
 warning_test_SOURCES = warning.c
 warning_test_LDADD   = libdimension-tests.la
+
+warning_as_error_test_SOURCES = warning-as-error.c
+warning_as_error_test_LDADD   = libdimension-tests.la
+
+error_test_SOURCES = error.c
+error_test_LDADD   = libdimension-tests.la
 
 list_test_SOURCES = list.c
 list_test_LDADD   = libdimension-tests.la

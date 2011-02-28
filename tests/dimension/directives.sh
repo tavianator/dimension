@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #########################################################################
-# Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          #
+# Copyright (C) 2009-2011 Tavian Barnes <tavianator@gmail.com>          #
 #                                                                       #
 # This file is part of The Dimension Test Suite.                        #
 #                                                                       #
@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-directives=$(${top_builddir}/dimension/dimension --tokenize --parse ${srcdir}/directives.pov)
+directives=$(${top_builddir}/dimension/dimension --strict --tokenize --parse ${srcdir}/directives.pov)
 directives_exp="$(echo -n \
 '(#version (float "3.6") ;
   #debug (string "debug")

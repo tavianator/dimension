@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2009-2011 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -25,33 +25,6 @@
 int
 main(void)
 {
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_MEDIUM) {
-    fprintf(stderr, "--- Wrong default resilience! ---\n");
-    return EXIT_FAILURE;
-  }
-
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_LOW) {
-    fprintf(stderr, "--- Resilience not updated! ---\n");
-    return EXIT_FAILURE;
-  }
-
-  dmnsn_set_resilience(DMNSN_SEVERITY_MEDIUM);
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_MEDIUM) {
-    fprintf(stderr, "--- Resilience not updated! ---\n");
-    return EXIT_FAILURE;
-  }
-
-  dmnsn_error(DMNSN_SEVERITY_LOW, "This warning is expected.");
-
-  dmnsn_set_resilience(DMNSN_SEVERITY_HIGH);
-  if (dmnsn_get_resilience() != DMNSN_SEVERITY_HIGH) {
-    fprintf(stderr, "--- Resilience not updated! ---\n");
-    return EXIT_FAILURE;
-  }
-
-  dmnsn_error(DMNSN_SEVERITY_LOW, "This warning is expected.");
-  dmnsn_error(DMNSN_SEVERITY_MEDIUM, "This warning is expected.");
-
+  dmnsn_warning("This warning is expected.");
   return EXIT_SUCCESS;
 }

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
+ * Copyright (C) 2010-2011 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -68,7 +68,7 @@ dmnsn_new_thread(dmnsn_progress *progress, dmnsn_thread_fn *thread_fn,
   payload->progress  = progress;
 
   if (pthread_create(&progress->thread, NULL, &dmnsn_thread, payload) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start thread.");
+    dmnsn_error("Couldn't start thread.");
   }
 }
 
@@ -104,7 +104,7 @@ dmnsn_execute_concurrently(dmnsn_concurrent_thread_fn *thread_fn,
     if (pthread_create(&threads[i], NULL, &dmnsn_concurrent_thread,
                        &payloads[i]) != 0)
     {
-      dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't start worker thread.");
+      dmnsn_error("Couldn't start worker thread.");
     }
   }
 
@@ -115,8 +115,7 @@ dmnsn_execute_concurrently(dmnsn_concurrent_thread_fn *thread_fn,
         ret = payloads[i].ret;
       }
     } else {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't join worker thread.");
-      ret = -1;
+      dmnsn_error("Couldn't join worker thread.");
     }
   }
 

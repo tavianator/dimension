@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@gmail.com>               *
+ * Copyright (C) 2010-2011 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -87,7 +87,7 @@ dmnsn_ncpus(void)
   if (sched_getaffinity(0, sizeof(cpuset), &cpuset) == 0) {
     return CPU_COUNT(&cpuset);
   } else {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sched_getaffinity() failed.");
+    dmnsn_warning("sched_getaffinity() failed.");
     return 1;
   }
 #elif DMNSN_SC_NPROCESSORS_ONLN
@@ -95,7 +95,7 @@ dmnsn_ncpus(void)
   if (nprocs > 0) {
     return nprocs;
   } else {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sysconf(_SC_NPROCESSORS_ONLN) failed.");
+    dmnsn_warning("sysconf(_SC_NPROCESSORS_ONLN) failed.");
     return 1;
   }
 #elif defined(_WIN32)
@@ -120,7 +120,7 @@ dmnsn_get_times(dmnsn_timer *timer)
   if (!clk_tck) {
     clk_tck = sysconf(_SC_CLK_TCK);
     if (clk_tck == -1) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "sysconf(_SC_CLK_TCK) failed.");
+      dmnsn_warning("sysconf(_SC_CLK_TCK) failed.");
       clk_tck = 1000000L;
     }
   }

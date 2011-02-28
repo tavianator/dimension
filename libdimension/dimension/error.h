@@ -29,24 +29,21 @@
 #ifndef DIMENSION_ERROR_H
 #define DIMENSION_ERROR_H
 
-/** Error severity codes. */
-typedef enum dmnsn_severity {
-  DMNSN_SEVERITY_LOW,    /**< Only die on low resilience. */
-  DMNSN_SEVERITY_MEDIUM, /**< Die on low or medium resilience. */
-  DMNSN_SEVERITY_HIGH    /**< Always die. */
-} dmnsn_severity;
+#include <stdbool.h>
+
+/**
+ * Report a warning.
+ * @param[in] str       A string to print explaining the warning.
+ */
+#define dmnsn_warning(str)                                              \
+  dmnsn_report_error(false, DMNSN_FUNC, __FILE__, __LINE__, str)
 
 /**
  * Report an error.
- * @param[in] severity  A @ref dmnsn_severity representing the severity of the
- *                      error.  DMNSN_SEVERITY_HIGH will always terminate the
- *                      running thread.
  * @param[in] str       A string to print explaining the error.
  */
-#define dmnsn_error(severity, str)                                             \
-  dmnsn_report_error((dmnsn_severity)(severity),                               \
-                     DMNSN_FUNC, __FILE__, __LINE__,                           \
-                     str)
+#define dmnsn_error(str)                                        \
+  dmnsn_report_error(true, DMNSN_FUNC, __FILE__, __LINE__, str)
 
 /**
  * @def dmnsn_assert
@@ -60,36 +57,28 @@ typedef enum dmnsn_severity {
   #define dmnsn_assert(expr, str)                 \
     do {                                          \
       if (!(expr)) {                              \
-        dmnsn_error(DMNSN_SEVERITY_HIGH, (str));  \
+        dmnsn_error((str));  \
       }                                           \
     } while (0)
 #endif
 
 /**
  * @internal
- * Called by dmnsn_error(); don't call directly.
- * @param[in] severity  The severity of the error.
- * @param[in] func      The name of the function where the error originated.
- * @param[in] file      The file where the error originated.
- * @param[in] line      The line number where the error originated.
- * @param[in] str       A string describing the error.
+ * Called by dmnsn_warning() and dmnsn_error(); don't call directly.
+ * @param[in] die   Whether the error is fatal.
+ * @param[in] func  The name of the function where the error originated.
+ * @param[in] file  The file where the error originated.
+ * @param[in] line  The line number where the error originated.
+ * @param[in] str   A string describing the error.
  */
-void dmnsn_report_error(dmnsn_severity severity,
-                        const char *func, const char *file, unsigned int line,
-                        const char *str);
+void dmnsn_report_error(bool die, const char *func, const char *file,
+                        unsigned int line, const char *str);
 
 /**
- * Get the library resilience, thread-safely.
- * @return The error severity considered fatal.
+ * Treat warnings as errors.
+ * @param[in] always_die  Whether to die on warnings.
  */
-dmnsn_severity dmnsn_get_resilience(void);
-
-/**
- * Set the library resilience, thread-safely.
- * @param[in] resilience  The new minimum severity that will cause a fatal
- *                        error.
- */
-void dmnsn_set_resilience(dmnsn_severity resilience);
+void dmnsn_die_on_warnings(bool always_die);
 
 /**
  * Fatal error callback type.  This function should never return.

@@ -43,7 +43,7 @@ dmnsn_raytrace_scene(dmnsn_scene *scene)
 {
   dmnsn_progress *progress = dmnsn_raytrace_scene_async(scene);
   if (dmnsn_finish_progress(progress) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Error occured while raytracing.");
+    dmnsn_error("Error occured while raytracing.");
   }
 }
 

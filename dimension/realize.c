@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2009-2011 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
  * This file is part of Dimension.                                       *
  *                                                                       *
@@ -36,7 +36,7 @@ dmnsn_realize_integer(dmnsn_astnode astnode)
       feclearexcept(FE_ALL_EXCEPT);
       long ret = lrint(*(double *)astnode.ptr);
       if (fetestexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW))
-        dmnsn_error(DMNSN_SEVERITY_HIGH, "Float out of range of integer.");
+        dmnsn_error("Float out of range of integer.");
       return ret;
     }
 
@@ -742,8 +742,7 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
       const char *path = dmnsn_realize_str(strnode);
       FILE *file = fopen(path, "rb");
       if (!file) {
-        dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't open image file.");
-        return NULL;
+        dmnsn_error("Couldn't open image file.");
       }
 
       dmnsn_canvas *canvas;
@@ -751,8 +750,7 @@ dmnsn_realize_pigment(dmnsn_astnode astnode)
       case DMNSN_AST_PNG:
         canvas = dmnsn_png_read_canvas(file);
         if (!canvas) {
-          dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Invalid PNG file.");
-          return NULL;
+          dmnsn_error("Invalid PNG file.");
         }
         pigment = dmnsn_new_canvas_pigment(canvas);
         break;

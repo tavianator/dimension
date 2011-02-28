@@ -204,8 +204,8 @@ dmnsn_new_test_scene(void)
 int
 main(void)
 {
-  /* Set the resilience low for tests */
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
+  /* Treat warnings as errors for tests */
+  dmnsn_die_on_warnings(true);
 
   /* Create the test scene */
   dmnsn_scene *scene = dmnsn_new_test_scene();

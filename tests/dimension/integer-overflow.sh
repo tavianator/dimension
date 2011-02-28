@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #########################################################################
-# Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          #
+# Copyright (C) 2009-2011 Tavian Barnes <tavianator@gmail.com>          #
 #                                                                       #
 # This file is part of The Dimension Test Suite.                        #
 #                                                                       #
@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-integer_overflow=$(${top_builddir}/dimension/dimension --parse ${srcdir}/integer-overflow.pov)
+integer_overflow=$(${top_builddir}/dimension/dimension --strict --parse ${srcdir}/integer-overflow.pov)
 integer_overflow_exp="$(echo -n \
 '((object
     (torus

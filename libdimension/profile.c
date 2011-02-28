@@ -66,11 +66,11 @@ dmnsn_delete_thread_profile(void *ptr)
   dmnsn_dictionary *thread_profile = ptr;
 
   if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't lock mutex.");
+    dmnsn_error("Couldn't lock mutex.");
   }
   dmnsn_dictionary_apply(thread_profile, &dmnsn_profile_globalize);
   if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't unlock mutex.");
+    dmnsn_error("Couldn't unlock mutex.");
   }
 
   dmnsn_delete_dictionary(thread_profile);
@@ -84,15 +84,15 @@ dmnsn_initialize_thread_profile(void)
                          &dmnsn_delete_thread_profile)
       != 0)
   {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "pthread_key_create() failed.");
+    dmnsn_error("pthread_key_create() failed.");
   }
 
   if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't lock mutex.");
+    dmnsn_error("Couldn't lock mutex.");
   }
   dmnsn_profile = dmnsn_new_dictionary(sizeof(dmnsn_branch));
   if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't unlock mutex.");
+    dmnsn_error("Couldn't unlock mutex.");
   }
 }
 
@@ -104,7 +104,7 @@ dmnsn_get_thread_profile(void)
                    &dmnsn_initialize_thread_profile)
       != 0)
   {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "pthread_once() failed.");
+    dmnsn_error("pthread_once() failed.");
   }
 
   return pthread_getspecific(dmnsn_thread_profile);
@@ -115,7 +115,7 @@ static void
 dmnsn_set_thread_profile(dmnsn_dictionary *thread_profile)
 {
   if (pthread_setspecific(dmnsn_thread_profile, thread_profile) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "pthread_setspecific() failed.");
+    dmnsn_error("pthread_setspecific() failed.");
   }
 }
 
@@ -125,12 +125,12 @@ dmnsn_expect(bool result, bool expected, const char *func, const char *file,
 {
   int size = snprintf(NULL, 0, "%s:%s:%u", file, func, line) + 1;
   if (size < 1) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "sprintf() failed.");
+    dmnsn_error("sprintf() failed.");
   }
 
   char key[size];
   if (snprintf(key, size, "%s:%s:%u", file, func, line) < 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "sprintf() failed.");
+    dmnsn_error("sprintf() failed.");
   }
 
   dmnsn_dictionary *thread_profile = dmnsn_get_thread_profile();
@@ -181,12 +181,12 @@ dmnsn_print_bad_predictions(void)
   }
 
   if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't lock mutex.");
+    dmnsn_error("Couldn't lock mutex.");
   }
   dmnsn_dictionary_apply(dmnsn_profile, &dmnsn_print_bad_prediction);
   dmnsn_delete_dictionary(dmnsn_profile);
   dmnsn_profile = NULL;
   if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't unlock mutex.");
+    dmnsn_error("Couldn't unlock mutex.");
   }
 }

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2009-2011 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -23,8 +23,8 @@
 int
 main(void)
 {
-  /* Set the resilience low for tests */
-  dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
+  /* Treat warnings as errors for tests */
+  dmnsn_die_on_warnings(true);
 
   /* Allocate our canvas */
   dmnsn_canvas *canvas = dmnsn_new_canvas(768, 480);

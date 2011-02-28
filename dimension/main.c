@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2009-2011 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
  * This file is part of Dimension.                                       *
  *                                                                       *
@@ -50,7 +50,7 @@ main(int argc, char **argv)
     DMNSN_OPT_VERSION = 256,
     DMNSN_OPT_THREADS,
     DMNSN_OPT_QUALITY,
-    DMNSN_OPT_RESILIENCE
+    DMNSN_OPT_STRICT
   };
 
   static struct option long_options[] = {
@@ -61,7 +61,7 @@ main(int argc, char **argv)
     { "height",     required_argument, NULL,      'h'                  },
     { "threads",    required_argument, NULL,      DMNSN_OPT_THREADS    },
     { "quality",    required_argument, NULL,      DMNSN_OPT_QUALITY    },
-    { "resilience", required_argument, NULL,      DMNSN_OPT_RESILIENCE },
+    { "strict",     no_argument,       NULL,      DMNSN_OPT_STRICT     },
     { "tokenize",   no_argument,       &tokenize, 1                    },
     { "parse",      no_argument,       &parse,    1                    },
     { 0,            0,                 0,         0                    }
@@ -142,21 +142,9 @@ main(int argc, char **argv)
         }
         break;
       }
-    case DMNSN_OPT_RESILIENCE:
-      {
-        if (strcmp(optarg, "low") == 0) {
-          dmnsn_set_resilience(DMNSN_SEVERITY_LOW);
-        } else if (strcmp(optarg, "medium") == 0) {
-          dmnsn_set_resilience(DMNSN_SEVERITY_MEDIUM);
-        } else if (strcmp(optarg, "high") == 0) {
-          dmnsn_set_resilience(DMNSN_SEVERITY_HIGH);
-        } else {
-          fprintf(stderr, "Invalid argument to --resilience!\n");
-          print_usage(stderr, argv[0]);
-          return EXIT_FAILURE;
-        }
-        break;
-      }
+    case DMNSN_OPT_STRICT:
+      dmnsn_die_on_warnings(true);
+      break;
 
     default:
       fprintf(stderr, "Invalid command line option!\n");
@@ -370,8 +358,7 @@ print_usage(FILE *file, const char *arg0)
           " Rendering options:\n"
           "  --threads=THREADS   render with THREADS parallel threads\n"
           "  --quality=QUALITY   use the quality setting QUALITY\n"
-          "  --resilience=RES    set error tolerance to RES (low, medium, or"
-          " high)\n\n"
+          "  --strict            treat warnings as errors\n"
           " Debugging options:\n"
           "  --tokenize          tokenize the input and print the token list\n"
           "  --parse             parse the input and print the abstract syntax"

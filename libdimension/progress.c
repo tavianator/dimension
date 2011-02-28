@@ -45,17 +45,17 @@ dmnsn_new_progress(void)
 
   progress->rwlock = dmnsn_malloc(sizeof(pthread_rwlock_t));
   if (pthread_rwlock_init(progress->rwlock, NULL) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't initialize read-write lock.");
+    dmnsn_error("Couldn't initialize read-write lock.");
   }
 
   progress->cond = dmnsn_malloc(sizeof(pthread_cond_t));
   if (pthread_cond_init(progress->cond, NULL) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't initialize condition variable.");
+    dmnsn_error("Couldn't initialize condition variable.");
   }
 
   progress->mutex = dmnsn_malloc(sizeof(pthread_mutex_t));
   if (pthread_mutex_init(progress->mutex, NULL) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_HIGH, "Couldn't initialize mutex.");
+    dmnsn_error("Couldn't initialize mutex.");
   }
 
   progress->min_wait = 1.0;
@@ -74,9 +74,7 @@ dmnsn_finish_progress(dmnsn_progress *progress)
   if (progress) {
     /* Get the thread's return value */
     if (pthread_join(progress->thread, &ptr) != 0) {
-      /* Medium severity because an unjoined thread likely means that the thread
-         is incomplete or invalid */
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Joining worker thread failed.");
+      dmnsn_error("Joining worker thread failed.");
     } else if (ptr) {
       retval = *(int *)ptr;
       dmnsn_free(ptr);
@@ -84,13 +82,13 @@ dmnsn_finish_progress(dmnsn_progress *progress)
 
     /* Free the progress object */
     if (pthread_rwlock_destroy(progress->rwlock) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking rwlock.");
+      dmnsn_warning("Leaking rwlock.");
     }
     if (pthread_mutex_destroy(progress->mutex) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking mutex.");
+      dmnsn_warning("Leaking mutex.");
     }
     if (pthread_cond_destroy(progress->cond) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_LOW, "Leaking condition variable.");
+      dmnsn_warning("Leaking condition variable.");
     }
     dmnsn_free(progress->rwlock);
     dmnsn_free(progress->mutex);
@@ -118,25 +116,22 @@ dmnsn_get_progress(const dmnsn_progress *progress)
 void
 dmnsn_wait_progress(const dmnsn_progress *progress, double prog)
 {
-  if (pthread_mutex_lock(progress->mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock condition mutex.");
-    /* Busy-wait if we can't use the condition variable */
-    while (dmnsn_get_progress(progress) < prog);
-  } else {
+  if (pthread_mutex_lock(progress->mutex) == 0) {
     while (dmnsn_get_progress(progress) < prog) {
       /* Set the minimum waited-on value */
       if (prog < progress->min_wait)
         *progress->min_waitp = prog;
 
       if (pthread_cond_wait(progress->cond, progress->mutex) != 0) {
-        dmnsn_error(DMNSN_SEVERITY_LOW,
-                    "Couldn't wait on condition variable.");
+        dmnsn_error("Couldn't wait on condition variable.");
       }
     }
 
     if (pthread_mutex_unlock(progress->mutex) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock condition mutex.");
+      dmnsn_error("Couldn't unlock condition mutex.");
     }
+  } else {
+    dmnsn_error("Couldn't lock condition mutex.");
   }
 }
 
@@ -158,19 +153,19 @@ dmnsn_increment_progress(dmnsn_progress *progress)
   dmnsn_progress_unlock(progress);
 
   if (pthread_mutex_lock(progress->mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock condition mutex.");
+    dmnsn_error("Couldn't lock condition mutex.");
   }
 
   if (dmnsn_get_progress(progress) >= progress->min_wait) {
     progress->min_wait = 1.0;
 
     if (pthread_cond_broadcast(progress->cond) != 0) {
-      dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
+      dmnsn_error("Couldn't signal condition variable.");
     }
   }
 
   if (pthread_mutex_unlock(progress->mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock condition mutex.");
+    dmnsn_error("Couldn't unlock condition mutex.");
   }
 }
 
@@ -183,13 +178,13 @@ dmnsn_done_progress(dmnsn_progress *progress)
   dmnsn_progress_unlock(progress);
 
   if (pthread_mutex_lock(progress->mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't lock condition mutex.");
+    dmnsn_error("Couldn't lock condition mutex.");
   }
   if (pthread_cond_broadcast(progress->cond) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't signal condition variable.");
+    dmnsn_error("Couldn't signal condition variable.");
   }
   if (pthread_mutex_unlock(progress->mutex) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock condition mutex.");
+    dmnsn_error("Couldn't unlock condition mutex.");
   }
 }
 
@@ -199,7 +194,7 @@ static void
 dmnsn_progress_rdlock(const dmnsn_progress *progress)
 {
   if (pthread_rwlock_rdlock(progress->rwlock) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't acquire read-lock.");
+    dmnsn_error("Couldn't acquire read-lock.");
   }
 }
 
@@ -207,7 +202,7 @@ static void
 dmnsn_progress_wrlock(dmnsn_progress *progress)
 {
   if (pthread_rwlock_wrlock(progress->rwlock) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't acquire write-lock.");
+    dmnsn_error("Couldn't acquire write-lock.");
   }
 }
 
@@ -215,6 +210,6 @@ static void
 dmnsn_progress_unlock(const dmnsn_progress *progress)
 {
   if (pthread_rwlock_unlock(progress->rwlock) != 0) {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "Couldn't unlock read-write lock.");
+    dmnsn_error("Couldn't unlock read-write lock.");
   }
 }
