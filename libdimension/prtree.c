@@ -28,7 +28,7 @@
 #include <stdlib.h>
 
 /** Number of children per PR-node. */
-#define DMNSN_PRTREE_B 6
+#define DMNSN_PRTREE_B 8
 /** Number of children per pseudo-PR-node (must be 2*ndimensions). */
 #define DMNSN_PSEUDO_PRTREE_B 6
 
