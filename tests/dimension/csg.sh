@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #########################################################################
-# Copyright (C) 2010-2011 Tavian Barnes <tavianator@gmail.com>          #
+# Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     #
 #                                                                       #
 # This file is part of The Dimension Test Suite.                        #
 #                                                                       #

@@ -1,4 +1,4 @@
-dnl Copyright (C) 2009-2011 Tavian Barnes <tavianator@gmail.com>
+dnl Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>
 dnl
 dnl This file is part of The Dimension Build Suite.
 dnl
@@ -17,7 +17,7 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 dnl Initialization
 AC_PREREQ(2.65)
-AC_INIT(Dimension, 0.0.0, tavianator@gmail.com, dimension,
+AC_INIT(Dimension, 0.0.0, tavianator@tavianator.com, dimension,
         [http://dmnsn.googlecode.com])
 AM_INIT_AUTOMAKE([parallel-tests color-tests std-options])
 AM_SILENT_RULES([yes])

@@ -1,5 +1,5 @@
 ###########################################################################
-## Copyright (C) 2009-2010 Tavian Barnes <tavianator@gmail.com>          ##
+## Copyright (C) 2009-2010 Tavian Barnes <tavianator@tavianator.com>     ##
 ##                                                                       ##
 ## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
