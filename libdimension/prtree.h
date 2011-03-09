@@ -31,10 +31,12 @@
 
 #include <stdbool.h>
 
+/** A priority R-tree; the spatial subdivision method used for intersection
+    queries against the scene graph. */
 typedef struct dmnsn_prtree {
-  dmnsn_bounding_box bounding_box;
-  dmnsn_array *unbounded;
-  dmnsn_array *bounded;
+  dmnsn_bounding_box bounding_box; /**< The bounding box for the whole scene. */
+  dmnsn_array *unbounded;          /**< The unbounded objects. */
+  dmnsn_array *bounded;            /**< A PR-tree of the bounded objects. */
 } dmnsn_prtree;
 
 /** Create a PR-tree. */

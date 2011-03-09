@@ -31,12 +31,12 @@
 /**
  * Record an test and its expected result.  Called by dmnsn_[un]likely();
  * don't call directly.
- * @param[in] value     The result of the test.
+ * @param[in] result    The result of the test.
  * @param[in] expected  The expected result of the test.
  * @param[in] func      The name of the function the test occurs in.
  * @param[in] file      The name of the file the test occurs in.
  * @param[in] line      The line number on which the test occurs.
- * @return \p value.
+ * @return \p result.
  */
 bool dmnsn_expect(bool result, bool expected,
                   const char *func, const char *file, unsigned int line);

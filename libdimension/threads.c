@@ -72,6 +72,7 @@ dmnsn_new_thread(dmnsn_progress *progress, dmnsn_thread_fn *thread_fn,
   }
 }
 
+/** Payload for threads executed by dmnsn_execute_concurrently(). */
 typedef struct dmnsn_concurrent_thread_payload {
   dmnsn_concurrent_thread_fn *thread_fn;
   void *arg;
