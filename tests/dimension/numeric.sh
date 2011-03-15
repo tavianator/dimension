@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-numeric=$(${top_builddir}/dimension/dimension --strict --tokenize ${srcdir}/numeric.pov)
+numeric=$(${top_builddir}/dimension/dimension ${dimension_flags} --tokenize ${srcdir}/numeric.pov)
 numeric_exp=$(echo -n \
 '((integer "1")
   (integer "123456789")

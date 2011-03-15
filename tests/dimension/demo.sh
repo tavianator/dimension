@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-demo=$(${top_builddir}/dimension/dimension --strict -w768 -h480 --parse ${srcdir}/demo.pov)
+demo=$(${top_builddir}/dimension/dimension ${dimension_flags} -w768 -h480 --parse ${srcdir}/demo.pov)
 demo_exp=$(echo -n \
 '((camera
     perspective
@@ -214,4 +214,4 @@ if [ "$demo" != "$demo_exp" ]; then
   exit 1
 fi
 
-${top_builddir}/dimension/dimension --strict -w768 -h480 -o demo.png ${srcdir}/demo.pov
+${top_builddir}/dimension/dimension ${dimension_flags} -w768 -h480 -o demo.png ${srcdir}/demo.pov

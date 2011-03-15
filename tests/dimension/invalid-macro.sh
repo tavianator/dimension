@@ -19,5 +19,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-${top_builddir}/dimension/dimension --strict --parse ${srcdir}/invalid-macro.pov
+${top_builddir}/dimension/dimension ${dimension_flags} --parse ${srcdir}/invalid-macro.pov
 [ $? -lt 128 -a $? -gt 0 ]

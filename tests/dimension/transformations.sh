@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-transformations=$(${top_builddir}/dimension/dimension --strict --parse ${srcdir}/transformations.pov)
+transformations=$(${top_builddir}/dimension/dimension ${dimension_flags} --parse ${srcdir}/transformations.pov)
 transformations_exp="$(echo -n \
 '((object
     (sphere
@@ -61,4 +61,4 @@ if [ "$transformations" != "$transformations_exp" ]; then
   exit 1
 fi
 
-${top_builddir}/dimension/dimension --strict -w1 -h1 -o /dev/null ${srcdir}/transformations.pov
+${top_builddir}/dimension/dimension ${dimension_flags} -w1 -h1 -o /dev/null ${srcdir}/transformations.pov

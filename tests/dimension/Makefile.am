@@ -31,7 +31,7 @@ TESTS = punctuation.sh                                                         \
         integer-overflow.sh                                                    \
         csg.sh                                                                 \
         demo.sh
-TESTS_ENVIRONMENT = top_builddir=$(top_builddir)
+TESTS_ENVIRONMENT = top_builddir=$(top_builddir) dimension_flags=--strict
 
 .sh:
 	cp $(srcdir)/$@ .

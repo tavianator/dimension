@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-labels=$(${top_builddir}/dimension/dimension --strict --tokenize ${srcdir}/labels.pov)
+labels=$(${top_builddir}/dimension/dimension ${dimension_flags} --tokenize ${srcdir}/labels.pov)
 labels_exp='(camera { } sphere { color (identifier "new_identifier") } box { color (identifier "new_identifier") })';
 
 if [ "$labels" != "$labels_exp" ]; then

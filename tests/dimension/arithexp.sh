@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-arithexp=$(${top_builddir}/dimension/dimension --strict --parse ${srcdir}/arithexp.pov)
+arithexp=$(${top_builddir}/dimension/dimension ${dimension_flags} --parse ${srcdir}/arithexp.pov)
 arithexp_exp="$(echo -n \
 '((object
     (sphere

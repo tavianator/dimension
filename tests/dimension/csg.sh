@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-csg=$(${top_builddir}/dimension/dimension --strict -w768 -h480 --parse ${srcdir}/csg.pov)
+csg=$(${top_builddir}/dimension/dimension ${dimension_flags} -w768 -h480 --parse ${srcdir}/csg.pov)
 csg_exp="$(echo -n \
 '((camera
     perspective
@@ -91,4 +91,4 @@ if [ "$csg" != "$csg_exp" ]; then
   exit 1
 fi
 
-${top_builddir}/dimension/dimension --strict -w768 -h480 -o csg.png ${srcdir}/csg.pov
+${top_builddir}/dimension/dimension ${dimension_flags} -w768 -h480 -o csg.png ${srcdir}/csg.pov

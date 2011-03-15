@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-punctuation=$(${top_builddir}/dimension/dimension --strict --tokenize ${srcdir}/punctuation.pov)
+punctuation=$(${top_builddir}/dimension/dimension ${dimension_flags} --tokenize ${srcdir}/punctuation.pov)
 punctuation_exp='({ } \( \) [ ] + - * / , ; ? : & . | = < > ! <= >= !=)'
 
 if [ "$punctuation" != "$punctuation_exp" ]; then

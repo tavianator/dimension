@@ -19,5 +19,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-${top_builddir}/dimension/dimension --strict --parse ${srcdir}/tbuffer-overlap.pov
+${top_builddir}/dimension/dimension ${dimension_flags} --parse ${srcdir}/tbuffer-overlap.pov
 [ $? -lt 128 -a $? -gt 0 ]

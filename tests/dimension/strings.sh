@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-strings=$(${top_builddir}/dimension/dimension --strict --tokenize ${srcdir}/strings.pov)
+strings=$(${top_builddir}/dimension/dimension ${dimension_flags} --tokenize ${srcdir}/strings.pov)
 strings_exp=$(/bin/echo -e "((string \"This is a string with escape sequences: \a\b\f\n\r\t!#\v\\\'\"\"))")
 
 if [ "$strings" != "$strings_exp" ]; then

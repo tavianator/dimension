@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-directives=$(${top_builddir}/dimension/dimension --strict --tokenize --parse ${srcdir}/directives.pov)
+directives=$(${top_builddir}/dimension/dimension ${dimension_flags} --tokenize --parse ${srcdir}/directives.pov)
 directives_exp="$(echo -n \
 '(#version (float "3.6") ;
   #debug (string "debug")
