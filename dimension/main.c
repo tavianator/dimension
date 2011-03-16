@@ -82,7 +82,12 @@ main(int argc, char **argv)
 
     case '?':
       print_usage(stdout, argv[0]);
-      return EXIT_SUCCESS;
+      /* '?' is returned as an error code too */
+      if (optopt == 0) {
+        return EXIT_SUCCESS;
+      } else {
+        return EXIT_FAILURE;
+      }
     case DMNSN_OPT_VERSION:
       print_version(stdout);
       return EXIT_SUCCESS;
