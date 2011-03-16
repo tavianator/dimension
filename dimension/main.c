@@ -156,7 +156,7 @@ main(int argc, char **argv)
   if (optind == argc - 1) {
     input = argv[optind];
   } else if (optind < argc) {
-    fprintf(stderr, "Invalid extranious command line options!\n");
+    fprintf(stderr, "Invalid extraneous command line options!\n");
     print_usage(stderr, argv[0]);
     return EXIT_FAILURE;
   }
