@@ -146,7 +146,7 @@ dmnsn_get_times(dmnsn_timer *timer)
     timer->system
       = (((uint64_t)system.dwHighDateTime << 32) + system.dwLowDateTime)/1.0e7;
   } else {
-    dmnsn_error(DMNSN_SEVERITY_MEDIUM, "GetProcessTimes() failed.");
+    dmnsn_warning("GetProcessTimes() failed.");
     timer->real   = 0.0;
     timer->user   = 0.0;
     timer->system = 0.0;
