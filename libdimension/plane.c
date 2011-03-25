@@ -30,10 +30,10 @@
 /* Plane object callbacks */
 
 static bool dmnsn_plane_intersection_fn(const dmnsn_object *plane,
-                                         dmnsn_line line,
-                                         dmnsn_intersection *intersection);
+                                        dmnsn_line line,
+                                        dmnsn_intersection *intersection);
 static bool dmnsn_plane_inside_fn(const dmnsn_object *plane,
-                                   dmnsn_vector point);
+                                  dmnsn_vector point);
 
 /* Allocate a new plane */
 dmnsn_object *
