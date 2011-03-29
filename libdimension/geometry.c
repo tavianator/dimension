@@ -23,7 +23,7 @@
  * Geometrical function implementations.
  */
 
-#include "dimension.h"
+#include "dimension-impl.h"
 #include <math.h>
 
 /* Identity matrix */
@@ -152,7 +152,7 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   dmnsn_matrix2 P, Q, R, S, Pi, RPi, PiQ, RPiQ, PP, QQ, RR, SS;
   double Pdet = A.n[0][0]*A.n[1][1] - A.n[0][1]*A.n[1][0];
 
-  if (fabs(Pdet) < dmnsn_epsilon) {
+  if (dmnsn_unlikely(fabs(Pdet) < dmnsn_epsilon)) {
     /* If P is close to singular, try a more generic algorithm; this is very
      * unlikely, but not impossible, eg.
      *   [ 1 1 0 0 ]

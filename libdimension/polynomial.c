@@ -31,7 +31,7 @@ static inline size_t
 dmnsn_real_degree(const double poly[], size_t degree)
 {
   for (size_t i = degree + 1; i-- > 0;) {
-    if (fabs(poly[i]) >= dmnsn_epsilon) {
+    if (dmnsn_likely(fabs(poly[i]) >= dmnsn_epsilon)) {
       return i;
     }
   }
@@ -50,19 +50,19 @@ dmnsn_normalize_polynomial(double poly[], size_t degree)
 }
 
 /** Eliminate trivial zero roots from \p poly[]. */
-static inline void
-dmnsn_eliminate_zero_roots(double poly[], size_t *degree)
+static inline size_t
+dmnsn_eliminate_zero_roots(double poly[], size_t degree)
 {
-  size_t i, deg = *degree;
-  for (i = 0; i <= deg && fabs(poly[i]) < dmnsn_epsilon; ++i);
+  size_t i;
+  for (i = 0; i <= degree && fabs(poly[i]) < dmnsn_epsilon; ++i);
 
   if (i > 0) {
-    for (size_t j = 0; j + i <= deg; ++j) {
+    for (size_t j = 0; j + i <= degree; ++j) {
       poly[j] = poly[j + i];
     }
   }
 
-  *degree -= i;
+  return degree - i;
 }
 
 /** Returns the number of sign changes between coefficients of \p poly[]. */
@@ -153,7 +153,7 @@ dmnsn_uspensky_bounds(const double poly[], size_t degree, double bounds[][2],
     /* a[] is the expanded form of poly(x + 1), b[] is the expanded form of
        (x + 1)^degree * poly(1/(x + 1)) */
     double a[degree + 1], b[degree + 1];
-    if (degree < DMNSN_NBINOM) {
+    if (dmnsn_likely(degree < DMNSN_NBINOM)) {
       /* Use precomputed binomial coefficients if possible */
       for (size_t i = 0; i <= degree; ++i) {
         a[i] = poly[i];
@@ -294,17 +294,16 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
 }
 
 /** Use synthetic division to eliminate the root \p r from \p poly[]. */
-static inline void
-dmnsn_eliminate_root(double poly[], size_t *degree, double r)
+static inline size_t
+dmnsn_eliminate_root(double poly[], size_t degree, double r)
 {
-  size_t deg = *degree;
-  double rem = poly[deg];
-  for (size_t i = deg; i-- > 0;) {
+  double rem = poly[degree];
+  for (size_t i = degree; i-- > 0;) {
     double temp = poly[i];
     poly[i] = rem;
     rem = temp + r*rem;
   }
-  --*degree;
+  return degree - 1;
 }
 
 /** Solve a normalized linear polynomial algebraically. */
@@ -411,7 +410,7 @@ dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
   /* Normalize the leading coefficient to 1.0 */
   dmnsn_normalize_polynomial(p, degree);
   /* Eliminate simple zero roots */
-  dmnsn_eliminate_zero_roots(p, &degree);
+  degree = dmnsn_eliminate_zero_roots(p, degree);
 
   static const size_t max_algebraic = 3;
   if (degree > max_algebraic) {
@@ -430,7 +429,7 @@ dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
       double r = dmnsn_bisect_root(p, degree, ranges[j][0], ranges[j][1]);
 
       /* Use synthetic division to eliminate the root `r' */
-      dmnsn_eliminate_root(p, &degree, r);
+      degree = dmnsn_eliminate_root(p, degree, r);
 
       /* Store the found root */
       x[i] = r;

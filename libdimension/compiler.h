@@ -37,8 +37,8 @@
   #define dmnsn_likely(test)   __builtin_expect(!!(test), true)
   #define dmnsn_unlikely(test) __builtin_expect(!!(test), false)
 #else
-  #define dmnsn_likely(test)   (test)
-  #define dmnsn_unlikely(test) (test)
+  #define dmnsn_likely(test)   (!!(test))
+  #define dmnsn_unlikely(test) (!!(test))
 #endif
 
 #ifdef __GNUC__
