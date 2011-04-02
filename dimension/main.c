@@ -81,11 +81,12 @@ main(int argc, char **argv)
       break;
 
     case '?':
-      print_usage(stdout, argv[0]);
       /* '?' is returned as an error code too */
       if (optopt == 0) {
+        print_usage(stdout, argv[0]);
         return EXIT_SUCCESS;
       } else {
+        print_usage(stderr, argv[0]);
         return EXIT_FAILURE;
       }
     case DMNSN_OPT_VERSION:
