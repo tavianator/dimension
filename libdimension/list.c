@@ -110,7 +110,7 @@ dmnsn_list_sort(dmnsn_list *list, dmnsn_list_comparator_fn *comparator)
       do {
         dmnsn_list_iterator *prev = i ? dmnsn_list_prev(i)
                                       : dmnsn_list_last(list);
-        if (!(*comparator)(current, prev))
+        if (!comparator(current, prev))
           break;
         i = prev;
       } while (i != dmnsn_list_first(list));
@@ -138,7 +138,7 @@ dmnsn_list_sort(dmnsn_list *list, dmnsn_list_comparator_fn *comparator)
         break;
       } else if (!j) {
         break;
-      } else if ((*comparator)(j, i)) {
+      } else if (comparator(j, i)) {
         dmnsn_list_iterator *temp = dmnsn_list_next(j);
         dmnsn_list_iterator_remove(&half, j);
         dmnsn_list_iterator_insert(list, i, j);

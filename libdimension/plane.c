@@ -44,9 +44,9 @@ dmnsn_new_plane(dmnsn_vector normal)
   dmnsn_vector *param = dmnsn_malloc(sizeof(dmnsn_vector));
   *param = normal;
 
-  plane->intersection_fn  = &dmnsn_plane_intersection_fn;
-  plane->inside_fn        = &dmnsn_plane_inside_fn;
-  plane->free_fn          = &dmnsn_free;
+  plane->intersection_fn  = dmnsn_plane_intersection_fn;
+  plane->inside_fn        = dmnsn_plane_inside_fn;
+  plane->free_fn          = dmnsn_free;
   plane->bounding_box     = dmnsn_infinite_bounding_box();
   plane->ptr              = param;
   return plane;

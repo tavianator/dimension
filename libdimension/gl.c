@@ -39,14 +39,14 @@ dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 {
   /* Check if we've already optimized this canvas */
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    if (i->optimizer_fn == &dmnsn_gl_optimizer_fn) {
+    if (i->optimizer_fn == dmnsn_gl_optimizer_fn) {
       return 0;
     }
   }
 
   dmnsn_canvas_optimizer optimizer;
-  optimizer.optimizer_fn = &dmnsn_gl_optimizer_fn;
-  optimizer.free_fn = &dmnsn_free;
+  optimizer.optimizer_fn = dmnsn_gl_optimizer_fn;
+  optimizer.free_fn = dmnsn_free;
 
   /* Allocate a buffer to hold RGB values */
   optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(GLushort));
@@ -70,7 +70,7 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 
   /* Check if we can optimize this */
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    if (i->optimizer_fn == &dmnsn_gl_optimizer_fn) {
+    if (i->optimizer_fn == dmnsn_gl_optimizer_fn) {
       glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT, i->ptr);
       return glGetError() == GL_NO_ERROR ? 0 : 1;
     }

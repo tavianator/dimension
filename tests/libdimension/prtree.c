@@ -67,7 +67,7 @@ main(void)
   for (size_t i = 0; i < nobjects; ++i) {
     dmnsn_object *object = dmnsn_new_object();
     dmnsn_randomize_bounding_box(object);
-    object->intersection_fn = &dmnsn_fake_intersection_fn;
+    object->intersection_fn = dmnsn_fake_intersection_fn;
     dmnsn_initialize_object(object);
     dmnsn_array_push(scene->objects, &object);
   }

@@ -145,8 +145,8 @@ dmnsn_object *
 dmnsn_new_torus(double major, double minor)
 {
   dmnsn_object *torus = dmnsn_new_object();
-  torus->intersection_fn  = &dmnsn_torus_intersection_fn;
-  torus->inside_fn        = &dmnsn_torus_inside_fn;
+  torus->intersection_fn  = dmnsn_torus_intersection_fn;
+  torus->inside_fn        = dmnsn_torus_inside_fn;
   torus->bounding_box.min = dmnsn_new_vector(-(major + minor),
                                              -minor,
                                              -(major + minor));
@@ -158,6 +158,6 @@ dmnsn_new_torus(double major, double minor)
   payload->major = major;
   payload->minor = minor;
   torus->ptr     = payload;
-  torus->free_fn = &dmnsn_free;
+  torus->free_fn = dmnsn_free;
   return torus;
 }

@@ -65,7 +65,7 @@ void dmnsn_pop_scope(dmnsn_symbol_table *symtable)
 {
   dmnsn_dictionary *scope;
   dmnsn_array_pop(symtable, &scope);
-  dmnsn_dictionary_apply(scope, &dmnsn_delete_symbol_table_entry);
+  dmnsn_dictionary_apply(scope, dmnsn_delete_symbol_table_entry);
   dmnsn_delete_dictionary(scope);
 }
 
@@ -274,7 +274,7 @@ dmnsn_delete_astnode(dmnsn_astnode astnode)
   if (*astnode.refcount <= 1) {
     dmnsn_delete_astree(astnode.children);
     if (astnode.free_fn) {
-      (*astnode.free_fn)(astnode.ptr);
+      astnode.free_fn(astnode.ptr);
     } else {
       dmnsn_free(astnode.ptr);
     }

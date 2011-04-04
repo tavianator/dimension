@@ -32,7 +32,7 @@
 static void dmnsn_default_fatal_error_fn(void);
 
 /** The current fatal error handler. */
-static dmnsn_fatal_error_fn *dmnsn_fatal = &dmnsn_default_fatal_error_fn;
+static dmnsn_fatal_error_fn *dmnsn_fatal = dmnsn_default_fatal_error_fn;
 /** Mutex which protects \c dmnsn_fatal. */
 static pthread_mutex_t dmnsn_fatal_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -66,7 +66,7 @@ dmnsn_report_error(bool die, const char *func, const char *file,
   if (die || always_die) {
     /* An error happened, bail out */
     dmnsn_fatal_error_fn *fatal = dmnsn_get_fatal_error_fn();
-    (*fatal)();
+    fatal();
     exit(EXIT_FAILURE); /* Failsafe in case *dmnsn_fatal doesn't exit */
   }
 }

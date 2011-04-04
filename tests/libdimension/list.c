@@ -56,7 +56,7 @@ main(void)
   }
 
   /* Ensure that sorting works */
-  dmnsn_list_sort(list, &dmnsn_comparator);
+  dmnsn_list_sort(list, dmnsn_comparator);
   for (dmnsn_list_iterator *i = dmnsn_list_first(list);
        i != dmnsn_list_last(list);
        i = dmnsn_list_next(i))

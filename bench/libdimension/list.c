@@ -105,7 +105,7 @@ main(void)
   printf("dmnsn_list_split(): %ld\n", sandglass.grains);
 
   /* dmnsn_list_sort() */
-  sandglass_bench(&sandglass, dmnsn_list_sort(list, &dmnsn_comparator));
+  sandglass_bench(&sandglass, dmnsn_list_sort(list, dmnsn_comparator));
   printf("dmnsn_list_sort(): %ld\n", sandglass.grains);
 
   /* dmnsn_list_remove() */

@@ -44,7 +44,7 @@ dmnsn_delete_finish(dmnsn_finish *finish)
 {
   if (finish) {
     if (finish->free_fn) {
-      (*finish->free_fn)(finish->ptr);
+      finish->free_fn(finish->ptr);
     }
     dmnsn_free(finish);
   }

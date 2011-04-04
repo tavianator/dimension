@@ -61,7 +61,7 @@ dmnsn_raytrace_scene_async(dmnsn_scene *scene)
   payload->progress = progress;
   payload->scene    = scene;
 
-  dmnsn_new_thread(progress, &dmnsn_raytrace_scene_thread, payload);
+  dmnsn_new_thread(progress, dmnsn_raytrace_scene_thread, payload);
 
   return progress;
 }
@@ -89,7 +89,7 @@ dmnsn_raytrace_scene_thread(void *ptr)
 
   /* Time the render itself */
   payload->scene->render_timer = dmnsn_new_timer();
-    int ret = dmnsn_execute_concurrently(&dmnsn_raytrace_scene_concurrent,
+    int ret = dmnsn_execute_concurrently(dmnsn_raytrace_scene_concurrent,
                                          payload, payload->scene->nthreads);
   dmnsn_complete_timer(payload->scene->render_timer);
 
@@ -187,9 +187,9 @@ dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
 /** Call the appropriate overloaded texture callback. */
 #define TEXTURE_CALLBACK(state, telem, fn, def, ...)                       \
   (CAN_CALL(ITEXTURE(state), telem, fn)                                    \
-   ? (*ITEXTURE(state)->telem->fn)(ITEXTURE(state)->telem, __VA_ARGS__)    \
+   ? ITEXTURE(state)->telem->fn(ITEXTURE(state)->telem, __VA_ARGS__)    \
    : (CAN_CALL(DTEXTURE(state), telem, fn)                                 \
-      ? (*DTEXTURE(state)->telem->fn)(DTEXTURE(state)->telem, __VA_ARGS__) \
+      ? DTEXTURE(state)->telem->fn(DTEXTURE(state)->telem, __VA_ARGS__) \
       : def));
 
 /** Get a property from a texture element. */
@@ -250,7 +250,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
       * dmnsn_vector_dot(state->viewer, state->intersection->normal) < 0.0)
     return dmnsn_black;
 
-  dmnsn_color color = (*light->light_fn)(light, state->r);
+  dmnsn_color color = light->light_fn(light, state->r);
 
   unsigned int reclevel = state->reclevel;
   while (reclevel) {

@@ -44,8 +44,8 @@ dmnsn_new_gradient_pattern(dmnsn_vector orientation)
   dmnsn_vector *payload = dmnsn_malloc(sizeof(dmnsn_vector));
   *payload = dmnsn_vector_normalize(orientation);
 
-  gradient->pattern_fn = &dmnsn_gradient_pattern_fn;
-  gradient->free_fn    = &dmnsn_free;
+  gradient->pattern_fn = dmnsn_gradient_pattern_fn;
+  gradient->free_fn    = dmnsn_free;
   gradient->ptr        = payload;
 
   return gradient;

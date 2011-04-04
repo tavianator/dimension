@@ -79,9 +79,9 @@ dmnsn_new_color_map_pigment(dmnsn_pattern *pattern, dmnsn_map *map)
   payload->pattern = pattern;
   payload->map     = map;
 
-  pigment->pigment_fn    = &dmnsn_color_map_pigment_fn;
-  pigment->initialize_fn = &dmnsn_color_map_initialize_fn;
-  pigment->free_fn       = &dmnsn_delete_color_map_payload;
+  pigment->pigment_fn    = dmnsn_color_map_pigment_fn;
+  pigment->initialize_fn = dmnsn_color_map_initialize_fn;
+  pigment->free_fn       = dmnsn_delete_color_map_payload;
   pigment->ptr           = payload;
   return pigment;
 }

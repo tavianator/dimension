@@ -61,8 +61,8 @@ dmnsn_new_phong_finish(double specular, double exp)
   params[1] = exp;
 
   finish->ptr         = params;
-  finish->specular_fn = &dmnsn_phong_specular_fn;
-  finish->free_fn     = &dmnsn_free;
+  finish->specular_fn = dmnsn_phong_specular_fn;
+  finish->free_fn     = dmnsn_free;
 
   return finish;
 }

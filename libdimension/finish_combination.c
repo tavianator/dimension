@@ -36,13 +36,13 @@ dmnsn_finish_combination_diffuse_fn(const dmnsn_finish *finish,
   dmnsn_finish **params = finish->ptr;
   if (params[0]->diffuse_fn && params[1]->diffuse_fn) {
     return dmnsn_color_add(
-      (*params[0]->diffuse_fn)(params[0], light, color, ray, normal),
-      (*params[1]->diffuse_fn)(params[1], light, color, ray, normal)
+      params[0]->diffuse_fn(params[0], light, color, ray, normal),
+      params[1]->diffuse_fn(params[1], light, color, ray, normal)
     );
   } else if (params[0]->diffuse_fn) {
-    return (*params[0]->diffuse_fn)(params[0], light, color, ray, normal);
+    return params[0]->diffuse_fn(params[0], light, color, ray, normal);
   } else if (params[1]->diffuse_fn) {
-    return (*params[1]->diffuse_fn)(params[1], light, color, ray, normal);
+    return params[1]->diffuse_fn(params[1], light, color, ray, normal);
   } else {
     return dmnsn_black;
   }
@@ -58,15 +58,15 @@ dmnsn_finish_combination_specular_fn(const dmnsn_finish *finish,
   dmnsn_finish **params = finish->ptr;
   if (params[0]->specular_fn && params[1]->specular_fn) {
     return dmnsn_color_add(
-      (*params[0]->specular_fn)(params[0], light, color, ray, normal, viewer),
-      (*params[1]->specular_fn)(params[1], light, color, ray, normal, viewer)
+      params[0]->specular_fn(params[0], light, color, ray, normal, viewer),
+      params[1]->specular_fn(params[1], light, color, ray, normal, viewer)
     );
   } else if (params[0]->specular_fn) {
-    return (*params[0]->specular_fn)(params[0], light, color, ray,
-                                     normal, viewer);
+    return params[0]->specular_fn(params[0], light, color, ray,
+                                  normal, viewer);
   } else if (params[1]->specular_fn) {
-    return (*params[1]->specular_fn)(params[1], light, color, ray,
-                                     normal, viewer);
+    return params[1]->specular_fn(params[1], light, color, ray,
+                                  normal, viewer);
   } else {
     return dmnsn_black;
   }
@@ -79,12 +79,12 @@ dmnsn_finish_combination_ambient_fn(const dmnsn_finish *finish,
 {
   dmnsn_finish **params = finish->ptr;
   if (params[0]->ambient_fn && params[1]->ambient_fn) {
-    return dmnsn_color_add((*params[0]->ambient_fn)(params[0], pigment),
-                           (*params[1]->ambient_fn)(params[1], pigment));
+    return dmnsn_color_add(params[0]->ambient_fn(params[0], pigment),
+                           params[1]->ambient_fn(params[1], pigment));
   } else if (params[0]->ambient_fn) {
-    return (*params[0]->ambient_fn)(params[0], pigment);
+    return params[0]->ambient_fn(params[0], pigment);
   } else if (params[1]->ambient_fn) {
-    return (*params[1]->ambient_fn)(params[1], pigment);
+    return params[1]->ambient_fn(params[1], pigment);
   } else {
     return dmnsn_black;
   }
@@ -99,13 +99,13 @@ dmnsn_finish_combination_reflection_fn(const dmnsn_finish *finish,
   dmnsn_finish **params = finish->ptr;
   if (params[0]->reflection_fn && params[1]->reflection_fn) {
     return dmnsn_color_add(
-      (*params[0]->reflection_fn)(params[0], reflect, color, ray, normal),
-      (*params[1]->reflection_fn)(params[1], reflect, color, ray, normal)
+      params[0]->reflection_fn(params[0], reflect, color, ray, normal),
+      params[1]->reflection_fn(params[1], reflect, color, ray, normal)
     );
   } else if (params[0]->reflection_fn) {
-    return (*params[0]->reflection_fn)(params[0], reflect, color, ray, normal);
+    return params[0]->reflection_fn(params[0], reflect, color, ray, normal);
   } else if (params[1]->reflection_fn) {
-    return (*params[1]->reflection_fn)(params[1], reflect, color, ray, normal);
+    return params[1]->reflection_fn(params[1], reflect, color, ray, normal);
   } else {
     return dmnsn_black;
   }
@@ -133,18 +133,18 @@ dmnsn_new_finish_combination(dmnsn_finish *f1, dmnsn_finish *f2)
   finish->ptr = params;
 
   if (f1->diffuse_fn || f2->diffuse_fn)
-    finish->diffuse_fn = &dmnsn_finish_combination_diffuse_fn;
+    finish->diffuse_fn = dmnsn_finish_combination_diffuse_fn;
 
   if (f1->specular_fn || f2->specular_fn)
-    finish->specular_fn = &dmnsn_finish_combination_specular_fn;
+    finish->specular_fn = dmnsn_finish_combination_specular_fn;
 
   if (f1->ambient_fn || f2->ambient_fn)
-    finish->ambient_fn = &dmnsn_finish_combination_ambient_fn;
+    finish->ambient_fn = dmnsn_finish_combination_ambient_fn;
 
   if (f1->reflection_fn || f2->reflection_fn)
-    finish->reflection_fn = &dmnsn_finish_combination_reflection_fn;
+    finish->reflection_fn = dmnsn_finish_combination_reflection_fn;
 
-  finish->free_fn = &dmnsn_finish_combination_free_fn;
+  finish->free_fn = dmnsn_finish_combination_free_fn;
 
   return finish;
 }

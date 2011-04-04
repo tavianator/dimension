@@ -41,14 +41,14 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
 {
   /* Check if we've already optimized this canvas */
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    if (i->optimizer_fn == &dmnsn_png_optimizer_fn) {
+    if (i->optimizer_fn == dmnsn_png_optimizer_fn) {
       return 0;
     }
   }
 
   dmnsn_canvas_optimizer optimizer;
-  optimizer.optimizer_fn = &dmnsn_png_optimizer_fn;
-  optimizer.free_fn = &dmnsn_free;
+  optimizer.optimizer_fn = dmnsn_png_optimizer_fn;
+  optimizer.free_fn = dmnsn_free;
 
   optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(uint16_t));
 
@@ -145,7 +145,7 @@ dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
   payload->file     = file;
 
   /* Create the worker thread */
-  dmnsn_new_thread(progress, &dmnsn_png_write_canvas_thread, payload);
+  dmnsn_new_thread(progress, dmnsn_png_write_canvas_thread, payload);
 
   return progress;
 }
@@ -173,7 +173,7 @@ dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
   payload->file     = file;
 
   /* Create the worker thread */
-  dmnsn_new_thread(progress, &dmnsn_png_read_canvas_thread, payload);
+  dmnsn_new_thread(progress, dmnsn_png_read_canvas_thread, payload);
 
   return progress;
 }
@@ -250,7 +250,7 @@ dmnsn_png_write_canvas_thread(void *ptr)
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i,
                        payload->canvas->optimizers)
   {
-    if (i->optimizer_fn == &dmnsn_png_optimizer_fn) {
+    if (i->optimizer_fn == dmnsn_png_optimizer_fn) {
       for (size_t y = 0; y < height; ++y) {
         /* Invert the rows.  PNG coordinates are fourth quadrant. */
         uint16_t *row = (uint16_t *)i->ptr + 4*(height - y - 1)*width;
@@ -399,7 +399,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
   int number_of_passes = png_set_interlace_handling(png_ptr);
 
   dmnsn_set_progress_total(payload->progress, (number_of_passes + 1)*height);
-  png_set_read_status_fn(png_ptr, &dmnsn_png_read_row_callback);
+  png_set_read_status_fn(png_ptr, dmnsn_png_read_row_callback);
 
   /*
    * - Convert paletted images to RGB.

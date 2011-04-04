@@ -144,7 +144,7 @@ dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
                           dmnsn_intersection *intersection)
 {
   dmnsn_line line_trans = dmnsn_transform_line(object->trans_inv, line);
-  if ((*object->intersection_fn)(object, line_trans, intersection)) {
+  if (object->intersection_fn(object, line_trans, intersection)) {
     /* Get us back into world coordinates */
     intersection->ray    = line;
     intersection->normal = dmnsn_transform_normal(object->trans,
@@ -165,7 +165,7 @@ DMNSN_INLINE bool
 dmnsn_object_inside(const dmnsn_object *object, dmnsn_vector point)
 {
   point = dmnsn_transform_vector(object->trans_inv, point);
-  return (*object->inside_fn)(object, point);
+  return object->inside_fn(object, point);
 }
 
 #endif /* DIMENSION_OBJECT_H */

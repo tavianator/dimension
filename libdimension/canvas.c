@@ -54,7 +54,7 @@ dmnsn_delete_canvas(dmnsn_canvas *canvas)
     /* Free the optimizers */
     DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
       if (i->free_fn) {
-        (*i->free_fn)(i->ptr);
+        i->free_fn(i->ptr);
       }
     }
     dmnsn_delete_array(canvas->optimizers);
@@ -85,7 +85,7 @@ dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
 
   /* Call the optimizers */
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    (*i->optimizer_fn)(canvas, *i, x, y);
+    i->optimizer_fn(canvas, *i, x, y);
   }
 }
 

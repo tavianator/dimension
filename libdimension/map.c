@@ -48,7 +48,7 @@ dmnsn_delete_map(dmnsn_map *map)
     if (map->free_fn) {
       for (size_t i = 0; i < dmnsn_array_size(map->array); ++i) {
         dmnsn_map_entry *entry = dmnsn_array_at(map->array, i);
-        (*map->free_fn)(entry->object);
+        map->free_fn(entry->object);
       }
     }
 
@@ -131,6 +131,6 @@ dmnsn_map_apply(dmnsn_map *map, dmnsn_callback_fn *callback)
 {
   for (size_t i = 0; i < dmnsn_array_size(map->array); ++i) {
     dmnsn_map_entry *entry = dmnsn_array_at(map->array, i);
-    (*callback)(entry->object);
+    callback(entry->object);
   }
 }

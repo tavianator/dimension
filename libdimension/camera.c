@@ -42,7 +42,7 @@ dmnsn_delete_camera(dmnsn_camera *camera)
 {
   if (camera) {
     if (camera->free_fn) {
-      (*camera->free_fn)(camera->ptr);
+      camera->free_fn(camera->ptr);
     }
     dmnsn_free(camera);
   }
@@ -52,6 +52,6 @@ dmnsn_delete_camera(dmnsn_camera *camera)
 dmnsn_line
 dmnsn_camera_ray(const dmnsn_camera *camera, double x, double y)
 {
-  dmnsn_line ray = (*camera->ray_fn)(camera, x, y);
+  dmnsn_line ray = camera->ray_fn(camera, x, y);
   return dmnsn_transform_line(camera->trans, ray);
 }

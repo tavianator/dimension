@@ -44,7 +44,7 @@ dmnsn_delete_pigment(dmnsn_pigment *pigment)
 {
   if (pigment) {
     if (pigment->free_fn) {
-      (*pigment->free_fn)(pigment->ptr);
+      pigment->free_fn(pigment->ptr);
     }
     dmnsn_free(pigment);
   }
@@ -55,7 +55,7 @@ void
 dmnsn_initialize_pigment(dmnsn_pigment *pigment)
 {
   if (pigment->initialize_fn) {
-    (*pigment->initialize_fn)(pigment);
+    pigment->initialize_fn(pigment);
   }
 
   pigment->trans_inv = dmnsn_matrix_inverse(pigment->trans);

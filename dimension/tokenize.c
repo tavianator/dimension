@@ -752,7 +752,7 @@ dmnsn_declare_macro(int token, dmnsn_token_buffer *prev,
     prev->auto_delete = true;
 
   mnode->ptr     = tbuffer;
-  mnode->free_fn = &dmnsn_delete_token_buffer;
+  mnode->free_fn = dmnsn_delete_token_buffer;
   return true;
 }
 

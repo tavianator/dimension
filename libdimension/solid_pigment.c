@@ -43,8 +43,8 @@ dmnsn_new_solid_pigment(dmnsn_color color)
   dmnsn_color *solid = dmnsn_malloc(sizeof(dmnsn_color));
   *solid = color;
 
-  pigment->pigment_fn  = &dmnsn_solid_pigment_fn;
-  pigment->free_fn     = &dmnsn_free;
+  pigment->pigment_fn  = dmnsn_solid_pigment_fn;
+  pigment->free_fn     = dmnsn_free;
   pigment->quick_color = color;
   pigment->ptr         = solid;
 

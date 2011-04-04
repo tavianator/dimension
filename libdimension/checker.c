@@ -55,6 +55,6 @@ dmnsn_pattern *
 dmnsn_new_checker_pattern(void)
 {
   dmnsn_pattern *checker = dmnsn_new_pattern();
-  checker->pattern_fn = &dmnsn_checker_pattern_fn;
+  checker->pattern_fn = dmnsn_checker_pattern_fn;
   return checker;
 }

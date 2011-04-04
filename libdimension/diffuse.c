@@ -51,8 +51,8 @@ dmnsn_new_diffuse_finish(double diffuse)
   *param = diffuse;
 
   finish->ptr        = param;
-  finish->diffuse_fn = &dmnsn_diffuse_finish_fn;
-  finish->free_fn    = &dmnsn_free;
+  finish->diffuse_fn = dmnsn_diffuse_finish_fn;
+  finish->free_fn    = dmnsn_free;
 
   return finish;
 }

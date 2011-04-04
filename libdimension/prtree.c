@@ -237,22 +237,22 @@ dmnsn_zmax_prnode_comp(const dmnsn_list_iterator *l,
 
 /** Leaf node comparators. */
 static dmnsn_list_comparator_fn *dmnsn_object_comparators[6] = {
-  [DMNSN_XMIN] = &dmnsn_xmin_object_comp,
-  [DMNSN_YMIN] = &dmnsn_ymin_object_comp,
-  [DMNSN_ZMIN] = &dmnsn_zmin_object_comp,
-  [DMNSN_XMAX] = &dmnsn_xmax_object_comp,
-  [DMNSN_YMAX] = &dmnsn_ymax_object_comp,
-  [DMNSN_ZMAX] = &dmnsn_zmax_object_comp
+  [DMNSN_XMIN] = dmnsn_xmin_object_comp,
+  [DMNSN_YMIN] = dmnsn_ymin_object_comp,
+  [DMNSN_ZMIN] = dmnsn_zmin_object_comp,
+  [DMNSN_XMAX] = dmnsn_xmax_object_comp,
+  [DMNSN_YMAX] = dmnsn_ymax_object_comp,
+  [DMNSN_ZMAX] = dmnsn_zmax_object_comp
 };
 
 /** Internal node comparators. */
 static dmnsn_list_comparator_fn *dmnsn_prnode_comparators[6] = {
-  [DMNSN_XMIN] = &dmnsn_xmin_prnode_comp,
-  [DMNSN_YMIN] = &dmnsn_ymin_prnode_comp,
-  [DMNSN_ZMIN] = &dmnsn_zmin_prnode_comp,
-  [DMNSN_XMAX] = &dmnsn_xmax_prnode_comp,
-  [DMNSN_YMAX] = &dmnsn_ymax_prnode_comp,
-  [DMNSN_ZMAX] = &dmnsn_zmax_prnode_comp
+  [DMNSN_XMIN] = dmnsn_xmin_prnode_comp,
+  [DMNSN_YMIN] = dmnsn_ymin_prnode_comp,
+  [DMNSN_ZMIN] = dmnsn_zmin_prnode_comp,
+  [DMNSN_XMAX] = dmnsn_xmax_prnode_comp,
+  [DMNSN_YMAX] = dmnsn_ymax_prnode_comp,
+  [DMNSN_ZMAX] = dmnsn_zmax_prnode_comp
 };
 
 /** Select an extreme node based on a comparator. */

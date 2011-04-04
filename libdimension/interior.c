@@ -45,7 +45,7 @@ dmnsn_delete_interior(dmnsn_interior *interior)
   if (interior) {
     if (*interior->refcount <= 1) {
       if (interior->free_fn) {
-        (*interior->free_fn)(interior->ptr);
+        interior->free_fn(interior->ptr);
       }
       dmnsn_free(interior->refcount);
       dmnsn_free(interior);

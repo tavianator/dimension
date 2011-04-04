@@ -68,7 +68,7 @@ dmnsn_delete_thread_profile(void *ptr)
   if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
     dmnsn_error("Couldn't lock mutex.");
   }
-  dmnsn_dictionary_apply(thread_profile, &dmnsn_profile_globalize);
+  dmnsn_dictionary_apply(thread_profile, dmnsn_profile_globalize);
   if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
     dmnsn_error("Couldn't unlock mutex.");
   }
@@ -80,8 +80,7 @@ dmnsn_delete_thread_profile(void *ptr)
 static void
 dmnsn_initialize_thread_profile(void)
 {
-  if (pthread_key_create(&dmnsn_thread_profile,
-                         &dmnsn_delete_thread_profile)
+  if (pthread_key_create(&dmnsn_thread_profile, dmnsn_delete_thread_profile)
       != 0)
   {
     dmnsn_error("pthread_key_create() failed.");
@@ -100,8 +99,7 @@ dmnsn_initialize_thread_profile(void)
 static dmnsn_dictionary *
 dmnsn_get_thread_profile(void)
 {
-  if (pthread_once(&dmnsn_thread_profile_once,
-                   &dmnsn_initialize_thread_profile)
+  if (pthread_once(&dmnsn_thread_profile_once, dmnsn_initialize_thread_profile)
       != 0)
   {
     dmnsn_error("pthread_once() failed.");
@@ -183,7 +181,7 @@ dmnsn_print_bad_predictions(void)
   if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
     dmnsn_error("Couldn't lock mutex.");
   }
-  dmnsn_dictionary_apply(dmnsn_profile, &dmnsn_print_bad_prediction);
+  dmnsn_dictionary_apply(dmnsn_profile, dmnsn_print_bad_prediction);
   dmnsn_delete_dictionary(dmnsn_profile);
   dmnsn_profile = NULL;
   if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {

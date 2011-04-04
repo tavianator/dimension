@@ -54,7 +54,7 @@ dmnsn_delete_object(dmnsn_object *object)
     dmnsn_delete_interior(object->interior);
     dmnsn_delete_texture(object->texture);
     if (object->free_fn) {
-      (*object->free_fn)(object->ptr);
+      object->free_fn(object->ptr);
     }
     dmnsn_free(object);
   }
@@ -73,7 +73,7 @@ dmnsn_initialize_object(dmnsn_object *object)
   }
 
   if (object->initialize_fn) {
-    (*object->initialize_fn)(object);
+    object->initialize_fn(object);
   }
 
   object->bounding_box

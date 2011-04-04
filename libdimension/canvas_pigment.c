@@ -51,8 +51,8 @@ dmnsn_pigment *
 dmnsn_new_canvas_pigment(dmnsn_canvas *canvas)
 {
   dmnsn_pigment *pigment = dmnsn_new_pigment();
-  pigment->pigment_fn = &dmnsn_canvas_pigment_fn;
-  pigment->free_fn    = &dmnsn_canvas_pigment_free_fn;
+  pigment->pigment_fn = dmnsn_canvas_pigment_fn;
+  pigment->free_fn    = dmnsn_canvas_pigment_free_fn;
   pigment->ptr        = canvas;
   return pigment;
 }

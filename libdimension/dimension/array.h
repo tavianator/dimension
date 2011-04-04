@@ -236,7 +236,7 @@ dmnsn_array_apply(dmnsn_array *array, dmnsn_callback_fn *callback)
 {
   char *i, *last = (char *)dmnsn_array_last(array);
   for (i = (char *)dmnsn_array_first(array); i <= last; i += array->obj_size) {
-    (*callback)((void *)i);
+    callback((void *)i);
   }
 }
 

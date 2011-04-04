@@ -1254,7 +1254,7 @@ dmnsn_realize_csg(dmnsn_astnode astnode, dmnsn_astnode modifiers,
       dmnsn_array_push(lights, &light);
     } else {
       dmnsn_object *object = dmnsn_realize_object(*onode, lights);
-      csg = (*csg_object_fn)(csg, object);
+      csg = csg_object_fn(csg, object);
     }
   }
 
@@ -1268,7 +1268,7 @@ dmnsn_realize_intersection(dmnsn_astnode astnode, dmnsn_astnode modifiers,
   dmnsn_assert(astnode.type == DMNSN_AST_INTERSECTION,
                "Expected an intersection.");
   return dmnsn_realize_csg(astnode, modifiers, lights,
-                           &dmnsn_new_csg_intersection);
+                           dmnsn_new_csg_intersection);
 }
 
 static dmnsn_object *
@@ -1277,7 +1277,7 @@ dmnsn_realize_difference(dmnsn_astnode astnode, dmnsn_astnode modifiers,
 {
   dmnsn_assert(astnode.type == DMNSN_AST_DIFFERENCE, "Expected a difference.");
   return dmnsn_realize_csg(astnode, modifiers, lights,
-                           &dmnsn_new_csg_difference);
+                           dmnsn_new_csg_difference);
 }
 
 static dmnsn_object *
@@ -1285,7 +1285,7 @@ dmnsn_realize_merge(dmnsn_astnode astnode, dmnsn_astnode modifiers,
                     dmnsn_array *lights)
 {
   dmnsn_assert(astnode.type == DMNSN_AST_MERGE, "Expected a merge.");
-  return dmnsn_realize_csg(astnode, modifiers, lights, &dmnsn_new_csg_merge);
+  return dmnsn_realize_csg(astnode, modifiers, lights, dmnsn_new_csg_merge);
 }
 
 /* Realize an object, or maybe a light */

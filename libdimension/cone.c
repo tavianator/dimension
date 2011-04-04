@@ -142,8 +142,8 @@ dmnsn_object *
 dmnsn_new_cone(double r1, double r2, bool open)
 {
   dmnsn_object *cone = dmnsn_new_object();
-  cone->intersection_fn  = &dmnsn_cone_intersection_fn;
-  cone->inside_fn        = &dmnsn_cone_inside_fn;
+  cone->intersection_fn  = dmnsn_cone_intersection_fn;
+  cone->inside_fn        = dmnsn_cone_inside_fn;
   double rmax = dmnsn_max(r1, r2);
   cone->bounding_box.min = dmnsn_new_vector(-rmax, -1.0, -rmax);
   cone->bounding_box.max = dmnsn_new_vector(rmax, 1.0, rmax);
@@ -153,6 +153,6 @@ dmnsn_new_cone(double r1, double r2, bool open)
   payload->r2       = r2;
   payload->open     = open;
   cone->ptr     = payload;
-  cone->free_fn = &dmnsn_free;
+  cone->free_fn = dmnsn_free;
   return cone;
 }

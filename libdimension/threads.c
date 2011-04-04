@@ -51,9 +51,9 @@ dmnsn_thread(void *arg)
   dmnsn_thread_payload *payload = arg;
   int *ret;
 
-  pthread_cleanup_push(&dmnsn_thread_cleanup, payload);
+  pthread_cleanup_push(dmnsn_thread_cleanup, payload);
   ret  = dmnsn_malloc(sizeof(int));
-  *ret = (*payload->thread_fn)(payload->arg);
+  *ret = payload->thread_fn(payload->arg);
   pthread_cleanup_pop(1);
   return ret;
 }
@@ -67,7 +67,7 @@ dmnsn_new_thread(dmnsn_progress *progress, dmnsn_thread_fn *thread_fn,
   payload->arg       = arg;
   payload->progress  = progress;
 
-  if (pthread_create(&progress->thread, NULL, &dmnsn_thread, payload) != 0) {
+  if (pthread_create(&progress->thread, NULL, dmnsn_thread, payload) != 0) {
     dmnsn_error("Couldn't start thread.");
   }
 }
@@ -84,8 +84,8 @@ static void *
 dmnsn_concurrent_thread(void *ptr)
 {
   dmnsn_concurrent_thread_payload *payload = ptr;
-  payload->ret = (*payload->thread_fn)(payload->arg, payload->thread,
-                                       payload->nthreads);
+  payload->ret = payload->thread_fn(payload->arg, payload->thread,
+                                    payload->nthreads);
   return NULL;
 }
 
@@ -102,7 +102,7 @@ dmnsn_execute_concurrently(dmnsn_concurrent_thread_fn *thread_fn,
     payloads[i].thread    = i;
     payloads[i].nthreads  = nthreads;
     payloads[i].ret       = -1;
-    if (pthread_create(&threads[i], NULL, &dmnsn_concurrent_thread,
+    if (pthread_create(&threads[i], NULL, dmnsn_concurrent_thread,
                        &payloads[i]) != 0)
     {
       dmnsn_error("Couldn't start worker thread.");

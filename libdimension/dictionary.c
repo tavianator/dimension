@@ -225,7 +225,7 @@ void
 dmnsn_dictionary_apply(dmnsn_dictionary *dict, dmnsn_callback_fn *callback)
 {
   if (dict->value) {
-    (*callback)(dict->value);
+    callback(dict->value);
   }
 
   DMNSN_ARRAY_FOREACH (dmnsn_dictionary **, subtrie, dict->children) {

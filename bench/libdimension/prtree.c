@@ -59,8 +59,8 @@ dmnsn_new_fake_object(void)
   dmnsn_object *object = dmnsn_new_object();
   /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
   dmnsn_randomize_bounding_box(object);
-  object->intersection_fn = &dmnsn_fake_intersection_fn;
-  object->inside_fn       = &dmnsn_fake_inside_fn;
+  object->intersection_fn = dmnsn_fake_intersection_fn;
+  object->inside_fn       = dmnsn_fake_inside_fn;
   return object;
 }
 

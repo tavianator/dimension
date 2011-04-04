@@ -40,7 +40,7 @@ void
 dmnsn_delete_pattern(dmnsn_pattern *pattern)
 {
   if (pattern->free_fn) {
-    (*pattern->free_fn)(pattern->ptr);
+    pattern->free_fn(pattern->ptr);
   }
   dmnsn_free(pattern);
 }
@@ -57,5 +57,5 @@ double
 dmnsn_pattern_value(const dmnsn_pattern *pattern, dmnsn_vector v)
 {
   v = dmnsn_transform_vector(pattern->trans_inv, v);
-  return (*pattern->pattern_fn)(pattern, v);
+  return pattern->pattern_fn(pattern, v);
 }
