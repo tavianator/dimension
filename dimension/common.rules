@@ -28,14 +28,14 @@ IDENTIFIER: "identifier" {
               id = symbol->ptr;
               symbol = dmnsn_find_symbol(symtable, id);
             }
-            $$ = dmnsn_new_astnode(DMNSN_AST_IDENTIFIER, @$);
+            $$ = dmnsn_new_astleaf(DMNSN_AST_IDENTIFIER, @$);
             $$.ptr = dmnsn_strdup(id);
             dmnsn_free($1);
           }
 ;
 
 STRING: "string" {
-        $$ = dmnsn_new_astnode(DMNSN_AST_STRING, @$);
+        $$ = dmnsn_new_astleaf(DMNSN_AST_STRING, @$);
         $$.ptr = $1;
       }
 ;
@@ -152,7 +152,7 @@ TRANSFORMATION_ITEM: IDENTIFIER {
                      dmnsn_delete_astnode($1);
                    }
                    | "inverse" {
-                     $$ = dmnsn_new_astnode(DMNSN_AST_INVERSE, @$);
+                     $$ = dmnsn_new_astleaf(DMNSN_AST_INVERSE, @$);
                    }
 ;
 
@@ -181,7 +181,7 @@ CAMERA_ITEM: CAMERA_TYPE
 ;
 
 CAMERA_TYPE: "perspective" {
-             $$ = dmnsn_new_astnode(DMNSN_AST_PERSPECTIVE, @$);
+             $$ = dmnsn_new_astleaf(DMNSN_AST_PERSPECTIVE, @$);
            }
 ;
 
@@ -481,8 +481,7 @@ OBJECT_MODIFIER: TRANSFORMATION
 /* Patterns */
 
 BLOCK_PATTERN_TYPE: "checker" {
-                    dmnsn_astnode p
-                      = dmnsn_new_astnode(DMNSN_AST_CHECKER, @$);
+                    dmnsn_astnode p = dmnsn_new_astleaf(DMNSN_AST_CHECKER, @$);
                     $$ = dmnsn_new_astnode1(DMNSN_AST_PATTERN, @$, p);
                   }
 ;
@@ -537,14 +536,14 @@ PIGMENT_BODY: PIGMENT_TYPE PIGMENT_MODIFIERS {
               $$ = dmnsn_new_astnode2(DMNSN_AST_PIGMENT, @$, $1, $2);
             }
             | "checker" COLOR_LIST2 PIGMENT_MODIFIERS {
-              dmnsn_astnode checker = dmnsn_new_astnode(DMNSN_AST_CHECKER, @1);
+              dmnsn_astnode checker = dmnsn_new_astleaf(DMNSN_AST_CHECKER, @1);
               dmnsn_astnode pattern = dmnsn_new_astnode1(DMNSN_AST_PATTERN, @1,
                                                          checker);
               dmnsn_array_push($3.children, &$2);
               $$ = dmnsn_new_astnode2(DMNSN_AST_PIGMENT, @$, pattern, $3);
             }
             | "checker" PIGMENT_LIST2 PIGMENT_MODIFIERS {
-              dmnsn_astnode checker = dmnsn_new_astnode(DMNSN_AST_CHECKER, @1);
+              dmnsn_astnode checker = dmnsn_new_astleaf(DMNSN_AST_CHECKER, @1);
               dmnsn_astnode pattern = dmnsn_new_astnode1(DMNSN_AST_PATTERN, @1,
                                                          checker);
               dmnsn_array_push($3.children, &$2);
@@ -564,13 +563,13 @@ PIGMENT_TYPE: COLOR
                 STRING
               "}"
             {
-              dmnsn_astnode type = dmnsn_new_astnode(DMNSN_AST_PNG, @$);
+              dmnsn_astnode type = dmnsn_new_astleaf(DMNSN_AST_PNG, @$);
               $$ = dmnsn_new_astnode2(DMNSN_AST_IMAGE_MAP, @$, type, $3);
             }
 ;
 
 BITMAP_TYPE: "png" {
-             $$ = dmnsn_new_astnode(DMNSN_AST_PNG, @$);
+             $$ = dmnsn_new_astleaf(DMNSN_AST_PNG, @$);
            }
 ;
 
@@ -771,12 +770,12 @@ INT: FLOAT {
 ;
 
 FLOAT_LITERAL: "integer" {
-               dmnsn_astnode string = dmnsn_new_astnode(DMNSN_AST_STRING, @$);
+               dmnsn_astnode string = dmnsn_new_astleaf(DMNSN_AST_STRING, @$);
                string.ptr = $1;
                $$ = dmnsn_new_astnode1(DMNSN_AST_VAL, @$, string);
              }
              | "float" {
-               dmnsn_astnode string = dmnsn_new_astnode(DMNSN_AST_STRING, @$);
+               dmnsn_astnode string = dmnsn_new_astleaf(DMNSN_AST_STRING, @$);
                string.ptr = $1;
                $$ = dmnsn_new_astnode1(DMNSN_AST_VAL, @$, string);
              }
@@ -987,26 +986,26 @@ ARITH_EXPR: FLOAT_LITERAL
             $$ = dmnsn_new_astnode2(DMNSN_AST_VROTATE, @$, $3, $5);
           }
           | "image_height" {
-            $$ = dmnsn_new_astnode(DMNSN_AST_IDENTIFIER, @$);
+            $$ = dmnsn_new_astleaf(DMNSN_AST_IDENTIFIER, @$);
             $$.ptr = dmnsn_strdup("image_height");
           }
           | "image_width" {
-            $$ = dmnsn_new_astnode(DMNSN_AST_IDENTIFIER, @$);
+            $$ = dmnsn_new_astleaf(DMNSN_AST_IDENTIFIER, @$);
             $$.ptr = dmnsn_strdup("image_width");
           }
-          | "pi"    { $$ = dmnsn_new_astnode(DMNSN_AST_PI,    @$); }
-          | "true"  { $$ = dmnsn_new_astnode(DMNSN_AST_TRUE,  @$); }
-          | "on"    { $$ = dmnsn_new_astnode(DMNSN_AST_TRUE,  @$); }
-          | "yes"   { $$ = dmnsn_new_astnode(DMNSN_AST_TRUE,  @$); }
-          | "false" { $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$); }
-          | "off"   { $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$); }
-          | "no"    { $$ = dmnsn_new_astnode(DMNSN_AST_FALSE, @$); }
-          | "x"     { $$ = dmnsn_new_astnode(DMNSN_AST_X,     @$); }
-          | "u"     { $$ = dmnsn_new_astnode(DMNSN_AST_X,     @$); }
-          | "y"     { $$ = dmnsn_new_astnode(DMNSN_AST_Y,     @$); }
-          | "v"     { $$ = dmnsn_new_astnode(DMNSN_AST_Y,     @$); }
-          | "z"     { $$ = dmnsn_new_astnode(DMNSN_AST_Z,     @$); }
-          | "t"     { $$ = dmnsn_new_astnode(DMNSN_AST_T,     @$); }
+          | "pi"    { $$ = dmnsn_new_astleaf(DMNSN_AST_PI,    @$); }
+          | "true"  { $$ = dmnsn_new_astleaf(DMNSN_AST_TRUE,  @$); }
+          | "on"    { $$ = dmnsn_new_astleaf(DMNSN_AST_TRUE,  @$); }
+          | "yes"   { $$ = dmnsn_new_astleaf(DMNSN_AST_TRUE,  @$); }
+          | "false" { $$ = dmnsn_new_astleaf(DMNSN_AST_FALSE, @$); }
+          | "off"   { $$ = dmnsn_new_astleaf(DMNSN_AST_FALSE, @$); }
+          | "no"    { $$ = dmnsn_new_astleaf(DMNSN_AST_FALSE, @$); }
+          | "x"     { $$ = dmnsn_new_astleaf(DMNSN_AST_X,     @$); }
+          | "u"     { $$ = dmnsn_new_astleaf(DMNSN_AST_X,     @$); }
+          | "y"     { $$ = dmnsn_new_astleaf(DMNSN_AST_Y,     @$); }
+          | "v"     { $$ = dmnsn_new_astleaf(DMNSN_AST_Y,     @$); }
+          | "z"     { $$ = dmnsn_new_astleaf(DMNSN_AST_Z,     @$); }
+          | "t"     { $$ = dmnsn_new_astleaf(DMNSN_AST_T,     @$); }
           | IDENTIFIER
 ;
 

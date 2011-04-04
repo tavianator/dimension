@@ -130,8 +130,7 @@ DECL_PARAMS: /* empty */ {
 ;
 
 DECL_PARAM_LIST: IDENTIFIER {
-                 $$ = dmnsn_new_astnode(DMNSN_AST_MACRO, @$);
-                 dmnsn_array_push($$.children, &$1);
+                 $$ = dmnsn_new_astnode1(DMNSN_AST_MACRO, @$, $1);
                }
                | DECL_PARAM_LIST "," IDENTIFIER {
                  $$ = $1;
@@ -146,12 +145,10 @@ PARAMS: /* empty */ {
 ;
 
 PARAM_LIST: IDENTIFIER %dprec 2 {
-            $$ = dmnsn_new_astnode(DMNSN_AST_MACRO, @$);
-            dmnsn_array_push($$.children, &$1);
+            $$ = dmnsn_new_astnode1(DMNSN_AST_MACRO, @$, $1);
           }
           | PARAM      %dprec 1 {
-            $$ = dmnsn_new_astnode(DMNSN_AST_MACRO, @$);
-            dmnsn_array_push($$.children, &$1);
+            $$ = dmnsn_new_astnode1(DMNSN_AST_MACRO, @$, $1);
           }
           | PARAM_LIST "," IDENTIFIER %dprec 2 {
             $$ = $1;

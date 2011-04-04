@@ -82,13 +82,13 @@ GLOBAL_SETTINGS_ITEM: "ambient_light" COLOR {
 ;
 
 GLOBAL_CHARSET: "ascii" {
-                $$ = dmnsn_new_astnode(DMNSN_AST_ASCII, @$);
+                $$ = dmnsn_new_astleaf(DMNSN_AST_ASCII, @$);
               }
               | "utf8" {
-                $$ = dmnsn_new_astnode(DMNSN_AST_UTF8, @$);
+                $$ = dmnsn_new_astleaf(DMNSN_AST_UTF8, @$);
               }
               | "sys" {
-                $$ = dmnsn_new_astnode(DMNSN_AST_SYS, @$);
+                $$ = dmnsn_new_astleaf(DMNSN_AST_SYS, @$);
               }
 
 /* Atmospheric effects */

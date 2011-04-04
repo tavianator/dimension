@@ -47,6 +47,22 @@
 /* Create a new astnode, populating filename, line, and col */
 
 static dmnsn_astnode
+dmnsn_new_astleaf(dmnsn_astnode_type type, YYLTYPE lloc)
+{
+  dmnsn_astnode astnode = {
+    .type     = type,
+    .children = NULL,
+    .ptr      = NULL,
+    .free_fn  = NULL,
+    .refcount = dmnsn_malloc(sizeof(unsigned int)),
+    .location = lloc
+  };
+
+  *astnode.refcount = 1;
+  return astnode;
+}
+
+static dmnsn_astnode
 dmnsn_new_astnode(dmnsn_astnode_type type, YYLTYPE lloc)
 {
   dmnsn_astnode astnode = {
