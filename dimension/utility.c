@@ -18,8 +18,74 @@
  *************************************************************************/
 
 #include "utility.h"
+#include <ctype.h>
+#include <errno.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
+
+bool
+dmnsn_strtoi(int *n, const char *nptr, int base)
+{
+  long ln;
+  bool ret = dmnsn_strtol(&ln, nptr, base);
+  *n = ln;
+  return ret && ln <= INT_MAX && ln >= INT_MIN;
+}
+
+bool
+dmnsn_strtol(long *n, const char *nptr, int base)
+{
+  char *endptr;
+  errno = 0;
+  *n = strtol(nptr, &endptr, base);
+  return *endptr == '\0' && endptr != nptr && errno == 0;
+}
+
+bool
+dmnsn_strtoui(unsigned int *n, const char *nptr, int base)
+{
+  /* Skip leading whitespace to detect a leading minus sign */
+  while (isspace(*nptr)) {
+    ++nptr;
+  }
+  bool neg = false;
+  if (nptr[0] == '-') {
+    ++nptr;
+    if (nptr[0] == '-' || nptr[0] == '+') {
+      return false;
+    }
+    neg = true;
+  }
+
+  unsigned long ln;
+  bool ret = dmnsn_strtoul(&ln, nptr, base);
+  if (neg) {
+    *n = -ln;
+  } else {
+    *n = ln;
+  }
+  return ret && (ln <= UINT_MAX || nptr[0] == '-');
+}
+
+bool
+dmnsn_strtoul(unsigned long *n, const char *nptr, int base)
+{
+  char *endptr;
+  errno = 0;
+  *n = strtoul(nptr, &endptr, base);
+  return *endptr == '\0' && endptr != nptr && errno == 0;
+}
+
+bool
+dmnsn_strtod(double *n, const char *nptr)
+{
+  char *endptr;
+  errno = 0;
+  *n = strtod(nptr, &endptr);
+  return *endptr == '\0' && endptr != nptr
+    && (errno == 0 || (errno == ERANGE && *n == 0.0));
+}
 
 void
 dmnsn_diagnostic(dmnsn_parse_location location, const char *format, ...)

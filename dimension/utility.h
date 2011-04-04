@@ -21,6 +21,14 @@
 #define UTILITY_H
 
 #include "parse.h" /* For dmnsn_parse_location */
+#include <stdbool.h>
+
+/* Wrappers for strtol and strtoul, and some added ones */
+bool dmnsn_strtoi(int *n, const char *nptr, int base);
+bool dmnsn_strtol(long *n, const char *nptr, int base);
+bool dmnsn_strtoui(unsigned int *n, const char *nptr, int base);
+bool dmnsn_strtoul(unsigned long *n, const char *nptr, int base);
+bool dmnsn_strtod(double *n, const char *nptr);
 
 #if defined(__GNUC__) || defined(__attribute__)
   #define DMNSN_PRINTF_WARN(f, a) __attribute__((format (printf, f, a)))

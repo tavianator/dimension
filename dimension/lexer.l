@@ -102,7 +102,7 @@
 
 int token = DMNSN_T_LEX_ERROR;
 size_t string_length = 0, string_extent = 8;
-unsigned long wchar;
+unsigned int wchar;
 
 /* Silence some warnings */
 (void)yyunput;
@@ -351,7 +351,7 @@ unsigned long wchar;
 <DMNSN_STRING_ESCAPE>"'"        STRCAT("'", 1); yy_pop_state(yyscanner);
 <DMNSN_STRING_ESCAPE>"\""       STRCAT("\"", 1); yy_pop_state(yyscanner);
 <DMNSN_STRING_ESCAPE>"u"[[:digit:]aAbBcCdDeEfF]{4}      {
-  wchar = strtoul(yytext + 1, NULL, 16);
+  dmnsn_strtoui(&wchar, yytext + 1, 16);
   STRCAT("", 2);
   lvalp->value[string_length - 2] = wchar/256;
   lvalp->value[string_length - 1] = wchar%256;

@@ -733,26 +733,21 @@ dmnsn_eval_unary(dmnsn_astnode astnode, dmnsn_symbol_table *symtable)
       break;
     case DMNSN_AST_VAL:
       {
-        errno = 0;
-        char *endptr;
-        long l = strtol(rhs.ptr, &endptr, 0);
-        if (*endptr != '\0' || endptr == rhs.ptr
-            || (l != 0 && errno == ERANGE))
-        {
-          errno = 0;
-          double d = strtod(rhs.ptr, &endptr);
-          if (*endptr != '\0' || endptr == rhs.ptr) {
-            dmnsn_diagnostic(astnode.location, "invalid numeric string '%s'",
-                             (const char *)rhs.ptr);
-            ret.type = DMNSN_AST_NONE;
-          } else if (d != 0 && errno == ERANGE) {
+        long l;
+        if (dmnsn_strtol(&l, rhs.ptr, 0)) {
+          dmnsn_make_ast_integer(&ret, l);
+        } else {
+          double d;
+          if (dmnsn_strtod(&d, rhs.ptr)) {
+            dmnsn_make_ast_float(&ret, d);
+          } else if (errno == ERANGE) {
             dmnsn_diagnostic(astnode.location, "float value overflowed");
             ret.type = DMNSN_AST_NONE;
           } else {
-            dmnsn_make_ast_float(&ret, d);
+            dmnsn_diagnostic(astnode.location, "invalid numeric string '%s'",
+                             (const char *)rhs.ptr);
+            ret.type = DMNSN_AST_NONE;
           }
-        } else {
-          dmnsn_make_ast_integer(&ret, l);
         }
         break;
       }

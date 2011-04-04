@@ -104,48 +104,35 @@ main(int argc, char **argv)
       break;
 
     case 'w':
-      {
-        char *endptr;
-        width = strtol(optarg, &endptr, 10);
-        if (*endptr != '\0' || endptr == optarg || width <= 0) {
-          fprintf(stderr, "Invalid argument to --width!\n");
-          print_usage(stderr, argv[0]);
-          return EXIT_FAILURE;
-        }
-        break;
+      if (!dmnsn_strtoi(&width, optarg, 10) || width <= 0) {
+        fprintf(stderr, "Invalid argument to --width!\n");
+        print_usage(stderr, argv[0]);
+        return EXIT_FAILURE;
       }
     case 'h':
-      {
-        char *endptr;
-        height = strtol(optarg, &endptr, 10);
-        if (*endptr != '\0' || endptr == optarg || height <= 0) {
-          fprintf(stderr, "Invalid argument to --height!\n");
-          print_usage(stderr, argv[0]);
-          return EXIT_FAILURE;
-        }
-        break;
+      if (!dmnsn_strtoi(&height, optarg, 10) || height <= 0) {
+        fprintf(stderr, "Invalid argument to --height!\n");
+        print_usage(stderr, argv[0]);
+        return EXIT_FAILURE;
       }
+      break;
 
     case DMNSN_OPT_THREADS:
-      {
-        char *endptr;
-        nthreads = strtol(optarg, &endptr, 10);
-        if (*endptr != '\0' || endptr == optarg || nthreads <= 0) {
-          fprintf(stderr, "Invalid argument to --threads!\n");
-          print_usage(stderr, argv[0]);
-          return EXIT_FAILURE;
-        }
-        break;
+      if (!dmnsn_strtoi(&nthreads, optarg, 10) || nthreads <= 0) {
+        fprintf(stderr, "Invalid argument to --threads!\n");
+        print_usage(stderr, argv[0]);
+        return EXIT_FAILURE;
       }
+      break;
     case DMNSN_OPT_QUALITY:
       {
-        char *endptr;
-        quality = strtoul(optarg, &endptr, 0);
-        if (*endptr != '\0' || endptr == optarg) {
+        unsigned int iqual;
+        if (!dmnsn_strtoui(&iqual, optarg, 0)) {
           fprintf(stderr, "Invalid argument to --quality!\n");
           print_usage(stderr, argv[0]);
           return EXIT_FAILURE;
         }
+        quality = iqual;
         break;
       }
     case DMNSN_OPT_STRICT:
