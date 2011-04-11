@@ -92,7 +92,7 @@ extern const dmnsn_color dmnsn_cyan;    /**< Cyan.    */
     CIE XYZ */
 extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
 
-/** Is this color black?. */
+/** Is this color black? */
 bool dmnsn_color_is_black(dmnsn_color color);
 
 /* Color conversions */

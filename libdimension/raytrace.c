@@ -172,10 +172,10 @@ dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
 /** Get the default texture. */
 #define DTEXTURE(state) (state->scene->default_texture)
 
-/** Can a texture element be accessed?. */
+/** Can a texture element be accessed? */
 #define CAN_ACCESS(texture, telem)              \
   ((texture) && (texture)->telem)
-/** Can a texture element callback be called?. */
+/** Can a texture element callback be called? */
 #define CAN_CALL(texture, telem, fn)                    \
   (CAN_ACCESS(texture, telem) && (texture)->telem->fn)
 
