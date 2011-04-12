@@ -216,7 +216,7 @@ dmnsn_raytrace_background(dmnsn_raytrace_state *state, dmnsn_line ray)
   {
     dmnsn_color sky = dmnsn_sky_sphere_color(state->scene->sky_sphere,
                                              dmnsn_vector_normalize(ray.n));
-    color = dmnsn_color_add(dmnsn_color_filter(color, sky), sky);
+    color = dmnsn_apply_filter(color, sky);
   }
 
   return color;
@@ -269,7 +269,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
     dmnsn_raytrace_pigment(&shadow_state);
     if ((state->scene->quality & DMNSN_RENDER_TRANSLUCENCY)
         && (shadow_state.pigment.filter || shadow_state.pigment.trans)) {
-      color = dmnsn_color_filter(color, shadow_state.pigment);
+      color = dmnsn_filter_light(color, shadow_state.pigment);
       shadow_ray.x0 = dmnsn_line_point(shadow_ray, shadow_caster.t);
       shadow_ray.n  = dmnsn_vector_sub(light->x0, shadow_ray.x0);
       shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
@@ -396,14 +396,11 @@ dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
       );
     }
 
-    state->diffuse = dmnsn_color_mul(
-      1.0 - state->pigment.filter - state->pigment.trans,
-      state->diffuse
-    );
-
     dmnsn_color rec = dmnsn_raytrace_shoot(&recursive_state, trans_ray);
-    dmnsn_color filtered = dmnsn_color_filter(rec, state->pigment);
-    state->additional = dmnsn_color_add(filtered, state->additional);
+    dmnsn_color filtered = dmnsn_filter_light(rec, state->pigment);
+    state->diffuse.filter = state->pigment.filter;
+    state->diffuse.trans  = state->pigment.trans;
+    state->diffuse = dmnsn_apply_translucency(filtered, state->diffuse);
   }
 }
 
@@ -411,7 +408,7 @@ dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
 static dmnsn_color
 dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
 {
-  if (state->reclevel <= 0)
+  if (state->reclevel == 0)
     return dmnsn_black;
   --state->reclevel;
 

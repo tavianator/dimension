@@ -127,8 +127,12 @@ dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
 dmnsn_color dmnsn_color_mul(double n, dmnsn_color color);
 /** Return the color at \p n on a gradient from \p c1 at 0 to \p c2 at 1. */
 dmnsn_color dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n);
-/** Filter \p color through \p filter. */
-dmnsn_color dmnsn_color_filter(dmnsn_color color, dmnsn_color filter);
+/** Filter \p light through \p filter. */
+dmnsn_color dmnsn_filter_light(dmnsn_color light, dmnsn_color filter);
+/** Add the background contribution \p filtered to \p filter. */
+dmnsn_color dmnsn_apply_translucency(dmnsn_color filtered, dmnsn_color filter);
+/** Add the background contribution of \p color to \p filter. */
+dmnsn_color dmnsn_apply_filter(dmnsn_color color, dmnsn_color filter);
 /** Illuminate \p color with \p light. */
 dmnsn_color dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color);
 

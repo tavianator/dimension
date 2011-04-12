@@ -58,14 +58,13 @@ dmnsn_initialize_sky_sphere(dmnsn_sky_sphere *sky_sphere)
 dmnsn_color
 dmnsn_sky_sphere_color(const dmnsn_sky_sphere *sky_sphere, dmnsn_vector d)
 {
-  dmnsn_color color = dmnsn_black;
-  color.trans = 1.0;
+  dmnsn_color color = dmnsn_clear;
 
   DMNSN_ARRAY_FOREACH (const dmnsn_pigment **, pigment, sky_sphere->pigments) {
     dmnsn_pigment_fn *pigment_fn = (*pigment)->pigment_fn;
     if (pigment_fn) {
       dmnsn_color sky = pigment_fn(*pigment, d);
-      color = dmnsn_color_add(dmnsn_color_filter(color, sky), sky);
+      color = dmnsn_apply_filter(color, sky);
     }
   }
 

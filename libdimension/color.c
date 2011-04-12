@@ -393,19 +393,40 @@ dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n)
   return ret;
 }
 
-/* Filters `color' through `filter' */
+/* Filters `light' through `filter' */
 dmnsn_color
-dmnsn_color_filter(dmnsn_color color, dmnsn_color filter)
+dmnsn_filter_light(dmnsn_color light, dmnsn_color filter)
 {
-  dmnsn_color transmitted = dmnsn_color_mul(filter.trans, color);
-  dmnsn_color filtered = dmnsn_color_mul(filter.filter,
-                                         dmnsn_color_illuminate(filter, color));
-
+  dmnsn_color transmitted = dmnsn_color_mul(filter.trans, light);
+  dmnsn_color filtered = dmnsn_color_mul(
+    filter.filter,
+    dmnsn_color_illuminate(filter, light)
+  );
   dmnsn_color ret = dmnsn_color_add(transmitted, filtered);
-  ret.filter = color.filter*dmnsn_color_intensity(filtered)
-               + filter.filter*color.trans + filter.trans*color.filter;
-  ret.trans  = filter.trans*color.trans;
+  ret.filter = light.filter*dmnsn_color_intensity(filtered)
+               + filter.filter*light.trans + filter.trans*light.filter;
+  ret.trans  = filter.trans*light.trans;
   return ret;
+}
+
+/* Adds the background contribution, `filtered', to `filter' */
+dmnsn_color
+dmnsn_apply_translucency(dmnsn_color filtered, dmnsn_color filter)
+{
+  dmnsn_color ret = dmnsn_color_add(
+    dmnsn_color_mul(1.0 - (filter.filter + filter.trans), filter),
+    filtered
+  );
+  ret.filter = filtered.filter;
+  ret.trans  = filtered.trans;
+  return ret;
+}
+
+/* Adds the background contribution of `color' to `filter' */
+dmnsn_color
+dmnsn_apply_filter(dmnsn_color color, dmnsn_color filter)
+{
+  return dmnsn_apply_translucency(dmnsn_filter_light(color, filter), filter);
 }
 
 /* Illuminates `color' with `light' */
