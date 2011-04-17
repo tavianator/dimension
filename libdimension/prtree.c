@@ -627,8 +627,8 @@ dmnsn_delete_prtree(dmnsn_prtree *tree)
 
 /** A line with pre-calculated reciprocals to avoid divisions. */
 typedef struct dmnsn_optimized_line {
-  dmnsn_line line;
-  dmnsn_vector n_inv;
+  dmnsn_vector x0;    /**< The origin of the line. */
+  dmnsn_vector n_inv; /**< The inverse of each component of the line's slope .*/
 } dmnsn_optimized_line;
 
 /** Precompute inverses for faster ray-box intersection tests. */
@@ -636,7 +636,7 @@ static inline dmnsn_optimized_line
 dmnsn_optimize_line(dmnsn_line line)
 {
   dmnsn_optimized_line optline = {
-    .line  = line,
+    .x0    = line.x0,
     .n_inv = dmnsn_new_vector(1.0/line.n.x, 1.0/line.n.y, 1.0/line.n.z)
   };
   return optline;
@@ -656,20 +656,20 @@ dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
    * unchanged.
    */
 
-  double tx1 = (box.min.x - optline.line.x0.x)*optline.n_inv.x;
-  double tx2 = (box.max.x - optline.line.x0.x)*optline.n_inv.x;
+  double tx1 = (box.min.x - optline.x0.x)*optline.n_inv.x;
+  double tx2 = (box.max.x - optline.x0.x)*optline.n_inv.x;
 
   double tmin = dmnsn_min(tx1, tx2);
   double tmax = dmnsn_max(tx1, tx2);
 
-  double ty1 = (box.min.y - optline.line.x0.y)*optline.n_inv.y;
-  double ty2 = (box.max.y - optline.line.x0.y)*optline.n_inv.y;
+  double ty1 = (box.min.y - optline.x0.y)*optline.n_inv.y;
+  double ty2 = (box.max.y - optline.x0.y)*optline.n_inv.y;
 
   tmin = dmnsn_max(tmin, dmnsn_min(ty1, ty2));
   tmax = dmnsn_min(tmax, dmnsn_max(ty1, ty2));
 
-  double tz1 = (box.min.z - optline.line.x0.z)*optline.n_inv.z;
-  double tz2 = (box.max.z - optline.line.x0.z)*optline.n_inv.z;
+  double tz1 = (box.min.z - optline.x0.z)*optline.n_inv.z;
+  double tz2 = (box.max.z - optline.x0.z)*optline.n_inv.z;
 
   tmin = dmnsn_max(tmin, dmnsn_min(tz1, tz2));
   tmax = dmnsn_min(tmax, dmnsn_max(tz1, tz2));
