@@ -54,7 +54,7 @@ dmnsn_csg_union_intersection_fn(const dmnsn_object *csg,
                                 dmnsn_intersection *intersection)
 {
   dmnsn_prtree *prtree = csg->ptr;
-  return dmnsn_prtree_intersection(prtree, line, intersection);
+  return dmnsn_prtree_intersection(prtree, line, intersection, true);
 }
 
 /** CSG union inside callback. */

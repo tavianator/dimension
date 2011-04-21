@@ -80,7 +80,7 @@ main(void)
     dmnsn_new_vector(0.0, 0.0, 1.0)
   );
 
-  if (!dmnsn_prtree_intersection(prtree, ray, &intersection)) {
+  if (!dmnsn_prtree_intersection(prtree, ray, &intersection, true)) {
     fprintf(stderr, "--- Didn't find intersection! ---\n");
     return EXIT_FAILURE;
   }

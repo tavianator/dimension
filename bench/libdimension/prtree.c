@@ -96,7 +96,7 @@ main(void)
   dmnsn_intersection intersection;
 
   sandglass_bench_fine(&sandglass, {
-    dmnsn_prtree_intersection(tree, ray, &intersection);
+    dmnsn_prtree_intersection(tree, ray, &intersection, true);
   });
   printf("dmnsn_prtree_intersection(): %ld\n", sandglass.grains);
 

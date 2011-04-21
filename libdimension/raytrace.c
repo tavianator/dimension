@@ -253,10 +253,10 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
   dmnsn_color color = light->light_fn(light, state->r);
 
   unsigned int reclevel = state->reclevel;
-  while (reclevel) {
+  while (reclevel > 0) {
     dmnsn_intersection shadow_caster;
-    bool shadow_casted
-      = dmnsn_prtree_intersection(state->prtree, shadow_ray, &shadow_caster);
+    bool shadow_casted = dmnsn_prtree_intersection(state->prtree, shadow_ray,
+                                                   &shadow_caster, false);
 
     if (!shadow_casted || shadow_caster.t > 1.0) {
       break;
@@ -416,7 +416,8 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
   dmnsn_color color = dmnsn_raytrace_background(state, ray);
 
   dmnsn_intersection intersection;
-  if (dmnsn_prtree_intersection(state->prtree, ray, &intersection)) {
+  bool reset = state->reclevel == state->scene->reclimit - 1;
+  if (dmnsn_prtree_intersection(state->prtree, ray, &intersection, reset)) {
     state->intersection = &intersection;
     state->r = dmnsn_line_point(state->intersection->ray,
                                 state->intersection->t);

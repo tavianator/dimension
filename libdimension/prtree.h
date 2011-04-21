@@ -37,6 +37,7 @@ typedef struct dmnsn_prtree {
   dmnsn_bounding_box bounding_box; /**< The bounding box for the whole scene. */
   dmnsn_array *unbounded;          /**< The unbounded objects. */
   dmnsn_array *bounded;            /**< A PR-tree of the bounded objects. */
+  size_t id;                       /**< A unique ID for the PR-tree. */
 } dmnsn_prtree;
 
 /** Create a PR-tree. */
@@ -46,7 +47,7 @@ void dmnsn_delete_prtree(dmnsn_prtree *tree);
 
 /** Find the closest ray-object intersection in the tree. */
 bool dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
-                               dmnsn_intersection *intersection);
+                               dmnsn_intersection *intersection, bool reset);
 /** Determine whether a point is inside any object in the tree. */
 bool dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point);
 

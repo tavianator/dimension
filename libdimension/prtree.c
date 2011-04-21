@@ -25,6 +25,7 @@
  */
 
 #include "dimension-impl.h"
+#include <pthread.h>
 #include <stdlib.h>
 
 /** Number of children per PR-node. */
@@ -586,6 +587,9 @@ dmnsn_flatten_prtree(dmnsn_prtree_node *root)
   return flat;
 }
 
+static size_t dmnsn_prtree_seq = 0;
+static pthread_mutex_t dmnsn_prtree_seq_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 /* Construct a PR-tree from a bulk of objects */
 dmnsn_prtree *
 dmnsn_new_prtree(const dmnsn_array *objects)
@@ -609,6 +613,14 @@ dmnsn_new_prtree(const dmnsn_array *objects)
     prtree->bounding_box = root->bounding_box;
   } else {
     prtree->bounding_box = dmnsn_zero_bounding_box();
+  }
+
+  if (pthread_mutex_lock(&dmnsn_prtree_seq_mutex) != 0) {
+    dmnsn_error("Couldn't lock mutex.");
+  }
+  prtree->id = dmnsn_prtree_seq++;
+  if (pthread_mutex_unlock(&dmnsn_prtree_seq_mutex) != 0) {
+    dmnsn_error("Couldn't unlock mutex.");
   }
 
   return prtree;
@@ -677,9 +689,21 @@ dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
   return tmax >= dmnsn_max(0.0, tmin) && tmin < t;
 }
 
+/** The number of intersections to cache. */
+#define DMNSN_PRTREE_CACHE_SIZE 32
+
+/** An array of cached intersections. */
+typedef struct dmnsn_intersection_cache {
+  size_t i;
+  dmnsn_object *objects[DMNSN_PRTREE_CACHE_SIZE];
+} dmnsn_intersection_cache;
+
+/** The thread-specific intersection cache. */
+static __thread dmnsn_array *dmnsn_prtree_cache = NULL;
+
 DMNSN_HOT bool
 dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
-                          dmnsn_intersection *intersection)
+                          dmnsn_intersection *intersection, bool reset)
 {
   double t = INFINITY;
 
@@ -697,18 +721,52 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
   /* Precalculate 1.0/ray.n.{x,y,z} to save time in intersection tests */
   dmnsn_optimized_line optline = dmnsn_optimize_line(ray);
 
+  /* Search the intersection cache */
+  if (!dmnsn_prtree_cache) {
+    dmnsn_prtree_cache = dmnsn_new_array(sizeof(dmnsn_intersection_cache));
+  }
+  while (dmnsn_array_size(dmnsn_prtree_cache) <= tree->id) {
+    dmnsn_array_resize(dmnsn_prtree_cache,
+                       dmnsn_array_size(dmnsn_prtree_cache) + 1);
+    dmnsn_intersection_cache *cache = dmnsn_array_last(dmnsn_prtree_cache);
+    cache->i = 0;
+    for (size_t i = 0; i < DMNSN_PRTREE_CACHE_SIZE; ++i) {
+      cache->objects[i] = NULL;
+    }
+  }
+  dmnsn_intersection_cache *cache = dmnsn_array_first(dmnsn_prtree_cache);
+  cache += tree->id;
+  if (reset) {
+    cache->i = 0;
+  }
+  dmnsn_object *cached = NULL, *found = NULL;
+  if (cache->i < DMNSN_PRTREE_CACHE_SIZE) {
+    cached = cache->objects[cache->i];
+  }
+  if (cached && dmnsn_ray_box_intersection(optline, cached->bounding_box, t)) {
+    dmnsn_intersection local_intersection;
+    if (dmnsn_object_intersection(cached, ray, &local_intersection)) {
+      if (local_intersection.t < t) {
+        *intersection = local_intersection;
+        t = local_intersection.t;
+        found = cached;
+      }
+    }
+  }
+
   /* Search the bounded objects */
   dmnsn_flat_prnode *node = dmnsn_array_first(tree->bounded);
   while ((size_t)(node - (dmnsn_flat_prnode *)dmnsn_array_first(tree->bounded))
          < dmnsn_array_size(tree->bounded))
   {
     if (dmnsn_ray_box_intersection(optline, node->bounding_box, t)) {
-      if (node->object) {
+      if (node->object && node->object != cached) {
         dmnsn_intersection local_intersection;
         if (dmnsn_object_intersection(node->object, ray, &local_intersection)) {
           if (local_intersection.t < t) {
             *intersection = local_intersection;
             t = local_intersection.t;
+            found = node->object;
           }
         }
       }
@@ -717,6 +775,11 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
     } else {
       node += node->skip;
     }
+  }
+
+  /* Update the cache */
+  if (cache->i < DMNSN_PRTREE_CACHE_SIZE) {
+    cache->objects[cache->i++] = found;
   }
 
   return !isinf(t);
