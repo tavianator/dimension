@@ -94,7 +94,7 @@ dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
     pixel[2] = sRGB.B*UINT16_MAX;
   }
 
-  double alpha = color.filter + color.trans;
+  double alpha = dmnsn_color_intensity(color)*color.filter + color.trans;
   if (alpha <= 0.0) {
     pixel[3] = 0;
   } else if (alpha >= 1.0) {

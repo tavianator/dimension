@@ -326,8 +326,8 @@ dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white)
   return ret;
 }
 
-/** Greyscale color intensity. */
-static double
+/* Greyscale color intensity */
+double
 dmnsn_color_intensity(dmnsn_color color)
 {
   dmnsn_sRGB sRGB = dmnsn_sRGB_from_color(color);

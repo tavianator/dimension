@@ -121,6 +121,8 @@ dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
 
 /* Perceptual color manipulation */
 
+/** Greyscale color intensity. */
+double dmnsn_color_intensity(dmnsn_color color);
 /** Add two colors together. */
 dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
 /** Multiply a color's intensity by \p n. */
