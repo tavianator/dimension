@@ -22,14 +22,8 @@
 /* Fundamental language elements */
 
 IDENTIFIER: "identifier" {
-            const char *id = $1;
-            dmnsn_astnode *symbol = dmnsn_find_symbol(symtable, id);
-            while (symbol && symbol->type == DMNSN_AST_IDENTIFIER) {
-              id = symbol->ptr;
-              symbol = dmnsn_find_symbol(symtable, id);
-            }
             $$ = dmnsn_new_astleaf(DMNSN_AST_IDENTIFIER, @$);
-            $$.ptr = dmnsn_strdup(id);
+            $$.ptr = dmnsn_strdup($1);
             dmnsn_free($1);
           }
 ;

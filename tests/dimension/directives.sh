@@ -56,6 +56,17 @@ directives_exp="$(echo -n \
     (identifier "Inc") \( (identifier "Counter") \)
   #end
 
+  #declare (identifier "Test1") = (integer "0") ;
+  #declare (identifier "Test2") = (integer "1") ;
+  #declare (identifier "Test3") = (integer "2") ;
+  #macro (identifier "ScopeTest") \( (identifier "Test1") , (identifier "Test2") , (identifier "Test3") \)
+    #declare (identifier "Test1") = (identifier "Test2") - (identifier "Test3") ;
+  #end
+  (identifier "ScopeTest") \( (identifier "Test1") , (identifier "Test3") , (identifier "Test2") \)
+  sphere {
+    (integer "0") , (identifier "Test1")
+  }
+
   #declare (identifier "Box") =
     box {
       < - (integer "1") , - (integer "1") , - (integer "1") > ,
@@ -89,6 +100,11 @@ $(echo -n \
       (pigment
         (vector (integer 1) (integer 1) (integer 1) (integer 0) (integer 0))
          pigment-modifiers)))
+  (object
+    (sphere
+      (vector (integer 0) (integer 0) (integer 0) (integer 0) (integer 0))
+      (integer 1))
+    object-modifiers)
   (object
     (box
       (vector (integer -1) (integer -1) (integer -1) (integer 0) (integer 0))

@@ -64,6 +64,18 @@
   Inc(Counter)
 #end
 
+// Test macro parameters with the same name as existing variables
+#declare Test1 = 0;
+#declare Test2 = 1;
+#declare Test3 = 2;
+#macro ScopeTest(Test1, Test2, Test3)
+  #declare Test1 = Test2 - Test3;
+#end
+ScopeTest(Test1, Test3, Test2)
+sphere {
+  0, Test1
+}
+
 #declare Box =
   box {
     <-1, -1, -1>, <1, 1, 1>

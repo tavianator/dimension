@@ -131,8 +131,13 @@ dmnsn_find_symbol(dmnsn_symbol_table *symtable, const char *id)
 
   DMNSN_ARRAY_FOREACH_REVERSE (dmnsn_dictionary **, dict, symtable) {
     symbol = dmnsn_dictionary_at(*dict, id);
-    if (symbol)
-      break;
+    if (symbol) {
+      if (symbol->type == DMNSN_AST_IDENTIFIER) {
+        id = symbol->ptr;
+      } else {
+        break;
+      }
+    }
   }
 
   return symbol;
