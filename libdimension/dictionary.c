@@ -88,7 +88,7 @@ dmnsn_dictionary_at(const dmnsn_dictionary *dict, const char *key)
       return dict->value;
     } else {
       dmnsn_dictionary **first = dmnsn_array_first(dict->children), **subtrie;
-      size_t size = dmnsn_array_size(dict->children);
+      ptrdiff_t size = dmnsn_array_size(dict->children);
       for (subtrie = first; subtrie - first < size; ++subtrie) {
         len = strlen((*subtrie)->prefix);
         if (strncmp(key, (*subtrie)->prefix, len) == 0) {
@@ -144,7 +144,7 @@ dmnsn_dictionary_insert(dmnsn_dictionary *dict, const char *key,
     } else if (*prefix == '\0') {
       /* Partial match; key starts with prefix */
       dmnsn_dictionary **first = dmnsn_array_first(dict->children), **subtrie;
-      size_t size = dmnsn_array_size(dict->children);
+      ptrdiff_t size = dmnsn_array_size(dict->children);
       for (subtrie = first; subtrie - first < size; ++subtrie) {
         if ((*subtrie)->prefix[0] == key[0]) {
           dict = *subtrie;
@@ -203,7 +203,7 @@ dmnsn_dictionary_remove(dmnsn_dictionary *dict, const char *key)
       return true;
     } else {
       dmnsn_dictionary **first = dmnsn_array_first(dict->children), **subtrie;
-      size_t size = dmnsn_array_size(dict->children);
+      ptrdiff_t size = dmnsn_array_size(dict->children);
       for (subtrie = first; subtrie - first < size; ++subtrie) {
         len = strlen((*subtrie)->prefix);
         if (strncmp(key, (*subtrie)->prefix, len) == 0) {

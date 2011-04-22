@@ -86,7 +86,7 @@ main(void)
   /* dmnsn_list_size() */
   size_t size;
   sandglass_bench_fine(&sandglass, size = dmnsn_list_size(list));
-  printf("dmnsn_list_size(): %ld\n", sandglass.grains);
+  printf("dmnsn_list_size() = %zu: %ld\n", size, sandglass.grains);
 
   /* dmnsn_list_insert() */
 

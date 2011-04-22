@@ -66,12 +66,12 @@ main(void)
   /* dmnsn_array_at() */
   void *ptr;
   sandglass_bench_fine(&sandglass, ptr = dmnsn_array_at(array, count/2));
-  printf("dmnsn_array_at(): %ld\n", sandglass.grains);
+  printf("dmnsn_array_at() = %p: %ld\n", ptr, sandglass.grains);
 
   /* dmnsn_array_size() */
   size_t size;
   sandglass_bench_fine(&sandglass, size = dmnsn_array_size(array));
-  printf("dmnsn_array_size(): %ld\n", sandglass.grains);
+  printf("dmnsn_array_size() = %zu: %ld\n", size, sandglass.grains);
 
   /* dmnsn_array_resize() */
   dmnsn_array_resize(array, count);
