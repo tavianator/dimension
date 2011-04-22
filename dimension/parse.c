@@ -76,7 +76,13 @@ void dmnsn_local_symbol(dmnsn_symbol_table *symtable,
 
   dmnsn_dictionary *dict;
   dmnsn_array_get(symtable, dmnsn_array_size(symtable) - 1, &dict);
-  dmnsn_dictionary_insert(dict, id, &value);
+  dmnsn_astnode *node = dmnsn_dictionary_at(dict, id);
+  if (node) {
+    dmnsn_delete_astnode(*node);
+    *node = value;
+  } else {
+    dmnsn_dictionary_insert(dict, id, &value);
+  }
 }
 
 void
