@@ -40,8 +40,8 @@ typedef int dmnsn_thread_fn(void *ptr);
  * @param[in]     nthreads  The number of concurrent threads.
  * @return 0 on success, non-zero on failure.
  */
-typedef int dmnsn_concurrent_thread_fn(void *ptr, unsigned int thread,
-                                       unsigned int nthreads);
+typedef int dmnsn_ccthread_fn(void *ptr, unsigned int thread,
+                              unsigned int nthreads);
 
 /**
  * Create a thread that cleans up after itself on errors.
@@ -49,8 +49,8 @@ typedef int dmnsn_concurrent_thread_fn(void *ptr, unsigned int thread,
  * @param[in]     thread_fn  The thread callback.
  * @param[in,out] arg        The pointer to pass to the thread callback.
  */
-void dmnsn_new_thread(dmnsn_progress *progress, dmnsn_thread_fn *thread_fn,
-                      void *arg);
+DMNSN_INTERNAL void dmnsn_new_thread(dmnsn_progress *progress,
+                                     dmnsn_thread_fn *thread_fn, void *arg);
 
 /**
  * Run \p nthreads threads in parallel.
@@ -59,7 +59,7 @@ void dmnsn_new_thread(dmnsn_progress *progress, dmnsn_thread_fn *thread_fn,
  * @param[in]     nthreads   The number of concurrent threads to run.
  * @return 0 if all threads were successful, and an error code otherwise.
  */
-int dmnsn_execute_concurrently(dmnsn_concurrent_thread_fn *thread_fn,
-                               void *arg, unsigned int nthreads);
+DMNSN_INTERNAL int dmnsn_execute_concurrently(dmnsn_ccthread_fn *ccthread_fn,
+                                              void *arg, unsigned int nthreads);
 
 #endif /* DIMENSION_IMPL_THREADS_H */

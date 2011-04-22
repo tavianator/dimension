@@ -42,9 +42,11 @@
 #endif
 
 #ifdef __GNUC__
-  #define DMNSN_HOT __attribute__((hot))
+  #define DMNSN_HOT      __attribute__((hot))
+  #define DMNSN_INTERNAL __attribute__((visibility("hidden")))
 #else
   #define DMNSN_HOT
+  #define DMNSN_INTERNAL
 #endif
 
 #endif /* DIMENSION_IMPL_COMPILER_H */

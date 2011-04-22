@@ -34,32 +34,32 @@
  * Print a stack trace, if implemented for the current platform.
  * @param[in,out] file  The file to which to write the stack trace.
  */
-void dmnsn_backtrace(FILE *file);
+DMNSN_INTERNAL void dmnsn_backtrace(FILE *file);
 
 /**
  * Is the calling thread the main thread?
  * @return Whether this is the main execution thread, or \c true if we can't
  *         tell.
  */
-bool dmnsn_is_main_thread(void);
+DMNSN_INTERNAL bool dmnsn_is_main_thread(void);
 
 /**
  * Are we running on a little-endian computer?
  * @return Whether the current architecture is little-endian.
  */
-bool dmnsn_is_little_endian(void);
+DMNSN_INTERNAL bool dmnsn_is_little_endian(void);
 
 /**
  * How many CPUs are available?
  * @return The number of CPUs available to dimension.
  */
-size_t dmnsn_ncpus(void);
+DMNSN_INTERNAL size_t dmnsn_ncpus(void);
 
 /**
  * Calculate process times.
  * @param[out] timer  The timer in which to store the current total process
  *                    times.
  */
-void dmnsn_get_times(dmnsn_timer *timer);
+DMNSN_INTERNAL void dmnsn_get_times(dmnsn_timer *timer);
 
 #endif /* DIMENSION_IMPL_PLATFORM_H */

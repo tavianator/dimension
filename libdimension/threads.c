@@ -73,35 +73,35 @@ dmnsn_new_thread(dmnsn_progress *progress, dmnsn_thread_fn *thread_fn,
 }
 
 /** Payload for threads executed by dmnsn_execute_concurrently(). */
-typedef struct dmnsn_concurrent_thread_payload {
-  dmnsn_concurrent_thread_fn *thread_fn;
+typedef struct dmnsn_ccthread_payload {
+  dmnsn_ccthread_fn *ccthread_fn;
   void *arg;
   unsigned int thread, nthreads;
   int ret;
-} dmnsn_concurrent_thread_payload;
+} dmnsn_ccthread_payload;
 
 static void *
 dmnsn_concurrent_thread(void *ptr)
 {
-  dmnsn_concurrent_thread_payload *payload = ptr;
-  payload->ret = payload->thread_fn(payload->arg, payload->thread,
-                                    payload->nthreads);
+  dmnsn_ccthread_payload *payload = ptr;
+  payload->ret = payload->ccthread_fn(payload->arg, payload->thread,
+                                      payload->nthreads);
   return NULL;
 }
 
 int
-dmnsn_execute_concurrently(dmnsn_concurrent_thread_fn *thread_fn,
+dmnsn_execute_concurrently(dmnsn_ccthread_fn *ccthread_fn,
                            void *arg, unsigned int nthreads)
 {
   pthread_t threads[nthreads];
-  dmnsn_concurrent_thread_payload payloads[nthreads];
+  dmnsn_ccthread_payload payloads[nthreads];
 
   for (unsigned int i = 0; i < nthreads; ++i) {
-    payloads[i].thread_fn = thread_fn;
-    payloads[i].arg       = arg;
-    payloads[i].thread    = i;
-    payloads[i].nthreads  = nthreads;
-    payloads[i].ret       = -1;
+    payloads[i].ccthread_fn = ccthread_fn;
+    payloads[i].arg         = arg;
+    payloads[i].thread      = i;
+    payloads[i].nthreads    = nthreads;
+    payloads[i].ret         = -1;
     if (pthread_create(&threads[i], NULL, dmnsn_concurrent_thread,
                        &payloads[i]) != 0)
     {

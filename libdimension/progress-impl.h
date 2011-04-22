@@ -29,14 +29,15 @@
 #include <pthread.h>
 
 /** Allocate a new progress object. */
-dmnsn_progress *dmnsn_new_progress(void);
+DMNSN_INTERNAL dmnsn_progress *dmnsn_new_progress(void);
 
 /** Set the total number of loop iterations. */
-void dmnsn_set_progress_total(dmnsn_progress *progress, size_t total);
+DMNSN_INTERNAL void dmnsn_set_progress_total(dmnsn_progress *progress,
+                                             size_t total);
 /** Increment the progress counter. */
-void dmnsn_increment_progress(dmnsn_progress *progress);
+DMNSN_INTERNAL void dmnsn_increment_progress(dmnsn_progress *progress);
 /** Instantly complete the progress. */
-void dmnsn_done_progress(dmnsn_progress *progress);
+DMNSN_INTERNAL void dmnsn_done_progress(dmnsn_progress *progress);
 
 struct dmnsn_progress {
   size_t progress; /**< Completed loop iterations. */
