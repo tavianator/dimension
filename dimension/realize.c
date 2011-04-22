@@ -98,18 +98,11 @@ dmnsn_realize_color(dmnsn_astnode astnode)
   dmnsn_array_get(astnode.children, 3, &fnode);
   dmnsn_array_get(astnode.children, 4, &tnode);
 
-  double r = dmnsn_realize_float(rnode),
-         g = dmnsn_realize_float(gnode),
-         b = dmnsn_realize_float(bnode),
-         f = dmnsn_realize_float(fnode),
-         t = dmnsn_realize_float(tnode);
-
-  dmnsn_sRGB sRGB = { .R = r, .G = g, .B = b };
-  dmnsn_color color = dmnsn_color_from_sRGB(sRGB);
-  color.filter = f;
-  color.trans  = t;
-
-  return color;
+  return dmnsn_new_color5(dmnsn_realize_float(rnode),
+                          dmnsn_realize_float(gnode),
+                          dmnsn_realize_float(bnode),
+                          dmnsn_realize_float(fnode),
+                          dmnsn_realize_float(tnode));
 }
 
 static dmnsn_matrix

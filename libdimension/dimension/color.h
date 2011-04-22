@@ -30,51 +30,15 @@
 
 /** A color value. */
 typedef struct {
+  double R; /**< sRGB red value. */
+  double G; /**< sRGB green value. */
+  double B; /**< sRGB blue value. */
+
   /** Filtered transparency. */
   double filter;
   /** Unfiltered transparency; <tt>filter + trans</tt> should be <= 1. */
   double trans;
-
-  /* Internally we use sRGB color. */
-  double R; /**< @internal sRGB red value. */
-  double G; /**< @internal sRGB green value. */
-  double B; /**< @internal sRGB blue value. */
 } dmnsn_color;
-
-/** sRGB color. */
-typedef struct {
-  double R; /**< sRGB red value. */
-  double G; /**< sRGB green value. */
-  double B; /**< sRGB blue value. */
-} dmnsn_sRGB;
-
-/** CIE XYZ color. */
-typedef struct {
-  double X; /**< X component. */
-  double Y; /**< Y (luminance) component. */
-  double Z; /**< Z component. */
-} dmnsn_CIE_XYZ;
-
-/** CIE xyY color. */
-typedef struct {
-  double x; /**< x chromaticity coordinate (in [0, 1]). */
-  double y; /**< y chromaticity coordinate (in [0, 1]). */
-  double Y; /**< Luminance, unbounded >= 0; 1 is diffuse white. */
-} dmnsn_CIE_xyY;
-
-/** CIE 1976 (L*, a*, b*) color. */
-typedef struct {
-  double L; /**< Luminance (100 is diffuse white). */
-  double a; /**< Red/greed color-opponent value. */
-  double b; /**< Yellow/blue color-opponent value. */
-} dmnsn_CIE_Lab;
-
-/** CIE 1976 (L*, u*, v*) color. */
-typedef struct {
-  double L; /**< Luminance (same L* as CIE L*, a*, b*). */
-  double u; /**< u* coordinate. */
-  double v; /**< v* coordinate. */
-} dmnsn_CIE_Luv;
 
 /* Standard colors */
 extern const dmnsn_color dmnsn_black;   /**< Black.   */
@@ -88,36 +52,33 @@ extern const dmnsn_color dmnsn_orange;  /**< Orange.  */
 extern const dmnsn_color dmnsn_yellow;  /**< Yellow.  */
 extern const dmnsn_color dmnsn_cyan;    /**< Cyan.    */
 
-/** Standard whitepoint, determined by the conversion of sRGB white to
-    CIE XYZ */
-extern const dmnsn_CIE_XYZ dmnsn_whitepoint;
+/* Color construction */
+
+/** Construct a new color. */
+DMNSN_INLINE dmnsn_color
+dmnsn_new_color(double R, double G, double B)
+{
+  dmnsn_color ret = { R, G, B, 0.0, 0.0 };
+  return ret;
+}
+
+/** Construct a new color with transparent components. */
+DMNSN_INLINE dmnsn_color
+dmnsn_new_color5(double R, double G, double B, double filter, double trans)
+{
+  dmnsn_color ret = { R, G, B, filter, trans };
+  return ret;
+}
 
 /** Is this color black? */
-bool dmnsn_color_is_black(dmnsn_color color);
-
-/* Color conversions */
-
-/** Convert an sRGB color to a Dimension color. */
-dmnsn_color dmnsn_color_from_sRGB(dmnsn_sRGB sRGB);
-/** Convert a CIE XYZ color to a Dimension color. */
-dmnsn_color dmnsn_color_from_XYZ(dmnsn_CIE_XYZ XYZ);
-/** Convert a CIE xyY color to a Dimension color. */
-dmnsn_color dmnsn_color_from_xyY(dmnsn_CIE_xyY xyY);
-/** Convert a CIE L*, a*, b* color to a Dimension color. */
-dmnsn_color dmnsn_color_from_Lab(dmnsn_CIE_Lab Lab, dmnsn_CIE_XYZ white);
-/** Convert a CIE L*, u*, v* color to a Dimension color. */
-dmnsn_color dmnsn_color_from_Luv(dmnsn_CIE_Luv Luv, dmnsn_CIE_XYZ white);
-
-/** Convert a Dimension color to sRGB. */
-dmnsn_sRGB dmnsn_sRGB_from_color(dmnsn_color color);
-/** Convert a Dimension color to CIE XYZ. */
-dmnsn_CIE_XYZ dmnsn_XYZ_from_color(dmnsn_color color);
-/** Convert a Dimension color to CIE xyY. */
-dmnsn_CIE_xyY dmnsn_xyY_from_color(dmnsn_color color);
-/** Convert a Dimension color to CIE L*, a*, b*. */
-dmnsn_CIE_Lab dmnsn_Lab_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
-/** Convert a Dimension color to CIE L*, u*, v*. */
-dmnsn_CIE_Luv dmnsn_Luv_from_color(dmnsn_color color, dmnsn_CIE_XYZ white);
+DMNSN_INLINE bool
+dmnsn_color_is_black(dmnsn_color color)
+{
+  return fabs(color.R)        < dmnsn_epsilon
+         && fabs(color.G)     < dmnsn_epsilon
+         && fabs(color.B)     < dmnsn_epsilon
+         && fabs(color.trans) < dmnsn_epsilon;
+}
 
 /* Perceptual color manipulation */
 
@@ -137,8 +98,5 @@ dmnsn_color dmnsn_apply_translucency(dmnsn_color filtered, dmnsn_color filter);
 dmnsn_color dmnsn_apply_filter(dmnsn_color color, dmnsn_color filter);
 /** Illuminate \p color with \p light. */
 dmnsn_color dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color);
-
-/** Return the perceptual difference between two colors. */
-double dmnsn_color_difference(dmnsn_color color1, dmnsn_color color2);
 
 #endif /* DIMENSION_COLOR_H */

@@ -62,36 +62,34 @@ dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
                        dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
 {
   dmnsn_color color;
-  dmnsn_sRGB sRGB;
   uint16_t *pixel = (uint16_t *)optimizer.ptr + 4*(y*canvas->width + x);
 
   color = dmnsn_get_pixel(canvas, x, y);
-  sRGB = dmnsn_sRGB_from_color(color);
 
   /* Saturate R, G, and B to [0, UINT16_MAX] */
 
-  if (sRGB.R <= 0.0) {
+  if (color.R <= 0.0) {
     pixel[0] = 0;
-  } else if (sRGB.R >= 1.0) {
+  } else if (color.R >= 1.0) {
     pixel[0] = UINT16_MAX;
   } else {
-    pixel[0] = sRGB.R*UINT16_MAX;
+    pixel[0] = color.R*UINT16_MAX;
   }
 
-  if (sRGB.G <= 0.0) {
+  if (color.G <= 0.0) {
     pixel[1] = 0;
-  } else if (sRGB.G >= 1.0) {
+  } else if (color.G >= 1.0) {
     pixel[1] = UINT16_MAX;
   } else {
-    pixel[1] = sRGB.G*UINT16_MAX;
+    pixel[1] = color.G*UINT16_MAX;
   }
 
-  if (sRGB.B <= 0.0) {
+  if (color.B <= 0.0) {
     pixel[2] = 0;
-  } else if (sRGB.B >= 1.0) {
+  } else if (color.B >= 1.0) {
     pixel[2] = UINT16_MAX;
   } else {
-    pixel[2] = sRGB.B*UINT16_MAX;
+    pixel[2] = color.B*UINT16_MAX;
   }
 
   double alpha = dmnsn_color_intensity(color)*color.filter + color.trans;
@@ -274,32 +272,31 @@ dmnsn_png_write_canvas_thread(void *ptr)
     for (size_t x = 0; x < width; ++x) {
       /* Invert the rows.  PNG coordinates are fourth quadrant. */
       dmnsn_color color = dmnsn_get_pixel(payload->canvas, x, height - y - 1);
-      dmnsn_sRGB sRGB = dmnsn_sRGB_from_color(color);
 
       /* Saturate R, G, and B to [0, UINT16_MAX] */
 
-      if (sRGB.R <= 0.0) {
+      if (color.R <= 0.0) {
         row[4*x] = 0;
-      } else if (sRGB.R >= 1.0) {
+      } else if (color.R >= 1.0) {
         row[4*x] = UINT16_MAX;
       } else {
-        row[4*x] = sRGB.R*UINT16_MAX;
+        row[4*x] = color.R*UINT16_MAX;
       }
 
-      if (sRGB.G <= 0.0) {
+      if (color.G <= 0.0) {
         row[4*x + 1] = 0;
-      } else if (sRGB.G >= 1.0) {
+      } else if (color.G >= 1.0) {
         row[4*x + 1] = UINT16_MAX;
       } else {
-        row[4*x + 1] = sRGB.G*UINT16_MAX;
+        row[4*x + 1] = color.G*UINT16_MAX;
       }
 
-      if (sRGB.B <= 0.0) {
+      if (color.B <= 0.0) {
         row[4*x + 2] = 0;
-      } else if (sRGB.B >= 1.0) {
+      } else if (color.B >= 1.0) {
         row[4*x + 2] = UINT16_MAX;
       } else {
-        row[4*x + 2] = sRGB.B*UINT16_MAX;
+        row[4*x + 2] = color.B*UINT16_MAX;
       }
 
       double alpha = color.filter + color.trans;
@@ -445,86 +442,46 @@ dmnsn_png_read_canvas_thread(void *ptr)
 
   /* Now we convert the image to our canvas format.  This depends on the image
      bit depth (which has been scaled up to at least 8 or 16), and the presence
-     of an alpha channel.  For performance reasons, the tests are outside the
-     loops, although that doesn't really matter for a decent compiler. */
-  if (bit_depth == 16) {
-    if (color_type & PNG_COLOR_MASK_ALPHA) {
-      for (size_t y = 0; y < height; ++y) {
-        for (size_t x = 0; x < width; ++x) {
+     of an alpha channel. */
+  for (size_t y = 0; y < height; ++y) {
+    for (size_t x = 0; x < width; ++x) {
+      dmnsn_color color;
+      color.filter = 0.0;
+
+      if (color_type & PNG_COLOR_MASK_ALPHA) {
+        if (bit_depth == 16) {
           png_bytep png_pixel = image + 8*(y*width + x);
-
-          dmnsn_sRGB sRGB = {
-            .R = ((double)((png_pixel[0] << UINT16_C(8)) + png_pixel[1]))
-                 /UINT16_MAX,
-            .G = ((double)((png_pixel[2] << UINT16_C(8)) + png_pixel[3]))
-                 /UINT16_MAX,
-            .B = ((double)((png_pixel[4] << UINT16_C(8)) + png_pixel[5]))
-                 /UINT16_MAX
-          };
-
-          dmnsn_color color = dmnsn_color_from_sRGB(sRGB);
-          color.trans = ((double)((png_pixel[6] << UINT16_C(8))
-                                  + png_pixel[7]))/UINT16_MAX;
-          dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
-        }
-        dmnsn_increment_progress(payload->progress);
-      }
-    } else {
-      for (size_t y = 0; y < height; ++y) {
-        for (size_t x = 0; x < width; ++x) {
-          png_bytep png_pixel = image + 6*(y*width + x);
-
-          dmnsn_sRGB sRGB = {
-            .R = ((double)((png_pixel[0] << UINT16_C(8)) + png_pixel[1]))
-                 /UINT16_MAX,
-            .G = ((double)((png_pixel[2] << UINT16_C(8)) + png_pixel[3]))
-                 /UINT16_MAX,
-            .B = ((double)((png_pixel[4] << UINT16_C(8)) + png_pixel[5]))
-                 /UINT16_MAX
-          };
-
-          dmnsn_color color = dmnsn_color_from_sRGB(sRGB);
-          dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
-        }
-        dmnsn_increment_progress(payload->progress);
-      }
-    }
-  } else {
-    /* Bit depth is 8 */
-    if (color_type & PNG_COLOR_MASK_ALPHA) {
-      for (size_t y = 0; y < height; ++y) {
-        for (size_t x = 0; x < width; ++x) {
+          color.R = (double)((png_pixel[0] << 8) + png_pixel[1])/UINT16_MAX;
+          color.G = (double)((png_pixel[2] << 8) + png_pixel[3])/UINT16_MAX;
+          color.R = (double)((png_pixel[4] << 8) + png_pixel[5])/UINT16_MAX;
+          color.trans = (double)((png_pixel[6] << 8) + png_pixel[7])/UINT16_MAX;
+        } else {
           png_bytep png_pixel = image + 4*(y*width + x);
-
-          dmnsn_sRGB sRGB = {
-            .R = ((double)png_pixel[0])/UINT8_MAX,
-            .G = ((double)png_pixel[1])/UINT8_MAX,
-            .B = ((double)png_pixel[2])/UINT8_MAX
-          };
-
-          dmnsn_color color = dmnsn_color_from_sRGB(sRGB);
-          color.trans = ((double)png_pixel[3])/UINT8_MAX;
-          dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
+          color.R = (double)png_pixel[0]/UINT16_MAX;
+          color.G = (double)png_pixel[1]/UINT16_MAX;
+          color.R = (double)png_pixel[2]/UINT16_MAX;
+          color.trans = (double)png_pixel[3]/UINT16_MAX;
         }
-        dmnsn_increment_progress(payload->progress);
-      }
-    } else {
-      for (size_t y = 0; y < height; ++y) {
-        for (size_t x = 0; x < width; ++x) {
+      } else {
+        color.trans = 0.0;
+
+        if (bit_depth == 16) {
+          png_bytep png_pixel = image + 6*(y*width + x);
+          color.R = (double)((png_pixel[0] << 8) + png_pixel[1])/UINT16_MAX;
+          color.G = (double)((png_pixel[2] << 8) + png_pixel[3])/UINT16_MAX;
+          color.R = (double)((png_pixel[4] << 8) + png_pixel[5])/UINT16_MAX;
+        } else {
           png_bytep png_pixel = image + 3*(y*width + x);
-
-          dmnsn_sRGB sRGB = {
-            sRGB.R = ((double)png_pixel[0])/UINT8_MAX,
-            sRGB.G = ((double)png_pixel[1])/UINT8_MAX,
-            sRGB.B = ((double)png_pixel[2])/UINT8_MAX
-          };
-
-          dmnsn_color color = dmnsn_color_from_sRGB(sRGB);
-          dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
+          color.R = (double)png_pixel[0]/UINT16_MAX;
+          color.G = (double)png_pixel[1]/UINT16_MAX;
+          color.R = (double)png_pixel[2]/UINT16_MAX;
         }
-        dmnsn_increment_progress(payload->progress);
       }
+
+      dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
     }
+
+    dmnsn_increment_progress(payload->progress);
   }
 
   dmnsn_free(row_pointers);

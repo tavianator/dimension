@@ -62,7 +62,6 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 {
   GLushort *pixels; /* Array of 16-bit ints in RGBA order */
   GLushort *pixel;
-  dmnsn_sRGB sRGB;
   dmnsn_color color;
 
   size_t width = canvas->width;
@@ -84,32 +83,31 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
       pixel = pixels + 4*(y*width + x);
 
       color = dmnsn_get_pixel(canvas, x, y);
-      sRGB = dmnsn_sRGB_from_color(color);
 
       /* Saturate R, G, and B to [0, UINT16_MAX] */
 
-      if (sRGB.R <= 0.0) {
+      if (color.R <= 0.0) {
         pixel[0] = 0;
-      } else if (sRGB.R >= 1.0) {
+      } else if (color.R >= 1.0) {
         pixel[0] = UINT16_MAX;
       } else {
-        pixel[0] = sRGB.R*UINT16_MAX;
+        pixel[0] = color.R*UINT16_MAX;
       }
 
-      if (sRGB.G <= 0.0) {
+      if (color.G <= 0.0) {
         pixel[1] = 0;
-      } else if (sRGB.G >= 1.0) {
+      } else if (color.G >= 1.0) {
         pixel[1] = UINT16_MAX;
       } else {
-        pixel[1] = sRGB.G*UINT16_MAX;
+        pixel[1] = color.G*UINT16_MAX;
       }
 
-      if (sRGB.B <= 0.0) {
+      if (color.B <= 0.0) {
         pixel[2] = 0;
-      } else if (sRGB.B >= 1.0) {
+      } else if (color.B >= 1.0) {
         pixel[2] = UINT16_MAX;
       } else {
-        pixel[2] = sRGB.B*UINT16_MAX;
+        pixel[2] = color.B*UINT16_MAX;
       }
 
       double alpha = dmnsn_color_intensity(color)*color.filter + color.trans;
@@ -134,14 +132,10 @@ dmnsn_canvas *
 dmnsn_gl_read_canvas(size_t x0, size_t y0,
                      size_t width, size_t height)
 {
-  dmnsn_canvas *canvas;
-  GLushort *pixels; /* Array of 16-bit ints in RGBA order */
-  GLushort *pixel;
-  dmnsn_sRGB sRGB;
-  dmnsn_color color;
+  dmnsn_canvas *canvas = dmnsn_new_canvas(width, height);
 
-  canvas = dmnsn_new_canvas(width, height);
-  pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
+  /* Array of 16-bit ints in RGBA order */
+  GLushort *pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
 
   glReadPixels(x0, y0, width, height, GL_RGBA, GL_UNSIGNED_SHORT, pixels);
 
@@ -153,14 +147,13 @@ dmnsn_gl_read_canvas(size_t x0, size_t y0,
 
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
-      pixel = pixels + 4*(y*width + x);
+      GLushort *pixel = pixels + 4*(y*width + x);
 
-      sRGB.R = ((double)pixel[0])/UINT16_MAX;
-      sRGB.G = ((double)pixel[1])/UINT16_MAX;
-      sRGB.B = ((double)pixel[2])/UINT16_MAX;
-
-      color = dmnsn_color_from_sRGB(sRGB);
-      color.filter = ((double)pixel[3])/UINT16_MAX;
+      dmnsn_color color = dmnsn_new_color5((double)pixel[0]/UINT16_MAX,
+                                           (double)pixel[1]/UINT16_MAX,
+                                           (double)pixel[2]/UINT16_MAX,
+                                           0.0,
+                                           (double)pixel[3]/UINT16_MAX);
       dmnsn_set_pixel(canvas, x, y, color);
     }
   }
@@ -174,37 +167,33 @@ static void
 dmnsn_gl_optimizer_fn(const dmnsn_canvas *canvas,
                       dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
 {
-  dmnsn_color color;
-  dmnsn_sRGB sRGB;
   GLushort *pixel = (GLushort *)optimizer.ptr + 4*(y*canvas->width + x);
-
-  color = dmnsn_get_pixel(canvas, x, y);
-  sRGB = dmnsn_sRGB_from_color(color);
+  dmnsn_color color = dmnsn_get_pixel(canvas, x, y);
 
   /* Saturate R, G, and B to [0, UINT16_MAX] */
 
-  if (sRGB.R <= 0.0) {
+  if (color.R <= 0.0) {
     pixel[0] = 0;
-  } else if (sRGB.R >= 1.0) {
+  } else if (color.R >= 1.0) {
     pixel[0] = UINT16_MAX;
   } else {
-    pixel[0] = sRGB.R*UINT16_MAX;
+    pixel[0] = color.R*UINT16_MAX;
   }
 
-  if (sRGB.G <= 0.0) {
+  if (color.G <= 0.0) {
     pixel[1] = 0;
-  } else if (sRGB.G >= 1.0) {
+  } else if (color.G >= 1.0) {
     pixel[1] = UINT16_MAX;
   } else {
-    pixel[1] = sRGB.G*UINT16_MAX;
+    pixel[1] = color.G*UINT16_MAX;
   }
 
-  if (sRGB.B <= 0.0) {
+  if (color.B <= 0.0) {
     pixel[2] = 0;
-  } else if (sRGB.B >= 1.0) {
+  } else if (color.B >= 1.0) {
     pixel[2] = UINT16_MAX;
   } else {
-    pixel[2] = sRGB.B*UINT16_MAX;
+    pixel[2] = color.B*UINT16_MAX;
   }
 
   double alpha = dmnsn_color_intensity(color)*color.filter + color.trans;
