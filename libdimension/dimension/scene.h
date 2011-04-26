@@ -66,6 +66,9 @@ typedef struct dmnsn_scene {
   /** Recursion limit. */
   unsigned int reclimit;
 
+  /** Adaptive depth control bailout. */
+  double adc_bailout;
+
   /** Number of parallel threads. */
   unsigned int nthreads;
 

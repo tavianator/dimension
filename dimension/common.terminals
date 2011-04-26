@@ -71,7 +71,7 @@
 %token DMNSN_T_ACOS                     "acos"
 %token DMNSN_T_ACOSH                    "acosh"
 %token DMNSN_T_ADAPTIVE
-%token DMNSN_T_ADC_BAILOUT
+%token DMNSN_T_ADC_BAILOUT              "adc_bailout"
 %token DMNSN_T_AGATE
 %token DMNSN_T_AGATE_TURB
 %token DMNSN_T_ALL

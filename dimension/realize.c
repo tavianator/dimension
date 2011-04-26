@@ -232,6 +232,11 @@ dmnsn_realize_global_settings(dmnsn_astnode astnode, dmnsn_scene *scene)
     dmnsn_astnode child;
 
     switch (item->type) {
+    case DMNSN_AST_ADC_BAILOUT:
+      dmnsn_array_get(item->children, 0, &child);
+      scene->adc_bailout = dmnsn_realize_float(child);
+      break;
+
     case DMNSN_AST_AMBIENT:
       dmnsn_array_get(item->children, 0, &child);
       scene->ambient = dmnsn_realize_color(child);

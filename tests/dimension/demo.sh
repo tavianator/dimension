@@ -21,7 +21,10 @@
 
 demo=$(${top_builddir}/dimension/dimension ${dimension_flags} -w768 -h480 --parse ${srcdir}/demo.pov)
 demo_exp=$(echo -n \
-'((camera
+'((global_settings
+    (max_trace_level (integer 5))
+    (adc_bailout (float 0.00392157)))
+  (camera
     perspective
     (location (vector (integer 0) (float 0.25) (integer -4)
                       (integer 0) (integer 0)))

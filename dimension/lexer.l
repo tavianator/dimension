@@ -168,6 +168,7 @@ unsigned int wchar;
 "abs"                   RETURN_TOKEN(DMNSN_T_ABS);
 "acos"                  RETURN_TOKEN(DMNSN_T_ACOS);
 "acosh"                 RETURN_TOKEN(DMNSN_T_ACOSH);
+"adc_bailout"           RETURN_TOKEN(DMNSN_T_ADC_BAILOUT);
 "ambient"               RETURN_TOKEN(DMNSN_T_AMBIENT);
 "ambient_light"         RETURN_TOKEN(DMNSN_T_AMBIENT_LIGHT);
 "angle"                 RETURN_TOKEN(DMNSN_T_ANGLE);

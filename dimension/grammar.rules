@@ -55,7 +55,10 @@ GLOBAL_SETTINGS_ITEMS: /* empty */ {
                      }
 ;
 
-GLOBAL_SETTINGS_ITEM: "ambient_light" COLOR {
+GLOBAL_SETTINGS_ITEM: "adc_bailout" FLOAT {
+                      $$ = dmnsn_new_astnode1(DMNSN_AST_ADC_BAILOUT, @$, $2);
+                    }
+                    | "ambient_light" COLOR {
                       $$ = dmnsn_new_astnode1(DMNSN_AST_AMBIENT, @$, $2);
                     }
                     | "assumed_gamma" FLOAT {

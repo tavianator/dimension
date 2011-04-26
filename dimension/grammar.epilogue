@@ -117,6 +117,7 @@ dmnsn_astnode_string(dmnsn_astnode_type astnode_type)
   dmnsn_astnode_map(DMNSN_AST_NONE, "none");
 
   dmnsn_astnode_map(DMNSN_AST_GLOBAL_SETTINGS,   "global_settings");
+  dmnsn_astnode_map(DMNSN_AST_ADC_BAILOUT,       "adc_bailout");
   dmnsn_astnode_map(DMNSN_AST_ASSUMED_GAMMA,     "assumed_gamma");
   dmnsn_astnode_map(DMNSN_AST_CHARSET,           "charset");
   dmnsn_astnode_map(DMNSN_AST_ASCII,             "ascii");

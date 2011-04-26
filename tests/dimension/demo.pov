@@ -19,6 +19,11 @@
 
 // Render demo scene
 
+global_settings {
+  max_trace_level 5
+  adc_bailout 1/255
+}
+
 camera {
   perspective
   location <0, 0.25, -4>

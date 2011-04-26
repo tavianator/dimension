@@ -42,6 +42,7 @@ dmnsn_new_scene(void)
   scene->lights          = dmnsn_new_array(sizeof(dmnsn_light *));
   scene->quality         = DMNSN_RENDER_FULL;
   scene->reclimit        = 5;
+  scene->adc_bailout     = 1.0/255.0;
   scene->nthreads        = dmnsn_ncpus();
   scene->bounding_timer  = NULL;
   scene->render_timer    = NULL;
