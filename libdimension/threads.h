@@ -54,9 +54,9 @@ DMNSN_INTERNAL void dmnsn_new_thread(dmnsn_progress *progress,
 
 /**
  * Run \p nthreads threads in parallel.
- * @param[in]     thread_fn  The routine to run in each concurrent thread.
- * @param[in,out] arg        The pointer to pass to the thread callbacks.
- * @param[in]     nthreads   The number of concurrent threads to run.
+ * @param[in]     ccthread_fn  The routine to run in each concurrent thread.
+ * @param[in,out] arg          The pointer to pass to the thread callbacks.
+ * @param[in]     nthreads     The number of concurrent threads to run.
  * @return 0 if all threads were successful, and an error code otherwise.
  */
 DMNSN_INTERNAL int dmnsn_execute_concurrently(dmnsn_ccthread_fn *ccthread_fn,
