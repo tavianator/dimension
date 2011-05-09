@@ -26,6 +26,21 @@
 #include "dimension.h"
 
 dmnsn_list *
+dmnsn_copy_list(const dmnsn_list *list)
+{
+  dmnsn_list *copy = dmnsn_new_list(list->obj_size);
+
+  for (dmnsn_list_iterator *i = dmnsn_list_first(list);
+       i != NULL;
+       i = dmnsn_list_next(i))
+  {
+    dmnsn_list_push(copy, dmnsn_list_at(i));
+  }
+
+  return copy;
+}
+
+dmnsn_list *
 dmnsn_list_from_array(const dmnsn_array *array)
 {
   dmnsn_list *list = dmnsn_new_list(array->obj_size);
@@ -46,7 +61,7 @@ dmnsn_array_from_list(const dmnsn_list *list)
        i != NULL;
        i = dmnsn_list_next(i))
   {
-    dmnsn_array_push(array, i->ptr);
+    dmnsn_array_push(array, dmnsn_list_at(i));
   }
 
   return array;

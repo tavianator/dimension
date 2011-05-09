@@ -104,11 +104,18 @@ dmnsn_new_list(size_t obj_size)
 void dmnsn_delete_list(dmnsn_list *list);
 
 /**
+ * Copy a list.
+ * @param[in] list  The list to copy.
+ * @return A list containing the same elements as \p list.
+ */
+dmnsn_list *dmnsn_copy_list(const dmnsn_list *list);
+
+/**
  * Construct a list from an array.
  * @param[in] array  The array to copy.
  * @return A list with the same contents as \p array.
  */
-dmnsn_list  *dmnsn_list_from_array(const dmnsn_array *array);
+dmnsn_list *dmnsn_list_from_array(const dmnsn_array *array);
 
 /**
  * Construct an array from a list.
