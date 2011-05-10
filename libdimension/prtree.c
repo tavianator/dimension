@@ -550,7 +550,62 @@ typedef struct dmnsn_intersection_cache {
 } dmnsn_intersection_cache;
 
 /** The thread-specific intersection cache. */
-static __thread dmnsn_array *dmnsn_prtree_cache = NULL;
+static pthread_key_t dmnsn_prtree_caches;
+/** Initialize the thread-specific pointer exactly once. */
+static pthread_once_t dmnsn_prtree_caches_once = PTHREAD_ONCE_INIT;
+
+/** Needed because pthreads doesn't destroy data from the main thread unless
+    it exits with pthread_exit(). */
+static void __attribute__((destructor))
+dmnsn_delete_main_prtree_caches(void)
+{
+  dmnsn_delete_array(pthread_getspecific(dmnsn_prtree_caches));
+  pthread_key_delete(dmnsn_prtree_caches);
+}
+
+static void
+dmnsn_delete_prtree_caches(void *caches)
+{
+  dmnsn_delete_array(caches);
+}
+
+static void
+dmnsn_initialize_prtree_caches(void)
+{
+  if (pthread_key_create(&dmnsn_prtree_caches, dmnsn_delete_prtree_caches) != 0)
+  {
+    dmnsn_error("pthread_key_create() failed.");
+  }
+}
+
+static dmnsn_intersection_cache *
+dmnsn_get_intersection_cache(size_t id)
+{
+  if (pthread_once(&dmnsn_prtree_caches_once, dmnsn_initialize_prtree_caches)
+      != 0)
+  {
+    dmnsn_error("pthread_once() failed.");
+  }
+
+  dmnsn_array *caches = pthread_getspecific(dmnsn_prtree_caches);
+  if (!caches) {
+    caches = dmnsn_new_array(sizeof(dmnsn_intersection_cache));
+    if (pthread_setspecific(dmnsn_prtree_caches, caches) != 0) {
+      dmnsn_error("pthread_setspecific() failed.");
+    }
+  }
+
+  while (dmnsn_array_size(caches) <= id) {
+    dmnsn_array_resize(caches, dmnsn_array_size(caches) + 1);
+    dmnsn_intersection_cache *cache = dmnsn_array_last(caches);
+    cache->i = 0;
+    for (size_t i = 0; i < DMNSN_PRTREE_CACHE_SIZE; ++i) {
+      cache->objects[i] = NULL;
+    }
+  }
+
+  return dmnsn_array_at(caches, id);
+}
 
 DMNSN_HOT bool
 dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
@@ -573,20 +628,7 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
   dmnsn_optimized_line optline = dmnsn_optimize_line(ray);
 
   /* Search the intersection cache */
-  if (!dmnsn_prtree_cache) {
-    dmnsn_prtree_cache = dmnsn_new_array(sizeof(dmnsn_intersection_cache));
-  }
-  while (dmnsn_array_size(dmnsn_prtree_cache) <= tree->id) {
-    dmnsn_array_resize(dmnsn_prtree_cache,
-                       dmnsn_array_size(dmnsn_prtree_cache) + 1);
-    dmnsn_intersection_cache *cache = dmnsn_array_last(dmnsn_prtree_cache);
-    cache->i = 0;
-    for (size_t i = 0; i < DMNSN_PRTREE_CACHE_SIZE; ++i) {
-      cache->objects[i] = NULL;
-    }
-  }
-  dmnsn_intersection_cache *cache = dmnsn_array_first(dmnsn_prtree_cache);
-  cache += tree->id;
+  dmnsn_intersection_cache *cache = dmnsn_get_intersection_cache(tree->id);
   if (reset) {
     cache->i = 0;
   }
