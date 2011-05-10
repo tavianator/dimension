@@ -103,10 +103,8 @@ enum {
 
 /** Get a coordinate of the bounding box of a node. */
 static inline double
-dmnsn_get_coordinate(const dmnsn_list_iterator *i, int comparator)
+dmnsn_get_coordinate(const dmnsn_prnode * const *node, int comparator)
 {
-  dmnsn_prnode **node = dmnsn_list_at(i);
-
   switch (comparator) {
   case DMNSN_XMIN:
     return (*node)->bounding_box.min.x;
@@ -130,56 +128,56 @@ dmnsn_get_coordinate(const dmnsn_list_iterator *i, int comparator)
 
 /* List sorting comparators */
 
-static bool
-dmnsn_xmin_comp(const dmnsn_list_iterator *l, const dmnsn_list_iterator *r)
+static int
+dmnsn_xmin_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_XMIN);
   double rval = dmnsn_get_coordinate(r, DMNSN_XMIN);
-  return lval < rval;
+  return lval < rval ? -1 : 1;
 }
 
-static bool
-dmnsn_ymin_comp(const dmnsn_list_iterator *l, const dmnsn_list_iterator *r)
+static int
+dmnsn_ymin_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_YMIN);
   double rval = dmnsn_get_coordinate(r, DMNSN_YMIN);
-  return lval < rval;
+  return lval < rval ? -1 : 1;
 }
 
-static bool
-dmnsn_zmin_comp(const dmnsn_list_iterator *l, const dmnsn_list_iterator *r)
+static int
+dmnsn_zmin_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_ZMIN);
   double rval = dmnsn_get_coordinate(r, DMNSN_ZMIN);
-  return lval < rval;
+  return lval < rval ? -1 : 1;
 }
 
-static bool
-dmnsn_xmax_comp(const dmnsn_list_iterator *l, const dmnsn_list_iterator *r)
+static int
+dmnsn_xmax_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_XMAX);
   double rval = dmnsn_get_coordinate(r, DMNSN_XMAX);
-  return lval < rval;
+  return lval < rval ? -1 : 1;
 }
 
-static bool
-dmnsn_ymax_comp(const dmnsn_list_iterator *l, const dmnsn_list_iterator *r)
+static int
+dmnsn_ymax_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_YMAX);
   double rval = dmnsn_get_coordinate(r, DMNSN_YMAX);
-  return lval < rval;
+  return lval < rval ? -1 : 1;
 }
 
-static bool
-dmnsn_zmax_comp(const dmnsn_list_iterator *l, const dmnsn_list_iterator *r)
+static int
+dmnsn_zmax_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_ZMAX);
   double rval = dmnsn_get_coordinate(r, DMNSN_ZMAX);
-  return lval < rval;
+  return lval < rval ? -1 : 1;
 }
 
 /** All comparators. */
-static dmnsn_list_comparator_fn *const dmnsn_comparators[DMNSN_PSEUDO_B] = {
+static dmnsn_array_comparator_fn *const dmnsn_comparators[DMNSN_PSEUDO_B] = {
   [DMNSN_XMIN] = dmnsn_xmin_comp,
   [DMNSN_YMIN] = dmnsn_ymin_comp,
   [DMNSN_ZMIN] = dmnsn_zmin_comp,
@@ -190,32 +188,32 @@ static dmnsn_list_comparator_fn *const dmnsn_comparators[DMNSN_PSEUDO_B] = {
 
 /** Add the priority leaves for this level. */
 static void
-dmnsn_add_priority_leaves(dmnsn_list *sorted_leaves[DMNSN_PSEUDO_B],
-                          dmnsn_list *new_leaves, int comparator)
+dmnsn_add_priority_leaves(dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B],
+                          dmnsn_array *new_leaves, int comparator)
 {
   for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
-    dmnsn_prnode *leaf = dmnsn_new_prnode();
-    size_t count = 0;
-    dmnsn_list_iterator *j = dmnsn_list_first(sorted_leaves[i]);
-    while (count < DMNSN_PRTREE_B && j) {
+    dmnsn_prnode *leaf = NULL;
+    dmnsn_prnode **leaves = dmnsn_array_first(sorted_leaves[i]);
+    for (size_t j = 0, count = 0, size = dmnsn_array_size(sorted_leaves[i]);
+         j < size && count < DMNSN_PRTREE_B;
+         ++j)
+    {
       /* Skip all the previously found extreme nodes */
-      dmnsn_prnode **node;
-      do {
-        node = dmnsn_list_at(j);
-        j = dmnsn_list_next(j);
-      } while ((*node)->location == DMNSN_PRTREE_LEAF && j);
-
-      if ((*node)->location != DMNSN_PRTREE_LEAF) {
-        (*node)->location = DMNSN_PRTREE_LEAF;
-        leaf->children[count++] = *node;
-        dmnsn_prnode_swallow(leaf, (*node)->bounding_box);
+      if (leaves[j]->location == DMNSN_PRTREE_LEAF) {
+        continue;
       }
+
+      if (!leaf) {
+        leaf = dmnsn_new_prnode();
+      }
+      leaves[j]->location = DMNSN_PRTREE_LEAF;
+      leaf->children[count++] = leaves[j];
+      dmnsn_prnode_swallow(leaf, leaves[j]->bounding_box);
     }
 
-    if (count > 0) {
-      dmnsn_list_push(new_leaves, &leaf);
+    if (leaf) {
+      dmnsn_array_push(new_leaves, &leaf);
     } else {
-      dmnsn_delete_prnode(leaf);
       return;
     }
   }
@@ -223,59 +221,53 @@ dmnsn_add_priority_leaves(dmnsn_list *sorted_leaves[DMNSN_PSEUDO_B],
 
 /** Split the sorted lists into the left and right subtrees. */
 static bool
-dmnsn_split_sorted_leaves(dmnsn_list *sorted_leaves[DMNSN_PSEUDO_B],
-                          dmnsn_list *right_sorted_leaves[DMNSN_PSEUDO_B],
+dmnsn_split_sorted_leaves(dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B],
+                          dmnsn_array *right_sorted_leaves[DMNSN_PSEUDO_B],
                           size_t i)
 {
   /* Get rid of the extreme nodes */
-  dmnsn_list_iterator *j = dmnsn_list_first(sorted_leaves[i]);
-  while (j) {
-    dmnsn_list_iterator *next = dmnsn_list_next(j);
-    dmnsn_prnode **node = dmnsn_list_at(j);
-    if ((*node)->location == DMNSN_PRTREE_LEAF) {
-      dmnsn_list_remove(sorted_leaves[i], j);
+  dmnsn_prnode **leaves = dmnsn_array_first(sorted_leaves[i]);
+  size_t j, skip;
+  for (j = 0, skip = 0; j < dmnsn_array_size(sorted_leaves[i]); ++j) {
+    if (leaves[j]->location == DMNSN_PRTREE_LEAF) {
+      ++skip;
+    } else {
+      leaves[j - skip] = leaves[j];
     }
-    j = next;
   }
+  dmnsn_array_resize(sorted_leaves[i], j - skip);
 
-  if (dmnsn_list_size(sorted_leaves[i]) == 0) {
+  if (dmnsn_array_size(sorted_leaves[i]) == 0) {
     return false;
   }
 
   /* Split the appropriate list and mark the left and right child nodes */
-  right_sorted_leaves[i] = dmnsn_list_split(sorted_leaves[i]);
-  for (dmnsn_list_iterator *j = dmnsn_list_first(sorted_leaves[i]);
-       j != NULL;
-       j = dmnsn_list_next(j))
-  {
-    dmnsn_prnode **node = dmnsn_list_at(j);
+  right_sorted_leaves[i] = dmnsn_array_split(sorted_leaves[i]);
+  DMNSN_ARRAY_FOREACH (dmnsn_prnode **, node, sorted_leaves[i]) {
     (*node)->location = DMNSN_PRTREE_LEFT;
   }
-  for (dmnsn_list_iterator *j = dmnsn_list_first(right_sorted_leaves[i]);
-       j != NULL;
-       j = dmnsn_list_next(j))
-  {
-    dmnsn_prnode **node = dmnsn_list_at(j);
+  DMNSN_ARRAY_FOREACH (dmnsn_prnode **, node, right_sorted_leaves[i]) {
     (*node)->location = DMNSN_PRTREE_RIGHT;
   }
 
   /* Split the rest of the lists */
   for (size_t j = 0; j < DMNSN_PSEUDO_B; ++j) {
     if (j != i) {
-      right_sorted_leaves[j] = dmnsn_new_list(sizeof(dmnsn_prnode *));
+      right_sorted_leaves[j] = dmnsn_new_array(sizeof(dmnsn_prnode *));
 
-      dmnsn_list_iterator *k = dmnsn_list_first(sorted_leaves[j]);
-      while (k) {
-        dmnsn_list_iterator *next = dmnsn_list_next(k);
-        dmnsn_prnode **node = dmnsn_list_at(k);
-        if ((*node)->location == DMNSN_PRTREE_LEAF) {
-          dmnsn_list_remove(sorted_leaves[j], k);
-        } else if ((*node)->location == DMNSN_PRTREE_RIGHT) {
-          dmnsn_list_iterator_remove(sorted_leaves[j], k);
-          dmnsn_list_iterator_insert(right_sorted_leaves[j], NULL, k);
+      dmnsn_prnode **leaves = dmnsn_array_first(sorted_leaves[j]);
+      size_t k, skip;
+      for (k = 0, skip = 0; k < dmnsn_array_size(sorted_leaves[j]); ++k) {
+        if (leaves[k]->location == DMNSN_PRTREE_LEAF) {
+          ++skip;
+        } else if (leaves[k]->location == DMNSN_PRTREE_RIGHT) {
+          dmnsn_array_push(right_sorted_leaves[j], &leaves[k]);
+          ++skip;
+        } else {
+          leaves[k - skip] = leaves[k];
         }
-        k = next;
       }
+      dmnsn_array_resize(sorted_leaves[j], k - skip);
     }
   }
 
@@ -285,19 +277,19 @@ dmnsn_split_sorted_leaves(dmnsn_list *sorted_leaves[DMNSN_PSEUDO_B],
 /** Recursively constructs an implicit pseudo-PR-tree and collects the priority
     leaves. */
 static void
-dmnsn_priority_leaves_recursive(dmnsn_list *sorted_leaves[DMNSN_PSEUDO_B],
-                                dmnsn_list *new_leaves,
+dmnsn_priority_leaves_recursive(dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B],
+                                dmnsn_array *new_leaves,
                                 int comparator)
 {
   dmnsn_add_priority_leaves(sorted_leaves, new_leaves, comparator);
 
-  dmnsn_list *right_sorted_leaves[DMNSN_PSEUDO_B];
+  dmnsn_array *right_sorted_leaves[DMNSN_PSEUDO_B];
   if (dmnsn_split_sorted_leaves(sorted_leaves, right_sorted_leaves, comparator))
   {
     dmnsn_priority_leaves_recursive(right_sorted_leaves, new_leaves,
                                     (comparator + 1)%DMNSN_PSEUDO_B);
     for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
-      dmnsn_delete_list(right_sorted_leaves[i]);
+      dmnsn_delete_array(right_sorted_leaves[i]);
     }
 
     dmnsn_priority_leaves_recursive(sorted_leaves, new_leaves,
@@ -306,20 +298,20 @@ dmnsn_priority_leaves_recursive(dmnsn_list *sorted_leaves[DMNSN_PSEUDO_B],
 }
 
 /** Constructs an implicit pseudo-PR-tree and returns the priority leaves. */
-static dmnsn_list *
-dmnsn_priority_leaves(const dmnsn_list *leaves)
+static dmnsn_array *
+dmnsn_priority_leaves(const dmnsn_array *leaves)
 {
-  dmnsn_list *sorted_leaves[DMNSN_PSEUDO_B];
+  dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B];
   for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
-    sorted_leaves[i] = dmnsn_copy_list(leaves);
-    dmnsn_list_sort(sorted_leaves[i], dmnsn_comparators[i]);
+    sorted_leaves[i] = dmnsn_array_copy(leaves);
+    dmnsn_array_sort(sorted_leaves[i], dmnsn_comparators[i]);
   }
 
-  dmnsn_list *new_leaves = dmnsn_new_list(sizeof(dmnsn_prnode *));
+  dmnsn_array *new_leaves = dmnsn_new_array(sizeof(dmnsn_prnode *));
   dmnsn_priority_leaves_recursive(sorted_leaves, new_leaves, 0);
 
   for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
-    dmnsn_delete_list(sorted_leaves[i]);
+    dmnsn_delete_array(sorted_leaves[i]);
   }
 
   return new_leaves;
@@ -327,80 +319,73 @@ dmnsn_priority_leaves(const dmnsn_list *leaves)
 
 /** Construct a non-flat PR-tree. */
 static dmnsn_prnode *
-dmnsn_make_prtree(const dmnsn_list *objects)
+dmnsn_make_prtree(const dmnsn_array *objects)
 {
-  if (dmnsn_list_size(objects) == 0) {
+  if (dmnsn_array_size(objects) == 0) {
     return NULL;
   }
 
-  /* Make the initial list of leaves */
-  dmnsn_list *leaves = dmnsn_new_list(sizeof(dmnsn_prnode *));
-  for (dmnsn_list_iterator *i = dmnsn_list_first(objects);
-       i != NULL;
-       i = dmnsn_list_next(i))
-  {
-    dmnsn_object **object = dmnsn_list_at(i);
+  /* Make the initial array of leaves */
+  dmnsn_array *leaves = dmnsn_new_array(sizeof(dmnsn_prnode *));
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
     dmnsn_prnode *node = dmnsn_new_prnode();
     node->bounding_box = (*object)->bounding_box;
     node->object       = *object;
-    dmnsn_list_push(leaves, &node);
+    dmnsn_array_push(leaves, &node);
   }
 
-  while (dmnsn_list_size(leaves) > 1) {
-    dmnsn_list *new_leaves = dmnsn_priority_leaves(leaves);
-    dmnsn_delete_list(leaves);
+  while (dmnsn_array_size(leaves) > 1) {
+    dmnsn_array *new_leaves = dmnsn_priority_leaves(leaves);
+    dmnsn_delete_array(leaves);
     leaves = new_leaves;
   }
 
-  dmnsn_prnode **leaf = dmnsn_list_at(dmnsn_list_first(leaves));
-  dmnsn_prnode *root = *leaf;
-  dmnsn_delete_list(leaves);
+  dmnsn_prnode *root = *(dmnsn_prnode **)dmnsn_array_first(leaves);
+  dmnsn_delete_array(leaves);
   return root;
 }
 
-/** Add an object or its children, if any, to a list. */
+/** Add an object or its children, if any, to an array. */
 static void
-dmnsn_list_add_object(dmnsn_list *objects, const dmnsn_object *object)
+dmnsn_split_add_object(dmnsn_array *objects, const dmnsn_object *object)
 {
   if (dmnsn_array_size(object->children) == 0) {
-    dmnsn_list_push(objects, &object);
+    dmnsn_array_push(objects, &object);
   } else {
     DMNSN_ARRAY_FOREACH (const dmnsn_object **, child, object->children) {
-      dmnsn_list_add_object(objects, *child);
+      dmnsn_split_add_object(objects, *child);
     }
   }
 }
 
-/** Add objects from an array to a list, splitting unions etc. */
-static dmnsn_list *
-dmnsn_object_list(const dmnsn_array *objects)
+/** Split unions to create the input for the PR-tree. */
+static dmnsn_array *
+dmnsn_split_objects(const dmnsn_array *objects)
 {
-  dmnsn_list *list = dmnsn_new_list(sizeof(dmnsn_object *));
+  dmnsn_array *split = dmnsn_new_array(sizeof(dmnsn_object *));
   DMNSN_ARRAY_FOREACH (const dmnsn_object **, object, objects) {
-    dmnsn_list_add_object(list, *object);
+    dmnsn_split_add_object(split, *object);
   }
-  return list;
+  return split;
 }
 
-/** Split unbounded objects into a new list. */
-static dmnsn_list *
-dmnsn_split_unbounded(dmnsn_list *objects)
+/** Split unbounded objects into a new array. */
+static dmnsn_array *
+dmnsn_split_unbounded(dmnsn_array *objects)
 {
-  dmnsn_list *unbounded = dmnsn_new_list(sizeof(dmnsn_object *));
+  dmnsn_array *unbounded = dmnsn_new_array(sizeof(dmnsn_object *));
 
-  dmnsn_list_iterator *i = dmnsn_list_first(objects);
-  while (i) {
-    dmnsn_object **object = dmnsn_list_at(i);
-
-    if (dmnsn_bounding_box_is_infinite((*object)->bounding_box)) {
-      dmnsn_list_iterator *next = dmnsn_list_next(i);
-      dmnsn_list_iterator_remove(objects, i);
-      dmnsn_list_iterator_insert(unbounded, NULL, i);
-      i = next;
+  dmnsn_object **array = dmnsn_array_first(objects);
+  size_t i, skip;
+  for (i = 0, skip = 0; i < dmnsn_array_size(objects); ++i) {
+    if (dmnsn_bounding_box_is_infinite(array[i]->bounding_box)) {
+      dmnsn_array_push(unbounded, &array[i]);
+      ++skip;
     } else {
-      i = dmnsn_list_next(i);
+      array[i - skip] = array[i];
     }
   }
+  dmnsn_array_resize(objects, i - skip);
 
   return unbounded;
 }
@@ -445,17 +430,14 @@ dmnsn_new_prtree(const dmnsn_array *objects)
 {
   dmnsn_prtree *prtree = dmnsn_malloc(sizeof(dmnsn_prtree));
 
-  dmnsn_list *object_list = dmnsn_object_list(objects);
+  dmnsn_array *bounded = dmnsn_split_objects(objects);
+  prtree->unbounded = dmnsn_split_unbounded(bounded);
 
-  dmnsn_list *unbounded = dmnsn_split_unbounded(object_list);
-  prtree->unbounded = dmnsn_array_from_list(unbounded);
-
-  dmnsn_prnode *root = dmnsn_make_prtree(object_list);
+  dmnsn_prnode *root = dmnsn_make_prtree(bounded);
   prtree->bounded = dmnsn_flatten_prtree(root);
 
   dmnsn_delete_prnode(root);
-  dmnsn_delete_list(unbounded);
-  dmnsn_delete_list(object_list);
+  dmnsn_delete_array(bounded);
 
   if (dmnsn_array_size(prtree->unbounded) > 0) {
     prtree->bounding_box = dmnsn_infinite_bounding_box();

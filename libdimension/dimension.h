@@ -78,7 +78,6 @@ typedef void dmnsn_free_fn(void *ptr);
 #include <dimension/error.h>
 #include <dimension/malloc.h>
 #include <dimension/array.h>
-#include <dimension/list.h>
 #include <dimension/dictionary.h>
 #include <dimension/progress.h>
 #include <dimension/timer.h>

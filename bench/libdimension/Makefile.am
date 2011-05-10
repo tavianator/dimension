@@ -20,7 +20,6 @@
 INCLUDES = -I$(top_srcdir)/libdimension
 
 EXTRA_PROGRAMS = bench-array                                                   \
-                 bench-list                                                    \
                  bench-geometry                                                \
                  bench-polynomial                                              \
                  bench-prtree
@@ -29,14 +28,12 @@ AM_CFLAGS  = $(libsandglass_CFLAGS) -fno-inline
 AM_LDFLAGS = $(libsandglass_LIBS) $(top_builddir)/libdimension/libdimension.la
 
 bench_array_SOURCES = array.c
-bench_list_SOURCES = list.c
 bench_geometry_SOURCES = geometry.c
 bench_polynomial_SOURCES = polynomial.c
 bench_prtree_SOURCES = prtree.c
 
 bench: $(EXTRA_PROGRAMS)
 	./bench-array
-	./bench-list
 	./bench-geometry
 	./bench-polynomial
 	./bench-prtree

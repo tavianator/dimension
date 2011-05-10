@@ -27,7 +27,8 @@
 #define DIMENSION_ARRAY_H
 
 #include <stddef.h> /* For size_t */
-#include <string.h> /* For memcpy */
+#include <stdlib.h> /* For qsort() */
+#include <string.h> /* For memcpy() */
 
 /** Dynamic array type. */
 typedef struct dmnsn_array {
@@ -95,6 +96,38 @@ dmnsn_array_resize(dmnsn_array *array, size_t length)
   }
 
   array->length = length;
+}
+
+/**
+ * Copy an array.
+ * @param[in] array  The array to copy.
+ * @return A copy of the array.
+ */
+DMNSN_INLINE dmnsn_array *
+dmnsn_array_copy(const dmnsn_array *array)
+{
+  dmnsn_array *copy = dmnsn_new_array(array->obj_size);
+  dmnsn_array_resize(copy, dmnsn_array_size(array));
+  memcpy(copy->ptr, array->ptr, dmnsn_array_size(array)*array->obj_size);
+  return copy;
+}
+
+/**
+ * Split an array in half.
+ * @param[in,out] array  The array to split.
+ * @return The second half of the array.
+ */
+DMNSN_INLINE dmnsn_array *
+dmnsn_array_split(dmnsn_array *array)
+{
+  dmnsn_array *half = dmnsn_new_array(array->obj_size);
+  size_t new_size = dmnsn_array_size(array)/2;
+  size_t old_size = dmnsn_array_size(array) - new_size;
+  dmnsn_array_resize(half, new_size);
+  memcpy(half->ptr, (char *)array->ptr + old_size*array->obj_size,
+         new_size*array->obj_size);
+  dmnsn_array_resize(array, old_size);
+  return half;
 }
 
 /**
@@ -238,6 +271,26 @@ dmnsn_array_apply(dmnsn_array *array, dmnsn_callback_fn *callback)
   for (i = (char *)dmnsn_array_first(array); i <= last; i += array->obj_size) {
     callback((void *)i);
   }
+}
+
+/**
+ * Callback type for array sorting.
+ * @param[in] a  The first element.
+ * @param[in] b  The second element.
+ * @return A negative value iff a < b, zero iff a == b, and a positive value iff
+ *         a > b.
+ */
+typedef int dmnsn_array_comparator_fn(const void *a, const void *b);
+
+/**
+ * Sort an array.
+ * @param[in,out] array       The array to sort.
+ * @param[in]     comparator  The sorting comparator to use.
+ */
+DMNSN_INLINE void
+dmnsn_array_sort(dmnsn_array *array, dmnsn_array_comparator_fn *comparator)
+{
+  qsort(array->ptr, dmnsn_array_size(array), array->obj_size, comparator);
 }
 
 /* Macros to shorten array iteration */
