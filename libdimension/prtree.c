@@ -133,7 +133,7 @@ dmnsn_xmin_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_XMIN);
   double rval = dmnsn_get_coordinate(r, DMNSN_XMIN);
-  return lval < rval ? -1 : 1;
+  return (lval > rval) - (lval < rval);
 }
 
 static int
@@ -141,7 +141,7 @@ dmnsn_ymin_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_YMIN);
   double rval = dmnsn_get_coordinate(r, DMNSN_YMIN);
-  return lval < rval ? -1 : 1;
+  return (lval > rval) - (lval < rval);
 }
 
 static int
@@ -149,7 +149,7 @@ dmnsn_zmin_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_ZMIN);
   double rval = dmnsn_get_coordinate(r, DMNSN_ZMIN);
-  return lval < rval ? -1 : 1;
+  return (lval > rval) - (lval < rval);
 }
 
 static int
@@ -157,7 +157,7 @@ dmnsn_xmax_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_XMAX);
   double rval = dmnsn_get_coordinate(r, DMNSN_XMAX);
-  return lval < rval ? -1 : 1;
+  return (lval > rval) - (lval < rval);
 }
 
 static int
@@ -165,7 +165,7 @@ dmnsn_ymax_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_YMAX);
   double rval = dmnsn_get_coordinate(r, DMNSN_YMAX);
-  return lval < rval ? -1 : 1;
+  return (lval > rval) - (lval < rval);
 }
 
 static int
@@ -173,7 +173,7 @@ dmnsn_zmax_comp(const void *l, const void *r)
 {
   double lval = dmnsn_get_coordinate(l, DMNSN_ZMAX);
   double rval = dmnsn_get_coordinate(r, DMNSN_ZMAX);
-  return lval < rval ? -1 : 1;
+  return (lval > rval) - (lval < rval);
 }
 
 /** All comparators. */
@@ -189,7 +189,7 @@ static dmnsn_array_comparator_fn *const dmnsn_comparators[DMNSN_PSEUDO_B] = {
 /** Add the priority leaves for this level. */
 static void
 dmnsn_add_priority_leaves(dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B],
-                          dmnsn_array *new_leaves, int comparator)
+                          dmnsn_array *new_leaves)
 {
   for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
     dmnsn_prnode *leaf = NULL;
@@ -281,7 +281,7 @@ dmnsn_priority_leaves_recursive(dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B],
                                 dmnsn_array *new_leaves,
                                 int comparator)
 {
-  dmnsn_add_priority_leaves(sorted_leaves, new_leaves, comparator);
+  dmnsn_add_priority_leaves(sorted_leaves, new_leaves);
 
   dmnsn_array *right_sorted_leaves[DMNSN_PSEUDO_B];
   if (dmnsn_split_sorted_leaves(sorted_leaves, right_sorted_leaves, comparator))
