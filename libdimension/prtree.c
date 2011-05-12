@@ -536,15 +536,6 @@ static pthread_key_t dmnsn_prtree_caches;
 /** Initialize the thread-specific pointer exactly once. */
 static pthread_once_t dmnsn_prtree_caches_once = PTHREAD_ONCE_INIT;
 
-/** Needed because pthreads doesn't destroy data from the main thread unless
-    it exits with pthread_exit(). */
-static void __attribute__((destructor))
-dmnsn_delete_main_prtree_caches(void)
-{
-  dmnsn_delete_array(pthread_getspecific(dmnsn_prtree_caches));
-  pthread_key_delete(dmnsn_prtree_caches);
-}
-
 static void
 dmnsn_delete_prtree_caches(void *caches)
 {
@@ -560,16 +551,30 @@ dmnsn_initialize_prtree_caches(void)
   }
 }
 
-static dmnsn_intersection_cache *
-dmnsn_get_intersection_cache(size_t id)
+static dmnsn_array *
+dmnsn_get_prtree_caches(void)
 {
   if (pthread_once(&dmnsn_prtree_caches_once, dmnsn_initialize_prtree_caches)
       != 0)
   {
     dmnsn_error("pthread_once() failed.");
   }
+  return pthread_getspecific(dmnsn_prtree_caches);
+}
 
-  dmnsn_array *caches = pthread_getspecific(dmnsn_prtree_caches);
+/** Needed because pthreads doesn't destroy data from the main thread unless
+    it exits with pthread_exit(). */
+static void __attribute__((destructor))
+dmnsn_delete_main_prtree_caches(void)
+{
+  dmnsn_delete_array(dmnsn_get_prtree_caches());
+  pthread_key_delete(dmnsn_prtree_caches);
+}
+
+static dmnsn_intersection_cache *
+dmnsn_get_intersection_cache(size_t id)
+{
+  dmnsn_array *caches = dmnsn_get_prtree_caches();
   if (!caches) {
     caches = dmnsn_new_array(sizeof(dmnsn_intersection_cache));
     if (pthread_setspecific(dmnsn_prtree_caches, caches) != 0) {
