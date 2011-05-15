@@ -21,17 +21,6 @@ Doxyfile
 # pkg-config files
 *.pc
 
-# Files created by `make'
-*.exe
-/dimension/dimension
-/dimension/directives.c
-/dimension/directives.h
-/dimension/directives.y
-/dimension/grammar.c
-/dimension/grammar.h
-/dimension/grammar.y
-/dimension/lexer.c
-
 # Files created by `make check'
 /*/tests/*-test
 /*/tests/*.png
@@ -39,7 +28,6 @@ Doxyfile
 
 # Files created by `make bench'
 /*/bench/bench-*
-/*/bench/*.png
 
 # Files and folders created by libtool
 .libs/

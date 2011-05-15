@@ -172,8 +172,5 @@ AC_CONFIG_FILES([Makefile
                  libdimension/Doxyfile
                  libdimension/bench/Makefile
                  libdimension/libdimension.pc
-                 libdimension/tests/Makefile
-                 dimension/Makefile
-                 dimension/bench/Makefile
-                 dimension/tests/Makefile])
+                 libdimension/tests/Makefile])
 AC_OUTPUT
