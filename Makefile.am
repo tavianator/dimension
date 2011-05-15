@@ -19,15 +19,13 @@
 
 ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = libdimension                                                         \
-          dimension                                                            \
-          tests                                                                \
-          bench                                                                \
-          doc
+          dimension
 
 EXTRA_DIST = autogen.sh
 
 bench: all-recursive
-	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench
+	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) bench
+	cd dimension && $(MAKE) $(AM_MAKEFLAGS) bench
 
 doc:
 	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) doc

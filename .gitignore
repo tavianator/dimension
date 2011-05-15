@@ -15,7 +15,7 @@ Makefile
 Makefile.in
 
 # Documentation files created by make
-/doc/libdimension
+/*/doc
 Doxyfile
 
 # pkg-config files
@@ -33,13 +33,13 @@ Doxyfile
 /dimension/lexer.c
 
 # Files created by `make check'
-/tests/*/*-test
-/tests/*/*.png
-/tests/*/*.log
+/*/tests/*-test
+/*/tests/*.png
+/*/tests/*.log
 
 # Files created by `make bench'
-/bench/*/bench-*
-/bench/*/*.png
+/*/bench/bench-*
+/*/bench/*.png
 
 # Files and folders created by libtool
 .libs/

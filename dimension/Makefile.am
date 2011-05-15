@@ -17,6 +17,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
+SUBDIRS = bench                                                                \
+          tests
+
 # Make dmnsn_error() backtraces useful
 AM_LDFLAGS = -rdynamic
 
@@ -78,3 +81,8 @@ dimension_SOURCES = directives.y                                               \
                     y.tab.h
 dimension_LDADD   = $(top_builddir)/libdimension/libdimension.la
 dimension_LDFLAGS = $(AM_LDFLAGS)
+
+bench: all-recursive
+	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench
+
+.PHONY: bench

@@ -17,6 +17,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
+SUBDIRS = bench                                                                \
+          tests
+
 # Make dmnsn_error() backtraces useful
 AM_LDFLAGS = -rdynamic
 
@@ -130,6 +133,12 @@ if PROFILE
 libdimension_la_SOURCES += profile.c
 endif
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libdimension.pc
+
+bench: all-recursive
+	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench
+
 clean-local: clean-docs
 
 doc:
@@ -137,5 +146,4 @@ doc:
 clean-docs:
 	rm -rf $(top_builddir)/doc/libdimension
 
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libdimension.pc
+.PHONY: bench doc

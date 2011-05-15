@@ -170,13 +170,10 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile
                  libdimension/Makefile
                  libdimension/Doxyfile
+                 libdimension/bench/Makefile
                  libdimension/libdimension.pc
+                 libdimension/tests/Makefile
                  dimension/Makefile
-                 tests/Makefile
-                 tests/libdimension/Makefile
-                 tests/dimension/Makefile
-                 bench/Makefile
-                 bench/libdimension/Makefile
-                 bench/dimension/Makefile
-                 doc/Makefile])
+                 dimension/bench/Makefile
+                 dimension/tests/Makefile])
 AC_OUTPUT

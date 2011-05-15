@@ -8,8 +8,8 @@ Tokenizing:          dimension/lexer.l
 Language directives: dimension/tokenize.c
 Parsing:             dimension/common.rules
 Extra parsing stuff: dimension/{common,grammar,directives}.*
-Tests:               tests/dimension/*.{pov,sh}
-Benchmarks:          bench/dimension/*.{sh,pov}
+Tests:               dimension/tests/*.{pov,sh}
+Benchmarks:          dimension/bench/*.{sh,pov}
 
 Library (LGPLv3):
 =================
@@ -20,5 +20,5 @@ API:                   libdimension/dimension.h, libdimension/dimension/*.h
 Ray tracing algorithm: libdimension/raytrace.c
 Bounding hierarchy:    libdimension/prtree.{c,h}
 Library internals:     libdimension/dimension-impl.h and its #includes
-Tests:                 tests/libdimension/*.{c,cpp}
-Benchmarks:            bench/libdimension/*.c
+Tests:                 libdimension/tests/*.{c,cpp}
+Benchmarks:            libdimension/bench/*.c
