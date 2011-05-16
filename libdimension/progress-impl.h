@@ -23,9 +23,6 @@
  * Progress object implementation.
  */
 
-#ifndef DIMENSION_IMPL_PROGRESS_H
-#define DIMENSION_IMPL_PROGRESS_H
-
 #include <pthread.h>
 
 /** Allocate a new progress object. */
@@ -57,5 +54,3 @@ struct dmnsn_progress {
   volatile double min_wait;
   volatile double *min_waitp; /* Hack for const values */
 };
-
-#endif /* DIMENSION_IMPL_PROGRESS_H */

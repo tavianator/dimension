@@ -23,9 +23,6 @@
  * OpenGL export/import of canvases.
  */
 
-#ifndef DIMENSION_GL_H
-#define DIMENSION_GL_H
-
 /**
  * Optimize a canvas for GL drawing
  * @param[in,out] canvas  The canvas to optimize.
@@ -50,5 +47,3 @@ int dmnsn_gl_write_canvas(const dmnsn_canvas *canvas);
  */
 dmnsn_canvas *dmnsn_gl_read_canvas(size_t x0, size_t y0,
                                    size_t width, size_t height);
-
-#endif /* DIMENSION_GL_H */

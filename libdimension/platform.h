@@ -23,9 +23,6 @@
  * Platform abstractions.
  */
 
-#ifndef DIMENSION_IMPL_PLATFORM_H
-#define DIMENSION_IMPL_PLATFORM_H
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -61,5 +58,3 @@ DMNSN_INTERNAL size_t dmnsn_ncpus(void);
  *                    times.
  */
 DMNSN_INTERNAL void dmnsn_get_times(dmnsn_timer *timer);
-
-#endif /* DIMENSION_IMPL_PLATFORM_H */

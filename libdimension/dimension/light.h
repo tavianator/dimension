@@ -23,9 +23,6 @@
  * Lights.
  */
 
-#ifndef DIMENSION_LIGHT_H
-#define DIMENSION_LIGHT_H
-
 /* Forward-declar dmnsn_light */
 typedef struct dmnsn_light dmnsn_light;
 
@@ -60,5 +57,3 @@ dmnsn_light *dmnsn_new_light(void);
  * @param[in,out] light  The light to delete.
  */
 void dmnsn_delete_light(dmnsn_light *light);
-
-#endif /* DIMENSION_LIGHT_H */

@@ -23,9 +23,6 @@
  * Pre-defined light types.
  */
 
-#ifndef DIMENSION_LIGHTS_H
-#define DIMENSION_LIGHTS_H
-
 /**
  * A point light.
  * @param[in] x0     The origin of the light.
@@ -33,5 +30,3 @@
  * @return A point light.
  */
 dmnsn_light *dmnsn_new_point_light(dmnsn_vector x0, dmnsn_color color);
-
-#endif /* DIMENSION_LIGHTS_H */

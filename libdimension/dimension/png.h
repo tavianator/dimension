@@ -23,9 +23,6 @@
  * PNG import/export of canvases
  */
 
-#ifndef DIMENSION_PNG_H
-#define DIMENSION_PNG_H
-
 #include <stdio.h>
 
 /**
@@ -69,5 +66,3 @@ dmnsn_canvas *dmnsn_png_read_canvas(FILE *file);
  * @return A \ref dmnsn_progress object, or NULL on failure.
  */
 dmnsn_progress *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file);
-
-#endif /* DIMENSION_PNG_H */

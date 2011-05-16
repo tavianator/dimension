@@ -23,9 +23,6 @@
  * Cameras.
  */
 
-#ifndef DIMENSION_CAMERA_H
-#define DIMENSION_CAMERA_H
-
 /* Forward-declare dmnsn_camera */
 typedef struct dmnsn_camera dmnsn_camera;
 
@@ -71,5 +68,3 @@ void dmnsn_delete_camera(dmnsn_camera *camera);
  * @return The ray through (\p x, \p y).
  */
 dmnsn_line dmnsn_camera_ray(const dmnsn_camera *camera, double x, double y);
-
-#endif /* DIMENSION_CAMERA_H */

@@ -26,9 +26,6 @@
  * the set resilience.
  */
 
-#ifndef DIMENSION_ERROR_H
-#define DIMENSION_ERROR_H
-
 #include <stdbool.h>
 
 /**
@@ -99,5 +96,3 @@ dmnsn_fatal_error_fn *dmnsn_get_fatal_error_fn(void);
  *                   return.
  */
 void dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal);
-
-#endif /* DIMENSION_ERROR_H */

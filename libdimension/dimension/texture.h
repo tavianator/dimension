@@ -23,9 +23,6 @@
  * Object textures.
  */
 
-#ifndef DIMENSION_TEXTURE_H
-#define DIMENSION_TEXTURE_H
-
 /** A complete texture. */
 typedef struct {
   dmnsn_pigment *pigment; /**< Pigment. */
@@ -57,5 +54,3 @@ void dmnsn_delete_texture(dmnsn_texture *texture);
  * @param[in,out] texture  The texture to initialize.
  */
 void dmnsn_initialize_texture(dmnsn_texture *texture);
-
-#endif /* DIMENSION_TEXTURE_H */

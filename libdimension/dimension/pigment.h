@@ -23,9 +23,6 @@
  * Object pigments.
  */
 
-#ifndef DIMENSION_PIGMENT_H
-#define DIMENSION_PIGMENT_H
-
 /* Forward-declare dmnsn_pigment */
 typedef struct dmnsn_pigment dmnsn_pigment;
 
@@ -79,5 +76,3 @@ void dmnsn_delete_pigment(dmnsn_pigment *pigment);
  * @param[in,out] pigment  The pigment to initialize.
  */
 void dmnsn_initialize_pigment(dmnsn_pigment *pigment);
-
-#endif /* DIMENSION_PIGMENT_H */

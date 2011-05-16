@@ -23,9 +23,6 @@
  * Object interiors.
  */
 
-#ifndef DIMENSION_INTERIOR_H
-#define DIMENSION_INTERIOR_H
-
 /** An interior. */
 typedef struct dmnsn_interior {
   double ior; /**< Refractive index. */
@@ -50,5 +47,3 @@ dmnsn_interior *dmnsn_new_interior(void);
  * @param[in,out] interior  The interior to delete.
  */
 void dmnsn_delete_interior(dmnsn_interior *interior);
-
-#endif /* DIMENSION_INTERIOR_H */

@@ -23,9 +23,6 @@
  * Pre-defined camera types.
  */
 
-#ifndef DIMENSION_CAMERAS_H
-#define DIMENSION_CAMERAS_H
-
 /**
  * A perspective camera.  The camera is located at the origin, looking at
  * (0, 0, 1).  The feild of view is the section of the plane z = 1 from
@@ -34,5 +31,3 @@
  * @return A perspective camera.
  */
 dmnsn_camera *dmnsn_new_perspective_camera(void);
-
-#endif /* DIMENSION_CAMERAS_H */

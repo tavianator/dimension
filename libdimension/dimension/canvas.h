@@ -23,9 +23,6 @@
  * A canvas which is rendered to.
  */
 
-#ifndef DIMENSION_CANVAS_H
-#define DIMENSION_CANVAS_H
-
 #include <stddef.h>
 
 /** A canvas, or image. */
@@ -121,5 +118,3 @@ void dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
  * @param[in]     color   The color to paint it with.
  */
 void dmnsn_clear_canvas(dmnsn_canvas *canvas, dmnsn_color color);
-
-#endif /* DIMENSION_CANVAS_H */

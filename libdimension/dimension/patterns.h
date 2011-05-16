@@ -23,9 +23,6 @@
  * Pre-defined patterns.
  */
 
-#ifndef DIMENSION_PATTERNS_H
-#define DIMENSION_PATTERNS_H
-
 /**
  * A checker pattern.  The pattern is composed of tesselating unit cubes
  * alternating between 0 and 1.
@@ -40,5 +37,3 @@ dmnsn_pattern *dmnsn_new_checker_pattern(void);
  * @return A gradient pattern.
  */
 dmnsn_pattern *dmnsn_new_gradient_pattern(dmnsn_vector orientation);
-
-#endif /* DIMENSION_PATTERNS_H */

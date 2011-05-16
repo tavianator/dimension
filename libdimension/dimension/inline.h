@@ -26,9 +26,6 @@
  * translation unit when necessary.
  */
 
-#ifndef DIMENSION_INLINE_H
-#define DIMENSION_INLINE_H
-
 /**
  * @def DMNSN_INLINE
  * A portable inline specifier. Expands to the correct method of declaring
@@ -50,5 +47,3 @@
     #define DMNSN_INLINE static
   #endif
 #endif
-
-#endif /* DIMENSION_INLINE_H */

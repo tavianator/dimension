@@ -26,9 +26,6 @@
  * is returned as an int from dmnsn_finish_progress().
  */
 
-#ifndef DIMENSION_PROGRESS_H
-#define DIMENSION_PROGRESS_H
-
 /** A progress object. */
 typedef struct dmnsn_progress dmnsn_progress;
 
@@ -54,5 +51,3 @@ double dmnsn_get_progress(const dmnsn_progress *progress);
  * @param[in] prog      The progress value to wait for.
  */
 void dmnsn_wait_progress(const dmnsn_progress *progress, double prog);
-
-#endif /* DIMENSION_PROGRESS_H */

@@ -23,9 +23,6 @@
  * Objects.
  */
 
-#ifndef DIMENSION_OBJECT_H
-#define DIMENSION_OBJECT_H
-
 #include <stdbool.h>
 
 /** A type to represent a ray-object intersection. */
@@ -167,5 +164,3 @@ dmnsn_object_inside(const dmnsn_object *object, dmnsn_vector point)
   point = dmnsn_transform_vector(object->trans_inv, point);
   return object->inside_fn(object, point);
 }
-
-#endif /* DIMENSION_OBJECT_H */

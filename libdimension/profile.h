@@ -23,9 +23,6 @@
  * Built-in branch profiler.
  */
 
-#ifndef DIMENSION_IMPL_PROFILE_H
-#define DIMENSION_IMPL_PROFILE_H
-
 #include <stdbool.h>
 
 /**
@@ -40,5 +37,3 @@
  */
 DMNSN_INTERNAL bool dmnsn_expect(bool result, bool expected, const char *func,
                                  const char *file, unsigned int line);
-
-#endif /* DIMENSION_IMPL_PROFILE_H */

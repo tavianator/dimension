@@ -23,9 +23,6 @@
  * Pre-defined objects.
  */
 
-#ifndef DIMENSION_OBJECTS_H
-#define DIMENSION_OBJECTS_H
-
 #include <stdbool.h>
 
 /**
@@ -63,5 +60,3 @@ dmnsn_object *dmnsn_new_cone(double r1, double r2, bool open);
  * @return A torus, centered at the origin and lying in the x-z plane.
  */
 dmnsn_object *dmnsn_new_torus(double major, double minor);
-
-#endif /* DIMENSION_OBJECTS_H */

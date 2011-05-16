@@ -26,9 +26,6 @@
  * from B-trees.
  */
 
-#ifndef DIMENSION_IMPL_PRTREE_H
-#define DIMENSION_IMPL_PRTREE_H
-
 #include <stdbool.h>
 
 /** A priority R-tree; the spatial subdivision method used for intersection
@@ -50,5 +47,3 @@ bool dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
                                dmnsn_intersection *intersection, bool reset);
 /** Determine whether a point is inside any object in the tree. */
 bool dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point);
-
-#endif /* DIMENSION_IMPL_PRTREE_H */

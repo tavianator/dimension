@@ -23,9 +23,6 @@
  * Background threading interface.
  */
 
-#ifndef DIMENSION_IMPL_THREADS_H
-#define DIMENSION_IMPL_THREADS_H
-
 /**
  * Thread callback type.
  * @param[in,out] ptr  An arbitrary pointer.
@@ -61,5 +58,3 @@ DMNSN_INTERNAL void dmnsn_new_thread(dmnsn_progress *progress,
  */
 DMNSN_INTERNAL int dmnsn_execute_concurrently(dmnsn_ccthread_fn *ccthread_fn,
                                               void *arg, unsigned int nthreads);
-
-#endif /* DIMENSION_IMPL_THREADS_H */

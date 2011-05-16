@@ -23,9 +23,6 @@
  * Color-related types and operations.
  */
 
-#ifndef DIMENSION_COLOR_H
-#define DIMENSION_COLOR_H
-
 #include <stdbool.h>
 
 /** A color value. */
@@ -98,5 +95,3 @@ dmnsn_color dmnsn_apply_translucency(dmnsn_color filtered, dmnsn_color filter);
 dmnsn_color dmnsn_apply_filter(dmnsn_color color, dmnsn_color filter);
 /** Illuminate \p color with \p light. */
 dmnsn_color dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color);
-
-#endif /* DIMENSION_COLOR_H */

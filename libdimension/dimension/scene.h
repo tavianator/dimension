@@ -23,9 +23,6 @@
  * Entire scenes.
  */
 
-#ifndef DIMENSION_SCENE_H
-#define DIMENSION_SCENE_H
-
 /** Render quality flags. */
 enum {
   DMNSN_RENDER_NONE         = 0,      /**< Render nothing. */
@@ -94,5 +91,3 @@ void dmnsn_delete_scene(dmnsn_scene *scene);
  * @param[in,out] scene  The scene to initalize.
  */
 void dmnsn_initialize_scene(dmnsn_scene *scene);
-
-#endif /* DIMENSION_SCENE_H */

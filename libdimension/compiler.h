@@ -23,9 +23,6 @@
  * Compiler abstractions.
  */
 
-#ifndef DIMENSION_IMPL_COMPILER_H
-#define DIMENSION_IMPL_COMPILER_H
-
 #include <stdbool.h>
 
 #ifdef DMNSN_PROFILE
@@ -48,5 +45,3 @@
   #define DMNSN_HOT
   #define DMNSN_INTERNAL
 #endif
-
-#endif /* DIMENSION_IMPL_COMPILER_H */

@@ -25,9 +25,6 @@
  * coefficient on x^i.  In general, we are only interested in positive roots.
  */
 
-#ifndef DIMENSION_POLYNOMIAL_H
-#define DIMENSION_POLYNOMIAL_H
-
 #include <stddef.h>
 #include <stdio.h>
 
@@ -86,5 +83,3 @@ size_t dmnsn_solve_polynomial(const double poly[], size_t degree, double x[]);
  * @param[in]     degree  The degree of the polynomial.
  */
 void dmnsn_print_polynomial(FILE *file, const double poly[], size_t degree);
-
-#endif /* DIMENSION_POLYNOMIAL_H */

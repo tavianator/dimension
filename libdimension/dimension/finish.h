@@ -23,9 +23,6 @@
  * Object finishes.
  */
 
-#ifndef DIMENSION_FINISH_H
-#define DIMENSION_FINISH_H
-
 /* Forward-declare dmnsn_finish */
 typedef struct dmnsn_finish dmnsn_finish;
 
@@ -99,5 +96,3 @@ dmnsn_finish *dmnsn_new_finish(void);
  * @param[in,out] finish  The finish to delete.
  */
 void dmnsn_delete_finish(dmnsn_finish *finish);
-
-#endif /* DIMENSION_FINISH_H */

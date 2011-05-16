@@ -24,9 +24,6 @@
  * used for pigments and normals.
  */
 
-#ifndef DIMENSION_PATTERN_H
-#define DIMENSION_PATTERN_H
-
 /* Forward-declare dmnsn_pattern */
 typedef struct dmnsn_pattern dmnsn_pattern;
 
@@ -77,5 +74,3 @@ void dmnsn_initialize_pattern(dmnsn_pattern *pattern);
  * @return The value of the pattern at \p v.
  */
 double dmnsn_pattern_value(const dmnsn_pattern *pattern, dmnsn_vector v);
-
-#endif /* DIMENSION_PATTERN_H */

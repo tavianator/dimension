@@ -18,14 +18,10 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-
 /**
  * @file
  * Generic maps (backend for color_maps, pigment_maps, etc.).
  */
-
-#ifndef DIMENSION_MAP_H
-#define DIMENSION_MAP_H
 
 /** A map. */
 typedef struct dmnsn_map {
@@ -79,5 +75,3 @@ void dmnsn_evaluate_map(const dmnsn_map *map, double n,
  * @param[in]     callback  The callback to apply to the elements.
  */
 void dmnsn_map_apply(dmnsn_map *map, dmnsn_callback_fn *callback);
-
-#endif /* DIMENSION_MAP_H */

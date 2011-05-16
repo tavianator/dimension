@@ -23,9 +23,6 @@
  * Simple dynamic arrays.
  */
 
-#ifndef DIMENSION_ARRAY_H
-#define DIMENSION_ARRAY_H
-
 #include <stddef.h> /* For size_t */
 #include <stdlib.h> /* For qsort() */
 #include <string.h> /* For memcpy() */
@@ -322,5 +319,3 @@ dmnsn_array_sort(dmnsn_array *array, dmnsn_array_comparator_fn *comparator)
   for (type i = dmnsn_array_last(array);                \
        i - (type)dmnsn_array_first(array) >= 0;         \
        --i)
-
-#endif /* DIMENSION_ARRAY_H */

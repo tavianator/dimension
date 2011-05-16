@@ -23,9 +23,6 @@
  * Sky spheres.
  */
 
-#ifndef DIMENSION_SKY_SPHERE_H
-#define DIMENSION_SKY_SPHERE_H
-
 /** A sky sphere. */
 typedef struct dmnsn_sky_sphere {
   /** An array of pigments in inside-to-outside order. */
@@ -59,5 +56,3 @@ void dmnsn_initialize_sky_sphere(dmnsn_sky_sphere *sky_sphere);
  */
 dmnsn_color dmnsn_sky_sphere_color(const dmnsn_sky_sphere *sky_sphere,
                                    dmnsn_vector d);
-
-#endif /* DIMENSION_SKY_SPHERE_H */

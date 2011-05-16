@@ -23,9 +23,6 @@
  * Pre-defined pigments.
  */
 
-#ifndef DIMENSION_PIGMENTS_H
-#define DIMENSION_PIGMENTS_H
-
 /**
  * A solid color.
  * @param[in] color  The color of the pigment.
@@ -70,5 +67,3 @@ dmnsn_map *dmnsn_new_pigment_map(void);
  */
 dmnsn_pigment *dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern,
                                              dmnsn_map *map);
-
-#endif /* DIMENSION_PIGMENTS_H */

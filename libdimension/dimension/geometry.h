@@ -23,9 +23,6 @@
  * Core geometric types like vectors, matricies, and rays.
  */
 
-#ifndef DIMENSION_GEOMETRY_H
-#define DIMENSION_GEOMETRY_H
-
 #include <math.h>
 #include <stdbool.h>
 
@@ -443,5 +440,3 @@ dmnsn_bounding_box_is_infinite(dmnsn_bounding_box box)
 {
   return box.min.x == -INFINITY;
 }
-
-#endif /* DIMENSION_GEOMETRY_H */

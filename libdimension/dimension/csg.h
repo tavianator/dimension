@@ -23,9 +23,6 @@
  * Constructive solid geometry
  */
 
-#ifndef DIMENSION_CSG_H
-#define DIMENSION_CSG_H
-
 /**
  * CSG union.
  * @param[in] objects  The objects from which to compose the union.
@@ -56,5 +53,3 @@ dmnsn_object *dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B);
  * @return The merge of \p A and \p B.
  */
 dmnsn_object *dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B);
-
-#endif /* DIMENSION_CSG_H */

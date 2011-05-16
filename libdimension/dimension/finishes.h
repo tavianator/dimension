@@ -23,9 +23,6 @@
  * Pre-defined finishes.
  */
 
-#ifndef DIMENSION_FINISHES_H
-#define DIMENSION_FINISHES_H
-
 /**
  * Add two finishes together.
  * @param[in,out] f1  The first finish.
@@ -65,5 +62,3 @@ dmnsn_finish *dmnsn_new_phong_finish(double specular, double exp);
  */
 dmnsn_finish *dmnsn_new_reflective_finish(dmnsn_color min, dmnsn_color max,
                                           double falloff);
-
-#endif /* DIMENSION_FINISHES_H */
