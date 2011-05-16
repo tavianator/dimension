@@ -453,13 +453,13 @@ dmnsn_png_read_canvas_thread(void *ptr)
           png_bytep png_pixel = image + 8*(y*width + x);
           color.R = (double)((png_pixel[0] << 8) + png_pixel[1])/UINT16_MAX;
           color.G = (double)((png_pixel[2] << 8) + png_pixel[3])/UINT16_MAX;
-          color.R = (double)((png_pixel[4] << 8) + png_pixel[5])/UINT16_MAX;
+          color.B = (double)((png_pixel[4] << 8) + png_pixel[5])/UINT16_MAX;
           color.trans = (double)((png_pixel[6] << 8) + png_pixel[7])/UINT16_MAX;
         } else {
           png_bytep png_pixel = image + 4*(y*width + x);
           color.R = (double)png_pixel[0]/UINT16_MAX;
           color.G = (double)png_pixel[1]/UINT16_MAX;
-          color.R = (double)png_pixel[2]/UINT16_MAX;
+          color.B = (double)png_pixel[2]/UINT16_MAX;
           color.trans = (double)png_pixel[3]/UINT16_MAX;
         }
       } else {
@@ -469,12 +469,12 @@ dmnsn_png_read_canvas_thread(void *ptr)
           png_bytep png_pixel = image + 6*(y*width + x);
           color.R = (double)((png_pixel[0] << 8) + png_pixel[1])/UINT16_MAX;
           color.G = (double)((png_pixel[2] << 8) + png_pixel[3])/UINT16_MAX;
-          color.R = (double)((png_pixel[4] << 8) + png_pixel[5])/UINT16_MAX;
+          color.B = (double)((png_pixel[4] << 8) + png_pixel[5])/UINT16_MAX;
         } else {
           png_bytep png_pixel = image + 3*(y*width + x);
           color.R = (double)png_pixel[0]/UINT16_MAX;
           color.G = (double)png_pixel[1]/UINT16_MAX;
-          color.R = (double)png_pixel[2]/UINT16_MAX;
+          color.B = (double)png_pixel[2]/UINT16_MAX;
         }
       }
 
