@@ -181,5 +181,6 @@ AC_CONFIG_FILES([Makefile
                  libdimension/bench/Makefile
                  libdimension/libdimension.pc
                  libdimension/tests/Makefile
-                 libdimension-python/Makefile])
+                 libdimension-python/Makefile
+                 libdimension-python/tests/Makefile])
 AC_OUTPUT

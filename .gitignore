@@ -17,6 +17,7 @@ Makefile.in
 # Documentation files created by make
 /*/doc
 Doxyfile
+__pycache__
 
 # pkg-config files
 *.pc

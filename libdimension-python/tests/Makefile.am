@@ -17,17 +17,13 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-SUBDIRS = .                                                                    \
-          tests
+TESTS = demo.py
+TESTS_ENVIRONMENT = PYTHONPATH=$(top_builddir)/libdimension-python/.libs
 
-INCLUDES = -I$(top_srcdir)/libdimension
+.py:
+	cp $(srcdir)/$@ .
 
-AM_CFLAGS = $(Python_CFLAGS)
-AM_LDFLAGS = $(Python_LDFLAGS)
+EXTRA_DIST = $(TESTS)
 
-pyexec_LTLIBRARIES = dimension.la
-dimension_la_SOURCES = dimension.c
-dimension_la_LDFLAGS = -avoid-version -module
-dimension_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
-
-EXTRA_DIST = scene.c
+clean-local:
+	rm -f *.png
