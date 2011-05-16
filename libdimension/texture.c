@@ -33,8 +33,7 @@ dmnsn_new_texture(void)
   texture->pigment     = NULL;
   texture->finish      = NULL;
   texture->trans       = dmnsn_identity_matrix();
-  texture->refcount    = dmnsn_malloc(sizeof(unsigned int));
-  *texture->refcount   = 1;
+  texture->refcount    = dmnsn_new_refcount();
   texture->should_init = true;
   return texture;
 }
@@ -43,15 +42,11 @@ dmnsn_new_texture(void)
 void
 dmnsn_delete_texture(dmnsn_texture *texture)
 {
-  if (texture) {
-    if (*texture->refcount <= 1) {
-      dmnsn_delete_finish(texture->finish);
-      dmnsn_delete_pigment(texture->pigment);
-      dmnsn_free(texture->refcount);
-      dmnsn_free(texture);
-    } else {
-      --*texture->refcount;
-    }
+  if (texture && DMNSN_DECREF(texture)) {
+    dmnsn_delete_finish(texture->finish);
+    dmnsn_delete_pigment(texture->pigment);
+    dmnsn_delete_refcount(texture->refcount);
+    dmnsn_free(texture);
   }
 }
 

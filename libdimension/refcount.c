@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -20,32 +20,27 @@
 
 /**
  * @file
- * Interiors.
+ * Reference counts.
  */
 
 #include "dimension.h"
-#include <stdlib.h>
 
-/* Allocate an interior */
-dmnsn_interior *
-dmnsn_new_interior(void)
+dmnsn_refcount *
+dmnsn_new_refcount(void)
 {
-  dmnsn_interior *interior = dmnsn_malloc(sizeof(dmnsn_interior));
-  interior->ior       = 1.0;
-  interior->free_fn   = NULL;
-  interior->refcount  = dmnsn_new_refcount();
-  return interior;
+  dmnsn_refcount *refcount = dmnsn_malloc(sizeof(dmnsn_refcount));
+  *refcount = 0;
+  return refcount;
 }
 
-/* Free a interior */
 void
-dmnsn_delete_interior(dmnsn_interior *interior)
+dmnsn_delete_refcount(dmnsn_refcount *refcount)
 {
-  if (interior && DMNSN_DECREF(interior)) {
-    if (interior->free_fn) {
-      interior->free_fn(interior->ptr);
+  if (refcount) {
+    if (*refcount != 0) {
+      dmnsn_error("Attempt to delete non-zero reference count.");
     }
-    dmnsn_delete_refcount(interior->refcount);
-    dmnsn_free(interior);
+
+    dmnsn_free(refcount);
   }
 }

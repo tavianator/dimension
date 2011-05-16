@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -20,32 +20,36 @@
 
 /**
  * @file
- * Interiors.
+ * Generic reference count implementation.
  */
 
-#include "dimension.h"
-#include <stdlib.h>
+/**
+ * Increment a reference count.
+ * @param[in,out] object  The reference-counted object to acquire.
+ */
+#define DMNSN_INCREF(obj) ((void)++(*(obj)->refcount))
 
-/* Allocate an interior */
-dmnsn_interior *
-dmnsn_new_interior(void)
-{
-  dmnsn_interior *interior = dmnsn_malloc(sizeof(dmnsn_interior));
-  interior->ior       = 1.0;
-  interior->free_fn   = NULL;
-  interior->refcount  = dmnsn_new_refcount();
-  return interior;
-}
+/**
+ * Decrement a reference count.
+ * @param[in,out] object  The reference-counted object to release.
+ * @return Whether the object is now garbage.
+ */
+#define DMNSN_DECREF(obj) (*(obj)->refcount == 0 || --(*(obj)->refcount) == 0)
 
-/* Free a interior */
-void
-dmnsn_delete_interior(dmnsn_interior *interior)
-{
-  if (interior && DMNSN_DECREF(interior)) {
-    if (interior->free_fn) {
-      interior->free_fn(interior->ptr);
-    }
-    dmnsn_delete_refcount(interior->refcount);
-    dmnsn_free(interior);
-  }
-}
+/**
+ * Reference counter.
+ */
+typedef unsigned int dmnsn_refcount;
+
+/**
+ * Create a reference count.
+ * @return A new reference counter, initialized to zero (a "borrowed" reference,
+ *         which will be garbage-collected the first time it is deleted).
+ */
+dmnsn_refcount *dmnsn_new_refcount(void);
+
+/**
+ * Delete a reference count.  Raises an error if the reference count wasn't
+ * zero.
+ */
+void dmnsn_delete_refcount(dmnsn_refcount *refcount);

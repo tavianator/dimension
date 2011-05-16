@@ -31,8 +31,8 @@ typedef struct {
   dmnsn_matrix trans;     /**< Transformation matrix. */
   dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
 
-  unsigned int *refcount; /**< @internal Reference count. */
-  bool should_init;       /**< @internal Whether to initialize the texture. */
+  dmnsn_refcount *refcount; /**< @internal Reference count. */
+  bool should_init;         /**< @internal Whether to initialize the texture. */
 } dmnsn_texture;
 
 /**

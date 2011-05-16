@@ -68,8 +68,13 @@ dmnsn_initialize_object(dmnsn_object *object)
   bool should_init = false;
   dmnsn_matrix old_trans = object->trans;
   if (object->texture) {
+    DMNSN_INCREF(object->texture);
     should_init = object->texture->should_init;
     object->texture->should_init = false;
+  }
+
+  if (object->interior) {
+    DMNSN_INCREF(object->interior);
   }
 
   if (object->initialize_fn) {

@@ -32,12 +32,10 @@ dmnsn_csg_cascade(const dmnsn_object *csg, dmnsn_object *object)
 {
   if (!object->texture && csg->texture) {
     object->texture = csg->texture;
-    ++*object->texture->refcount;
   }
 
   if (!object->interior && csg->interior) {
     object->interior = csg->interior;
-    ++*object->interior->refcount;
   }
 
   object->trans = dmnsn_matrix_mul(csg->trans, object->trans);

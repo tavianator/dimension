@@ -53,6 +53,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/polynomial.h                                \
                          dimension/progress.h                                  \
                          dimension/raytrace.h                                  \
+                         dimension/refcount.h                                  \
                          dimension/scene.h                                     \
                          dimension/sky_sphere.h                                \
                          dimension/texture.h                                   \
@@ -102,6 +103,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           prtree.c                                             \
                           prtree.h                                             \
                           raytrace.c                                           \
+                          refcount.c                                           \
                           reflective.c                                         \
                           scene.c                                              \
                           sky_sphere.c                                         \
