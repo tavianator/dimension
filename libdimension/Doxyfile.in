@@ -1,6 +1,6 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = libdimension
-PROJECT_NUMBER         = @VERSION@
+PROJECT_NUMBER         = @PACKAGE_VERSION@
 OUTPUT_DIRECTORY       = @top_builddir@/libdimension/doc
 OUTPUT_LANGUAGE        = English
 FULL_PATH_NAMES        = YES

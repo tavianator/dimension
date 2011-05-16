@@ -18,7 +18,7 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl Initialization
 AC_PREREQ(2.65)
 AC_INIT(Dimension, 0.0.0, tavianator@tavianator.com, dimension,
-        [http://dmnsn.googlecode.com])
+        [http://www.tavianator.com/dimension/])
 AM_INIT_AUTOMAKE([parallel-tests color-tests std-options])
 AM_SILENT_RULES([yes])
 
@@ -37,6 +37,7 @@ AC_LIBTOOL_WIN32_DLL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
+AM_PATH_PYTHON([3.2])
 
 dnl PNG canvas export
 AC_ARG_ENABLE([png],
@@ -61,6 +62,13 @@ AC_ARG_ENABLE([profile],
               [],
               [enable_profile=no])
 AM_CONDITIONAL([PROFILE], [test "$enable_profile" = "yes"])
+
+dnl Python headers
+PKG_CHECK_MODULES([Python], [python3 >= 3.2],
+                  [],
+                  [AC_MSG_ERROR([Python not found])])
+AC_SUBST(Python_CFLAGS)
+AC_SUBST(Python_LIBS)
 
 dnl Timing library for benchmarks
 PKG_CHECK_MODULES([libsandglass], [libsandglass >= 0.2],
@@ -172,5 +180,6 @@ AC_CONFIG_FILES([Makefile
                  libdimension/Doxyfile
                  libdimension/bench/Makefile
                  libdimension/libdimension.pc
-                 libdimension/tests/Makefile])
+                 libdimension/tests/Makefile
+                 libdimension-python/Makefile])
 AC_OUTPUT

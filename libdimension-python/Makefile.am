@@ -17,16 +17,11 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = libdimension                                                         \
-          libdimension-python
+INCLUDES = -I$(top_srcdir)/libdimension
 
-EXTRA_DIST = autogen.sh
+AM_CFLAGS = $(Python_CFLAGS)
+AM_LDFLAGS = $(Python_LDFLAGS)
 
-bench: all-recursive
-	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) bench
-
-doc:
-	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) doc
-
-.PHONY: bench doc
+pyexec_LTLIBRARIES = dimension.la
+dimension_la_SOURCES = dimension.c
+dimension_la_LDFLAGS = -avoid-version -module
