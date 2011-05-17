@@ -18,13 +18,30 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <structmember.h>
 #include "dimension.h"
 
 #include "scene.c"
 
+static PyObject *
+dmnsn_py_dieOnWarnings(PyObject *self, PyObject *args)
+{
+  int die;
+
+  if (!PyArg_ParseTuple(args, "i", &die))
+    return NULL;
+
+  dmnsn_die_on_warnings(die);
+
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
 static PyMethodDef DimensionMethods[] = {
+  { "dieOnWarnings", dmnsn_py_dieOnWarnings, METH_VARARGS,
+    "Turn Dimension warnings into fatal errors." },
   { NULL, NULL, 0, NULL }
 };
 
@@ -39,13 +56,13 @@ static struct PyModuleDef dimensionmodule = {
 PyMODINIT_FUNC
 PyInit_dimension(void)
 {
-  if (!dmnsn_init_SceneType())
+  if (!dmnsn_py_init_SceneType())
     return NULL;
 
   PyObject *m = PyModule_Create(&dimensionmodule);
   if (!m)
     return NULL;
 
-  PyModule_AddObject(m, "Scene", (PyObject *)&dmnsn_SceneType);
+  PyModule_AddObject(m, "Scene", (PyObject *)&dmnsn_py_SceneType);
   return m;
 }

@@ -21,4 +21,7 @@
 
 from dimension import *
 
+# Treat warnings as errors for tests
+dieOnWarnings(True)
+
 scene = Scene()
