@@ -81,8 +81,11 @@ dmnsn_initialize_scene(dmnsn_scene *scene)
   if (scene->sky_sphere) {
     dmnsn_initialize_sky_sphere(scene->sky_sphere);
   }
+}
 
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
-    dmnsn_initialize_object(*object);
-  }
+void
+dmnsn_scene_add_object(dmnsn_scene *scene, dmnsn_object *object)
+{
+  dmnsn_initialize_object(object);
+  dmnsn_array_push(scene->objects, &object);
 }

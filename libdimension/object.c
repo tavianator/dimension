@@ -39,6 +39,7 @@ dmnsn_new_object(void)
   object->inside_fn       = NULL;
   object->initialize_fn   = NULL;
   object->free_fn         = NULL;
+  object->refcount        = dmnsn_new_refcount();
   return object;
 }
 
@@ -46,7 +47,8 @@ dmnsn_new_object(void)
 void
 dmnsn_delete_object(dmnsn_object *object)
 {
-  if (object) {
+  if (object && DMNSN_DECREF(object)) {
+    dmnsn_delete_refcount(object->refcount);
     DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
       dmnsn_delete_object(*child);
     }

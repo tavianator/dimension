@@ -43,9 +43,9 @@ void
 dmnsn_delete_texture(dmnsn_texture *texture)
 {
   if (texture && DMNSN_DECREF(texture)) {
+    dmnsn_delete_refcount(texture->refcount);
     dmnsn_delete_finish(texture->finish);
     dmnsn_delete_pigment(texture->pigment);
-    dmnsn_delete_refcount(texture->refcount);
     dmnsn_free(texture);
   }
 }

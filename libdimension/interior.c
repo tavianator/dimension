@@ -42,10 +42,10 @@ void
 dmnsn_delete_interior(dmnsn_interior *interior)
 {
   if (interior && DMNSN_DECREF(interior)) {
+    dmnsn_delete_refcount(interior->refcount);
     if (interior->free_fn) {
       interior->free_fn(interior->ptr);
     }
-    dmnsn_delete_refcount(interior->refcount);
     dmnsn_free(interior);
   }
 }

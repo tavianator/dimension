@@ -69,7 +69,7 @@ main(void)
     dmnsn_randomize_bounding_box(object);
     object->intersection_fn = dmnsn_fake_intersection_fn;
     dmnsn_initialize_object(object);
-    dmnsn_array_push(scene->objects, &object);
+    dmnsn_scene_add_object(scene, object);
   }
 
   dmnsn_prtree *prtree = dmnsn_new_prtree(scene->objects);

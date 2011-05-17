@@ -92,9 +92,11 @@ dmnsn_new_csg_union(const dmnsn_array *objects)
   dmnsn_object *csg = dmnsn_new_object();
 
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
+    DMNSN_INCREF(*object);
     dmnsn_array_push(csg->children, object);
   }
 
+  csg->ptr             = NULL;
   csg->intersection_fn = dmnsn_csg_union_intersection_fn;
   csg->inside_fn       = dmnsn_csg_union_inside_fn;
   csg->initialize_fn   = dmnsn_csg_union_initialize_fn;
@@ -234,6 +236,8 @@ dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
 {
   dmnsn_object *csg = dmnsn_new_object();
 
+  DMNSN_INCREF(A);
+  DMNSN_INCREF(B);
   dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
   params[0] = A;
   params[1] = B;
@@ -292,6 +296,8 @@ dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
 {
   dmnsn_object *csg = dmnsn_new_object();
 
+  DMNSN_INCREF(A);
+  DMNSN_INCREF(B);
   dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
   params[0] = A;
   params[1] = B;
@@ -353,6 +359,8 @@ dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B)
 {
   dmnsn_object *csg = dmnsn_new_object();
 
+  DMNSN_INCREF(A);
+  DMNSN_INCREF(B);
   dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
   params[0] = A;
   params[1] = B;

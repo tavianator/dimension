@@ -90,6 +90,9 @@ struct dmnsn_object {
 
   /** Generic pointer for object info. */
   void *ptr;
+
+  /** @internal Reference count. */
+  dmnsn_refcount *refcount;
 };
 
 /**

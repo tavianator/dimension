@@ -112,7 +112,7 @@ dmnsn_new_test_scene(void)
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.25, 1.25, 1.25));
 
   dmnsn_object *csg = dmnsn_new_csg_difference(cube, sphere);
-  dmnsn_array_push(scene->objects, &csg);
+  dmnsn_scene_add_object(scene, csg);
 
   dmnsn_array *arrow_array = dmnsn_new_array(sizeof(dmnsn_object *));
 
@@ -149,7 +149,7 @@ dmnsn_new_test_scene(void)
       dmnsn_translation_matrix(dmnsn_new_vector(0.0, -1.25, 0.0)),
       dmnsn_scale_matrix(dmnsn_new_vector(1.0, 2.75, 1.0))
     );
-  dmnsn_array_push(scene->objects, &arrow);
+  dmnsn_scene_add_object(scene, arrow);
   dmnsn_delete_array(arrow_array);
 
   dmnsn_array *torus_array = dmnsn_new_array(sizeof(dmnsn_object *));
@@ -172,7 +172,7 @@ dmnsn_new_test_scene(void)
   torii->texture = dmnsn_new_texture();
   torii->texture->pigment = dmnsn_new_solid_pigment(dmnsn_blue);
   torii->texture->finish  = dmnsn_new_ambient_finish(dmnsn_white);
-  dmnsn_array_push(scene->objects, &torii);
+  dmnsn_scene_add_object(scene, torii);
   dmnsn_delete_array(torus_array);
 
   dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
@@ -194,7 +194,7 @@ dmnsn_new_test_scene(void)
   plane->texture->pigment
     = dmnsn_new_pigment_map_pigment(checker2, checker_pigment_map);
   plane->texture->pigment->quick_color = dmnsn_new_color(1.0, 0.5, 0.75);
-  dmnsn_array_push(scene->objects, &plane);
+  dmnsn_scene_add_object(scene, plane);
 
   return scene;
 }

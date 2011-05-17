@@ -91,3 +91,8 @@ void dmnsn_delete_scene(dmnsn_scene *scene);
  * @param[in,out] scene  The scene to initalize.
  */
 void dmnsn_initialize_scene(dmnsn_scene *scene);
+
+/**
+ * Add an object to a scene.
+ */
+void dmnsn_scene_add_object(dmnsn_scene *scene, dmnsn_object *object);
