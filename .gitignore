@@ -37,3 +37,7 @@ __pycache__
 # Files and folders created by compilation
 .deps/
 *.[oa]
+
+# Core dumps
+core
+vgcore.*
