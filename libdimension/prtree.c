@@ -564,7 +564,7 @@ dmnsn_get_prtree_caches(void)
 
 /** Needed because pthreads doesn't destroy data from the main thread unless
     it exits with pthread_exit(). */
-static void __attribute__((destructor))
+DMNSN_DESTRUCTOR static void
 dmnsn_delete_main_prtree_caches(void)
 {
   dmnsn_delete_array(dmnsn_get_prtree_caches());

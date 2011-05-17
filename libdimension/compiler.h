@@ -39,9 +39,13 @@
 #endif
 
 #ifdef __GNUC__
-  #define DMNSN_HOT      __attribute__((hot))
-  #define DMNSN_INTERNAL __attribute__((visibility("hidden")))
+  #define DMNSN_HOT             __attribute__((hot))
+  #define DMNSN_INTERNAL        __attribute__((visibility("hidden")))
+  #define DMNSN_DESTRUCTOR      __attribute__((destructor(102)))
+  #define DMNSN_LATE_DESTRUCTOR __attribute__((destructor(101)))
 #else
   #define DMNSN_HOT
   #define DMNSN_INTERNAL
+  #define DMNSN_DESTRUCTOR
+  #define DMNSN_LATE_DESTRUCTOR
 #endif

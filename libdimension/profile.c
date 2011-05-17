@@ -169,7 +169,7 @@ dmnsn_print_bad_prediction(void *ptr)
   dmnsn_free(branch->location);
 }
 
-static void __attribute__((destructor))
+DMNSN_DESTRUCTOR static void
 dmnsn_print_bad_predictions(void)
 {
   dmnsn_dictionary *thread_profile = dmnsn_get_thread_profile();

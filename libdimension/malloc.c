@@ -23,9 +23,13 @@
  * Dynamic memory.
  */
 
-#include "dimension.h"
+#include "dimension-impl.h"
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef NDEBUG
+static size_t dmnsn_allocs = 0;
+#endif
 
 void *
 dmnsn_malloc(size_t size)
@@ -34,12 +38,23 @@ dmnsn_malloc(size_t size)
   if (!ptr) {
     dmnsn_error("Memory allocation failed.");
   }
+
+#ifndef NDEBUG
+  __sync_fetch_and_add(&dmnsn_allocs, 1);
+#endif
+
   return ptr;
 }
 
 void *
 dmnsn_realloc(void *ptr, size_t size)
 {
+#ifndef NDEBUG
+  if (!ptr) {
+    __sync_fetch_and_add(&dmnsn_allocs, 1);
+  }
+#endif
+
   ptr = realloc(ptr, size);
   if (!ptr) {
     dmnsn_error("Memory allocation failed.");
@@ -58,5 +73,21 @@ dmnsn_strdup(const char *s)
 void
 dmnsn_free(void *ptr)
 {
+#ifndef NDEBUG
+  if (ptr) {
+    __sync_fetch_and_sub(&dmnsn_allocs, 1);
+  }
+#endif
+
   free(ptr);
 }
+
+#ifndef NDEBUG
+DMNSN_LATE_DESTRUCTOR static void
+dmnsn_leak_check(void)
+{
+  if (dmnsn_allocs > 0) {
+    dmnsn_warning("Leaking memory.");
+  }
+}
+#endif
