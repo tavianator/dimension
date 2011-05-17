@@ -43,6 +43,7 @@ main(void)
   dmnsn_display *display = dmnsn_new_display(canvas);
   if (!display) {
     fprintf(stderr, "--- WARNING: Couldn't initialize X or glX! ---\n");
+    dmnsn_delete_canvas(canvas);
     return EXIT_SUCCESS;
   }
 
