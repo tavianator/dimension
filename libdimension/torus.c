@@ -120,9 +120,9 @@ dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line l,
   dmnsn_vector p = dmnsn_line_point(l, t);
   dmnsn_vector center = dmnsn_vector_mul(
     payload->major,
-    dmnsn_vector_normalize(dmnsn_new_vector(p.x, 0.0, p.z))
+    dmnsn_vector_normalized(dmnsn_new_vector(p.x, 0.0, p.z))
   );
-  dmnsn_vector normal = dmnsn_vector_normalize(dmnsn_vector_sub(p, center));
+  dmnsn_vector normal = dmnsn_vector_normalized(dmnsn_vector_sub(p, center));
   intersection->ray      = l;
   intersection->t        = t;
   intersection->normal   = normal;

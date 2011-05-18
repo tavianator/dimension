@@ -218,7 +218,7 @@ dmnsn_raytrace_background(dmnsn_raytrace_state *state, dmnsn_line ray)
       && (state->scene->quality & DMNSN_RENDER_PIGMENT))
   {
     dmnsn_color sky = dmnsn_sky_sphere_color(state->scene->sky_sphere,
-                                             dmnsn_vector_normalize(ray.n));
+                                             dmnsn_vector_normalized(ray.n));
     color = dmnsn_apply_filter(color, sky);
   }
 
@@ -310,7 +310,7 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
     dmnsn_color light_color = dmnsn_raytrace_light_ray(state, *light);
     if (!dmnsn_color_is_black(light_color)) {
       if (state->scene->quality & DMNSN_RENDER_FINISH) {
-        dmnsn_vector ray = dmnsn_vector_normalize(
+        dmnsn_vector ray = dmnsn_vector_normalized(
           dmnsn_vector_sub((*light)->x0, state->r)
         );
 
@@ -370,7 +370,7 @@ dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
     dmnsn_line trans_ray = dmnsn_new_line(state->r, state->intersection->ray.n);
     trans_ray = dmnsn_line_add_epsilon(trans_ray);
 
-    dmnsn_vector r = dmnsn_vector_normalize(trans_ray.n);
+    dmnsn_vector r = dmnsn_vector_normalized(trans_ray.n);
     dmnsn_vector n = state->intersection->normal;
 
     dmnsn_raytrace_state recursive_state = *state;
@@ -439,7 +439,7 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
     state->intersection = &intersection;
     state->r = dmnsn_line_point(state->intersection->ray,
                                 state->intersection->t);
-    state->viewer = dmnsn_vector_normalize(
+    state->viewer = dmnsn_vector_normalized(
       dmnsn_vector_negate(state->intersection->ray.n)
     );
     state->reflected = dmnsn_vector_sub(

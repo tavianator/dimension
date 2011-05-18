@@ -123,7 +123,7 @@ void dmnsn_initialize_object(dmnsn_object *object);
 DMNSN_INLINE dmnsn_vector
 dmnsn_transform_normal(dmnsn_matrix trans, dmnsn_vector normal)
 {
-  return dmnsn_vector_normalize(
+  return dmnsn_vector_normalized(
     dmnsn_vector_sub(
       dmnsn_transform_vector(trans, normal),
       /* Optimized form of dmnsn_transform_vector(trans, dmnsn_zero) */

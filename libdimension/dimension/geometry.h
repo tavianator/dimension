@@ -331,7 +331,7 @@ dmnsn_vector_norm(dmnsn_vector n)
 
 /** Return the direction of a vector. */
 DMNSN_INLINE dmnsn_vector
-dmnsn_vector_normalize(dmnsn_vector n)
+dmnsn_vector_normalized(dmnsn_vector n)
 {
   /* 1 sqrt, 3 divisions, 3 multiplications, 2 additions */
   return dmnsn_vector_div(n, dmnsn_vector_norm(n));

@@ -111,7 +111,7 @@ dmnsn_cone_intersection_fn(const dmnsn_object *cone, dmnsn_line l,
     }
 
     if (t >= 0.0 && p.y > -1.0 && p.y < 1.0) {
-      dmnsn_vector norm = dmnsn_vector_normalize(
+      dmnsn_vector norm = dmnsn_vector_normalized(
         dmnsn_new_vector(p.x, -(r2 - r1)*sqrt(p.x*p.x + p.z*p.z)/2.0, p.z)
       );
       intersection->ray      = l;

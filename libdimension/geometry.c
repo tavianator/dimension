@@ -92,7 +92,7 @@ dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2, dmnsn_vector axis)
   if (fabs(projn) < dmnsn_epsilon)
     return 0.0;
 
-  double c = dmnsn_vector_dot(dmnsn_vector_normalize(v1),
+  double c = dmnsn_vector_dot(dmnsn_vector_normalized(v1),
                               dmnsn_vector_div(proj, projn));
   double angle = acos(c);
 

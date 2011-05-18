@@ -122,11 +122,11 @@ main(void)
   });
   printf("dmnsn_vector_norm(): %ld\n", sandglass.grains);
 
-  /* dmnsn_vector_normalize() */
+  /* dmnsn_vector_normalized() */
   sandglass_bench_fine(&sandglass, {
-    vector = dmnsn_vector_normalize(vector);
+    vector = dmnsn_vector_normalized(vector);
   });
-  printf("dmnsn_vector_normalize(): %ld\n", sandglass.grains);
+  printf("dmnsn_vector_normalized(): %ld\n", sandglass.grains);
 
   /* dmnsn_matrix_inverse() */
   sandglass_bench_fine(&sandglass, {
