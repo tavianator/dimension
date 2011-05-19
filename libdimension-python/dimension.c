@@ -23,13 +23,13 @@
 #include <structmember.h>
 #include "dimension.h"
 
-#include "scene.c"
+#include "Vector.c"
+#include "Scene.c"
 
 static PyObject *
 dmnsn_py_dieOnWarnings(PyObject *self, PyObject *args)
 {
   int die;
-
   if (!PyArg_ParseTuple(args, "i", &die))
     return NULL;
 
@@ -42,6 +42,11 @@ dmnsn_py_dieOnWarnings(PyObject *self, PyObject *args)
 static PyMethodDef DimensionMethods[] = {
   { "dieOnWarnings", dmnsn_py_dieOnWarnings, METH_VARARGS,
     "Turn Dimension warnings into fatal errors." },
+
+  { "cross", dmnsn_py_Vector_cross, METH_VARARGS, "Cross product."     },
+  { "dot",   dmnsn_py_Vector_dot,   METH_VARARGS, "Dot product."       },
+  { "proj",  dmnsn_py_Vector_proj,  METH_VARARGS, "Vector projection." },
+
   { NULL, NULL, 0, NULL }
 };
 
@@ -56,13 +61,39 @@ static struct PyModuleDef dimensionmodule = {
 PyMODINIT_FUNC
 PyInit_dimension(void)
 {
-  if (!dmnsn_py_init_SceneType())
+  if (!dmnsn_py_init_VectorType()
+      || !dmnsn_py_init_SceneType())
     return NULL;
 
-  PyObject *m = PyModule_Create(&dimensionmodule);
-  if (!m)
+  PyObject *module = PyModule_Create(&dimensionmodule);
+  if (!module)
     return NULL;
 
-  PyModule_AddObject(m, "Scene", (PyObject *)&dmnsn_py_SceneType);
-  return m;
+  PyModule_AddObject(module, "Vector", (PyObject *)&dmnsn_py_VectorType);
+
+  /* Vector constants */
+  dmnsn_py_Vector *zero = PyObject_New(dmnsn_py_Vector, &dmnsn_py_VectorType);
+  dmnsn_py_Vector *x    = PyObject_New(dmnsn_py_Vector, &dmnsn_py_VectorType);
+  dmnsn_py_Vector *y    = PyObject_New(dmnsn_py_Vector, &dmnsn_py_VectorType);
+  dmnsn_py_Vector *z    = PyObject_New(dmnsn_py_Vector, &dmnsn_py_VectorType);
+  if (!zero || !x || !y || !z) {
+    Py_XDECREF(zero);
+    Py_XDECREF(x);
+    Py_XDECREF(y);
+    Py_XDECREF(z);
+    Py_DECREF(module);
+    return NULL;
+  }
+  zero->v = dmnsn_zero;
+  x->v    = dmnsn_x;
+  y->v    = dmnsn_y;
+  z->v    = dmnsn_z;
+  PyModule_AddObject(module, "Zero", (PyObject *)zero);
+  PyModule_AddObject(module, "X",    (PyObject *)x);
+  PyModule_AddObject(module, "Y",    (PyObject *)y);
+  PyModule_AddObject(module, "Z",    (PyObject *)z);
+
+  PyModule_AddObject(module, "Scene",  (PyObject *)&dmnsn_py_SceneType);
+
+  return module;
 }

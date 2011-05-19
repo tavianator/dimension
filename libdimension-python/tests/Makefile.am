@@ -17,7 +17,8 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-TESTS = demo.py
+TESTS = geometry.py                                                            \
+        demo.py
 TESTS_ENVIRONMENT = PYTHONPATH=$(top_builddir)/libdimension-python/.libs
 
 .py:

@@ -30,4 +30,5 @@ dimension_la_SOURCES = dimension.c
 dimension_la_LDFLAGS = -avoid-version -module
 dimension_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
-EXTRA_DIST = scene.c
+EXTRA_DIST = Scene.c                                                           \
+             Vector.c
