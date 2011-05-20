@@ -27,11 +27,15 @@
 static PyObject *
 dmnsn_py_dieOnWarnings(PyObject *self, PyObject *args)
 {
-  int die;
-  if (!PyArg_ParseTuple(args, "i", &die))
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args, "O", &obj))
     return NULL;
 
-  dmnsn_die_on_warnings(die);
+  int istrue = PyObject_IsTrue(obj);
+  if (istrue == -1)
+    return NULL;
+
+  dmnsn_die_on_warnings(istrue);
 
   Py_INCREF(Py_None);
   return Py_None;
