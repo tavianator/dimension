@@ -24,8 +24,22 @@ bool
 dmnsn_py_Vector_args(dmnsn_vector *v, PyObject *args, PyObject *kwds)
 {
   static char *kwlist[] = { "x", "y", "z", NULL };
-  return PyArg_ParseTupleAndKeywords(args, kwds, "ddd", kwlist,
-                                     &v->x, &v->y, &v->z);
+  if (PyArg_ParseTupleAndKeywords(args, kwds, "ddd", kwlist,
+                                  &v->x, &v->y, &v->z)) {
+    return true;
+  } else {
+    if (kwds)
+      return false;
+
+    PyErr_Clear();
+
+    dmnsn_py_Vector *vec;
+    if (!PyArg_ParseTuple(args, "O!", &dmnsn_py_VectorType, &vec))
+      return false;
+
+    *v = vec->v;
+    return true;
+  }
 }
 
 static int

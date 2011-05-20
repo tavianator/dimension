@@ -45,92 +45,43 @@ PyObject *
 dmnsn_py_Matrix_scale(PyObject *self, PyObject *args, PyObject *kwds)
 {
   dmnsn_vector scale;
-  if (dmnsn_py_Vector_args(&scale, args, kwds)) {
-    dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
-    if (ret) {
-      ret->m = dmnsn_scale_matrix(scale);
-    }
-    return (PyObject *)ret;
-  } else {
-    PyErr_Clear();
-    if (kwds) {
-      PyErr_SetString(PyExc_TypeError,
-                      "Keywords only make sense for component syntax");
-      return NULL;
-    }
+  if (!dmnsn_py_Vector_args(&scale, args, kwds))
+    return NULL;
 
-    dmnsn_py_Vector *scale;
-    if (!PyArg_ParseTuple(args, "O!", &dmnsn_py_VectorType, &scale))
-      return NULL;
-
-    dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
-    if (ret) {
-      ret->m = dmnsn_scale_matrix(scale->v);
-    }
-    return (PyObject *)ret;
+  dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
+  if (ret) {
+    ret->m = dmnsn_scale_matrix(scale);
   }
+  return (PyObject *)ret;
 }
 
 PyObject *
 dmnsn_py_Matrix_translate(PyObject *self, PyObject *args, PyObject *kwds)
 {
   dmnsn_vector translate;
-  if (dmnsn_py_Vector_args(&translate, args, kwds)) {
-    dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
-    if (ret) {
-      ret->m = dmnsn_translation_matrix(translate);
-    }
-    return (PyObject *)ret;
-  } else {
-    PyErr_Clear();
-    if (kwds) {
-      PyErr_SetString(PyExc_TypeError,
-                      "Keywords only make sense for component syntax");
-      return NULL;
-    }
+  if (!dmnsn_py_Vector_args(&translate, args, kwds))
+    return NULL;
 
-    dmnsn_py_Vector *translate;
-    if (!PyArg_ParseTuple(args, "O!", &dmnsn_py_VectorType, &translate))
-      return NULL;
-
-    dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
-    if (ret) {
-      ret->m = dmnsn_translation_matrix(translate->v);
-    }
-    return (PyObject *)ret;
+  dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
+  if (ret) {
+    ret->m = dmnsn_translation_matrix(translate);
   }
+  return (PyObject *)ret;
 }
 
 PyObject *
 dmnsn_py_Matrix_rotate(PyObject *self, PyObject *args, PyObject *kwds)
 {
   dmnsn_vector rotate;
-  if (dmnsn_py_Vector_args(&rotate, args, kwds)) {
-    dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
-    if (ret) {
-      ret->m = dmnsn_rotation_matrix(dmnsn_vector_mul(dmnsn_radians(1.0),
-                                                      rotate));
-    }
-    return (PyObject *)ret;
-  } else {
-    PyErr_Clear();
-    if (kwds) {
-      PyErr_SetString(PyExc_TypeError,
-                      "Keywords only make sense for component syntax");
-      return NULL;
-    }
+  if (!dmnsn_py_Vector_args(&rotate, args, kwds))
+    return NULL;
 
-    dmnsn_py_Vector *rotate;
-    if (!PyArg_ParseTuple(args, "O!", &dmnsn_py_VectorType, &rotate))
-      return NULL;
-
-    dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
-    if (ret) {
-      ret->m = dmnsn_rotation_matrix(dmnsn_vector_mul(dmnsn_radians(1.0),
-                                                      rotate->v));
-    }
-    return (PyObject *)ret;
+  dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
+  if (ret) {
+    ret->m = dmnsn_rotation_matrix(dmnsn_vector_mul(dmnsn_radians(1.0),
+                                                    rotate));
   }
+  return (PyObject *)ret;
 }
 
 static PyObject *
