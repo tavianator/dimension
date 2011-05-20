@@ -51,15 +51,29 @@ assert v, bool(v)
 assert not Zero, not Zero
 assert proj(v, X) == 2*X, proj(v, X)
 
-assert scale(1, 2, 3) == Matrix(1, 0, 0, 0,
-                                0, 2, 0, 0,
-                                0, 0, 3, 0), \
-       scale(1, 2, 3)
-assert translate(x = 1, y = 2, z = 3) == Matrix(1, 0, 0, 1,
-                                                0, 1, 0, 2,
-                                                0, 0, 1, 3), \
-       translate(x = 1, y = 2, z = 3)
-assert rotate(90*Y) == Matrix( 0, 0, 1, 0,
-                               0, 1, 0, 0,
-                              -1, 0, 0, 0), \
-       rotate(90*Y)
+m = Matrix(1, 2,   3,  4,
+           5, 6,   7,  8,
+           9, 10, 11, 12)
+
+assert repr(m) == 'dimension.Matrix(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, \
+9.0, 10.0, 11.0, 12.0)', repr(m)
+assert str(m) == '\n' \
+                 '[1.0\t2.0\t3.0\t4.0]\n' \
+                 '[5.0\t6.0\t7.0\t8.0]\n' \
+                 '[9.0\t10.0\t11.0\t12.0]\n' \
+                 '[0.0\t0.0\t0.0\t1.0]', str(m)
+
+s = scale(1, 2, 3)
+assert s == Matrix(1, 0, 0, 0,
+                   0, 2, 0, 0,
+                   0, 0, 3, 0), s
+
+t = translate(x = 1, y = 2, z = 3)
+assert t == Matrix(1, 0, 0, 1,
+                   0, 1, 0, 2,
+                   0, 0, 1, 3), t
+
+r = rotate(90*Y).inverse()
+assert r == Matrix(0, 0, -1, 0,
+                   0, 1,  0, 0,
+                   1, 0,  0, 0), r

@@ -110,8 +110,8 @@ dmnsn_py_Matrix_repr(dmnsn_py_Matrix *self)
     return NULL;
   }
 
-  PyObject *repr = PyUnicode_FromFormat("dimension.Matrix(%R, %R, %R, %R,"
-                                                         "%R, %R, %R, %R,"
+  PyObject *repr = PyUnicode_FromFormat("dimension.Matrix(%R, %R, %R, %R, "
+                                                         "%R, %R, %R, %R, "
                                                          "%R, %R, %R, %R)",
                                         floats[0][0], floats[0][1],
                                         floats[0][2], floats[0][3],
