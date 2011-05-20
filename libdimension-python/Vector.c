@@ -18,12 +18,8 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-typedef struct dmnsn_py_Vector {
-  PyObject_HEAD
-  dmnsn_vector v;
-} dmnsn_py_Vector;
-
-static PyTypeObject dmnsn_py_VectorType;
+#include "Vector.h"
+#include "dimension.h"
 
 static int
 dmnsn_py_Vector_init(dmnsn_py_Vector *self, PyObject *args, PyObject *kwds)
@@ -228,7 +224,7 @@ dmnsn_py_Vector_negative(PyObject *rhs)
   return (PyObject *)ret;
 }
 
-static PyObject *
+PyObject *
 dmnsn_py_Vector_cross(PyObject *self, PyObject *args)
 {
   dmnsn_py_Vector *lhs, *rhs;
@@ -244,7 +240,7 @@ dmnsn_py_Vector_cross(PyObject *self, PyObject *args)
   return (PyObject *)ret;
 }
 
-static PyObject *
+PyObject *
 dmnsn_py_Vector_dot(PyObject *self, PyObject *args)
 {
   dmnsn_py_Vector *lhs, *rhs;
@@ -256,7 +252,7 @@ dmnsn_py_Vector_dot(PyObject *self, PyObject *args)
   return PyFloat_FromDouble(dmnsn_vector_dot(lhs->v, rhs->v));
 }
 
-static PyObject *
+PyObject *
 dmnsn_py_Vector_proj(PyObject *self, PyObject *args)
 {
   dmnsn_py_Vector *u, *d;
@@ -331,7 +327,7 @@ static PyGetSetDef dmnsn_py_Vector_getsetters[] = {
   { NULL }
 };
 
-static PyTypeObject dmnsn_py_VectorType = {
+PyTypeObject dmnsn_py_VectorType = {
   PyVarObject_HEAD_INIT(NULL, 0)
   .tp_name = "dimension.Vector",
   .tp_basicsize = sizeof(dmnsn_py_Vector),
@@ -346,7 +342,7 @@ static PyTypeObject dmnsn_py_VectorType = {
   .tp_init = (initproc)dmnsn_py_Vector_init,
 };
 
-static bool
+bool
 dmnsn_py_init_VectorType(void)
 {
   dmnsn_py_VectorType.tp_new = PyType_GenericNew;

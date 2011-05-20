@@ -26,9 +26,8 @@ AM_CFLAGS = $(Python_CFLAGS)
 AM_LDFLAGS = $(Python_LDFLAGS)
 
 pyexec_LTLIBRARIES = dimension.la
-dimension_la_SOURCES = dimension.c
+dimension_la_SOURCES = Vector.c                                                \
+                       Scene.c                                                 \
+                       dimension.c
 dimension_la_LDFLAGS = -avoid-version -module
 dimension_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
-
-EXTRA_DIST = Scene.c                                                           \
-             Vector.c

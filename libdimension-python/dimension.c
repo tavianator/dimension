@@ -18,13 +18,9 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
-#include <structmember.h>
 #include "dimension.h"
-
-#include "Vector.c"
-#include "Scene.c"
+#include "Vector.h"
+#include "Scene.h"
 
 static PyObject *
 dmnsn_py_dieOnWarnings(PyObject *self, PyObject *args)
