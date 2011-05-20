@@ -18,55 +18,13 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "Canvas.h"
-#include "Scene.h"
+#include "dimension-python.h"
 
-static int
-dmnsn_py_Scene_init(dmnsn_py_Scene *self, PyObject *args, PyObject *kwds)
-{
-  static char *kwlist[] = { "canvas", NULL };
+typedef struct dmnsn_py_Canvas {
+  PyObject_HEAD
+  dmnsn_canvas *canvas;
+} dmnsn_py_Canvas;
 
-  dmnsn_py_Canvas *canvas;
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist,
-                                   &dmnsn_py_CanvasType, &canvas))
-    return -1;
+extern PyTypeObject dmnsn_py_CanvasType;
 
-  dmnsn_delete_scene(self->scene);
-  self->scene = dmnsn_new_scene();
-  dmnsn_scene_set_canvas(self->scene, canvas->canvas);
-  return 0;
-}
-
-static void
-dmnsn_py_Scene_dealloc(dmnsn_py_Scene *self)
-{
-  dmnsn_delete_scene(self->scene);
-  Py_TYPE(self)->tp_free((PyObject *)self);
-}
-
-static PyMethodDef dmnsn_py_Scene_methods[] = {
-  { NULL }
-};
-
-static PyGetSetDef dmnsn_py_Scene_getsetters[] = {
-  { NULL }
-};
-
-PyTypeObject dmnsn_py_SceneType = {
-  PyVarObject_HEAD_INIT(NULL, 0)
-  .tp_name      = "dimension.Scene",
-  .tp_basicsize = sizeof(dmnsn_py_Scene),
-  .tp_dealloc   = (destructor)dmnsn_py_Scene_dealloc,
-  .tp_flags     = Py_TPFLAGS_DEFAULT,
-  .tp_doc       = "Dimension scene",
-  .tp_methods   = dmnsn_py_Scene_methods,
-  .tp_getset    = dmnsn_py_Scene_getsetters,
-  .tp_init      = (initproc)dmnsn_py_Scene_init,
-};
-
-bool
-dmnsn_py_init_SceneType(void)
-{
-  dmnsn_py_SceneType.tp_new = PyType_GenericNew;
-  return PyType_Ready(&dmnsn_py_SceneType) >= 0;
-}
+bool dmnsn_py_init_CanvasType(void);

@@ -22,6 +22,7 @@
 #include "Vector.h"
 #include "Matrix.h"
 #include "Color.h"
+#include "Canvas.h"
 #include "Scene.h"
 
 static PyObject *
@@ -73,6 +74,7 @@ PyInit_dimension(void)
   if (!dmnsn_py_init_VectorType()
       || !dmnsn_py_init_MatrixType()
       || !dmnsn_py_init_ColorType()
+      || !dmnsn_py_init_CanvasType()
       || !dmnsn_py_init_SceneType())
     return NULL;
 
@@ -103,6 +105,8 @@ PyInit_dimension(void)
   PyModule_AddObject(module, "Orange",  (PyObject *)&dmnsn_py_Orange);
   PyModule_AddObject(module, "Yellow",  (PyObject *)&dmnsn_py_Yellow);
   PyModule_AddObject(module, "Cyan",    (PyObject *)&dmnsn_py_Cyan);
+
+  PyModule_AddObject(module, "Canvas", (PyObject *)&dmnsn_py_CanvasType);
 
   PyModule_AddObject(module, "Scene", (PyObject *)&dmnsn_py_SceneType);
 

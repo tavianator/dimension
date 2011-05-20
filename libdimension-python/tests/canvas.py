@@ -20,11 +20,15 @@
 #########################################################################
 
 from dimension import *
+import errno
 
 # Treat warnings as errors for tests
 dieOnWarnings(True)
 
-canvas = Canvas(width = 768, height = 480)
+canvas = Canvas(768, 480)
+
+assert canvas.width  == 768, canvas.width
+assert canvas.height == 480, canvas.height
 
 havePNG = True
 try:
@@ -35,4 +39,19 @@ except OSError as e:
     else:
         raise
 
-scene = Scene(canvas = canvas)
+haveGL = True
+try:
+    canvas.optimizeGL()
+except OSError as e:
+    if e.errno == errno.ENOSYS:
+        haveGL = False
+    else:
+        raise
+
+canvas.clear(Blue)
+
+if havePNG:
+    canvas.writePNG('png.png')
+
+#if haveGL:
+#    canvas.drawGL()

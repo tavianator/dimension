@@ -19,6 +19,7 @@
 
 TESTS = geometry.py                                                            \
         color.py                                                               \
+        canvas.py                                                              \
         demo.py
 TESTS_ENVIRONMENT = PYTHONPATH=$(top_builddir)/libdimension-python/.libs
 
