@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
+#include "dimension-python.h"
 
 typedef struct dmnsn_py_Vector {
   PyObject_HEAD

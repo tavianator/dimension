@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension.h"
+#include "dimension-python.h"
 #include "Vector.h"
 #include "Matrix.h"
 #include "Scene.h"

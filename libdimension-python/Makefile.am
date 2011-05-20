@@ -33,6 +33,6 @@ dimension_la_SOURCES = Matrix.c                                                \
                        Vector.c                                                \
                        Vector.h                                                \
                        dimension.c                                             \
-                       dimension.h
+                       dimension-python.h
 dimension_la_LDFLAGS = -avoid-version -module
 dimension_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
