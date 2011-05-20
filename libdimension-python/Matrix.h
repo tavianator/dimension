@@ -20,17 +20,18 @@
 
 #include "dimension.h"
 
-typedef struct dmnsn_py_Vector {
+typedef struct dmnsn_py_Matrix {
   PyObject_HEAD
-  dmnsn_vector v;
-} dmnsn_py_Vector;
+  dmnsn_matrix m;
+} dmnsn_py_Matrix;
 
-extern PyTypeObject dmnsn_py_VectorType;
+extern PyTypeObject dmnsn_py_MatrixType;
 
-bool dmnsn_py_Vector_args(dmnsn_vector *v, PyObject *args, PyObject *kwds);
-bool dmnsn_py_init_VectorType(void);
+bool dmnsn_py_init_MatrixType(void);
 
 /* Global methods */
-PyObject *dmnsn_py_Vector_cross(PyObject *self, PyObject *args);
-PyObject *dmnsn_py_Vector_dot(PyObject *self, PyObject *args);
-PyObject *dmnsn_py_Vector_proj(PyObject *self, PyObject *args);
+PyObject *dmnsn_py_Matrix_scale(PyObject *self, PyObject *args, PyObject *kwds);
+PyObject *dmnsn_py_Matrix_translate(PyObject *self, PyObject *args,
+                                    PyObject *kwds);
+PyObject *dmnsn_py_Matrix_rotate(PyObject *self, PyObject *args,
+                                 PyObject *kwds);

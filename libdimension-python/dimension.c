@@ -20,6 +20,7 @@
 
 #include "dimension.h"
 #include "Vector.h"
+#include "Matrix.h"
 #include "Scene.h"
 
 static PyObject *
@@ -43,6 +44,13 @@ static PyMethodDef DimensionMethods[] = {
   { "dot",   dmnsn_py_Vector_dot,   METH_VARARGS, "Dot product."       },
   { "proj",  dmnsn_py_Vector_proj,  METH_VARARGS, "Vector projection." },
 
+  { "scale", (PyCFunction)dmnsn_py_Matrix_scale,
+    METH_VARARGS | METH_KEYWORDS, "Scaling." },
+  { "translate", (PyCFunction)dmnsn_py_Matrix_translate,
+    METH_VARARGS | METH_KEYWORDS, "Translation." },
+  { "rotate", (PyCFunction)dmnsn_py_Matrix_rotate,
+    METH_VARARGS | METH_KEYWORDS, "Rotation." },
+
   { NULL, NULL, 0, NULL }
 };
 
@@ -58,6 +66,7 @@ PyMODINIT_FUNC
 PyInit_dimension(void)
 {
   if (!dmnsn_py_init_VectorType()
+      || !dmnsn_py_init_MatrixType()
       || !dmnsn_py_init_SceneType())
     return NULL;
 
@@ -89,7 +98,9 @@ PyInit_dimension(void)
   PyModule_AddObject(module, "Y",    (PyObject *)y);
   PyModule_AddObject(module, "Z",    (PyObject *)z);
 
-  PyModule_AddObject(module, "Scene",  (PyObject *)&dmnsn_py_SceneType);
+  PyModule_AddObject(module, "Matrix", (PyObject *)&dmnsn_py_MatrixType);
+
+  PyModule_AddObject(module, "Scene", (PyObject *)&dmnsn_py_SceneType);
 
   return module;
 }

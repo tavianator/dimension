@@ -19,18 +19,19 @@
  *************************************************************************/
 
 #include "Vector.h"
-#include "dimension.h"
+
+bool
+dmnsn_py_Vector_args(dmnsn_vector *v, PyObject *args, PyObject *kwds)
+{
+  static char *kwlist[] = { "x", "y", "z", NULL };
+  return PyArg_ParseTupleAndKeywords(args, kwds, "ddd", kwlist,
+                                     &v->x, &v->y, &v->z);
+}
 
 static int
 dmnsn_py_Vector_init(dmnsn_py_Vector *self, PyObject *args, PyObject *kwds)
 {
-  static char *kwlist[] = { "x", "y", "z", NULL };
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ddd", kwlist,
-                                   &self->v.x, &self->v.y, &self->v.z))
-    return -1;
-
-  return 0;
+  return dmnsn_py_Vector_args(&self->v, args, kwds) ? 0 : -1;
 }
 
 static PyObject *
@@ -79,12 +80,9 @@ dmnsn_py_Vector_str(dmnsn_py_Vector *self)
 static PyObject *
 dmnsn_py_Vector_richcompare(PyObject *lhs, PyObject *rhs, int op)
 {
-  if (!PyObject_TypeCheck(lhs, &dmnsn_py_VectorType)) {
-    PyErr_SetString(PyExc_TypeError,
-                    "Vectors can only be compared with Vectors");
-    return NULL;
-  }
-  if (!PyObject_TypeCheck(lhs, &dmnsn_py_VectorType)) {
+  if (!PyObject_TypeCheck(lhs, &dmnsn_py_VectorType)
+      || !PyObject_TypeCheck(rhs, &dmnsn_py_VectorType))
+  {
     PyErr_SetString(PyExc_TypeError,
                     "Vectors can only be compared with Vectors");
     return NULL;
