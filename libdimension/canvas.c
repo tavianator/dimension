@@ -30,18 +30,13 @@
 dmnsn_canvas *
 dmnsn_new_canvas(size_t width, size_t height)
 {
-  /* Allocate the dmnsn_canvas struct */
   dmnsn_canvas *canvas = dmnsn_malloc(sizeof(dmnsn_canvas));
 
-  /* Set the width and height */
-  canvas->width  = width;
-  canvas->height = height;
-
-  /* Allocate room for the optimizers */
+  canvas->width      = width;
+  canvas->height     = height;
   canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
-
-  /* Allocate the pixels */
-  canvas->pixels = dmnsn_malloc(sizeof(dmnsn_color)*width*height);
+  canvas->pixels     = dmnsn_malloc(sizeof(dmnsn_color)*width*height);
+  canvas->refcount   = dmnsn_new_refcount();
 
   return canvas;
 }
@@ -50,7 +45,9 @@ dmnsn_new_canvas(size_t width, size_t height)
 void
 dmnsn_delete_canvas(dmnsn_canvas *canvas)
 {
-  if (canvas) {
+  if (canvas && DMNSN_DECREF(canvas)) {
+    dmnsn_delete_refcount(canvas->refcount);
+
     /* Free the optimizers */
     DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
       if (i->free_fn) {

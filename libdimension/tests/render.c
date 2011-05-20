@@ -40,7 +40,7 @@ dmnsn_new_test_scene(void)
   );
 
   /* Allocate a canvas */
-  scene->canvas = dmnsn_new_canvas(768, 480);
+  dmnsn_scene_set_canvas(scene, dmnsn_new_canvas(768, 480));
 
   /* Set up the transformation matrix for the perspective camera */
   dmnsn_matrix trans = dmnsn_scale_matrix(

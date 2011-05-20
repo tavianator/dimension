@@ -93,6 +93,15 @@ void dmnsn_delete_scene(dmnsn_scene *scene);
 void dmnsn_initialize_scene(dmnsn_scene *scene);
 
 /**
+ * Set the output canvas for a scene.
+ * @param[in,out] scene   The scene for which to set the canvas.
+ * @param[in]     canvas  The canvas to set.
+ */
+void dmnsn_scene_set_canvas(dmnsn_scene *scene, dmnsn_canvas *canvas);
+
+/**
  * Add an object to a scene.
+ * @param[in,out] scene   The scene to which to add the object.
+ * @param[in]     object  The object to add.
  */
 void dmnsn_scene_add_object(dmnsn_scene *scene, dmnsn_object *object);

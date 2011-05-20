@@ -39,6 +39,8 @@ typedef struct {
    * at (a,b) is accessible as pixels[b*width + a].
    */
   dmnsn_color *pixels;
+
+  dmnsn_refcount *refcount; /**< @internal Reference count. */
 } dmnsn_canvas;
 
 /* Forward-declare dmnsn_canvas_optimizer */

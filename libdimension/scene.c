@@ -84,8 +84,17 @@ dmnsn_initialize_scene(dmnsn_scene *scene)
 }
 
 void
+dmnsn_scene_set_canvas(dmnsn_scene *scene, dmnsn_canvas *canvas)
+{
+  DMNSN_INCREF(canvas);
+  dmnsn_delete_canvas(scene->canvas);
+  scene->canvas = canvas;
+}
+
+void
 dmnsn_scene_add_object(dmnsn_scene *scene, dmnsn_object *object)
 {
+  DMNSN_INCREF(object);
   dmnsn_initialize_object(object);
   dmnsn_array_push(scene->objects, &object);
 }
