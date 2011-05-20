@@ -21,6 +21,7 @@
 #include "dimension-python.h"
 #include "Vector.h"
 #include "Matrix.h"
+#include "Color.h"
 #include "Scene.h"
 
 static PyObject *
@@ -67,6 +68,7 @@ PyInit_dimension(void)
 {
   if (!dmnsn_py_init_VectorType()
       || !dmnsn_py_init_MatrixType()
+      || !dmnsn_py_init_ColorType()
       || !dmnsn_py_init_SceneType())
     return NULL;
 
@@ -77,28 +79,26 @@ PyInit_dimension(void)
   PyModule_AddObject(module, "Vector", (PyObject *)&dmnsn_py_VectorType);
 
   /* Vector constants */
-  dmnsn_py_Vector *zero = PyObject_New(dmnsn_py_Vector, &dmnsn_py_VectorType);
-  dmnsn_py_Vector *x    = PyObject_New(dmnsn_py_Vector, &dmnsn_py_VectorType);
-  dmnsn_py_Vector *y    = PyObject_New(dmnsn_py_Vector, &dmnsn_py_VectorType);
-  dmnsn_py_Vector *z    = PyObject_New(dmnsn_py_Vector, &dmnsn_py_VectorType);
-  if (!zero || !x || !y || !z) {
-    Py_XDECREF(zero);
-    Py_XDECREF(x);
-    Py_XDECREF(y);
-    Py_XDECREF(z);
-    Py_DECREF(module);
-    return NULL;
-  }
-  zero->v = dmnsn_zero;
-  x->v    = dmnsn_x;
-  y->v    = dmnsn_y;
-  z->v    = dmnsn_z;
-  PyModule_AddObject(module, "Zero", (PyObject *)zero);
-  PyModule_AddObject(module, "X",    (PyObject *)x);
-  PyModule_AddObject(module, "Y",    (PyObject *)y);
-  PyModule_AddObject(module, "Z",    (PyObject *)z);
+  PyModule_AddObject(module, "Zero", (PyObject *)&dmnsn_py_Zero);
+  PyModule_AddObject(module, "X",    (PyObject *)&dmnsn_py_X);
+  PyModule_AddObject(module, "Y",    (PyObject *)&dmnsn_py_Y);
+  PyModule_AddObject(module, "Z",    (PyObject *)&dmnsn_py_Z);
 
   PyModule_AddObject(module, "Matrix", (PyObject *)&dmnsn_py_MatrixType);
+
+  PyModule_AddObject(module, "Color", (PyObject *)&dmnsn_py_ColorType);
+
+  /* Color constants */
+  PyModule_AddObject(module, "Black",   (PyObject *)&dmnsn_py_Black);
+  PyModule_AddObject(module, "White",   (PyObject *)&dmnsn_py_White);
+  PyModule_AddObject(module, "Clear",   (PyObject *)&dmnsn_py_Clear);
+  PyModule_AddObject(module, "Red",     (PyObject *)&dmnsn_py_Red);
+  PyModule_AddObject(module, "Green",   (PyObject *)&dmnsn_py_Green);
+  PyModule_AddObject(module, "Blue",    (PyObject *)&dmnsn_py_Blue);
+  PyModule_AddObject(module, "Magenta", (PyObject *)&dmnsn_py_Magenta);
+  PyModule_AddObject(module, "Orange",  (PyObject *)&dmnsn_py_Orange);
+  PyModule_AddObject(module, "Yellow",  (PyObject *)&dmnsn_py_Yellow);
+  PyModule_AddObject(module, "Cyan",    (PyObject *)&dmnsn_py_Cyan);
 
   PyModule_AddObject(module, "Scene", (PyObject *)&dmnsn_py_SceneType);
 

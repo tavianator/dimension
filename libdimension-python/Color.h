@@ -18,53 +18,26 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "Scene.h"
+#include "dimension-python.h"
 
-static PyObject *
-dmnsn_py_Scene_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-  dmnsn_py_Scene *self;
-  self = (dmnsn_py_Scene *)type->tp_alloc(type, 0);
-  self->scene = dmnsn_new_scene();
-  return (PyObject *)self;
-}
+typedef struct dmnsn_py_Color {
+  PyObject_HEAD
+  dmnsn_color c;
+} dmnsn_py_Color;
 
-static int
-dmnsn_py_Scene_init(dmnsn_py_Scene *self, PyObject *args, PyObject *kwds)
-{
-  return 0;
-}
+extern PyTypeObject dmnsn_py_ColorType;
 
-static void
-dmnsn_py_Scene_dealloc(dmnsn_py_Scene *self)
-{
-  dmnsn_delete_scene(self->scene);
-  Py_TYPE(self)->tp_free((PyObject *)self);
-}
+bool dmnsn_py_Color_args(dmnsn_color *v, PyObject *args, PyObject *kwds);
+bool dmnsn_py_init_ColorType(void);
 
-static PyMethodDef dmnsn_py_Scene_methods[] = {
-  { NULL }
-};
-
-static PyGetSetDef dmnsn_py_Scene_getsetters[] = {
-  { NULL }
-};
-
-PyTypeObject dmnsn_py_SceneType = {
-  PyVarObject_HEAD_INIT(NULL, 0)
-  .tp_name      = "dimension.Scene",
-  .tp_basicsize = sizeof(dmnsn_py_Scene),
-  .tp_dealloc   = (destructor)dmnsn_py_Scene_dealloc,
-  .tp_flags     = Py_TPFLAGS_DEFAULT,
-  .tp_doc       = "Dimension scene",
-  .tp_methods   = dmnsn_py_Scene_methods,
-  .tp_getset    = dmnsn_py_Scene_getsetters,
-  .tp_init      = (initproc)dmnsn_py_Scene_init,
-  .tp_new       = dmnsn_py_Scene_new,
-};
-
-bool
-dmnsn_py_init_SceneType(void)
-{
-  return PyType_Ready(&dmnsn_py_SceneType) >= 0;
-}
+/* Color constants */
+extern dmnsn_py_Color dmnsn_py_Black;
+extern dmnsn_py_Color dmnsn_py_White;
+extern dmnsn_py_Color dmnsn_py_Clear;
+extern dmnsn_py_Color dmnsn_py_Red;
+extern dmnsn_py_Color dmnsn_py_Green;
+extern dmnsn_py_Color dmnsn_py_Blue;
+extern dmnsn_py_Color dmnsn_py_Magenta;
+extern dmnsn_py_Color dmnsn_py_Orange;
+extern dmnsn_py_Color dmnsn_py_Yellow;
+extern dmnsn_py_Color dmnsn_py_Cyan;

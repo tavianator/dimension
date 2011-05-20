@@ -34,3 +34,9 @@ bool dmnsn_py_init_VectorType(void);
 PyObject *dmnsn_py_Vector_cross(PyObject *self, PyObject *args);
 PyObject *dmnsn_py_Vector_dot(PyObject *self, PyObject *args);
 PyObject *dmnsn_py_Vector_proj(PyObject *self, PyObject *args);
+
+/* Vector constants */
+extern dmnsn_py_Vector dmnsn_py_Zero;
+extern dmnsn_py_Vector dmnsn_py_X;
+extern dmnsn_py_Vector dmnsn_py_Y;
+extern dmnsn_py_Vector dmnsn_py_Z;

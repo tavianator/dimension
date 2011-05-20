@@ -84,11 +84,11 @@ dmnsn_py_Vector_str(dmnsn_py_Vector *self)
     return NULL;
   }
 
-  PyObject *repr = PyUnicode_FromFormat("<%S, %S, %S>", x, y, z);
+  PyObject *str = PyUnicode_FromFormat("<%S, %S, %S>", x, y, z);
   Py_DECREF(z);
   Py_DECREF(y);
   Py_DECREF(x);
-  return repr;
+  return str;
 }
 
 static PyObject *
@@ -315,27 +315,27 @@ static PyMethodDef dmnsn_py_Vector_methods[] = {
 };
 
 static PyObject *
-dmnsn_py_Vector_getx(dmnsn_py_Vector *self, void *closure)
+dmnsn_py_Vector_get_x(dmnsn_py_Vector *self, void *closure)
 {
   return PyFloat_FromDouble(self->v.x);
 }
 
 static PyObject *
-dmnsn_py_Vector_gety(dmnsn_py_Vector *self, void *closure)
+dmnsn_py_Vector_get_y(dmnsn_py_Vector *self, void *closure)
 {
   return PyFloat_FromDouble(self->v.y);
 }
 
 static PyObject *
-dmnsn_py_Vector_getz(dmnsn_py_Vector *self, void *closure)
+dmnsn_py_Vector_get_z(dmnsn_py_Vector *self, void *closure)
 {
   return PyFloat_FromDouble(self->v.z);
 }
 
 static PyGetSetDef dmnsn_py_Vector_getsetters[] = {
-  { "x", (getter)dmnsn_py_Vector_getx, NULL, "x coordinate", NULL },
-  { "y", (getter)dmnsn_py_Vector_gety, NULL, "y coordinate", NULL },
-  { "z", (getter)dmnsn_py_Vector_getz, NULL, "z coordinate", NULL },
+  { "x", (getter)dmnsn_py_Vector_get_x, NULL, "x coordinate", NULL },
+  { "y", (getter)dmnsn_py_Vector_get_y, NULL, "y coordinate", NULL },
+  { "z", (getter)dmnsn_py_Vector_get_z, NULL, "z coordinate", NULL },
   { NULL }
 };
 
@@ -354,10 +354,24 @@ PyTypeObject dmnsn_py_VectorType = {
   .tp_init = (initproc)dmnsn_py_Vector_init,
 };
 
+#define dmnsn_py_Vector_global(name)            \
+  dmnsn_py_Vector name = {                      \
+    PyObject_HEAD_INIT(&dmnsn_py_VectorType)    \
+  };
+
+dmnsn_py_Vector_global(dmnsn_py_Zero);
+dmnsn_py_Vector_global(dmnsn_py_X);
+dmnsn_py_Vector_global(dmnsn_py_Y);
+dmnsn_py_Vector_global(dmnsn_py_Z);
+
 bool
 dmnsn_py_init_VectorType(void)
 {
+  dmnsn_py_Zero.v = dmnsn_zero;
+  dmnsn_py_X.v    = dmnsn_x;
+  dmnsn_py_Y.v    = dmnsn_y;
+  dmnsn_py_Z.v    = dmnsn_z;
+
   dmnsn_py_VectorType.tp_new = PyType_GenericNew;
-  Py_INCREF(&dmnsn_py_VectorType);
   return PyType_Ready(&dmnsn_py_VectorType) >= 0;
 }

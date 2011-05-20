@@ -26,7 +26,9 @@ AM_CFLAGS = $(Python_CFLAGS)
 AM_LDFLAGS = $(Python_LDFLAGS)
 
 pyexec_LTLIBRARIES = dimension.la
-dimension_la_SOURCES = Matrix.c                                                \
+dimension_la_SOURCES = Color.c                                                 \
+                       Color.h                                                 \
+                       Matrix.c                                                \
                        Matrix.h                                                \
                        Scene.c                                                 \
                        Scene.h                                                 \
