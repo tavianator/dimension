@@ -73,7 +73,7 @@ dmnsn_new_test_scene(void)
   dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(dmnsn_y);
   dmnsn_map *sky_gradient_color_map = dmnsn_new_color_map();
   dmnsn_add_map_entry(sky_gradient_color_map, 0.0, &dmnsn_orange);
-  dmnsn_color background = dmnsn_new_color5(0.0, 0.1, 0.2, 0.1, 0.0);
+  dmnsn_color background = dmnsn_new_color5(0.0, 0.1, 0.2, 0.1, 1.0);
   dmnsn_add_map_entry(sky_gradient_color_map, 0.35, &background);
   dmnsn_pigment *sky_pigment
     = dmnsn_new_color_map_pigment(sky_gradient, sky_gradient_color_map);
@@ -95,8 +95,8 @@ dmnsn_new_test_scene(void)
   cube->texture = dmnsn_new_texture();
 
   dmnsn_color cube_color = dmnsn_blue;
-  cube_color.filter = 0.25;
-  cube_color.trans  = 0.5;
+  cube_color.trans  = 0.75;
+  cube_color.filter = 1.0/3.0;
   cube->texture->pigment = dmnsn_new_solid_pigment(cube_color);
 
   dmnsn_color reflect = dmnsn_color_mul(0.5, dmnsn_white);

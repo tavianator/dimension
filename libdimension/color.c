@@ -30,71 +30,71 @@ const dmnsn_color dmnsn_black = {
   .R = 0.0,
   .G = 0.0,
   .B = 0.0,
+  .trans  = 0.0,
   .filter = 0.0,
-  .trans  = 0.0
 };
 const dmnsn_color dmnsn_white = {
   .R = 1.0,
   .G = 1.0,
   .B = 1.0,
+  .trans  = 0.0,
   .filter = 0.0,
-  .trans  = 0.0
 };
 const dmnsn_color dmnsn_clear = {
   .R = 0.0,
   .G = 0.0,
   .B = 0.0,
+  .trans  = 1.0,
   .filter = 0.0,
-  .trans  = 1.0
 };
 const dmnsn_color dmnsn_red = {
   .R = 1.0,
   .G = 0.0,
   .B = 0.0,
+  .trans  = 0.0,
   .filter = 0.0,
-  .trans  = 0.0
 };
 const dmnsn_color dmnsn_green = {
   .R = 0.0,
   .G = 1.0,
   .B = 0.0,
+  .trans  = 0.0,
   .filter = 0.0,
-  .trans  = 0.0
 };
 const dmnsn_color dmnsn_blue = {
   .R = 0.0,
   .G = 0.0,
   .B = 1.0,
+  .trans  = 0.0,
   .filter = 0.0,
-  .trans  = 0.0
 };
 const dmnsn_color dmnsn_magenta = {
   .R = 1.0,
   .G = 0.0,
   .B = 1.0,
+  .trans  = 0.0,
   .filter = 0.0,
-  .trans  = 0.0
 };
 const dmnsn_color dmnsn_orange = {
   .R = 1.0,
   .G = 0.5,
   .B = 0.0,
+  .trans  = 0.0,
   .filter = 0.0,
-  .trans  = 0.0
 };
 const dmnsn_color dmnsn_yellow = {
   .R = 1.0,
   .G = 1.0,
   .B = 0.0,
+  .trans  = 0.0,
   .filter = 0.0,
-  .trans  = 0.0
 };
 const dmnsn_color dmnsn_cyan = {
   .R = 0.0,
   .G = 1.0,
   .B = 1.0,
   .filter = 0.0,
-  .trans  = 0.0
+  .trans  = 0.0,
 };
 
 /* Greyscale color intensity */
@@ -111,11 +111,19 @@ dmnsn_color_add(dmnsn_color c1, dmnsn_color c2)
 {
   dmnsn_color ret = dmnsn_new_color(c1.R + c2.R, c1.G + c2.G, c1.B + c2.B);
 
+  /* Switch back into absolute filter and transmittance space */
   double n1 = dmnsn_color_intensity(c1), n2 = dmnsn_color_intensity(c2);
-  if (n1 + n2 != 0.0) {
-    ret.filter = (n1*c1.filter + n2*c2.filter)/(n1 + n2);
-  }
-  ret.trans = c1.trans + c2.trans;
+  double f1 = c1.filter*c1.trans, f2 = c2.filter*c2.trans;
+  double t1 = c1.trans - f1, t2 = c2.trans - f2;
+  double f = 0.0;
+  if (n1 + n2 >= dmnsn_epsilon)
+    f = (n1*f1 + n2*f2)/(n1 + n2);
+  double t = t1 + t2;
+
+  /* Switch back */
+  ret.trans = f + t;
+  if (ret.trans >= dmnsn_epsilon)
+    ret.filter = f/ret.trans;
 
   return ret;
 }
@@ -138,8 +146,8 @@ dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n)
     n*(c2.R - c1.R) + c1.R,
     n*(c2.G - c1.G) + c1.G,
     n*(c2.B - c1.B) + c1.B,
-    n*(c2.filter - c1.filter) + c1.filter,
-    n*(c2.trans  - c1.trans)  + c1.trans
+    n*(c2.trans  - c1.trans)  + c1.trans,
+    n*(c2.filter - c1.filter) + c1.filter
   );
 }
 
@@ -147,15 +155,28 @@ dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n)
 dmnsn_color
 dmnsn_filter_light(dmnsn_color light, dmnsn_color filter)
 {
-  dmnsn_color transmitted = dmnsn_color_mul(filter.trans, light);
+  dmnsn_color transmitted = dmnsn_color_mul(
+    (1.0 - filter.filter)*filter.trans,
+    light
+  );
   dmnsn_color filtered = dmnsn_color_mul(
-    filter.filter,
+    filter.filter*filter.trans,
     dmnsn_color_illuminate(filter, light)
   );
   dmnsn_color ret = dmnsn_color_add(transmitted, filtered);
-  ret.filter = light.filter*dmnsn_color_intensity(filtered)
-               + filter.filter*light.trans + filter.trans*light.filter;
-  ret.trans  = filter.trans*light.trans;
+
+  /* Switch back into absolute filter and transmittance space */
+  double lf = light.filter*light.trans, ff = filter.filter*filter.trans;
+  double lt = light.trans - lf, ft = filter.trans - ff;
+  double f = lf*(dmnsn_color_intensity(filtered) + ft) + lt*ff;
+  double t = ft*lt;
+
+  /* Switch back */
+  ret.trans = f + t;
+  ret.filter = 0.0;
+  if (ret.trans >= dmnsn_epsilon)
+    ret.filter = f/ret.trans;
+
   return ret;
 }
 
@@ -164,11 +185,11 @@ dmnsn_color
 dmnsn_apply_translucency(dmnsn_color filtered, dmnsn_color filter)
 {
   dmnsn_color ret = dmnsn_color_add(
-    dmnsn_color_mul(1.0 - (filter.filter + filter.trans), filter),
+    dmnsn_color_mul(1.0 - filter.trans, filter),
     filtered
   );
-  ret.filter = filtered.filter;
   ret.trans  = filtered.trans;
+  ret.filter = filtered.filter;
   return ret;
 }
 

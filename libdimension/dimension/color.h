@@ -31,10 +31,8 @@ typedef struct {
   double G; /**< sRGB green value. */
   double B; /**< sRGB blue value. */
 
-  /** Filtered transparency. */
-  double filter;
-  /** Unfiltered transparency; <tt>filter + trans</tt> should be <= 1. */
-  double trans;
+  double trans;  /**< Translucency. */
+  double filter; /**< Degree of filtering. */
 } dmnsn_color;
 
 /* Standard colors */
@@ -61,9 +59,9 @@ dmnsn_new_color(double R, double G, double B)
 
 /** Construct a new color with transparent components. */
 DMNSN_INLINE dmnsn_color
-dmnsn_new_color5(double R, double G, double B, double filter, double trans)
+dmnsn_new_color5(double R, double G, double B, double trans, double filter)
 {
-  dmnsn_color ret = { R, G, B, filter, trans };
+  dmnsn_color ret = { R, G, B, trans, filter };
   return ret;
 }
 

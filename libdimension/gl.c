@@ -110,13 +110,12 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
         pixel[2] = color.B*UINT16_MAX;
       }
 
-      double alpha = dmnsn_color_intensity(color)*color.filter + color.trans;
-      if (alpha <= 0.0) {
+      if (color.trans <= 0.0) {
         pixel[3] = 0;
-      } else if (alpha >= 1.0) {
+      } else if (color.trans >= 1.0) {
         pixel[3] = UINT16_MAX;
       } else {
-        pixel[3] = alpha*UINT16_MAX;
+        pixel[3] = color.trans*UINT16_MAX;
       }
     }
   }
@@ -152,8 +151,8 @@ dmnsn_gl_read_canvas(size_t x0, size_t y0,
       dmnsn_color color = dmnsn_new_color5((double)pixel[0]/UINT16_MAX,
                                            (double)pixel[1]/UINT16_MAX,
                                            (double)pixel[2]/UINT16_MAX,
-                                           0.0,
-                                           (double)pixel[3]/UINT16_MAX);
+                                           (double)pixel[3]/UINT16_MAX,
+                                           0.0);
       dmnsn_set_pixel(canvas, x, y, color);
     }
   }
@@ -196,12 +195,11 @@ dmnsn_gl_optimizer_fn(const dmnsn_canvas *canvas,
     pixel[2] = color.B*UINT16_MAX;
   }
 
-  double alpha = dmnsn_color_intensity(color)*color.filter + color.trans;
-  if (alpha <= 0.0) {
+  if (color.trans <= 0.0) {
     pixel[3] = 0;
-  } else if (alpha >= 1.0) {
+  } else if (color.trans >= 1.0) {
     pixel[3] = UINT16_MAX;
   } else {
-    pixel[3] = alpha*UINT16_MAX;
+    pixel[3] = color.trans*UINT16_MAX;
   }
 }

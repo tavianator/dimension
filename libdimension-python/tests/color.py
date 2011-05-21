@@ -24,15 +24,15 @@ from dimension import *
 # Treat warnings as errors for tests
 dieOnWarnings(True)
 
-c = Color(0, 0.5, 1, filter = 0.25, trans = 0.35)
-assert repr(c) == 'dimension.Color(0.0, 0.5, 1.0, 0.25, 0.35)', repr(c)
+c = Color(0, 0.5, 1, trans = 0.5, filter = 0.35)
+assert repr(c) == 'dimension.Color(0.0, 0.5, 1.0, 0.5, 0.35)', repr(c)
 assert str(c) == '<red = 0.0, green = 0.5, blue = 1.0, \
-filter = 0.25, trans = 0.35>', str(c)
+trans = 0.5, filter = 0.35>', str(c)
 assert c.red    == 0,    c.red
 assert c.green  == 0.5,  c.green
 assert c.blue   == 1,    c.blue
-assert c.filter == 0.25, c.filter
-assert c.trans  == 0.35, c.trans
+assert c.trans  == 0.5,  c.filter
+assert c.filter == 0.35, c.trans
 
 c = Color(1, 0.5, 0)
 assert str(c) == '<red = 1.0, green = 0.5, blue = 0.0>', str(c)

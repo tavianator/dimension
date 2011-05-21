@@ -92,13 +92,12 @@ dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
     pixel[2] = color.B*UINT16_MAX;
   }
 
-  double alpha = dmnsn_color_intensity(color)*color.filter + color.trans;
-  if (alpha <= 0.0) {
+  if (color.trans <= 0.0) {
     pixel[3] = 0;
-  } else if (alpha >= 1.0) {
+  } else if (color.trans >= 1.0) {
     pixel[3] = UINT16_MAX;
   } else {
-    pixel[3] = alpha*UINT16_MAX;
+    pixel[3] = color.trans*UINT16_MAX;
   }
 }
 
@@ -299,13 +298,12 @@ dmnsn_png_write_canvas_thread(void *ptr)
         row[4*x + 2] = color.B*UINT16_MAX;
       }
 
-      double alpha = color.filter + color.trans;
-      if (alpha <= 0.0) {
+      if (color.trans <= 0.0) {
         row[4*x + 3] = 0;
-      } else if (alpha >= 1.0) {
+      } else if (color.trans >= 1.0) {
         row[4*x + 3] = UINT16_MAX;
       } else {
-        row[4*x + 3] = alpha*UINT16_MAX;
+        row[4*x + 3] = color.trans*UINT16_MAX;
       }
     }
 

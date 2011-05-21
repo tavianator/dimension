@@ -23,12 +23,12 @@
 bool
 dmnsn_py_Color_args(dmnsn_color *c, PyObject *args, PyObject *kwds)
 {
-  c->filter = 0.0;
   c->trans  = 0.0;
+  c->filter = 0.0;
 
-  static char *kwlist[] = { "red", "green", "blue", "filter", "trans", NULL };
+  static char *kwlist[] = { "red", "green", "blue", "trans", "filter", NULL };
   if (PyArg_ParseTupleAndKeywords(args, kwds, "ddd|dd", kwlist,
-                                  &c->R, &c->G, &c->B, &c->filter, &c->trans)) {
+                                  &c->R, &c->G, &c->B, &c->trans, &c->filter)) {
     return true;
   } else {
     if (kwds)
@@ -57,12 +57,12 @@ dmnsn_py_Color_repr(dmnsn_py_Color *self)
   PyObject *R = PyFloat_FromDouble(self->c.R);
   PyObject *G = PyFloat_FromDouble(self->c.G);
   PyObject *B = PyFloat_FromDouble(self->c.B);
-  PyObject *filter = PyFloat_FromDouble(self->c.filter);
   PyObject *trans  = PyFloat_FromDouble(self->c.trans);
+  PyObject *filter = PyFloat_FromDouble(self->c.filter);
 
-  if (!R || !G || !B || !filter || !trans) {
-    Py_XDECREF(trans);
+  if (!R || !G || !B || !trans || !filter) {
     Py_XDECREF(filter);
+    Py_XDECREF(trans);
     Py_XDECREF(B);
     Py_XDECREF(G);
     Py_XDECREF(R);
@@ -70,9 +70,9 @@ dmnsn_py_Color_repr(dmnsn_py_Color *self)
   }
 
   PyObject *repr = PyUnicode_FromFormat("dimension.Color(%R, %R, %R, %R, %R)",
-                                        R, G, B, filter, trans);
-  Py_XDECREF(trans);
+                                        R, G, B, trans, filter);
   Py_XDECREF(filter);
+  Py_XDECREF(trans);
   Py_XDECREF(B);
   Py_XDECREF(G);
   Py_XDECREF(R);
@@ -85,12 +85,12 @@ dmnsn_py_Color_str(dmnsn_py_Color *self)
   PyObject *R = PyFloat_FromDouble(self->c.R);
   PyObject *G = PyFloat_FromDouble(self->c.G);
   PyObject *B = PyFloat_FromDouble(self->c.B);
-  PyObject *filter = PyFloat_FromDouble(self->c.filter);
   PyObject *trans  = PyFloat_FromDouble(self->c.trans);
+  PyObject *filter = PyFloat_FromDouble(self->c.filter);
 
-  if (!R || !G || !B || !filter || !trans) {
-    Py_XDECREF(trans);
+  if (!R || !G || !B || !trans || !filter) {
     Py_XDECREF(filter);
+    Py_XDECREF(trans);
     Py_XDECREF(B);
     Py_XDECREF(G);
     Py_XDECREF(R);
@@ -103,11 +103,11 @@ dmnsn_py_Color_str(dmnsn_py_Color *self)
                                R, G, B);
   } else {
     str = PyUnicode_FromFormat("<red = %S, green = %S, blue = %S,"
-                               " filter = %S, trans = %S>",
-                               R, G, B, filter, trans);
+                               " trans = %S, filter = %S>",
+                               R, G, B, trans, filter);
   }
-  Py_XDECREF(trans);
   Py_XDECREF(filter);
+  Py_XDECREF(trans);
   Py_XDECREF(B);
   Py_XDECREF(G);
   Py_XDECREF(R);
@@ -131,11 +131,11 @@ dmnsn_py_Color_richcompare(PyObject *lhs, PyObject *rhs, int op)
   double rdiff = (clhs->c.R - crhs->c.R)*(clhs->c.R - crhs->c.R);
   double gdiff = (clhs->c.G - crhs->c.G)*(clhs->c.G - crhs->c.G);
   double bdiff = (clhs->c.B - crhs->c.B)*(clhs->c.B - crhs->c.B);
-  double fdiff = (clhs->c.filter - crhs->c.filter)
-                 * (clhs->c.filter - crhs->c.filter);
   double tdiff = (clhs->c.trans - crhs->c.trans)
                  * (clhs->c.trans - crhs->c.trans);
-  bool equal = sqrt(rdiff + gdiff + bdiff + fdiff + tdiff) < dmnsn_epsilon;
+  double fdiff = (clhs->c.filter - crhs->c.filter)
+                 * (clhs->c.filter - crhs->c.filter);
+  bool equal = sqrt(rdiff + gdiff + bdiff + tdiff + fdiff) < dmnsn_epsilon;
 
   PyObject *result;
   switch (op) {
@@ -235,15 +235,15 @@ dmnsn_py_Color_get_blue(dmnsn_py_Color *self, void *closure)
 }
 
 static PyObject *
-dmnsn_py_Color_get_filter(dmnsn_py_Color *self, void *closure)
-{
-  return PyFloat_FromDouble(self->c.filter);
-}
-
-static PyObject *
 dmnsn_py_Color_get_trans(dmnsn_py_Color *self, void *closure)
 {
   return PyFloat_FromDouble(self->c.trans);
+}
+
+static PyObject *
+dmnsn_py_Color_get_filter(dmnsn_py_Color *self, void *closure)
+{
+  return PyFloat_FromDouble(self->c.filter);
 }
 
 static PyGetSetDef dmnsn_py_Color_getsetters[] = {
@@ -253,10 +253,10 @@ static PyGetSetDef dmnsn_py_Color_getsetters[] = {
     "Green componant",         NULL },
   { "blue",   (getter)dmnsn_py_Color_get_blue,   NULL,
     "Blue componant",          NULL },
-  { "filter", (getter)dmnsn_py_Color_get_filter, NULL,
-    "Filter component",        NULL },
   { "trans",  (getter)dmnsn_py_Color_get_trans,  NULL,
     "Transmittance component", NULL },
+  { "filter", (getter)dmnsn_py_Color_get_filter, NULL,
+    "Filter component",        NULL },
   { NULL }
 };
 

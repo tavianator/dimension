@@ -273,7 +273,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
 
     dmnsn_raytrace_pigment(&shadow_state);
     if ((state->scene->quality & DMNSN_RENDER_TRANSLUCENCY)
-        && (shadow_state.pigment.filter || shadow_state.pigment.trans))
+        && shadow_state.pigment.trans >= dmnsn_epsilon)
     {
       color = dmnsn_filter_light(color, shadow_state.pigment);
       shadow_ray.x0 = dmnsn_line_point(shadow_ray, shadow_caster.t);
@@ -328,7 +328,8 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
         state->additional = dmnsn_color_add(specular, state->additional);
       } else {
         state->diffuse = state->pigment;
-        state->diffuse.filter = state->diffuse.trans = 0.0;
+        state->diffuse.trans  = 0.0;
+        state->diffuse.filter = 0.0;
       }
     }
   }
@@ -355,8 +356,8 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
       state, finish, reflection_fn, dmnsn_black,
       rec, state->pigment, state->reflected, state->intersection->normal
     );
-    reflected.filter = 0.0;
     reflected.trans  = 0.0;
+    reflected.filter = 0.0;
   }
 
   return reflected;
@@ -366,7 +367,7 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
 static void
 dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
 {
-  if (state->pigment.filter || state->pigment.trans) {
+  if (state->pigment.trans >= dmnsn_epsilon) {
     dmnsn_line trans_ray = dmnsn_new_line(state->r, state->intersection->ray.n);
     trans_ray = dmnsn_line_add_epsilon(trans_ray);
 
