@@ -91,5 +91,7 @@ dmnsn_color dmnsn_filter_light(dmnsn_color light, dmnsn_color filter);
 dmnsn_color dmnsn_apply_translucency(dmnsn_color filtered, dmnsn_color filter);
 /** Add the background contribution of \p color to \p filter. */
 dmnsn_color dmnsn_apply_filter(dmnsn_color color, dmnsn_color filter);
+/** Convert the color into a close equivalent with only transmittance. */
+dmnsn_color dmnsn_remove_filter(dmnsn_color color);
 /** Illuminate \p color with \p light. */
 dmnsn_color dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color);

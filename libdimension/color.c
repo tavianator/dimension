@@ -200,6 +200,19 @@ dmnsn_apply_filter(dmnsn_color color, dmnsn_color filter)
   return dmnsn_apply_translucency(dmnsn_filter_light(color, filter), filter);
 }
 
+/* Remove the filter channel */
+dmnsn_color
+dmnsn_remove_filter(dmnsn_color color)
+{
+  double intensity = dmnsn_color_intensity(color);
+  double newtrans = (1.0 - (1.0 - intensity)*color.filter)*color.trans;
+  if (1.0 - newtrans >= dmnsn_epsilon)
+    color = dmnsn_color_mul((1.0 - color.trans)/(1.0 - newtrans), color);
+  color.trans  = newtrans;
+  color.filter = 0.0;
+  return color;
+}
+
 /* Illuminates `color' with `light' */
 dmnsn_color
 dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color)
