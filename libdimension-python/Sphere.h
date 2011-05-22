@@ -18,11 +18,12 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-typedef struct dmnsn_py_Canvas {
-  PyObject_HEAD
-  dmnsn_canvas *canvas;
-} dmnsn_py_Canvas;
+typedef struct dmnsn_py_Sphere {
+  dmnsn_py_Object base;
+  double radius;
+  dmnsn_vector center;
+} dmnsn_py_Sphere;
 
-extern PyTypeObject dmnsn_py_CanvasType;
+extern PyTypeObject dmnsn_py_SphereType;
 
-bool dmnsn_py_init_CanvasType(void);
+bool dmnsn_py_init_SphereType(void);

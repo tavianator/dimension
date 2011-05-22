@@ -18,11 +18,56 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-typedef struct dmnsn_py_Canvas {
-  PyObject_HEAD
-  dmnsn_canvas *canvas;
-} dmnsn_py_Canvas;
+#include "dimension-python.h"
 
-extern PyTypeObject dmnsn_py_CanvasType;
+static int
+dmnsn_py_Object_init(dmnsn_py_Object *self, PyObject *args, PyObject *kwds)
+{
+  if (kwds || (args && !PyArg_ParseTuple(args, "")))
+    return -1;
 
-bool dmnsn_py_init_CanvasType(void);
+  return 0;
+}
+
+static void
+dmnsn_py_Object_dealloc(dmnsn_py_Object *self)
+{
+  dmnsn_delete_object(self->object);
+  Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+static PyObject *
+dmnsn_py_Object_initialize(dmnsn_py_Object *self)
+{
+  PyErr_SetString(PyExc_TypeError, "Attempt to initialize base Object");
+  return NULL;
+}
+
+static PyMethodDef dmnsn_py_Object_methods[] = {
+  { "initialize", (PyCFunction)dmnsn_py_Object_initialize, METH_NOARGS,
+    "Initialize an object" },
+  { NULL }
+};
+
+static PyGetSetDef dmnsn_py_Object_getsetters[] = {
+  { NULL }
+};
+
+PyTypeObject dmnsn_py_ObjectType = {
+  PyVarObject_HEAD_INIT(NULL, 0)
+  .tp_name      = "dimension.Object",
+  .tp_basicsize = sizeof(dmnsn_py_Object),
+  .tp_dealloc   = (destructor)dmnsn_py_Object_dealloc,
+  .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+  .tp_doc       = "Dimension object",
+  .tp_methods   = dmnsn_py_Object_methods,
+  .tp_getset    = dmnsn_py_Object_getsetters,
+  .tp_init      = (initproc)dmnsn_py_Object_init,
+};
+
+bool
+dmnsn_py_init_ObjectType(void)
+{
+  dmnsn_py_ObjectType.tp_new = PyType_GenericNew;
+  return PyType_Ready(&dmnsn_py_ObjectType) >= 0;
+}

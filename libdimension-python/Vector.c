@@ -18,34 +18,37 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "Vector.h"
+#include "dimension-python.h"
 
-bool
-dmnsn_py_Vector_args(dmnsn_vector *v, PyObject *args, PyObject *kwds)
+int
+dmnsn_py_VectorParse(PyObject *object, void *ptr)
 {
-  static char *kwlist[] = { "x", "y", "z", NULL };
-  if (PyArg_ParseTupleAndKeywords(args, kwds, "ddd", kwlist,
-                                  &v->x, &v->y, &v->z)) {
-    return true;
+  dmnsn_vector *res = ptr;
+  if (PyObject_TypeCheck(object, &dmnsn_py_VectorType)) {
+    dmnsn_py_Vector *vec = (dmnsn_py_Vector *)object;
+    *res = vec->v;
+    return 1;
   } else {
-    if (kwds)
-      return false;
-
     PyErr_Clear();
-
-    dmnsn_py_Vector *vec;
-    if (!PyArg_ParseTuple(args, "O!", &dmnsn_py_VectorType, &vec))
-      return false;
-
-    *v = vec->v;
-    return true;
+    if (PyArg_ParseTuple(object, "ddd", &res->x, &res->y, &res->z)) {
+      return 1;
+    } else {
+      PyErr_SetString(PyExc_TypeError, "expected a dimension.Vector");
+      return 0;
+    }
   }
 }
 
 static int
 dmnsn_py_Vector_init(dmnsn_py_Vector *self, PyObject *args, PyObject *kwds)
 {
-  return dmnsn_py_Vector_args(&self->v, args, kwds) ? 0 : -1;
+  static char *kwlist[] = { "x", "y", "z", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ddd", kwlist,
+                                   &self->v.x, &self->v.y, &self->v.z))
+    return -1;
+
+  return 0;
 }
 
 static PyObject *
@@ -239,15 +242,15 @@ dmnsn_py_Vector_negative(PyObject *rhs)
 PyObject *
 dmnsn_py_Vector_cross(PyObject *self, PyObject *args)
 {
-  dmnsn_py_Vector *lhs, *rhs;
-  if (!PyArg_ParseTuple(args, "O!O!",
-                        &dmnsn_py_VectorType, &lhs,
-                        &dmnsn_py_VectorType, &rhs))
+  dmnsn_vector lhs, rhs;
+  if (!PyArg_ParseTuple(args, "O&O&",
+                        &dmnsn_py_VectorParse, &lhs,
+                        &dmnsn_py_VectorParse, &rhs))
     return NULL;
 
   dmnsn_py_Vector *ret = PyObject_New(dmnsn_py_Vector, &dmnsn_py_VectorType);
   if (ret) {
-    ret->v = dmnsn_vector_cross(lhs->v, rhs->v);
+    ret->v = dmnsn_vector_cross(lhs, rhs);
   }
   return (PyObject *)ret;
 }
@@ -255,27 +258,27 @@ dmnsn_py_Vector_cross(PyObject *self, PyObject *args)
 PyObject *
 dmnsn_py_Vector_dot(PyObject *self, PyObject *args)
 {
-  dmnsn_py_Vector *lhs, *rhs;
-  if (!PyArg_ParseTuple(args, "O!O!",
-                        &dmnsn_py_VectorType, &lhs,
-                        &dmnsn_py_VectorType, &rhs))
+  dmnsn_vector lhs, rhs;
+  if (!PyArg_ParseTuple(args, "O&O&",
+                        &dmnsn_py_VectorParse, &lhs,
+                        &dmnsn_py_VectorParse, &rhs))
     return NULL;
 
-  return PyFloat_FromDouble(dmnsn_vector_dot(lhs->v, rhs->v));
+  return PyFloat_FromDouble(dmnsn_vector_dot(lhs, rhs));
 }
 
 PyObject *
 dmnsn_py_Vector_proj(PyObject *self, PyObject *args)
 {
-  dmnsn_py_Vector *u, *d;
-  if (!PyArg_ParseTuple(args, "O!O!",
-                        &dmnsn_py_VectorType, &u,
-                        &dmnsn_py_VectorType, &d))
+  dmnsn_vector u, d;
+  if (!PyArg_ParseTuple(args, "O&O&",
+                        &dmnsn_py_VectorParse, &u,
+                        &dmnsn_py_VectorParse, &d))
     return NULL;
 
   dmnsn_py_Vector *ret = PyObject_New(dmnsn_py_Vector, &dmnsn_py_VectorType);
   if (ret) {
-    ret->v = dmnsn_vector_proj(u->v, d->v);
+    ret->v = dmnsn_vector_proj(u, d);
   }
   return (PyObject *)ret;
 }

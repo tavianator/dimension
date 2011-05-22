@@ -26,14 +26,22 @@ AM_CFLAGS = $(Python_CFLAGS)
 AM_LDFLAGS = $(Python_LDFLAGS)
 
 pyexec_LTLIBRARIES = dimension.la
-dimension_la_SOURCES = Canvas.c                                                \
+dimension_la_SOURCES = Camera.c                                                \
+                       Camera.h                                                \
+                       Canvas.c                                                \
                        Canvas.h                                                \
                        Color.c                                                 \
                        Color.h                                                 \
                        Matrix.c                                                \
                        Matrix.h                                                \
+                       Object.c                                                \
+                       Object.h                                                \
+                       PerspectiveCamera.c                                     \
+                       PerspectiveCamera.h                                     \
                        Scene.c                                                 \
                        Scene.h                                                 \
+                       Sphere.c                                                \
+                       Sphere.h                                                \
                        Vector.c                                                \
                        Vector.h                                                \
                        dimension.c                                             \

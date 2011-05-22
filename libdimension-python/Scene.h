@@ -18,8 +18,6 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension-python.h"
-
 typedef struct dmnsn_py_Scene {
   PyObject_HEAD
   dmnsn_scene *scene;

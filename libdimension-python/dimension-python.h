@@ -18,6 +18,20 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
+#ifndef DMNSN_PYTHON_H
+#define DMNSN_PYTHON_H
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include "dimension.h"
+#include "Vector.h"
+#include "Matrix.h"
+#include "Color.h"
+#include "Canvas.h"
+#include "Camera.h"
+#include "PerspectiveCamera.h"
+#include "Object.h"
+#include "Sphere.h"
+#include "Scene.h"
+
+#endif /* DMNSN_PYTHON_H */

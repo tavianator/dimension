@@ -18,8 +18,6 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension-python.h"
-
 typedef struct dmnsn_py_Vector {
   PyObject_HEAD
   dmnsn_vector v;
@@ -27,7 +25,7 @@ typedef struct dmnsn_py_Vector {
 
 extern PyTypeObject dmnsn_py_VectorType;
 
-bool dmnsn_py_Vector_args(dmnsn_vector *v, PyObject *args, PyObject *kwds);
+int dmnsn_py_VectorParse(PyObject *object, void *ptr);
 bool dmnsn_py_init_VectorType(void);
 
 /* Global methods */

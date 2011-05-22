@@ -63,12 +63,12 @@ assert str(m) == '\n' \
                  '[9.0\t10.0\t11.0\t12.0]\n' \
                  '[0.0\t0.0\t0.0\t1.0]', str(m)
 
-s = scale(1, 2, 3)
+s = scale(Vector(1, 2, 3))
 assert s == Matrix(1, 0, 0, 0,
                    0, 2, 0, 0,
                    0, 0, 3, 0), s
 
-t = translate(x = 1, y = 2, z = 3)
+t = translate((1, 2, 3))
 assert t == Matrix(1, 0, 0, 1,
                    0, 1, 0, 2,
                    0, 0, 1, 3), t

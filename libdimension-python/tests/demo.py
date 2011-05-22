@@ -35,4 +35,18 @@ except OSError as e:
     else:
         raise
 
-scene = Scene(canvas = canvas)
+camera = PerspectiveCamera(location = (0, 0.25, -4),
+                           look_at  = Zero)
+camera.transform(rotate(53*Y))
+
+objects = []
+
+sphere = Sphere(radius = 1, center = Zero)
+objects.append(sphere)
+
+scene = Scene(canvas = canvas,
+              camera = camera,
+              objects = objects)
+scene.raytrace()
+
+canvas.writePNG('demo.png')

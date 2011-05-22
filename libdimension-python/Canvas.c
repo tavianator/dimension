@@ -18,8 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "Color.h"
-#include "Canvas.h"
+#include "dimension-python.h"
 
 static int
 dmnsn_py_Canvas_init(dmnsn_py_Canvas *self, PyObject *args, PyObject *kwds)
@@ -74,13 +73,13 @@ dmnsn_py_Canvas_optimizeGL(dmnsn_py_Canvas *self)
 }
 
 static PyObject *
-dmnsn_py_Canvas_clear(dmnsn_py_Canvas *self, PyObject *args, PyObject *kwds)
+dmnsn_py_Canvas_clear(dmnsn_py_Canvas *self, PyObject *args)
 {
-  dmnsn_color color;
-  if (!dmnsn_py_Color_args(&color, args, kwds))
+  dmnsn_py_Color *color;
+  if (!PyArg_ParseTuple(args, "O!", &dmnsn_py_ColorType, &color))
     return NULL;
 
-  dmnsn_clear_canvas(self->canvas, color);
+  dmnsn_clear_canvas(self->canvas, color->c);
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -124,7 +123,7 @@ static PyMethodDef dmnsn_py_Canvas_methods[] = {
     "Optimize a canvas for PNG output" },
   { "optimizeGL", (PyCFunction)dmnsn_py_Canvas_optimizeGL, METH_NOARGS,
     "Optimize a canvas for OpenGL output" },
-  { "clear", (PyCFunction)dmnsn_py_Canvas_clear, METH_VARARGS | METH_KEYWORDS,
+  { "clear", (PyCFunction)dmnsn_py_Canvas_clear, METH_VARARGS,
     "Clear a canvas with a solid color" },
   { "writePNG", (PyCFunction)dmnsn_py_Canvas_writePNG, METH_VARARGS,
     "Write a canvas to a PNG file" },

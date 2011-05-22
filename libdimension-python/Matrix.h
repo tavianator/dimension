@@ -18,8 +18,6 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension-python.h"
-
 typedef struct dmnsn_py_Matrix {
   PyObject_HEAD
   dmnsn_matrix m;
@@ -30,8 +28,6 @@ extern PyTypeObject dmnsn_py_MatrixType;
 bool dmnsn_py_init_MatrixType(void);
 
 /* Global methods */
-PyObject *dmnsn_py_Matrix_scale(PyObject *self, PyObject *args, PyObject *kwds);
-PyObject *dmnsn_py_Matrix_translate(PyObject *self, PyObject *args,
-                                    PyObject *kwds);
-PyObject *dmnsn_py_Matrix_rotate(PyObject *self, PyObject *args,
-                                 PyObject *kwds);
+PyObject *dmnsn_py_Matrix_scale(PyObject *self, PyObject *args);
+PyObject *dmnsn_py_Matrix_translate(PyObject *self, PyObject *args);
+PyObject *dmnsn_py_Matrix_rotate(PyObject *self, PyObject *args);

@@ -19,11 +19,6 @@
  *************************************************************************/
 
 #include "dimension-python.h"
-#include "Vector.h"
-#include "Matrix.h"
-#include "Color.h"
-#include "Canvas.h"
-#include "Scene.h"
 
 static PyObject *
 dmnsn_py_dieOnWarnings(PyObject *self, PyObject *args)
@@ -50,12 +45,12 @@ static PyMethodDef DimensionMethods[] = {
   { "dot",   dmnsn_py_Vector_dot,   METH_VARARGS, "Dot product."       },
   { "proj",  dmnsn_py_Vector_proj,  METH_VARARGS, "Vector projection." },
 
-  { "scale", (PyCFunction)dmnsn_py_Matrix_scale,
-    METH_VARARGS | METH_KEYWORDS, "Scaling." },
-  { "translate", (PyCFunction)dmnsn_py_Matrix_translate,
-    METH_VARARGS | METH_KEYWORDS, "Translation." },
-  { "rotate", (PyCFunction)dmnsn_py_Matrix_rotate,
-    METH_VARARGS | METH_KEYWORDS, "Rotation." },
+  { "scale", (PyCFunction)dmnsn_py_Matrix_scale,         METH_VARARGS,
+    "Scaling." },
+  { "translate", (PyCFunction)dmnsn_py_Matrix_translate, METH_VARARGS,
+    "Translation." },
+  { "rotate", (PyCFunction)dmnsn_py_Matrix_rotate,       METH_VARARGS,
+    "Rotation." },
 
   { NULL, NULL, 0, NULL }
 };
@@ -75,6 +70,10 @@ PyInit_dimension(void)
       || !dmnsn_py_init_MatrixType()
       || !dmnsn_py_init_ColorType()
       || !dmnsn_py_init_CanvasType()
+      || !dmnsn_py_init_CameraType()
+      || !dmnsn_py_init_PerspectiveCameraType()
+      || !dmnsn_py_init_ObjectType()
+      || !dmnsn_py_init_SphereType()
       || !dmnsn_py_init_SceneType())
     return NULL;
 
@@ -107,6 +106,13 @@ PyInit_dimension(void)
   PyModule_AddObject(module, "Cyan",    (PyObject *)&dmnsn_py_Cyan);
 
   PyModule_AddObject(module, "Canvas", (PyObject *)&dmnsn_py_CanvasType);
+
+  PyModule_AddObject(module, "Camera", (PyObject *)&dmnsn_py_CanvasType);
+  PyModule_AddObject(module, "PerspectiveCamera",
+                     (PyObject *)&dmnsn_py_PerspectiveCameraType);
+
+  PyModule_AddObject(module, "Object", (PyObject *)&dmnsn_py_ObjectType);
+  PyModule_AddObject(module, "Sphere", (PyObject *)&dmnsn_py_SphereType);
 
   PyModule_AddObject(module, "Scene", (PyObject *)&dmnsn_py_SceneType);
 

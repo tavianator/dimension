@@ -18,8 +18,6 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "dimension-python.h"
-
 typedef struct dmnsn_py_Color {
   PyObject_HEAD
   dmnsn_color c;
@@ -27,7 +25,6 @@ typedef struct dmnsn_py_Color {
 
 extern PyTypeObject dmnsn_py_ColorType;
 
-bool dmnsn_py_Color_args(dmnsn_color *v, PyObject *args, PyObject *kwds);
 bool dmnsn_py_init_ColorType(void);
 
 /* Color constants */

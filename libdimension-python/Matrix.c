@@ -18,8 +18,7 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "Vector.h"
-#include "Matrix.h"
+#include "dimension-python.h"
 
 static int
 dmnsn_py_Matrix_init(dmnsn_py_Matrix *self, PyObject *args, PyObject *kwds)
@@ -42,10 +41,10 @@ dmnsn_py_Matrix_init(dmnsn_py_Matrix *self, PyObject *args, PyObject *kwds)
 }
 
 PyObject *
-dmnsn_py_Matrix_scale(PyObject *self, PyObject *args, PyObject *kwds)
+dmnsn_py_Matrix_scale(PyObject *self, PyObject *args)
 {
   dmnsn_vector scale;
-  if (!dmnsn_py_Vector_args(&scale, args, kwds))
+  if (!PyArg_ParseTuple(args, "O&", dmnsn_py_VectorParse, &scale))
     return NULL;
 
   dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
@@ -56,10 +55,10 @@ dmnsn_py_Matrix_scale(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyObject *
-dmnsn_py_Matrix_translate(PyObject *self, PyObject *args, PyObject *kwds)
+dmnsn_py_Matrix_translate(PyObject *self, PyObject *args)
 {
   dmnsn_vector translate;
-  if (!dmnsn_py_Vector_args(&translate, args, kwds))
+  if (!PyArg_ParseTuple(args, "O&", dmnsn_py_VectorParse, &translate))
     return NULL;
 
   dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);
@@ -70,10 +69,10 @@ dmnsn_py_Matrix_translate(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyObject *
-dmnsn_py_Matrix_rotate(PyObject *self, PyObject *args, PyObject *kwds)
+dmnsn_py_Matrix_rotate(PyObject *self, PyObject *args)
 {
   dmnsn_vector rotate;
-  if (!dmnsn_py_Vector_args(&rotate, args, kwds))
+  if (!PyArg_ParseTuple(args, "O&", dmnsn_py_VectorParse, &rotate))
     return NULL;
 
   dmnsn_py_Matrix *ret = PyObject_New(dmnsn_py_Matrix, &dmnsn_py_MatrixType);

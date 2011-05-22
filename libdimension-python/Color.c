@@ -18,37 +18,21 @@
  * <http://www.gnu.org/licenses/>.                                       *
  *************************************************************************/
 
-#include "Color.h"
-
-bool
-dmnsn_py_Color_args(dmnsn_color *c, PyObject *args, PyObject *kwds)
-{
-  c->trans  = 0.0;
-  c->filter = 0.0;
-
-  static char *kwlist[] = { "red", "green", "blue", "trans", "filter", NULL };
-  if (PyArg_ParseTupleAndKeywords(args, kwds, "ddd|dd", kwlist,
-                                  &c->R, &c->G, &c->B, &c->trans, &c->filter)) {
-    return true;
-  } else {
-    if (kwds)
-      return false;
-
-    PyErr_Clear();
-
-    dmnsn_py_Color *col;
-    if (!PyArg_ParseTuple(args, "O!", &dmnsn_py_ColorType, &col))
-      return false;
-
-    *c = col->c;
-    return true;
-  }
-}
+#include "dimension-python.h"
 
 static int
 dmnsn_py_Color_init(dmnsn_py_Color *self, PyObject *args, PyObject *kwds)
 {
-  return dmnsn_py_Color_args(&self->c, args, kwds) ? 0 : -1;
+  self->c.trans  = 0.0;
+  self->c.filter = 0.0;
+
+  static char *kwlist[] = { "red", "green", "blue", "trans", "filter", NULL };
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ddd|dd", kwlist,
+                                   &self->c.R, &self->c.G, &self->c.B,
+                                   &self->c.trans, &self->c.filter))
+    return -1;
+
+  return 0;
 }
 
 static PyObject *
