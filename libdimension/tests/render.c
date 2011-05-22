@@ -62,8 +62,9 @@ dmnsn_new_test_scene(void)
   );
 
   /* Create a perspective camera */
-  scene->camera = dmnsn_new_perspective_camera();
-  scene->camera->trans = trans;
+  dmnsn_camera *camera = dmnsn_new_perspective_camera();
+  camera->trans = trans;
+  dmnsn_scene_set_camera(scene, camera);
 
   /* Background color */
   scene->background = dmnsn_clear;

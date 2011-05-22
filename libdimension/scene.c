@@ -92,6 +92,14 @@ dmnsn_scene_set_canvas(dmnsn_scene *scene, dmnsn_canvas *canvas)
 }
 
 void
+dmnsn_scene_set_camera(dmnsn_scene *scene, dmnsn_camera *camera)
+{
+  DMNSN_INCREF(camera);
+  dmnsn_delete_camera(scene->camera);
+  scene->camera = camera;
+}
+
+void
 dmnsn_scene_add_object(dmnsn_scene *scene, dmnsn_object *object)
 {
   DMNSN_INCREF(object);

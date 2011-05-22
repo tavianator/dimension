@@ -100,6 +100,13 @@ void dmnsn_initialize_scene(dmnsn_scene *scene);
 void dmnsn_scene_set_canvas(dmnsn_scene *scene, dmnsn_canvas *canvas);
 
 /**
+ * Set the camera for a scene.
+ * @param[in,out] scene   The scene for which to set the canvas.
+ * @param[in]     camera  The camera to set.
+ */
+void dmnsn_scene_set_camera(dmnsn_scene *scene, dmnsn_camera *camera);
+
+/**
  * Add an object to a scene.
  * @param[in,out] scene   The scene to which to add the object.
  * @param[in]     object  The object to add.
