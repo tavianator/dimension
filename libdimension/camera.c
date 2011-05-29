@@ -33,7 +33,7 @@ dmnsn_new_camera(void)
   dmnsn_camera *camera = dmnsn_malloc(sizeof(dmnsn_camera));
   camera->free_fn  = NULL;
   camera->trans    = dmnsn_identity_matrix();
-  camera->refcount = dmnsn_new_refcount();
+  camera->refcount = 0;
   return camera;
 }
 
@@ -42,7 +42,6 @@ void
 dmnsn_delete_camera(dmnsn_camera *camera)
 {
   if (camera && DMNSN_DECREF(camera)) {
-    dmnsn_delete_refcount(camera->refcount);
     if (camera->free_fn) {
       camera->free_fn(camera->ptr);
     }

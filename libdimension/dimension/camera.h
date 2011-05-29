@@ -46,7 +46,7 @@ struct dmnsn_camera {
 
   void *ptr; /**< @internal Generic pointer for camera info. */
 
-  dmnsn_refcount *refcount; /**< @internal reference count. */
+  dmnsn_refcount refcount; /**< @internal reference count. */
 };
 
 /**

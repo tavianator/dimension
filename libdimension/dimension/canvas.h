@@ -40,7 +40,7 @@ typedef struct {
    */
   dmnsn_color *pixels;
 
-  dmnsn_refcount *refcount; /**< @internal Reference count. */
+  dmnsn_refcount refcount; /**< @internal Reference count. */
 } dmnsn_canvas;
 
 /* Forward-declare dmnsn_canvas_optimizer */

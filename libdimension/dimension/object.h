@@ -92,7 +92,7 @@ struct dmnsn_object {
   void *ptr;
 
   /** @internal Reference count. */
-  dmnsn_refcount *refcount;
+  dmnsn_refcount refcount;
 };
 
 /**

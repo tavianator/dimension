@@ -103,7 +103,6 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           prtree.c                                             \
                           prtree.h                                             \
                           raytrace.c                                           \
-                          refcount.c                                           \
                           reflective.c                                         \
                           scene.c                                              \
                           sky_sphere.c                                         \

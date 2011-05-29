@@ -33,7 +33,7 @@ typedef struct dmnsn_interior {
   void *ptr;
 
   /** @internal Reference count. */
-  dmnsn_refcount *refcount;
+  dmnsn_refcount refcount;
 } dmnsn_interior;
 
 /**

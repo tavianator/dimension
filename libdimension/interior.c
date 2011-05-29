@@ -33,7 +33,7 @@ dmnsn_new_interior(void)
   dmnsn_interior *interior = dmnsn_malloc(sizeof(dmnsn_interior));
   interior->ior       = 1.0;
   interior->free_fn   = NULL;
-  interior->refcount  = dmnsn_new_refcount();
+  interior->refcount  = 0;
   return interior;
 }
 
@@ -42,7 +42,6 @@ void
 dmnsn_delete_interior(dmnsn_interior *interior)
 {
   if (interior && DMNSN_DECREF(interior)) {
-    dmnsn_delete_refcount(interior->refcount);
     if (interior->free_fn) {
       interior->free_fn(interior->ptr);
     }

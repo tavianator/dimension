@@ -24,10 +24,15 @@
  */
 
 /**
+ * Reference counter.
+ */
+typedef unsigned int dmnsn_refcount;
+
+/**
  * Increment a reference count.
  * @param[in,out] object  The reference-counted object to acquire.
  */
-#define DMNSN_INCREF(obj) ((void)++(*(obj)->refcount))
+#define DMNSN_INCREF(obj) ((void)++(obj)->refcount)
 
 /**
  * @internal
@@ -35,24 +40,4 @@
  * @param[in,out] object  The reference-counted object to release.
  * @return Whether the object is now garbage.
  */
-#define DMNSN_DECREF(obj) (*(obj)->refcount == 0 || --(*(obj)->refcount) == 0)
-
-/**
- * Reference counter.
- */
-typedef unsigned int dmnsn_refcount;
-
-/**
- * @internal
- * Create a reference count.
- * @return A new reference counter, initialized to zero (a "borrowed" reference,
- *         which will be garbage-collected the first time it is deleted).
- */
-dmnsn_refcount *dmnsn_new_refcount(void);
-
-/**
- * @internal
- * Delete a reference count.  Raises an error if the reference count wasn't
- * zero.
- */
-void dmnsn_delete_refcount(dmnsn_refcount *refcount);
+#define DMNSN_DECREF(obj) ((obj)->refcount == 0 || --(obj)->refcount == 0)
