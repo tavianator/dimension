@@ -82,7 +82,9 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
     for (size_t x = 0; x < width; ++x) {
       pixel = pixels + 4*(y*width + x);
 
-      color = dmnsn_remove_filter(dmnsn_get_pixel(canvas, x, y));
+      color = dmnsn_get_pixel(canvas, x, y);
+      color = dmnsn_remove_filter(color);
+      color = dmnsn_color_to_sRGB(color);
 
       /* Saturate R, G, and B to [0, UINT16_MAX] */
 
@@ -153,6 +155,7 @@ dmnsn_gl_read_canvas(size_t x0, size_t y0,
                                            (double)pixel[2]/UINT16_MAX,
                                            (double)pixel[3]/UINT16_MAX,
                                            0.0);
+      color = dmnsn_color_from_sRGB(color);
       dmnsn_set_pixel(canvas, x, y, color);
     }
   }
@@ -167,7 +170,9 @@ dmnsn_gl_optimizer_fn(const dmnsn_canvas *canvas,
                       dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
 {
   GLushort *pixel = (GLushort *)optimizer.ptr + 4*(y*canvas->width + x);
-  dmnsn_color color = dmnsn_remove_filter(dmnsn_get_pixel(canvas, x, y));
+  dmnsn_color color = dmnsn_get_pixel(canvas, x, y);
+  color = dmnsn_remove_filter(color);
+  color = dmnsn_color_to_sRGB(color);
 
   /* Saturate R, G, and B to [0, UINT16_MAX] */
 

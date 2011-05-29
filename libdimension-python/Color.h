@@ -21,6 +21,7 @@
 typedef struct dmnsn_py_Color {
   PyObject_HEAD
   dmnsn_color c;
+  dmnsn_color sRGB;
 } dmnsn_py_Color;
 
 extern PyTypeObject dmnsn_py_ColorType;

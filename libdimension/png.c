@@ -64,7 +64,9 @@ dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
   dmnsn_color color;
   uint16_t *pixel = (uint16_t *)optimizer.ptr + 4*(y*canvas->width + x);
 
-  color = dmnsn_remove_filter(dmnsn_get_pixel(canvas, x, y));
+  color = dmnsn_get_pixel(canvas, x, y);
+  color = dmnsn_remove_filter(color);
+  color = dmnsn_color_to_sRGB(color);
 
   /* Saturate R, G, and B to [0, UINT16_MAX] */
 
@@ -272,6 +274,7 @@ dmnsn_png_write_canvas_thread(void *ptr)
       /* Invert the rows.  PNG coordinates are fourth quadrant. */
       dmnsn_color color = dmnsn_get_pixel(payload->canvas, x, height - y - 1);
       color = dmnsn_remove_filter(color);
+      color = dmnsn_color_to_sRGB(color);
 
       /* Saturate R, G, and B to [0, UINT16_MAX] */
 
@@ -477,6 +480,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
         }
       }
 
+      color = dmnsn_color_from_sRGB(color);
       dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
     }
 

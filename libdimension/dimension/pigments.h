@@ -45,13 +45,22 @@ dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas);
 dmnsn_map *dmnsn_new_color_map(void);
 
 /**
+ * pigment_map flags.
+ */
+typedef enum dmnsn_pigment_map_flags {
+  DMNSN_PIGMENT_MAP_REGULAR, /**< Calculate linear color gradients. */
+  DMNSN_PIGMENT_MAP_SRGB     /**< Calculate sRGB color gradients. */
+} dmnsn_pigment_map_flags;
+
+/**
  * A color-mapped pigment.
  * @param[in,out] pattern  The pattern of the pigment.
  * @param[in,out] map      The color map to apply to the pattern.
  * @return A pigment mapping the pattern to color values.
  */
 dmnsn_pigment *dmnsn_new_color_map_pigment(dmnsn_pattern *pattern,
-                                           dmnsn_map *map);
+                                           dmnsn_map *map,
+                                           dmnsn_pigment_map_flags flags);
 
 /**
  * Construct a pigment map.
@@ -66,4 +75,5 @@ dmnsn_map *dmnsn_new_pigment_map(void);
  * @return A pigment mapping the pattern to other pigments.
  */
 dmnsn_pigment *dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern,
-                                             dmnsn_map *map);
+                                             dmnsn_map *map,
+                                             dmnsn_pigment_map_flags flags);

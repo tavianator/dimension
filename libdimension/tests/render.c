@@ -34,9 +34,9 @@ dmnsn_new_test_scene(void)
   /* Default finish */
   scene->default_texture->finish = dmnsn_new_finish_combination(
     dmnsn_new_ambient_finish(
-      dmnsn_color_mul(0.1, dmnsn_white)
+      dmnsn_color_mul(0.01, dmnsn_white)
     ),
-    dmnsn_new_diffuse_finish(0.6)
+    dmnsn_new_diffuse_finish(0.3)
   );
 
   /* Allocate a canvas */
@@ -74,10 +74,13 @@ dmnsn_new_test_scene(void)
   dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(dmnsn_y);
   dmnsn_map *sky_gradient_color_map = dmnsn_new_color_map();
   dmnsn_add_map_entry(sky_gradient_color_map, 0.0, &dmnsn_orange);
-  dmnsn_color background = dmnsn_new_color5(0.0, 0.1, 0.2, 0.1, 1.0);
+  dmnsn_color background = dmnsn_color_from_sRGB(
+    dmnsn_new_color5(0.0, 0.1, 0.2, 0.1, 0.0)
+  );
   dmnsn_add_map_entry(sky_gradient_color_map, 0.35, &background);
   dmnsn_pigment *sky_pigment
-    = dmnsn_new_color_map_pigment(sky_gradient, sky_gradient_color_map);
+    = dmnsn_new_color_map_pigment(sky_gradient, sky_gradient_color_map,
+                                  DMNSN_PIGMENT_MAP_SRGB);
   dmnsn_array_push(scene->sky_sphere->pigments, &sky_pigment);
 
   /* Light source */
@@ -144,7 +147,8 @@ dmnsn_new_test_scene(void)
   dmnsn_add_map_entry(gradient_color_map, 1.0,     &dmnsn_red);
   arrow->texture = dmnsn_new_texture();
   arrow->texture->pigment
-    = dmnsn_new_color_map_pigment(gradient, gradient_color_map);
+    = dmnsn_new_color_map_pigment(gradient, gradient_color_map,
+                                  DMNSN_PIGMENT_MAP_SRGB);
   arrow->texture->trans =
     dmnsn_matrix_mul(
       dmnsn_translation_matrix(dmnsn_new_vector(0.0, -1.25, 0.0)),
@@ -186,15 +190,19 @@ dmnsn_new_test_scene(void)
   dmnsn_add_map_entry(checker_color_map, 1.0, &dmnsn_white);
   dmnsn_pigment *pigment1 = dmnsn_new_solid_pigment(dmnsn_white);
   dmnsn_pigment *pigment2
-    = dmnsn_new_color_map_pigment(checker1, checker_color_map);
+    = dmnsn_new_color_map_pigment(checker1, checker_color_map,
+                                  DMNSN_PIGMENT_MAP_REGULAR);
   pigment2->trans
     = dmnsn_scale_matrix(dmnsn_new_vector(1.0/3.0, 1.0/3.0, 1.0/3.0));
   dmnsn_map *checker_pigment_map = dmnsn_new_pigment_map();
   dmnsn_add_map_entry(checker_pigment_map, 0.0, &pigment1);
   dmnsn_add_map_entry(checker_pigment_map, 1.0, &pigment2);
   plane->texture->pigment
-    = dmnsn_new_pigment_map_pigment(checker2, checker_pigment_map);
-  plane->texture->pigment->quick_color = dmnsn_new_color(1.0, 0.5, 0.75);
+    = dmnsn_new_pigment_map_pigment(checker2, checker_pigment_map,
+                                    DMNSN_PIGMENT_MAP_REGULAR);
+  plane->texture->pigment->quick_color = dmnsn_color_from_sRGB(
+    dmnsn_new_color(1.0, 0.5, 0.75)
+  );
   dmnsn_scene_add_object(scene, plane);
 
   return scene;

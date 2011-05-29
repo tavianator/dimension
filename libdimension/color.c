@@ -77,7 +77,7 @@ const dmnsn_color dmnsn_magenta = {
 };
 const dmnsn_color dmnsn_orange = {
   .R = 1.0,
-  .G = 0.5,
+  .G = 0.21404114048223255,
   .B = 0.0,
   .trans  = 0.0,
   .filter = 0.0,
@@ -97,6 +97,75 @@ const dmnsn_color dmnsn_cyan = {
   .trans  = 0.0,
 };
 
+/** Inverse function of sRGB's `C' function, for the reverse conversion. */
+static double
+dmnsn_sRGB_C_inv(double CsRGB)
+{
+  /*
+   * If C represents R, G, and B, then the Clinear values are now found as
+   * follows:
+   *
+   *           { Csrgb/12.92,                  Csrgb <= 0.04045
+   * Clinear = {                        1/2.4
+   *           { ((Csrgb + 0.055)/1.055)     , Csrgb >  0.04045
+   */
+  if (CsRGB == 1.0) {
+    return 1.0; /* Map 1.0 to 1.0 instead of 0.9999999999999999 */
+  } else if (CsRGB <= 0.040449936) {
+    return CsRGB/12.92;
+  } else {
+    return pow((CsRGB + 0.055)/1.055, 2.4);
+  }
+}
+
+/* Convert from sRGB space */
+dmnsn_color
+dmnsn_color_from_sRGB(dmnsn_color color)
+{
+  dmnsn_color ret = {
+    .R = dmnsn_sRGB_C_inv(color.R),
+    .G = dmnsn_sRGB_C_inv(color.G),
+    .B = dmnsn_sRGB_C_inv(color.B),
+    .trans  = color.trans,
+    .filter = color.filter,
+  };
+  return ret;
+}
+
+/** sRGB's `C' function. */
+static double
+dmnsn_sRGB_C(double Clinear)
+{
+  /*
+   * If C represents R, G, and B, then the sRGB values are now found as follows:
+   *
+   *         { 12.92*Clinear,                Clinear <= 0.0031308
+   * Csrgb = {                1/2.4
+   *         { (1.055)*Clinear      - 0.055, Clinear >  0.0031308
+   */
+  if (Clinear == 1.0) {
+    return 1.0; /* Map 1.0 to 1.0 instead of 0.9999999999999999 */
+  } else if (Clinear <= 0.0031308) {
+    return 12.92*Clinear;
+  } else {
+    return 1.055*pow(Clinear, 1.0/2.4) - 0.055;
+  }
+}
+
+/* Convert to sRGB space */
+dmnsn_color
+dmnsn_color_to_sRGB(dmnsn_color color)
+{
+  dmnsn_color ret = {
+    .R = dmnsn_sRGB_C(color.R),
+    .G = dmnsn_sRGB_C(color.G),
+    .B = dmnsn_sRGB_C(color.B),
+    .trans  = color.trans,
+    .filter = color.filter,
+  };
+  return ret;
+}
+
 /* Greyscale color intensity */
 double
 dmnsn_color_intensity(dmnsn_color color)
@@ -111,7 +180,7 @@ dmnsn_color_add(dmnsn_color c1, dmnsn_color c2)
 {
   dmnsn_color ret = dmnsn_new_color(c1.R + c2.R, c1.G + c2.G, c1.B + c2.B);
 
-  /* Switch back into absolute filter and transmittance space */
+  /* Switch into absolute filter and transmittance space */
   double n1 = dmnsn_color_intensity(c1), n2 = dmnsn_color_intensity(c2);
   double f1 = c1.filter*c1.trans, f2 = c2.filter*c2.trans;
   double t1 = c1.trans - f1, t2 = c2.trans - f2;
@@ -142,13 +211,25 @@ dmnsn_color_mul(double n, dmnsn_color color)
 dmnsn_color
 dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n)
 {
-  return dmnsn_new_color5(
+  dmnsn_color ret = dmnsn_new_color(
     n*(c2.R - c1.R) + c1.R,
     n*(c2.G - c1.G) + c1.G,
-    n*(c2.B - c1.B) + c1.B,
-    n*(c2.trans  - c1.trans)  + c1.trans,
-    n*(c2.filter - c1.filter) + c1.filter
+    n*(c2.B - c1.B) + c1.B
   );
+
+  /* Switch into absolute filter and transmittance space */
+  double f1 = c1.filter*c1.trans, f2 = c2.filter*c2.trans;
+  double t1 = c1.trans - f1, t2 = c2.trans - f2;
+  double f = n*(f2 - f1) + f1;
+  double t = n*(t2 - t1) + t1;
+
+  /* Switch back */
+  ret.trans = f + t;
+  ret.filter = 0.0;
+  if (ret.trans >= dmnsn_epsilon)
+    ret.filter = f/ret.trans;
+
+  return ret;
 }
 
 /* Filters `light' through `filter' */
@@ -165,7 +246,7 @@ dmnsn_filter_light(dmnsn_color light, dmnsn_color filter)
   );
   dmnsn_color ret = dmnsn_color_add(transmitted, filtered);
 
-  /* Switch back into absolute filter and transmittance space */
+  /* Switch into absolute filter and transmittance space */
   double lf = light.filter*light.trans, ff = filter.filter*filter.trans;
   double lt = light.trans - lf, ft = filter.trans - ff;
   double f = lf*(dmnsn_color_intensity(filtered) + ft) + lt*ff;
