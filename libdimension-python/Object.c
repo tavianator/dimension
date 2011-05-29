@@ -43,9 +43,29 @@ dmnsn_py_Object_initialize(dmnsn_py_Object *self)
   return NULL;
 }
 
+static PyObject *
+dmnsn_py_Object_transform(dmnsn_py_Object *self, PyObject *args)
+{
+  dmnsn_py_Matrix *trans;
+  if (!PyArg_ParseTuple(args, "O!", &dmnsn_py_MatrixType, &trans))
+    return NULL;
+
+  if (!self->object) {
+    PyErr_SetString(PyExc_TypeError, "Attempt to transform base Object");
+    return NULL;
+  }
+
+  self->object->trans = dmnsn_matrix_mul(trans->m, self->object->trans);
+
+  Py_INCREF(self);
+  return (PyObject *)self;
+}
+
 static PyMethodDef dmnsn_py_Object_methods[] = {
   { "initialize", (PyCFunction)dmnsn_py_Object_initialize, METH_NOARGS,
     "Initialize an object" },
+  { "transform", (PyCFunction)dmnsn_py_Object_transform, METH_VARARGS,
+    "Transform an object" },
   { NULL }
 };
 

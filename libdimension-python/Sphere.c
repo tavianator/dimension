@@ -42,6 +42,20 @@ dmnsn_py_Sphere_init(dmnsn_py_Sphere *self, PyObject *args, PyObject *kwds)
 static PyObject *
 dmnsn_py_Sphere_initialize(dmnsn_py_Sphere *self)
 {
+  dmnsn_matrix trans = dmnsn_scale_matrix(
+    dmnsn_new_vector(self->radius, self->radius, self->radius)
+  );
+  trans = dmnsn_matrix_mul(dmnsn_translation_matrix(self->center), trans);
+
+  dmnsn_object *object = self->base.object;
+  object->trans = dmnsn_matrix_mul(object->trans, trans);
+
+  dmnsn_texture *texture = object->texture;
+  if (texture) {
+    dmnsn_matrix trans_inv = dmnsn_matrix_inverse(trans);
+    texture->trans = dmnsn_matrix_mul(trans_inv, texture->trans);
+  }
+
   Py_INCREF(Py_None);
   return Py_None;
 }

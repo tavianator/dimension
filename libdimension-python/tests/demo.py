@@ -39,14 +39,14 @@ camera = PerspectiveCamera(location = (0, 0.25, -4),
                            look_at  = Zero)
 camera.transform(rotate(53*Y))
 
-objects = []
-
-sphere = Sphere(radius = 1, center = Zero)
-objects.append(sphere)
+objects = [
+    Sphere(radius = 1, center = Zero)
+]
 
 scene = Scene(canvas = canvas,
               camera = camera,
               objects = objects)
 scene.raytrace()
 
-canvas.writePNG('demo.png')
+if havePNG:
+    canvas.writePNG('demo.png')

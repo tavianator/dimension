@@ -46,8 +46,8 @@ dmnsn_py_Camera_initialize(dmnsn_py_Camera *self)
 static PyObject *
 dmnsn_py_Camera_transform(dmnsn_py_Camera *self, PyObject *args)
 {
-  dmnsn_py_Matrix *matrix;
-  if (!PyArg_ParseTuple(args, "O!", &dmnsn_py_MatrixType, &matrix))
+  dmnsn_py_Matrix *trans;
+  if (!PyArg_ParseTuple(args, "O!", &dmnsn_py_MatrixType, &trans))
     return NULL;
 
   if (!self->camera) {
@@ -55,9 +55,9 @@ dmnsn_py_Camera_transform(dmnsn_py_Camera *self, PyObject *args)
     return NULL;
   }
 
-  self->camera->trans = dmnsn_matrix_mul(matrix->m, self->camera->trans);
-  Py_INCREF(Py_None);
-  return Py_None;
+  self->camera->trans = dmnsn_matrix_mul(trans->m, self->camera->trans);
+  Py_INCREF(self);
+  return (PyObject *)self;
 }
 
 static PyMethodDef dmnsn_py_Camera_methods[] = {
