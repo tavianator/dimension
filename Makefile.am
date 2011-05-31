@@ -23,7 +23,7 @@ SUBDIRS = libdimension                                                         \
 
 EXTRA_DIST = autogen.sh
 
-bench: all-recursive
+bench:
 	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) bench
 
 doc:
