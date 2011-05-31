@@ -100,6 +100,13 @@ void dmnsn_initialize_scene(dmnsn_scene *scene);
 void dmnsn_scene_set_canvas(dmnsn_scene *scene, dmnsn_canvas *canvas);
 
 /**
+ * Add a light to a scene.
+ * @param[in,out] scene   The scene to which to add the light.
+ * @param[in]     object  The object to light.
+ */
+void dmnsn_scene_add_light(dmnsn_scene *scene, dmnsn_light *light);
+
+/**
  * Set the camera for a scene.
  * @param[in,out] scene   The scene for which to set the canvas.
  * @param[in]     camera  The camera to set.

@@ -92,6 +92,13 @@ dmnsn_scene_set_canvas(dmnsn_scene *scene, dmnsn_canvas *canvas)
 }
 
 void
+dmnsn_scene_add_light(dmnsn_scene *scene, dmnsn_light *light)
+{
+  DMNSN_INCREF(light);
+  dmnsn_array_push(scene->lights, &light);
+}
+
+void
 dmnsn_scene_set_camera(dmnsn_scene *scene, dmnsn_camera *camera)
 {
   DMNSN_INCREF(camera);

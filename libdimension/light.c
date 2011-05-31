@@ -31,9 +31,12 @@ dmnsn_light *
 dmnsn_new_light(void)
 {
   dmnsn_light *light = dmnsn_malloc(sizeof(dmnsn_light));
-  light->light_fn = NULL;
-  light->free_fn  = NULL;
-  light->ptr      = NULL;
+  light->direction_fn    = NULL;
+  light->illumination_fn = NULL;
+  light->shadow_fn       = NULL;
+  light->free_fn         = NULL;
+  light->ptr             = NULL;
+  light->refcount        = 0;
   return light;
 }
 
@@ -41,7 +44,7 @@ dmnsn_new_light(void)
 void
 dmnsn_delete_light(dmnsn_light *light)
 {
-  if (light) {
+  if (light && DMNSN_DECREF(light)) {
     if (light->free_fn) {
       light->free_fn(light->ptr);
     }

@@ -113,6 +113,7 @@ typedef struct dmnsn_raytrace_state {
   unsigned int reclevel;
 
   dmnsn_vector r;
+  dmnsn_vector light;
   dmnsn_vector viewer;
   dmnsn_vector reflected;
 
@@ -240,11 +241,11 @@ dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
 
 /** Get the color of a light ray at an intersection point. */
 static dmnsn_color
-dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
+dmnsn_raytrace_light_ray(dmnsn_raytrace_state *state,
                          const dmnsn_light *light)
 {
-  dmnsn_line shadow_ray = dmnsn_new_line(state->r,
-                                         dmnsn_vector_sub(light->x0, state->r));
+  dmnsn_line shadow_ray = light->direction_fn(light, state->r);
+  state->light = dmnsn_vector_normalized(shadow_ray.n);
   /* Add epsilon to avoid hitting ourselves with the shadow ray */
   shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
 
@@ -253,7 +254,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
       * dmnsn_vector_dot(state->viewer, state->intersection->normal) < 0.0)
     return dmnsn_black;
 
-  dmnsn_color color = light->light_fn(light, state->r);
+  dmnsn_color color = light->illumination_fn(light, state->r);
 
   unsigned int reclevel = state->reclevel;
   while (reclevel > 0
@@ -263,7 +264,7 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
     bool shadow_casted = dmnsn_prtree_intersection(state->prtree, shadow_ray,
                                                    &shadow_caster, false);
 
-    if (!shadow_casted || shadow_caster.t > 1.0) {
+    if (!shadow_casted || !light->shadow_fn(light, shadow_caster.t)) {
       break;
     }
 
@@ -276,8 +277,10 @@ dmnsn_raytrace_light_ray(const dmnsn_raytrace_state *state,
         && shadow_state.pigment.trans >= dmnsn_epsilon)
     {
       color = dmnsn_filter_light(color, shadow_state.pigment);
-      shadow_ray.x0 = dmnsn_line_point(shadow_ray, shadow_caster.t);
-      shadow_ray.n  = dmnsn_vector_sub(light->x0, shadow_ray.x0);
+      shadow_ray = light->direction_fn(
+        light,
+        dmnsn_line_point(shadow_ray, shadow_caster.t)
+      );
       shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
     } else {
       return dmnsn_black;
@@ -310,19 +313,16 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
     dmnsn_color light_color = dmnsn_raytrace_light_ray(state, *light);
     if (!dmnsn_color_is_black(light_color)) {
       if (state->scene->quality & DMNSN_RENDER_FINISH) {
-        dmnsn_vector ray = dmnsn_vector_normalized(
-          dmnsn_vector_sub((*light)->x0, state->r)
-        );
-
         /* Get this light's color contribution to the object */
         dmnsn_color diffuse = TEXTURE_CALLBACK(
           state, finish, diffuse_fn, dmnsn_black,
-          light_color, state->pigment, ray, state->intersection->normal
+          light_color, state->pigment, state->light,
+          state->intersection->normal
         );
         dmnsn_color specular = TEXTURE_CALLBACK(
           state, finish, specular_fn, dmnsn_black,
-          light_color, state->pigment, ray, state->intersection->normal,
-          state->viewer
+          light_color, state->pigment, state->light,
+          state->intersection->normal, state->viewer
         );
         state->diffuse = dmnsn_color_add(diffuse, state->diffuse);
         state->additional = dmnsn_color_add(specular, state->additional);

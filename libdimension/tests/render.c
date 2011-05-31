@@ -88,7 +88,7 @@ dmnsn_new_test_scene(void)
     dmnsn_new_vector(-15.0, 20.0, 10.0),
     dmnsn_white
   );
-  dmnsn_array_push(scene->lights, &light);
+  dmnsn_scene_add_light(scene, light);
 
   /* Now make our objects */
 

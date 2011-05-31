@@ -23,27 +23,50 @@
  * Lights.
  */
 
+#include <stdbool.h>
+
 /* Forward-declar dmnsn_light */
 typedef struct dmnsn_light dmnsn_light;
 
 /**
- * Light callback.
+ * Light direction callback.
+ * @param[in] light  The light itself.
+ * @param[in] v      The point to illuminate.
+ * @return The direction of light rays pointing from \p v
+ */
+typedef dmnsn_line dmnsn_light_direction_fn(const dmnsn_light *light,
+                                            dmnsn_vector v);
+
+/**
+ * Light illumination callback.
  * @param[in] light  The light itself.
  * @param[in] v      The point to illuminate.
  * @return The color of the light at \p v.
  */
-typedef dmnsn_color dmnsn_light_fn(const dmnsn_light *light, dmnsn_vector v);
+typedef dmnsn_color dmnsn_light_illumination_fn(const dmnsn_light *light,
+                                                dmnsn_vector v);
+
+/**
+ * Light shadow callback.
+ * @param[in] light  The light itself.
+ * @param[in] t      The line index of the closest shadow ray intersection.
+ * @return Whether the point is in shadow.
+ */
+typedef bool dmnsn_light_shadow_fn(const dmnsn_light *light, double t);
 
 /** A light. */
 struct dmnsn_light {
-  dmnsn_vector x0; /**< Origin of light rays. */
-
   /* Callbacks */
-  dmnsn_light_fn *light_fn; /**< Light callback. */
-  dmnsn_free_fn  *free_fn;  /**< Desctructor callback. */
+  dmnsn_light_direction_fn    *direction_fn;    /**< Direction callback. */
+  dmnsn_light_illumination_fn *illumination_fn; /**< Illumination callback. */
+  dmnsn_light_shadow_fn       *shadow_fn;       /**< Shadow callback. */
+  dmnsn_free_fn               *free_fn;         /**< Desctructor callback. */
 
   /** Generic pointer for light info. */
   void *ptr;
+
+  /** @internal Reference count. */
+  dmnsn_refcount refcount;
 };
 
 /**
