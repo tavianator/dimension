@@ -20,39 +20,48 @@
 
 /**
  * @file
- * Diffuse finish.
+ * Reflective finish.
  */
 
 #include "dimension.h"
 #include <math.h>
 #include <stdlib.h>
 
-/** Diffuse finish callback. */
+/** Reflective finish payload. */
+typedef struct dmnsn_reflection_params {
+  dmnsn_color min, max;
+  double falloff;
+} dmnsn_reflection_params;
+
+/** Reflective finish callback. */
 static dmnsn_color
-dmnsn_diffuse_finish_fn(const dmnsn_finish *finish,
-                        dmnsn_color light, dmnsn_color color,
-                        dmnsn_vector ray, dmnsn_vector normal)
+dmnsn_basic_reflection_fn(const dmnsn_reflection *reflection,
+                          dmnsn_color reflect, dmnsn_color color,
+                          dmnsn_vector ray, dmnsn_vector normal)
 {
-  double *diffuse = finish->ptr;
-  double diffuse_factor = fabs((*diffuse)*dmnsn_vector_dot(ray, normal));
-  dmnsn_color ret
-    = dmnsn_color_mul(diffuse_factor, dmnsn_color_illuminate(light, color));
-  ret.filter = 0.0;
-  ret.trans  = 0.0;
-  return ret;
+  dmnsn_reflection_params *params = reflection->ptr;
+  double coeff = pow(fabs(dmnsn_vector_dot(ray, normal)), params->falloff);
+
+  return dmnsn_color_illuminate(
+    dmnsn_color_gradient(params->min, params->max, coeff),
+    reflect
+  );
 }
 
-dmnsn_finish *
-dmnsn_new_diffuse_finish(double diffuse)
+dmnsn_reflection *
+dmnsn_new_basic_reflection(dmnsn_color min, dmnsn_color max, double falloff)
 {
-  dmnsn_finish *finish = dmnsn_new_finish();
+  dmnsn_reflection *reflection = dmnsn_new_reflection();
 
-  double *param = dmnsn_malloc(sizeof(double));
-  *param = diffuse;
+  dmnsn_reflection_params *params
+    = dmnsn_malloc(sizeof(dmnsn_reflection_params));
+  params->min     = min;
+  params->max     = max;
+  params->falloff = falloff;
 
-  finish->ptr        = param;
-  finish->diffuse_fn = dmnsn_diffuse_finish_fn;
-  finish->free_fn    = dmnsn_free;
+  reflection->reflection_fn = dmnsn_basic_reflection_fn;
+  reflection->free_fn       = dmnsn_free;
+  reflection->ptr           = params;
 
-  return finish;
+  return reflection;
 }

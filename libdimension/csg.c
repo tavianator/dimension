@@ -26,21 +26,6 @@
 #include "dimension-impl.h"
 #include <stdlib.h>
 
-/** Apply the properties of \p csg to its children. */
-static void
-dmnsn_csg_cascade(const dmnsn_object *csg, dmnsn_object *object)
-{
-  if (!object->texture && csg->texture) {
-    object->texture = csg->texture;
-  }
-
-  if (!object->interior && csg->interior) {
-    object->interior = csg->interior;
-  }
-
-  object->trans = dmnsn_matrix_mul(csg->trans, object->trans);
-}
-
 /*
  * Unions
  */
@@ -67,10 +52,6 @@ dmnsn_csg_union_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 static void
 dmnsn_csg_union_initialize_fn(dmnsn_object *csg)
 {
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, child, csg->children) {
-    dmnsn_csg_cascade(csg, *child);
-    dmnsn_initialize_object(*child);
-  }
   csg->trans = dmnsn_identity_matrix();
 
   dmnsn_prtree *prtree = dmnsn_new_prtree(csg->children);
@@ -92,10 +73,9 @@ dmnsn_new_csg_union(const dmnsn_array *objects)
   dmnsn_object *csg = dmnsn_new_object();
 
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
-    DMNSN_INCREF(*object);
     dmnsn_array_push(csg->children, object);
   }
-
+  csg->split_children  = true;
   csg->ptr             = NULL;
   csg->intersection_fn = dmnsn_csg_union_intersection_fn;
   csg->inside_fn       = dmnsn_csg_union_inside_fn;
@@ -103,16 +83,6 @@ dmnsn_new_csg_union(const dmnsn_array *objects)
   csg->free_fn         = dmnsn_csg_union_free_fn;
 
   return csg;
-}
-
-/** Generic CSG destruction callback. */
-static void
-dmnsn_csg_free_fn(void *ptr)
-{
-  dmnsn_object **params = ptr;
-  dmnsn_delete_object(params[1]);
-  dmnsn_delete_object(params[0]);
-  dmnsn_free(ptr);
 }
 
 /**
@@ -131,11 +101,12 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
                           dmnsn_intersection *intersection,
                           bool inside1, bool inside2)
 {
-  const dmnsn_object **params = csg->ptr;
+  const dmnsn_object *A = *(dmnsn_object **)dmnsn_array_first(csg->children);
+  const dmnsn_object *B = *(dmnsn_object **)dmnsn_array_last(csg->children);
 
   dmnsn_intersection i1, i2;
-  bool is_i1 = dmnsn_object_intersection(params[0], line, &i1);
-  bool is_i2 = dmnsn_object_intersection(params[1], line, &i2);
+  bool is_i1 = dmnsn_object_intersection(A, line, &i1);
+  bool is_i2 = dmnsn_object_intersection(B, line, &i2);
 
   double oldt = 0.0;
   while (is_i1) {
@@ -144,11 +115,11 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
     oldt = i1.t + dmnsn_epsilon;
 
     dmnsn_vector point = dmnsn_line_point(i1.ray, i1.t);
-    if (inside2 ^ dmnsn_object_inside(params[1], point)) {
+    if (inside2 ^ dmnsn_object_inside(B, point)) {
       dmnsn_line newline = line;
       newline.x0 = dmnsn_line_point(line, i1.t);
       newline    = dmnsn_line_add_epsilon(newline);
-      is_i1 = dmnsn_object_intersection(params[0], newline, &i1);
+      is_i1 = dmnsn_object_intersection(A, newline, &i1);
     } else {
       break;
     }
@@ -161,11 +132,11 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
     oldt = i2.t + dmnsn_epsilon;
 
     dmnsn_vector point = dmnsn_line_point(i2.ray, i2.t);
-    if (inside1 ^ dmnsn_object_inside(params[0], point)) {
+    if (inside1 ^ dmnsn_object_inside(A, point)) {
       dmnsn_line newline = line;
       newline.x0 = dmnsn_line_point(line, i2.t);
       newline    = dmnsn_line_add_epsilon(newline);
-      is_i2 = dmnsn_object_intersection(params[1], newline, &i2);
+      is_i2 = dmnsn_object_intersection(B, newline, &i2);
     } else {
       break;
     }
@@ -205,24 +176,17 @@ dmnsn_csg_intersection_intersection_fn(const dmnsn_object *csg,
 static bool
 dmnsn_csg_intersection_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
-  dmnsn_object **params = csg->ptr;
-  return dmnsn_object_inside(params[0], point)
-      && dmnsn_object_inside(params[1], point);
+  const dmnsn_object *A = *(dmnsn_object **)dmnsn_array_first(csg->children);
+  const dmnsn_object *B = *(dmnsn_object **)dmnsn_array_last(csg->children);
+  return dmnsn_object_inside(A, point) && dmnsn_object_inside(B, point);
 }
 
 /** CSG intersection initialization callback. */
 static void
 dmnsn_csg_intersection_initialize_fn(dmnsn_object *csg)
 {
-  dmnsn_object **params = csg->ptr;
-  dmnsn_object *A = params[0];
-  dmnsn_object *B = params[1];
-
-  dmnsn_csg_cascade(csg, A);
-  dmnsn_csg_cascade(csg, B);
-
-  dmnsn_initialize_object(A);
-  dmnsn_initialize_object(B);
+  dmnsn_object *A = *(dmnsn_object **)dmnsn_array_first(csg->children);
+  dmnsn_object *B = *(dmnsn_object **)dmnsn_array_last(csg->children);
 
   csg->trans = dmnsn_identity_matrix();
   csg->bounding_box.min
@@ -236,17 +200,12 @@ dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
 {
   dmnsn_object *csg = dmnsn_new_object();
 
-  DMNSN_INCREF(A);
-  DMNSN_INCREF(B);
-  dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
-  params[0] = A;
-  params[1] = B;
+  dmnsn_array_push(csg->children, &A);
+  dmnsn_array_push(csg->children, &B);
 
-  csg->ptr             = params;
   csg->intersection_fn = dmnsn_csg_intersection_intersection_fn;
   csg->inside_fn       = dmnsn_csg_intersection_inside_fn;
   csg->initialize_fn   = dmnsn_csg_intersection_initialize_fn;
-  csg->free_fn         = dmnsn_csg_free_fn;
 
   return csg;
 }
@@ -268,24 +227,16 @@ dmnsn_csg_difference_intersection_fn(const dmnsn_object *csg,
 static bool
 dmnsn_csg_difference_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
-  dmnsn_object **params = csg->ptr;
-  return dmnsn_object_inside(params[0], point)
-     && !dmnsn_object_inside(params[1], point);
+  const dmnsn_object *A = *(dmnsn_object **)dmnsn_array_first(csg->children);
+  const dmnsn_object *B = *(dmnsn_object **)dmnsn_array_last(csg->children);
+  return dmnsn_object_inside(A, point)  && !dmnsn_object_inside(B, point);
 }
 
 /** CSG difference initialization callback. */
 static void
 dmnsn_csg_difference_initialize_fn(dmnsn_object *csg)
 {
-  dmnsn_object **params = csg->ptr;
-  dmnsn_object *A = params[0];
-  dmnsn_object *B = params[1];
-
-  dmnsn_csg_cascade(csg, A);
-  dmnsn_csg_cascade(csg, B);
-
-  dmnsn_initialize_object(A);
-  dmnsn_initialize_object(B);
+  dmnsn_object *A = *(dmnsn_object **)dmnsn_array_first(csg->children);
 
   csg->trans = dmnsn_identity_matrix();
   csg->bounding_box = A->bounding_box;
@@ -296,17 +247,12 @@ dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
 {
   dmnsn_object *csg = dmnsn_new_object();
 
-  DMNSN_INCREF(A);
-  DMNSN_INCREF(B);
-  dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
-  params[0] = A;
-  params[1] = B;
+  dmnsn_array_push(csg->children, &A);
+  dmnsn_array_push(csg->children, &B);
 
-  csg->ptr             = params;
   csg->intersection_fn = dmnsn_csg_difference_intersection_fn;
   csg->inside_fn       = dmnsn_csg_difference_inside_fn;
   csg->initialize_fn   = dmnsn_csg_difference_initialize_fn;
-  csg->free_fn         = dmnsn_csg_free_fn;
 
   return csg;
 }
@@ -328,24 +274,17 @@ dmnsn_csg_merge_intersection_fn(const dmnsn_object *csg,
 static bool
 dmnsn_csg_merge_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
-  dmnsn_object **params = csg->ptr;
-  return dmnsn_object_inside(params[0], point)
-      || dmnsn_object_inside(params[1], point);
+  const dmnsn_object *A = *(dmnsn_object **)dmnsn_array_first(csg->children);
+  const dmnsn_object *B = *(dmnsn_object **)dmnsn_array_last(csg->children);
+  return dmnsn_object_inside(A, point) || dmnsn_object_inside(B, point);
 }
 
 /** CSG merge initialization callback. */
 static void
 dmnsn_csg_merge_initialize_fn(dmnsn_object *csg)
 {
-  dmnsn_object **params = csg->ptr;
-  dmnsn_object *A = params[0];
-  dmnsn_object *B = params[1];
-
-  dmnsn_csg_cascade(csg, A);
-  dmnsn_csg_cascade(csg, B);
-
-  dmnsn_initialize_object(A);
-  dmnsn_initialize_object(B);
+  dmnsn_object *A = *(dmnsn_object **)dmnsn_array_first(csg->children);
+  dmnsn_object *B = *(dmnsn_object **)dmnsn_array_last(csg->children);
 
   csg->trans = dmnsn_identity_matrix();
   csg->bounding_box.min
@@ -359,17 +298,12 @@ dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B)
 {
   dmnsn_object *csg = dmnsn_new_object();
 
-  DMNSN_INCREF(A);
-  DMNSN_INCREF(B);
-  dmnsn_object **params = dmnsn_malloc(2*sizeof(dmnsn_object *));
-  params[0] = A;
-  params[1] = B;
+  dmnsn_array_push(csg->children, &A);
+  dmnsn_array_push(csg->children, &B);
 
-  csg->ptr             = params;
   csg->intersection_fn = dmnsn_csg_merge_intersection_fn;
   csg->inside_fn       = dmnsn_csg_merge_inside_fn;
   csg->initialize_fn   = dmnsn_csg_merge_initialize_fn;
-  csg->free_fn         = dmnsn_csg_free_fn;
 
   return csg;
 }

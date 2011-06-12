@@ -24,41 +24,33 @@
  */
 
 /**
- * Add two finishes together.
- * @param[in,out] f1  The first finish.
- * @param[in,out] f2  The second finish.
- * @return A finish that adds the values of two finishes together.
- */
-dmnsn_finish *dmnsn_new_finish_combination(dmnsn_finish *f1, dmnsn_finish *f2);
-
-/**
  * Ambient finish.
  * @param[in] ambient  The color of the ambient light.
- * @return A finish with ambient light.
+ * @return An ambient finish component.
  */
-dmnsn_finish *dmnsn_new_ambient_finish(dmnsn_color ambient);
+dmnsn_ambient *dmnsn_new_basic_ambient(dmnsn_color ambient);
 
 /**
- * Diffuse finish.
+ * Regular diffuse finish.
  * @param[in] diffuse  The diffuse reflection coefficient.
- * @return A finish with diffuse reflection.
+ * @return A diffuse finish component.
  */
-dmnsn_finish *dmnsn_new_diffuse_finish(double diffuse);
+dmnsn_diffuse *dmnsn_new_lambertian(double diffuse);
 
 /**
  * A phong specular highlight.
  * @param[in] specular  The specular reflection coefficient.
  * @param[in] exp       The exponent (roughly the highlight size).
- * @return A finish with phong specular highlight.
+ * @return A phong specular finish component.
  */
-dmnsn_finish *dmnsn_new_phong_finish(double specular, double exp);
+dmnsn_specular *dmnsn_new_phong(double specular, double exp);
 
 /**
  * Specular (mirror) reflection.
  * @param[in] min      Reflection at paralell angles.
  * @param[in] max      Reflection at perpendicular angles (often == \p min).
  * @param[in] falloff  Degree of exponential falloff (usually 1).
- * @return A finish with specular reflection.
+ * @return A reflective finish component.
  */
-dmnsn_finish *dmnsn_new_reflective_finish(dmnsn_color min, dmnsn_color max,
-                                          double falloff);
+dmnsn_reflection *dmnsn_new_basic_reflection(dmnsn_color min, dmnsn_color max,
+                                             double falloff);

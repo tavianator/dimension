@@ -44,6 +44,8 @@ struct dmnsn_pattern {
   dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
 
   void *ptr; /**< Generic pointer. */
+
+  dmnsn_refcount refcount; /**< @internal Reference count. */
 };
 
 /**

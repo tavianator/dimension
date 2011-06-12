@@ -75,8 +75,6 @@ static void
 dmnsn_color_map_initialize_fn(dmnsn_pigment *pigment)
 {
   dmnsn_color_map_payload *payload = pigment->ptr;
-  payload->pattern->trans = dmnsn_matrix_mul(pigment->trans,
-                                             payload->pattern->trans);
   dmnsn_initialize_pattern(payload->pattern);
 }
 

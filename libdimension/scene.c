@@ -32,20 +32,21 @@ dmnsn_new_scene(void)
 {
   dmnsn_scene *scene = dmnsn_malloc(sizeof(dmnsn_scene));
 
-  scene->background      = dmnsn_black;
-  scene->ambient         = dmnsn_white;
-  scene->sky_sphere      = NULL;
-  scene->default_texture = dmnsn_new_texture();
-  scene->camera          = NULL;
-  scene->canvas          = NULL;
-  scene->objects         = dmnsn_new_array(sizeof(dmnsn_object *));
-  scene->lights          = dmnsn_new_array(sizeof(dmnsn_light *));
-  scene->quality         = DMNSN_RENDER_FULL;
-  scene->reclimit        = 5;
-  scene->adc_bailout     = 1.0/255.0;
-  scene->nthreads        = dmnsn_ncpus();
-  scene->bounding_timer  = NULL;
-  scene->render_timer    = NULL;
+  scene->background       = dmnsn_black;
+  scene->sky_sphere       = NULL;
+  scene->default_texture  = dmnsn_new_texture();
+  scene->default_interior = dmnsn_new_interior();
+  scene->canvas           = NULL;
+  scene->objects          = dmnsn_new_array(sizeof(dmnsn_object *));
+  scene->lights           = dmnsn_new_array(sizeof(dmnsn_light *));
+  scene->camera           = NULL;
+  scene->quality          = DMNSN_RENDER_FULL;
+  scene->reclimit         = 5;
+  scene->adc_bailout      = 1.0/255.0;
+  scene->nthreads         = dmnsn_ncpus();
+  scene->bounding_timer   = NULL;
+  scene->render_timer     = NULL;
+  scene->initialized      = false;
 
   return scene;
 }
@@ -69,6 +70,7 @@ dmnsn_delete_scene(dmnsn_scene *scene)
     dmnsn_delete_array(scene->objects);
     dmnsn_delete_canvas(scene->canvas);
     dmnsn_delete_camera(scene->camera);
+    dmnsn_delete_interior(scene->default_interior);
     dmnsn_delete_texture(scene->default_texture);
     dmnsn_delete_sky_sphere(scene->sky_sphere);
     dmnsn_free(scene);
@@ -78,38 +80,18 @@ dmnsn_delete_scene(dmnsn_scene *scene)
 void
 dmnsn_initialize_scene(dmnsn_scene *scene)
 {
+  dmnsn_assert(!scene->initialized, "Texture double-initialized.");
+  scene->initialized = true;
+
+  dmnsn_initialize_texture(scene->default_texture);
+
   if (scene->sky_sphere) {
     dmnsn_initialize_sky_sphere(scene->sky_sphere);
   }
-}
 
-void
-dmnsn_scene_set_canvas(dmnsn_scene *scene, dmnsn_canvas *canvas)
-{
-  DMNSN_INCREF(canvas);
-  dmnsn_delete_canvas(scene->canvas);
-  scene->canvas = canvas;
-}
-
-void
-dmnsn_scene_add_light(dmnsn_scene *scene, dmnsn_light *light)
-{
-  DMNSN_INCREF(light);
-  dmnsn_array_push(scene->lights, &light);
-}
-
-void
-dmnsn_scene_set_camera(dmnsn_scene *scene, dmnsn_camera *camera)
-{
-  DMNSN_INCREF(camera);
-  dmnsn_delete_camera(scene->camera);
-  scene->camera = camera;
-}
-
-void
-dmnsn_scene_add_object(dmnsn_scene *scene, dmnsn_object *object)
-{
-  DMNSN_INCREF(object);
-  dmnsn_initialize_object(object);
-  dmnsn_array_push(scene->objects, &object);
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
+    dmnsn_texture_cascade(scene->default_texture, &(*object)->texture);
+    dmnsn_interior_cascade(scene->default_interior, &(*object)->interior);
+    dmnsn_initialize_object(*object);
+  }
 }

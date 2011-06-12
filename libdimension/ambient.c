@@ -29,26 +29,25 @@
 
 /** Ambient finish callback. */
 static dmnsn_color
-dmnsn_ambient_finish_fn(const dmnsn_finish *finish, dmnsn_color pigment)
+dmnsn_basic_ambient_fn(const dmnsn_ambient *ambient, dmnsn_color pigment)
 {
-  dmnsn_color *ambient = finish->ptr;
-  dmnsn_color ret = dmnsn_color_illuminate(*ambient, pigment);
+  dmnsn_color *light = ambient->ptr;
+  dmnsn_color ret = dmnsn_color_illuminate(*light, pigment);
   ret.trans  = 0.0;
   ret.filter = 0.0;
   return ret;
 }
 
-dmnsn_finish *
-dmnsn_new_ambient_finish(dmnsn_color ambient)
+dmnsn_ambient *
+dmnsn_new_basic_ambient(dmnsn_color ambient)
 {
-  dmnsn_finish *finish = dmnsn_new_finish();
+  dmnsn_ambient *basic = dmnsn_new_ambient();
 
   dmnsn_color *param = dmnsn_malloc(sizeof(dmnsn_color));
   *param = ambient;
 
-  finish->ptr        = param;
-  finish->ambient_fn = dmnsn_ambient_finish_fn;
-  finish->free_fn    = dmnsn_free;
-
-  return finish;
+  basic->ambient_fn = dmnsn_basic_ambient_fn;
+  basic->free_fn    = dmnsn_free;
+  basic->ptr        = param;
+  return basic;
 }

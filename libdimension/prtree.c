@@ -349,12 +349,12 @@ dmnsn_make_prtree(const dmnsn_array *objects)
 static void
 dmnsn_split_add_object(dmnsn_array *objects, const dmnsn_object *object)
 {
-  if (dmnsn_array_size(object->children) == 0) {
-    dmnsn_array_push(objects, &object);
-  } else {
+  if (object->split_children) {
     DMNSN_ARRAY_FOREACH (const dmnsn_object **, child, object->children) {
       dmnsn_split_add_object(objects, *child);
     }
+  } else {
+    dmnsn_array_push(objects, &object);
   }
 }
 

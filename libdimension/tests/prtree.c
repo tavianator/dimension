@@ -62,17 +62,17 @@ main(void)
   dmnsn_die_on_warnings(true);
 
   const size_t nobjects = 128;
-  dmnsn_scene *scene = dmnsn_new_scene();
+  dmnsn_array *objects = dmnsn_new_array(sizeof(dmnsn_object *));
 
   for (size_t i = 0; i < nobjects; ++i) {
     dmnsn_object *object = dmnsn_new_object();
     dmnsn_randomize_bounding_box(object);
     object->intersection_fn = dmnsn_fake_intersection_fn;
-    dmnsn_initialize_object(object);
-    dmnsn_scene_add_object(scene, object);
+    object->trans_inv = dmnsn_identity_matrix();
+    dmnsn_array_push(objects, &object);
   }
 
-  dmnsn_prtree *prtree = dmnsn_new_prtree(scene->objects);
+  dmnsn_prtree *prtree = dmnsn_new_prtree(objects);
 
   dmnsn_intersection intersection;
   dmnsn_line ray = dmnsn_new_line(
@@ -93,6 +93,9 @@ main(void)
   }
 
   dmnsn_delete_prtree(prtree);
-  dmnsn_delete_scene(scene);
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
+    dmnsn_delete_object(*object);
+  }
+  dmnsn_delete_array(objects);
   return EXIT_SUCCESS;
 }

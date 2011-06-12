@@ -23,7 +23,7 @@
 #include <stdio.h>
 
 /*
- * Test scene -- code version of tests/dimension/demo.pov
+ * Test scene
  */
 static dmnsn_scene *
 dmnsn_new_test_scene(void)
@@ -31,16 +31,20 @@ dmnsn_new_test_scene(void)
   /* Allocate a new scene */
   dmnsn_scene *scene = dmnsn_new_scene();
 
-  /* Default finish */
-  scene->default_texture->finish = dmnsn_new_finish_combination(
-    dmnsn_new_ambient_finish(
-      dmnsn_color_mul(0.01, dmnsn_white)
-    ),
-    dmnsn_new_diffuse_finish(0.3)
+  /* Default texture */
+  scene->default_texture->pigment = dmnsn_new_solid_pigment(dmnsn_black);
+  dmnsn_finish *default_finish = &scene->default_texture->finish;
+  default_finish->ambient = dmnsn_new_basic_ambient(
+    dmnsn_color_from_sRGB(dmnsn_color_mul(0.1, dmnsn_white))
+  );
+  default_finish->diffuse = dmnsn_new_lambertian(
+    dmnsn_color_intensity(
+      dmnsn_color_from_sRGB(dmnsn_color_mul(0.6, dmnsn_white))
+    )
   );
 
   /* Allocate a canvas */
-  dmnsn_scene_set_canvas(scene, dmnsn_new_canvas(768, 480));
+  scene->canvas = dmnsn_new_canvas(768, 480);
 
   /* Set up the transformation matrix for the perspective camera */
   dmnsn_matrix trans = dmnsn_scale_matrix(
@@ -62,9 +66,8 @@ dmnsn_new_test_scene(void)
   );
 
   /* Create a perspective camera */
-  dmnsn_camera *camera = dmnsn_new_perspective_camera();
-  camera->trans = trans;
-  dmnsn_scene_set_camera(scene, camera);
+  scene->camera = dmnsn_new_perspective_camera();
+  scene->camera->trans = trans;
 
   /* Background color */
   scene->background = dmnsn_clear;
@@ -88,7 +91,7 @@ dmnsn_new_test_scene(void)
     dmnsn_new_vector(-15.0, 20.0, 10.0),
     dmnsn_white
   );
-  dmnsn_scene_add_light(scene, light);
+  dmnsn_array_push(scene->lights, &light);
 
   /* Now make our objects */
 
@@ -96,15 +99,18 @@ dmnsn_new_test_scene(void)
   cube->trans = dmnsn_rotation_matrix(
     dmnsn_new_vector(dmnsn_radians(45.0), 0.0, 0.0)
   );
-  cube->texture = dmnsn_new_texture();
 
   dmnsn_color cube_color = dmnsn_blue;
   cube_color.trans  = 0.75;
   cube_color.filter = 1.0/3.0;
+  cube->texture = dmnsn_new_texture();
   cube->texture->pigment = dmnsn_new_solid_pigment(cube_color);
 
-  dmnsn_color reflect = dmnsn_color_mul(0.5, dmnsn_white);
-  cube->texture->finish = dmnsn_new_reflective_finish(reflect, reflect, 1.0);
+  dmnsn_color reflect = dmnsn_color_from_sRGB(
+    dmnsn_color_mul(0.5, dmnsn_white)
+  );
+  cube->texture->finish.reflection
+    = dmnsn_new_basic_reflection(reflect, reflect, 1.0);
 
   cube->interior = dmnsn_new_interior();
   cube->interior->ior = 1.1;
@@ -112,11 +118,11 @@ dmnsn_new_test_scene(void)
   dmnsn_object *sphere = dmnsn_new_sphere();
   sphere->texture = dmnsn_new_texture();
   sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_green);
-  sphere->texture->finish  = dmnsn_new_phong_finish(0.2, 40.0);
+  sphere->texture->finish.specular = dmnsn_new_phong(0.2, 40.0);
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.25, 1.25, 1.25));
 
   dmnsn_object *csg = dmnsn_new_csg_difference(cube, sphere);
-  dmnsn_scene_add_object(scene, csg);
+  dmnsn_array_push(scene->objects, &csg);
 
   dmnsn_array *arrow_array = dmnsn_new_array(sizeof(dmnsn_object *));
 
@@ -149,12 +155,13 @@ dmnsn_new_test_scene(void)
   arrow->texture->pigment
     = dmnsn_new_color_map_pigment(gradient, gradient_color_map,
                                   DMNSN_PIGMENT_MAP_SRGB);
+
   arrow->texture->trans =
     dmnsn_matrix_mul(
       dmnsn_translation_matrix(dmnsn_new_vector(0.0, -1.25, 0.0)),
       dmnsn_scale_matrix(dmnsn_new_vector(1.0, 2.75, 1.0))
     );
-  dmnsn_scene_add_object(scene, arrow);
+  dmnsn_array_push(scene->objects, &arrow);
   dmnsn_delete_array(arrow_array);
 
   dmnsn_array *torus_array = dmnsn_new_array(sizeof(dmnsn_object *));
@@ -176,13 +183,13 @@ dmnsn_new_test_scene(void)
   );
   torii->texture = dmnsn_new_texture();
   torii->texture->pigment = dmnsn_new_solid_pigment(dmnsn_blue);
-  torii->texture->finish  = dmnsn_new_ambient_finish(dmnsn_white);
-  dmnsn_scene_add_object(scene, torii);
+  torii->texture->finish.ambient
+    = dmnsn_new_basic_ambient(dmnsn_white);
+  dmnsn_array_push(scene->objects, &torii);
   dmnsn_delete_array(torus_array);
 
   dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
-  plane->texture = dmnsn_new_texture();
   dmnsn_pattern *checker1 = dmnsn_new_checker_pattern();
   dmnsn_pattern *checker2 = dmnsn_new_checker_pattern();
   dmnsn_map *checker_color_map = dmnsn_new_color_map();
@@ -197,13 +204,14 @@ dmnsn_new_test_scene(void)
   dmnsn_map *checker_pigment_map = dmnsn_new_pigment_map();
   dmnsn_add_map_entry(checker_pigment_map, 0.0, &pigment1);
   dmnsn_add_map_entry(checker_pigment_map, 1.0, &pigment2);
+  plane->texture = dmnsn_new_texture();
   plane->texture->pigment
     = dmnsn_new_pigment_map_pigment(checker2, checker_pigment_map,
                                     DMNSN_PIGMENT_MAP_REGULAR);
   plane->texture->pigment->quick_color = dmnsn_color_from_sRGB(
     dmnsn_new_color(1.0, 0.5, 0.75)
   );
-  dmnsn_scene_add_object(scene, plane);
+  dmnsn_array_push(scene->objects, &plane);
 
   return scene;
 }

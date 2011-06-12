@@ -76,8 +76,12 @@ main(void)
   }
 
   dmnsn_array *objects = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_texture *texture = dmnsn_new_texture();
+  texture->pigment = dmnsn_new_pigment();
   for (size_t i = 0; i < nobjects; ++i) {
     dmnsn_object *object = dmnsn_new_fake_object();
+    object->texture = texture;
+    DMNSN_INCREF(object->texture);
     dmnsn_initialize_object(object);
     dmnsn_array_push(objects, &object);
   }
@@ -108,12 +112,10 @@ main(void)
 
   /* Cleanup */
   dmnsn_delete_prtree(tree);
-  for (size_t i = 0; i < nobjects; ++i) {
-    dmnsn_object *object;
-    dmnsn_array_get(objects, i, &object);
-    dmnsn_delete_object(object);
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
+    dmnsn_delete_object(*object);
   }
-
+  dmnsn_delete_texture(texture);
   dmnsn_delete_array(objects);
   return EXIT_SUCCESS;
 }

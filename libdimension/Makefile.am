@@ -74,15 +74,14 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           cube.c                                               \
                           csg.c                                                \
                           dictionary.c                                         \
-                          diffuse.c                                            \
                           dimension-impl.h                                     \
                           error.c                                              \
                           finish.c                                             \
-                          finish_combination.c                                 \
                           geometry.c                                           \
                           gradient.c                                           \
                           inline.c                                             \
                           interior.c                                           \
+                          lambertian.c                                         \
                           light.c                                              \
                           malloc.c                                             \
                           map.c                                                \
@@ -103,7 +102,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           prtree.c                                             \
                           prtree.h                                             \
                           raytrace.c                                           \
-                          reflective.c                                         \
+                          reflection.c                                         \
                           scene.c                                              \
                           sky_sphere.c                                         \
                           solid_pigment.c                                      \

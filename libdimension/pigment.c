@@ -35,6 +35,8 @@ dmnsn_new_pigment(void)
   pigment->free_fn       = NULL;
   pigment->trans         = dmnsn_identity_matrix();
   pigment->quick_color   = dmnsn_black;
+  pigment->refcount      = 1;
+  pigment->initialized   = false;
   return pigment;
 }
 
@@ -42,7 +44,7 @@ dmnsn_new_pigment(void)
 void
 dmnsn_delete_pigment(dmnsn_pigment *pigment)
 {
-  if (pigment) {
+  if (DMNSN_DECREF(pigment)) {
     if (pigment->free_fn) {
       pigment->free_fn(pigment->ptr);
     }
@@ -54,9 +56,20 @@ dmnsn_delete_pigment(dmnsn_pigment *pigment)
 void
 dmnsn_initialize_pigment(dmnsn_pigment *pigment)
 {
+  dmnsn_assert(!pigment->initialized, "Pigment double-initialized.");
+  pigment->initialized = true;
+
   if (pigment->initialize_fn) {
     pigment->initialize_fn(pigment);
   }
 
   pigment->trans_inv = dmnsn_matrix_inverse(pigment->trans);
+}
+
+/* Evaluate a pigment */
+dmnsn_color
+dmnsn_evaluate_pigment(const dmnsn_pigment *pigment, dmnsn_vector v)
+{
+  dmnsn_vector v_trans = dmnsn_transform_vector(pigment->trans_inv, v);
+  return pigment->pigment_fn(pigment, v_trans);
 }

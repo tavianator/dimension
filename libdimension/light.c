@@ -36,7 +36,7 @@ dmnsn_new_light(void)
   light->shadow_fn       = NULL;
   light->free_fn         = NULL;
   light->ptr             = NULL;
-  light->refcount        = 0;
+  light->refcount        = 1;
   return light;
 }
 
@@ -44,7 +44,7 @@ dmnsn_new_light(void)
 void
 dmnsn_delete_light(dmnsn_light *light)
 {
-  if (light && DMNSN_DECREF(light)) {
+  if (DMNSN_DECREF(light)) {
     if (light->free_fn) {
       light->free_fn(light->ptr);
     }

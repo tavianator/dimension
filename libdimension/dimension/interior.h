@@ -47,3 +47,11 @@ dmnsn_interior *dmnsn_new_interior(void);
  * @param[in,out] interior  The interior to delete.
  */
 void dmnsn_delete_interior(dmnsn_interior *interior);
+
+/**
+ * Fill missing interior properties from a default interior.
+ * @param[in]     default_interior  The default interior.
+ * @param[in,out] interiorp         A pointer to the interior to fill.
+ */
+void dmnsn_interior_cascade(dmnsn_interior *default_interior,
+                            dmnsn_interior **interiorp);

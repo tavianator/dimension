@@ -27,7 +27,10 @@
 typedef struct dmnsn_sky_sphere {
   /** An array of pigments in inside-to-outside order. */
   dmnsn_array *pigments;
-  dmnsn_matrix trans;
+
+  dmnsn_matrix trans; /**< Transformation matrix. */
+
+  dmnsn_refcount refcount; /**< @internal Reference count. */
 } dmnsn_sky_sphere;
 
 /**

@@ -26,13 +26,13 @@
 /** A complete texture. */
 typedef struct {
   dmnsn_pigment *pigment; /**< Pigment. */
-  dmnsn_finish  *finish;  /**< Finish. */
+  dmnsn_finish finish;    /**< Finish. */
 
   dmnsn_matrix trans;     /**< Transformation matrix. */
   dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
 
   dmnsn_refcount refcount; /**< @internal Reference count. */
-  bool should_init;        /**< @internal Whether to initialize the texture. */
+  bool initialized; /**< @internal Whether the texture is initialized yet. */
 } dmnsn_texture;
 
 /**
@@ -54,3 +54,11 @@ void dmnsn_delete_texture(dmnsn_texture *texture);
  * @param[in,out] texture  The texture to initialize.
  */
 void dmnsn_initialize_texture(dmnsn_texture *texture);
+
+/**
+ * Fill missing texture properties from a default texture.
+ * @param[in]     default_texture  The default texture.
+ * @param[in,out] texturep         A pointer to the texture to fill.
+ */
+void dmnsn_texture_cascade(dmnsn_texture *default_texture,
+                           dmnsn_texture **texture);

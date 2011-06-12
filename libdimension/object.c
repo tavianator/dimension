@@ -35,11 +35,13 @@ dmnsn_new_object(void)
   object->interior        = NULL;
   object->trans           = dmnsn_identity_matrix();
   object->children        = dmnsn_new_array(sizeof(dmnsn_object *));
+  object->split_children  = false;
   object->intersection_fn = NULL;
   object->inside_fn       = NULL;
   object->initialize_fn   = NULL;
   object->free_fn         = NULL;
-  object->refcount        = 0;
+  object->refcount        = 1;
+  object->initialized     = false;
   return object;
 }
 
@@ -47,7 +49,7 @@ dmnsn_new_object(void)
 void
 dmnsn_delete_object(dmnsn_object *object)
 {
-  if (object && DMNSN_DECREF(object)) {
+  if (DMNSN_DECREF(object)) {
     DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
       dmnsn_delete_object(*child);
     }
@@ -65,31 +67,31 @@ dmnsn_delete_object(dmnsn_object *object)
 void
 dmnsn_initialize_object(dmnsn_object *object)
 {
-  /* Don't double-init textures */
-  bool should_init = false;
-  dmnsn_matrix old_trans = object->trans;
-  if (object->texture) {
-    DMNSN_INCREF(object->texture);
-    should_init = object->texture->should_init;
-    object->texture->should_init = false;
+  dmnsn_assert(!object->initialized, "Object double-initialized.");
+  object->initialized = true;
+
+  /* Initialize the texture */
+  if (!object->texture->initialized) {
+    object->texture->trans = dmnsn_matrix_mul(object->trans,
+                                              object->texture->trans);
+    dmnsn_initialize_texture(object->texture);
   }
 
-  if (object->interior) {
-    DMNSN_INCREF(object->interior);
+  /* Initialize the object's children */
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
+    (*child)->trans = dmnsn_matrix_mul(object->trans, (*child)->trans);
+    dmnsn_texture_cascade(object->texture, &(*child)->texture);
+    dmnsn_interior_cascade(object->interior, &(*child)->interior);
+    dmnsn_initialize_object(*child);
   }
 
+  /* Initialization callback */
   if (object->initialize_fn) {
     object->initialize_fn(object);
   }
 
+  /* Precalculate object values */
   object->bounding_box
     = dmnsn_transform_bounding_box(object->trans, object->bounding_box);
   object->trans_inv = dmnsn_matrix_inverse(object->trans);
-
-  if (should_init) {
-    /* Transform the texture with the object */
-    object->texture->trans
-      = dmnsn_matrix_mul(old_trans, object->texture->trans);
-    dmnsn_initialize_texture(object->texture);
-  }
 }

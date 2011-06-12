@@ -75,8 +75,8 @@ dmnsn_pigment_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
   dmnsn_pigment *pigment1, *pigment2;
   dmnsn_evaluate_map(payload->map, dmnsn_pattern_value(payload->pattern, v),
                      &n, &pigment1, &pigment2);
-  dmnsn_color color1 = pigment1->pigment_fn(pigment1, v);
-  dmnsn_color color2 = pigment2->pigment_fn(pigment2, v);
+  dmnsn_color color1 = dmnsn_evaluate_pigment(pigment1, v);
+  dmnsn_color color2 = dmnsn_evaluate_pigment(pigment2, v);
 
   if (payload->flags == DMNSN_PIGMENT_MAP_SRGB) {
     color1 = dmnsn_color_to_sRGB(color1);
@@ -95,8 +95,6 @@ static void
 dmnsn_pigment_map_initialize_fn(dmnsn_pigment *pigment)
 {
   dmnsn_pigment_map_payload *payload = pigment->ptr;
-  payload->pattern->trans = dmnsn_matrix_mul(pigment->trans,
-                                             payload->pattern->trans);
   dmnsn_initialize_pattern(payload->pattern);
   dmnsn_map_apply(payload->map, dmnsn_initialize_mapped_pigment);
 }

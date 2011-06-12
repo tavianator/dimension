@@ -55,6 +55,9 @@ struct dmnsn_pigment {
 
   /** Generic pointer. */
   void *ptr;
+
+  dmnsn_refcount refcount; /** @internal Reference count. */
+  bool initialized; /** @internal Whether the pigment is initialized. */
 };
 
 /**
@@ -76,3 +79,12 @@ void dmnsn_delete_pigment(dmnsn_pigment *pigment);
  * @param[in,out] pigment  The pigment to initialize.
  */
 void dmnsn_initialize_pigment(dmnsn_pigment *pigment);
+
+/**
+ * Evaluate the color of a pigment at a point.
+ * @param[in] pigment  The pigment to evaluate.
+ * @param[in] v        The point to color.
+ * @return The color at \p v.
+ */
+dmnsn_color dmnsn_evaluate_pigment(const dmnsn_pigment *pigment,
+                                   dmnsn_vector v);

@@ -33,7 +33,7 @@ dmnsn_new_interior(void)
   dmnsn_interior *interior = dmnsn_malloc(sizeof(dmnsn_interior));
   interior->ior       = 1.0;
   interior->free_fn   = NULL;
-  interior->refcount  = 0;
+  interior->refcount  = 1;
   return interior;
 }
 
@@ -41,10 +41,21 @@ dmnsn_new_interior(void)
 void
 dmnsn_delete_interior(dmnsn_interior *interior)
 {
-  if (interior && DMNSN_DECREF(interior)) {
+  if (DMNSN_DECREF(interior)) {
     if (interior->free_fn) {
       interior->free_fn(interior->ptr);
     }
     dmnsn_free(interior);
+  }
+}
+
+/* Cascade a interior */
+void
+dmnsn_interior_cascade(dmnsn_interior *default_interior,
+                       dmnsn_interior **interiorp)
+{
+  if (!*interiorp) {
+    *interiorp = default_interior;
+    DMNSN_INCREF(*interiorp);
   }
 }

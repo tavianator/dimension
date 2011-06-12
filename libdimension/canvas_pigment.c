@@ -29,8 +29,6 @@
 static dmnsn_color
 dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
-  v = dmnsn_transform_vector(pigment->trans_inv, v);
-
   dmnsn_canvas *canvas = pigment->ptr;
 
   int x = (fmod(v.x, 1.0) + 1.0)*(canvas->width  - 1) + 0.5;

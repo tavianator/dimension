@@ -30,8 +30,9 @@ dmnsn_pattern *
 dmnsn_new_pattern(void)
 {
   dmnsn_pattern *pattern = dmnsn_malloc(sizeof(dmnsn_pattern));
-  pattern->trans   = dmnsn_identity_matrix();
-  pattern->free_fn = NULL;
+  pattern->trans    = dmnsn_identity_matrix();
+  pattern->free_fn  = NULL;
+  pattern->refcount = 1;
   return pattern;
 }
 
@@ -39,10 +40,12 @@ dmnsn_new_pattern(void)
 void
 dmnsn_delete_pattern(dmnsn_pattern *pattern)
 {
-  if (pattern->free_fn) {
-    pattern->free_fn(pattern->ptr);
+  if (DMNSN_DECREF(pattern)) {
+    if (pattern->free_fn) {
+      pattern->free_fn(pattern->ptr);
+    }
+    dmnsn_free(pattern);
   }
-  dmnsn_free(pattern);
 }
 
 /* Precompute the transformation matrix inverse */

@@ -30,14 +30,15 @@ dmnsn_new_sky_sphere(void)
 {
   dmnsn_sky_sphere *sky_sphere = dmnsn_malloc(sizeof(dmnsn_sky_sphere));
   sky_sphere->pigments = dmnsn_new_array(sizeof(dmnsn_pigment *));
-  sky_sphere->trans = dmnsn_identity_matrix();
+  sky_sphere->trans    = dmnsn_identity_matrix();
+  sky_sphere->refcount = 1;
   return sky_sphere;
 }
 
 void
 dmnsn_delete_sky_sphere(dmnsn_sky_sphere *sky_sphere)
 {
-  if (sky_sphere) {
+  if (DMNSN_DECREF(sky_sphere)) {
     DMNSN_ARRAY_FOREACH (dmnsn_pigment **, pigment, sky_sphere->pigments) {
       dmnsn_delete_pigment(*pigment);
     }
@@ -61,11 +62,8 @@ dmnsn_sky_sphere_color(const dmnsn_sky_sphere *sky_sphere, dmnsn_vector d)
   dmnsn_color color = dmnsn_clear;
 
   DMNSN_ARRAY_FOREACH (const dmnsn_pigment **, pigment, sky_sphere->pigments) {
-    dmnsn_pigment_fn *pigment_fn = (*pigment)->pigment_fn;
-    if (pigment_fn) {
-      dmnsn_color sky = pigment_fn(*pigment, d);
-      color = dmnsn_apply_filter(color, sky);
-    }
+    dmnsn_color sky = dmnsn_evaluate_pigment(*pigment, d);
+    color = dmnsn_apply_filter(color, sky);
   }
 
   return color;

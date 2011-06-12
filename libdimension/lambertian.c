@@ -20,48 +20,39 @@
 
 /**
  * @file
- * Reflective finish.
+ * Diffuse finish.
  */
 
 #include "dimension.h"
 #include <math.h>
 #include <stdlib.h>
 
-/** Reflective finish payload. */
-typedef struct dmnsn_reflection_params {
-  dmnsn_color min, max;
-  double falloff;
-} dmnsn_reflection_params;
-
-/** Reflective finish callback. */
+/** Diffuse finish callback. */
 static dmnsn_color
-dmnsn_reflective_finish_fn(const dmnsn_finish *finish,
-                           dmnsn_color reflect, dmnsn_color color,
-                           dmnsn_vector ray, dmnsn_vector normal)
+dmnsn_lambertian_diffuse_fn(const dmnsn_diffuse *diffuse,
+                            dmnsn_color light, dmnsn_color color,
+                            dmnsn_vector ray, dmnsn_vector normal)
 {
-  dmnsn_reflection_params *params = finish->ptr;
-  double reflection = pow(fabs(dmnsn_vector_dot(ray, normal)), params->falloff);
-
-  return dmnsn_color_illuminate(
-    dmnsn_color_gradient(params->min, params->max, reflection),
-    reflect
-  );
+  double *coeff = diffuse->ptr;
+  double diffuse_factor = fabs((*coeff)*dmnsn_vector_dot(ray, normal));
+  dmnsn_color ret
+    = dmnsn_color_mul(diffuse_factor, dmnsn_color_illuminate(light, color));
+  ret.filter = 0.0;
+  ret.trans  = 0.0;
+  return ret;
 }
 
-dmnsn_finish *
-dmnsn_new_reflective_finish(dmnsn_color min, dmnsn_color max, double falloff)
+dmnsn_diffuse *
+dmnsn_new_lambertian(double diffuse)
 {
-  dmnsn_finish *finish = dmnsn_new_finish();
+  dmnsn_diffuse *lambertian = dmnsn_new_diffuse();
 
-  dmnsn_reflection_params *params
-    = dmnsn_malloc(sizeof(dmnsn_reflection_params));
-  params->min     = min;
-  params->max     = max;
-  params->falloff = falloff;
+  double *param = dmnsn_malloc(sizeof(double));
+  *param = diffuse;
 
-  finish->ptr           = params;
-  finish->reflection_fn = dmnsn_reflective_finish_fn;
-  finish->free_fn       = dmnsn_free;
+  lambertian->diffuse_fn = dmnsn_lambertian_diffuse_fn;
+  lambertian->free_fn    = dmnsn_free;
+  lambertian->ptr        = param;
 
-  return finish;
+  return lambertian;
 }

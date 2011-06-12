@@ -71,7 +71,7 @@ typedef bool dmnsn_object_inside_fn(const dmnsn_object *object,
 
 /** An object. */
 struct dmnsn_object {
-  dmnsn_texture *texture;   /**< Surface properties. */
+  dmnsn_texture  *texture;  /**< Surface properties. */
   dmnsn_interior *interior; /**< Interior properties. */
 
   dmnsn_matrix trans;     /**< Transformation matrix. */
@@ -79,20 +79,18 @@ struct dmnsn_object {
 
   dmnsn_bounding_box bounding_box; /**< Object bounding box. */
 
-  /** Child objects.  This array lists objects that can be split into
-      sub-objects for bounding purposes (for unions and meshes, for example). */
-  dmnsn_array *children;
+  dmnsn_array *children; /**< Child objects. */
+  bool split_children;   /**< Whether the child objects can be split. */
 
   dmnsn_object_initialize_fn   *initialize_fn; /**< Initialization callback. */
   dmnsn_object_intersection_fn *intersection_fn; /**< Intersection callback. */
   dmnsn_object_inside_fn       *inside_fn; /**< Inside callback. */
   dmnsn_free_fn                *free_fn; /**< Destruction callback. */
 
-  /** Generic pointer for object info. */
-  void *ptr;
+  void *ptr; /**< Generic pointer for object info. */
 
-  /** @internal Reference count. */
-  dmnsn_refcount refcount;
+  dmnsn_refcount refcount; /**< @internal Reference count. */
+  bool initialized; /**< @internal Whether the object is initialized yet. */
 };
 
 /**
@@ -112,7 +110,6 @@ void dmnsn_delete_object(dmnsn_object *object);
  * @param[in,out] object  The object to initialize.
  */
 void dmnsn_initialize_object(dmnsn_object *object);
-
 
 /**
  * Transform a surface normal vector.

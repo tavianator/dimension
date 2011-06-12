@@ -28,15 +28,15 @@
 
 /** Phong specular highlight callback. */
 static dmnsn_color
-dmnsn_phong_specular_fn(const dmnsn_finish *finish,
+dmnsn_phong_specular_fn(const dmnsn_specular *specular,
                         dmnsn_color light, dmnsn_color color,
                         dmnsn_vector ray, dmnsn_vector normal,
                         dmnsn_vector viewer)
 {
-  double *params = finish->ptr;
+  double *params = specular->ptr;
 
-  double specular = params[0];
-  double exp      = params[1];
+  double coeff = params[0];
+  double exp   = params[1];
 
   dmnsn_vector proj = dmnsn_vector_mul(2*dmnsn_vector_dot(ray, normal), normal);
   dmnsn_vector reflected = dmnsn_vector_sub(proj, ray);
@@ -47,22 +47,22 @@ dmnsn_phong_specular_fn(const dmnsn_finish *finish,
   }
 
   specular_factor = pow(specular_factor, exp);
-  return dmnsn_color_mul(specular*specular_factor, light);
+  return dmnsn_color_mul(coeff*specular_factor, light);
 }
 
 /* A phong finish */
-dmnsn_finish *
-dmnsn_new_phong_finish(double specular, double exp)
+dmnsn_specular *
+dmnsn_new_phong(double specular, double exp)
 {
-  dmnsn_finish *finish = dmnsn_new_finish();
+  dmnsn_specular *phong = dmnsn_new_specular();
 
   double *params = dmnsn_malloc(2*sizeof(double));
   params[0] = specular;
   params[1] = exp;
 
-  finish->ptr         = params;
-  finish->specular_fn = dmnsn_phong_specular_fn;
-  finish->free_fn     = dmnsn_free;
+  phong->specular_fn = dmnsn_phong_specular_fn;
+  phong->free_fn     = dmnsn_free;
+  phong->ptr         = params;
 
-  return finish;
+  return phong;
 }

@@ -32,7 +32,7 @@ typedef unsigned int dmnsn_refcount;
  * Increment a reference count.
  * @param[in,out] object  The reference-counted object to acquire.
  */
-#define DMNSN_INCREF(obj) ((void)++(obj)->refcount)
+#define DMNSN_INCREF(obj) ((void)((obj) && ++(obj)->refcount))
 
 /**
  * @internal
@@ -40,4 +40,5 @@ typedef unsigned int dmnsn_refcount;
  * @param[in,out] object  The reference-counted object to release.
  * @return Whether the object is now garbage.
  */
-#define DMNSN_DECREF(obj) ((obj)->refcount == 0 || --(obj)->refcount == 0)
+#define DMNSN_DECREF(obj)                                       \
+  ((obj) && ((obj)->refcount == 0 || --(obj)->refcount == 0))

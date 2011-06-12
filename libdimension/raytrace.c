@@ -113,9 +113,9 @@ typedef struct dmnsn_raytrace_state {
   unsigned int reclevel;
 
   dmnsn_vector r;
-  dmnsn_vector light;
   dmnsn_vector viewer;
   dmnsn_vector reflected;
+  dmnsn_vector light;
 
   dmnsn_color pigment;
   dmnsn_color diffuse;
@@ -171,45 +171,6 @@ dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
   return 0;
 }
 
-/** Get the intersection texture. */
-#define ITEXTURE(state) (state->intersection->texture)
-/** Get the default texture. */
-#define DTEXTURE(state) (state->scene->default_texture)
-
-/** Can a texture element be accessed? */
-#define CAN_ACCESS(texture, telem)              \
-  ((texture) && (texture)->telem)
-/** Can a texture element callback be called? */
-#define CAN_CALL(texture, telem, fn)                    \
-  (CAN_ACCESS(texture, telem) && (texture)->telem->fn)
-
-/** Determine whether a callback may be called. */
-#define TEXTURE_HAS_CALLBACK(state, telem, fn)  \
-  (CAN_CALL(ITEXTURE(state), telem, fn)         \
-   || CAN_CALL(DTEXTURE(state), telem, fn))
-
-/** Call the appropriate overloaded texture callback. */
-#define TEXTURE_CALLBACK(state, telem, fn, def, ...)                       \
-  (CAN_CALL(ITEXTURE(state), telem, fn)                                    \
-   ? ITEXTURE(state)->telem->fn(ITEXTURE(state)->telem, __VA_ARGS__)    \
-   : (CAN_CALL(DTEXTURE(state), telem, fn)                                 \
-      ? DTEXTURE(state)->telem->fn(DTEXTURE(state)->telem, __VA_ARGS__) \
-      : def));
-
-/** Get a property from a texture element. */
-#define TEXTURE_PROPERTY(state, telem, prop, def)       \
-  (CAN_ACCESS(ITEXTURE(state), telem)                   \
-   ? ITEXTURE(state)->telem->prop                       \
-   : (CAN_ACCESS(DTEXTURE(state), telem)                \
-      ? DTEXTURE(state)->telem->prop                    \
-      : def))
-
-/** Get the current index of refraction. */
-#define IOR(state)                              \
-  ((state)->intersection->interior              \
-   ? (state)->intersection->interior->ior       \
-   : 1.0)
-
 /** Calculate the background color. */
 static dmnsn_color
 dmnsn_raytrace_background(dmnsn_raytrace_state *state, dmnsn_line ray)
@@ -230,12 +191,13 @@ dmnsn_raytrace_background(dmnsn_raytrace_state *state, dmnsn_line ray)
 static void
 dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
 {
+  dmnsn_pigment *pigment = state->intersection->texture->pigment;
   if (state->scene->quality & DMNSN_RENDER_PIGMENT) {
-    state->pigment = TEXTURE_CALLBACK(state, pigment, pigment_fn, dmnsn_black,
-                                      state->r);
+    state->pigment = dmnsn_evaluate_pigment(pigment, state->r);
   } else {
-    state->pigment = TEXTURE_PROPERTY(state, pigment, quick_color, dmnsn_black);
+    state->pigment = pigment->quick_color;
   }
+
   state->diffuse = state->pigment;
 }
 
@@ -297,15 +259,12 @@ static void
 dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
 {
   /* The ambient color */
-  state->diffuse = TEXTURE_CALLBACK(state, finish, ambient_fn, dmnsn_black,
-                                    state->pigment);
-  state->diffuse = dmnsn_color_illuminate(state->scene->ambient,
-                                          state->diffuse);
+  state->diffuse = dmnsn_black;
 
-  if (!TEXTURE_HAS_CALLBACK(state, finish, diffuse_fn)
-      && !TEXTURE_HAS_CALLBACK(state, finish, specular_fn))
-  {
-    return;
+  const dmnsn_finish *finish = &state->intersection->texture->finish;
+  if (finish->ambient) {
+    state->diffuse
+      = finish->ambient->ambient_fn(finish->ambient, state->pigment);
   }
 
   /* Iterate over each light */
@@ -314,16 +273,22 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
     if (!dmnsn_color_is_black(light_color)) {
       if (state->scene->quality & DMNSN_RENDER_FINISH) {
         /* Get this light's color contribution to the object */
-        dmnsn_color diffuse = TEXTURE_CALLBACK(
-          state, finish, diffuse_fn, dmnsn_black,
-          light_color, state->pigment, state->light,
-          state->intersection->normal
-        );
-        dmnsn_color specular = TEXTURE_CALLBACK(
-          state, finish, specular_fn, dmnsn_black,
-          light_color, state->pigment, state->light,
-          state->intersection->normal, state->viewer
-        );
+        dmnsn_color diffuse = dmnsn_black;
+        if (finish->diffuse) {
+          diffuse = finish->diffuse->diffuse_fn(
+            finish->diffuse, light_color, state->pigment, state->light,
+            state->intersection->normal
+          );
+        }
+
+        dmnsn_color specular = dmnsn_black;
+        if (finish->specular) {
+          specular = finish->specular->specular_fn(
+            finish->specular, light_color, state->pigment, state->light,
+            state->intersection->normal, state->viewer
+          );
+        }
+
         state->diffuse = dmnsn_color_add(diffuse, state->diffuse);
         state->additional = dmnsn_color_add(specular, state->additional);
       } else {
@@ -341,20 +306,21 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
 {
   dmnsn_color reflected = dmnsn_black;
 
-  if (TEXTURE_HAS_CALLBACK(state, finish, reflection_fn)) {
+  const dmnsn_finish *finish = &state->intersection->texture->finish;
+  if (finish->reflection) {
     dmnsn_line refl_ray = dmnsn_new_line(state->r, state->reflected);
     refl_ray = dmnsn_line_add_epsilon(refl_ray);
 
     dmnsn_raytrace_state recursive_state = *state;
-    recursive_state.adc_value = TEXTURE_CALLBACK(
-      state, finish, reflection_fn, dmnsn_black,
-      state->adc_value, state->pigment, state->reflected,
+    recursive_state.adc_value = finish->reflection->reflection_fn(
+      finish->reflection, state->adc_value, state->pigment, state->reflected,
       state->intersection->normal
     );
+
     dmnsn_color rec = dmnsn_raytrace_shoot(&recursive_state, refl_ray);
-    reflected = TEXTURE_CALLBACK(
-      state, finish, reflection_fn, dmnsn_black,
-      rec, state->pigment, state->reflected, state->intersection->normal
+    reflected = finish->reflection->reflection_fn(
+      finish->reflection, rec, state->pigment, state->reflected,
+      state->intersection->normal
     );
     reflected.trans  = 0.0;
     reflected.filter = 0.0;
@@ -378,7 +344,7 @@ dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
 
     if (dmnsn_vector_dot(r, n) < 0.0) {
       /* We are entering an object */
-      recursive_state.ior = IOR(state);
+      recursive_state.ior = state->intersection->interior->ior;
       recursive_state.parent = state;
     } else {
       /* We are leaving an object */
@@ -438,15 +404,15 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
   bool reset = state->reclevel == state->scene->reclimit - 1;
   if (dmnsn_prtree_intersection(state->prtree, ray, &intersection, reset)) {
     state->intersection = &intersection;
-    state->r = dmnsn_line_point(state->intersection->ray,
-                                state->intersection->t);
+
+    state->r = dmnsn_line_point(intersection.ray, intersection.t);
     state->viewer = dmnsn_vector_normalized(
-      dmnsn_vector_negate(state->intersection->ray.n)
+      dmnsn_vector_negate(intersection.ray.n)
     );
     state->reflected = dmnsn_vector_sub(
       dmnsn_vector_mul(
-        2*dmnsn_vector_dot(state->viewer, state->intersection->normal),
-        state->intersection->normal),
+        2*dmnsn_vector_dot(state->viewer, intersection.normal),
+        intersection.normal),
       state->viewer
     );
 

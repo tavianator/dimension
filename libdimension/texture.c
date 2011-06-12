@@ -31,10 +31,10 @@ dmnsn_new_texture(void)
 {
   dmnsn_texture *texture = dmnsn_malloc(sizeof(dmnsn_texture));
   texture->pigment     = NULL;
-  texture->finish      = NULL;
+  texture->finish      = dmnsn_new_finish();
   texture->trans       = dmnsn_identity_matrix();
-  texture->refcount    = 0;
-  texture->should_init = true;
+  texture->refcount    = 1;
+  texture->initialized = false;
   return texture;
 }
 
@@ -42,7 +42,7 @@ dmnsn_new_texture(void)
 void
 dmnsn_delete_texture(dmnsn_texture *texture)
 {
-  if (texture && DMNSN_DECREF(texture)) {
+  if (DMNSN_DECREF(texture)) {
     dmnsn_delete_finish(texture->finish);
     dmnsn_delete_pigment(texture->pigment);
     dmnsn_free(texture);
@@ -53,10 +53,34 @@ dmnsn_delete_texture(dmnsn_texture *texture)
 void
 dmnsn_initialize_texture(dmnsn_texture *texture)
 {
+  dmnsn_assert(!texture->initialized, "Texture double-initialized.");
+  texture->initialized = true;
+
   texture->trans_inv = dmnsn_matrix_inverse(texture->trans);
-  if (texture->pigment) {
-    texture->pigment->trans
-      = dmnsn_matrix_mul(texture->trans, texture->pigment->trans);
+
+  if (!texture->pigment->initialized) {
+    texture->pigment->trans = dmnsn_matrix_mul(texture->trans,
+                                               texture->pigment->trans);
     dmnsn_initialize_pigment(texture->pigment);
   }
+}
+
+/* Cascade a texture */
+void
+dmnsn_texture_cascade(dmnsn_texture *default_texture,
+                      dmnsn_texture **texturep)
+{
+  if (!*texturep) {
+    *texturep = default_texture;
+    DMNSN_INCREF(*texturep);
+  }
+
+  dmnsn_texture *texture = *texturep;
+
+  if (!texture->pigment) {
+    texture->pigment = default_texture->pigment;
+    DMNSN_INCREF(texture->pigment);
+  }
+
+  dmnsn_finish_cascade(&default_texture->finish, &texture->finish);
 }
