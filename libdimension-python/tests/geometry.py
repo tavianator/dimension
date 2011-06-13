@@ -24,10 +24,13 @@ from dimension import *
 # Treat warnings as errors for tests
 dieOnWarnings(True)
 
-assert Zero == Vector(0, 0, 0), Zero
-assert X    == Vector(1, 0, 0), X
-assert Y    == Vector(0, 1, 0), Y
-assert Z    == Vector(0, 0, 1), Z
+assert 0 == Vector(0, 0, 0), Vector(0)
+assert X == Vector(1, 0, 0), X
+assert Y == Vector(0, 1, 0), Y
+assert Z == Vector(0, 0, 1), Z
+
+assert Vector((1, 2, 3)) == Vector(1, 2, 3), Vector((1, 2, 3))
+assert Vector(X) == X, Vector(X)
 
 v = Vector(1.5, 2.5, 3.5)
 
@@ -44,15 +47,15 @@ assert v.normalized() == v/7, v.normalized()
 assert v + v == 2*v == v*2 == Vector(4, 6, 12), v + v
 assert v/2 == v - v/2 == Vector(1, 1.5, 3), v/2
 assert +v == v, +v
-assert v + -v == Zero, v + -v
-assert cross(v, v) == Zero, cross(v, v)
+assert v + -v == 0, v + -v
+assert cross(v, v) == 0, cross(v, v)
 assert dot(v, v) == v.norm()**2, dot(v, v)
 assert v, bool(v)
-assert not Zero, not Zero
+assert not Vector(0), not Vector(0)
 assert proj(v, X) == 2*X, proj(v, X)
 
-m = Matrix(1, 2,   3,  4,
-           5, 6,   7,  8,
+m = Matrix(1,  2,  3,  4,
+           5,  6,  7,  8,
            9, 10, 11, 12)
 
 assert repr(m) == 'dimension.Matrix(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, \
@@ -68,7 +71,7 @@ assert s == Matrix(1, 0, 0, 0,
                    0, 2, 0, 0,
                    0, 0, 3, 0), s
 
-t = translate((1, 2, 3))
+t = translate(1, 2, 3)
 assert t == Matrix(1, 0, 0, 1,
                    0, 1, 0, 2,
                    0, 0, 1, 3), t

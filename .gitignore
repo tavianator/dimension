@@ -18,6 +18,7 @@ Makefile.in
 /*/doc
 Doxyfile
 __pycache__
+libdimension-python/*.c
 
 # pkg-config files
 *.pc

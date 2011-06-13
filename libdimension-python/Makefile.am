@@ -1,5 +1,5 @@
 ###########################################################################
-## Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     ##
+## Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          ##
 ##                                                                       ##
 ## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
@@ -25,26 +25,13 @@ INCLUDES = -I$(top_srcdir)/libdimension
 AM_CFLAGS = $(Python_CFLAGS)
 AM_LDFLAGS = $(Python_LDFLAGS)
 
+dimension.c: dimension.pyx dimension.pxd
+	cython --line-directives dimension.pyx
+
 pyexec_LTLIBRARIES = dimension.la
-dimension_la_SOURCES = Camera.c                                                \
-                       Camera.h                                                \
-                       Canvas.c                                                \
-                       Canvas.h                                                \
-                       Color.c                                                 \
-                       Color.h                                                 \
-                       Matrix.c                                                \
-                       Matrix.h                                                \
-                       Object.c                                                \
-                       Object.h                                                \
-                       PerspectiveCamera.c                                     \
-                       PerspectiveCamera.h                                     \
-                       Scene.c                                                 \
-                       Scene.h                                                 \
-                       Sphere.c                                                \
-                       Sphere.h                                                \
-                       Vector.c                                                \
-                       Vector.h                                                \
-                       dimension.c                                             \
-                       dimension-python.h
+dimension_la_SOURCES = dimension.c
 dimension_la_LDFLAGS = -avoid-version -module
 dimension_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
+
+EXTRA_DIST = dimension.pyx                                                     \
+             dimension.pxd
