@@ -27,6 +27,42 @@ import os
 def dieOnWarnings(alwaysDie):
   dmnsn_die_on_warnings(alwaysDie)
 
+##########
+# Timers #
+##########
+
+cdef class Timer:
+  cdef dmnsn_timer *_timer
+
+  def __init__(self):
+    self._timer = dmnsn_new_timer()
+
+  def __dealloc__(self):
+    dmnsn_delete_timer(self._timer)
+
+  def complete(self):
+    dmnsn_complete_timer(self._timer)
+
+  property real:
+    def __get__(self):
+      return self._timer.real
+  property user:
+    def __get__(self):
+      return self._timer.user
+  property system:
+    def __get__(self):
+      return self._timer.system
+
+  def __str__(self):
+    return '%.2fs (user: %.2fs; system: %.2fs)' % \
+           (self._timer.real, self._timer.user, self._timer.system)
+
+cdef _rawTimer(dmnsn_timer *timer):
+  cdef Timer self = Timer.__new__(Timer)
+  self._timer = timer
+  DMNSN_INCREF(self._timer)
+  return self
+
 ############
 # Geometry #
 ############
@@ -886,6 +922,13 @@ cdef class Scene:
       return self._scene.nthreads
     def __set__(self, n):
       self._scene.nthreads = n
+
+  property boundingTimer:
+    def __get__(self):
+      return _rawTimer(self._scene.bounding_timer)
+  property renderTimer:
+    def __get__(self):
+      return _rawTimer(self._scene.render_timer)
 
   def raytrace(self):
     # Ensure the default texture is complete

@@ -63,6 +63,19 @@ cdef extern from "../libdimension/dimension.h":
   void dmnsn_array_remove(dmnsn_array *array, size_t i)
   void dmnsn_array_apply(dmnsn_array *array, dmnsn_callback_fn *callback)
 
+  ##########
+  # Timers #
+  ##########
+
+  ctypedef struct dmnsn_timer:
+    double real
+    double user
+    double system
+
+  dmnsn_timer *dmnsn_new_timer()
+  void dmnsn_complete_timer(dmnsn_timer *timer)
+  void dmnsn_delete_timer(dmnsn_timer *timer)
+
   ############
   # Geometry #
   ############
@@ -351,6 +364,9 @@ cdef extern from "../libdimension/dimension.h":
     unsigned int reclimit
     double adc_bailout
     unsigned int nthreads
+
+    dmnsn_timer *bounding_timer
+    dmnsn_timer *render_timer
 
   dmnsn_scene *dmnsn_new_scene()
   void dmnsn_delete_scene(dmnsn_scene *scene)

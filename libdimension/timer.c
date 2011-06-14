@@ -30,6 +30,7 @@ dmnsn_new_timer(void)
 {
   dmnsn_timer *timer = dmnsn_malloc(sizeof(dmnsn_timer));
   dmnsn_get_times(timer);
+  timer->refcount = 1;
   return timer;
 }
 
@@ -46,5 +47,7 @@ dmnsn_complete_timer(dmnsn_timer *timer)
 void
 dmnsn_delete_timer(dmnsn_timer *timer)
 {
-  dmnsn_free(timer);
+  if (DMNSN_DECREF(timer)) {
+    dmnsn_free(timer);
+  }
 }

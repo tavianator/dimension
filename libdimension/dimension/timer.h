@@ -28,6 +28,8 @@ typedef struct dmnsn_timer {
   double real;   /**< Wall-clock time. */
   double user;   /**< Time spent executing. */
   double system; /**< Time spent waiting for the system. */
+
+  dmnsn_refcount refcount; /**< @internal Reference count. */
 } dmnsn_timer;
 
 /** A standard format string for timers. */
