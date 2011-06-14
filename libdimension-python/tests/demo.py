@@ -153,10 +153,10 @@ skySphere = SkySphere(
 )
 
 # Scene
-scene = Scene(canvas      = canvas,
-              objects     = objects,
-              lights      = lights,
-              camera      = camera)
+scene = Scene(canvas  = canvas,
+              objects = objects,
+              lights  = lights,
+              camera  = camera)
 scene.defaultTexture = Texture(finish = Ambient(0.1) + Diffuse(0.6))
 scene.background     = Clear
 scene.skySphere      = skySphere

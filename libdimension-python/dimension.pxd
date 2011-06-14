@@ -91,9 +91,6 @@ cdef extern from "../libdimension/dimension.h":
   double dmnsn_vector_norm(dmnsn_vector v)
   dmnsn_vector dmnsn_vector_normalized(dmnsn_vector v)
 
-  double dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2,
-                                 dmnsn_vector axis)
-
   dmnsn_vector dmnsn_zero
   dmnsn_vector dmnsn_x
   dmnsn_vector dmnsn_y
@@ -114,6 +111,8 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_matrix dmnsn_scale_matrix(dmnsn_vector s)
   dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d)
   dmnsn_matrix dmnsn_rotation_matrix(dmnsn_vector theta)
+  dmnsn_matrix dmnsn_alignment_matrix(dmnsn_vector frm, dmnsn_vector to,
+                                      dmnsn_vector axis1, dmnsn_vector axis2)
 
   ##########
   # Colors #

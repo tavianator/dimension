@@ -643,11 +643,7 @@ cdef class Cone(Object):
 
     cdef Matrix trans = translate(Y)
     trans = scale(1.0, dir.norm()/2, 1.0)*trans
-
-    cdef double thetaX = dmnsn_vector_axis_angle(dmnsn_y, dir._v, dmnsn_x)
-    cdef double thetaZ = dmnsn_vector_axis_angle(dmnsn_y, dir._v, dmnsn_z)
-    trans = _rawRotate(thetaX*X)*_rawRotate(thetaZ*Z)*trans
-
+    trans = _rawMatrix(dmnsn_alignment_matrix(dmnsn_y, dir._v, dmnsn_x, dmnsn_z))*trans
     trans = translate(bottom)*trans
 
     self._intrinsicTransform(trans)
@@ -786,22 +782,14 @@ cdef class PerspectiveCamera(Camera):
     cdef Vector vsky = Vector(sky)
 
     # Line up the top of the viewport with the sky vector
-    cdef double thetaSkyX = dmnsn_vector_axis_angle(dmnsn_y, vsky._v, dmnsn_x)
-    cdef double thetaSkyZ = dmnsn_vector_axis_angle(dmnsn_y, vsky._v, dmnsn_z)
-    cdef Matrix alignSky = _rawRotate(thetaSkyX*X)*_rawRotate(thetaSkyZ*Z)
-    self.transform(alignSky)
-    cdef Vector right = alignSky*X
+    cdef Matrix alignSky = _rawMatrix(dmnsn_alignment_matrix(dmnsn_y, vsky._v,
+                                                             dmnsn_z, dmnsn_x))
     cdef Vector forward = alignSky*Z
+    cdef Vector right   = alignSky*X
 
     # Line up the look at point with lookAt
-    cdef double thetaLookAtSky = dmnsn_vector_axis_angle(
-      forward._v, dir._v, vsky._v
-    )
-    cdef double thetaLookAtRight = dmnsn_vector_axis_angle(
-      forward._v, dir._v, right._v
-    )
-    self.transform(_rawRotate(thetaLookAtSky*vsky))
-    self.transform(_rawRotate(thetaLookAtRight*right))
+    self.transform(_rawMatrix(dmnsn_alignment_matrix(forward._v, dir._v,
+                                                     vsky._v, right._v)))
 
     # Move the camera into position
     self.transform(translate(Vector(location)))

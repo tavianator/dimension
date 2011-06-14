@@ -82,25 +82,44 @@ dmnsn_rotation_matrix(dmnsn_vector theta)
 }
 
 /* Find the angle between two vectors with respect to an axis */
-double
-dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2, dmnsn_vector axis)
+static double
+dmnsn_axis_angle(dmnsn_vector from, dmnsn_vector to, dmnsn_vector axis)
 {
-  dmnsn_vector d    = dmnsn_vector_sub(v1, v2);
-  dmnsn_vector proj = dmnsn_vector_add(dmnsn_vector_proj(d, axis), v2);
+  from = dmnsn_vector_sub(from, dmnsn_vector_proj(from, axis));
+  to   = dmnsn_vector_sub(to,   dmnsn_vector_proj(to, axis));
 
-  double projn = dmnsn_vector_norm(proj);
-  if (fabs(projn) < dmnsn_epsilon)
+  double fromnorm = dmnsn_vector_norm(from);
+  double tonorm   = dmnsn_vector_norm(to);
+  if (fromnorm < dmnsn_epsilon || tonorm < dmnsn_epsilon) {
     return 0.0;
+  }
 
-  double c = dmnsn_vector_dot(dmnsn_vector_normalized(v1),
-                              dmnsn_vector_div(proj, projn));
-  double angle = acos(c);
+  from = dmnsn_vector_div(from, fromnorm);
+  to   = dmnsn_vector_div(to,   tonorm);
 
-  if (dmnsn_vector_dot(dmnsn_vector_cross(v1, proj), axis) > 0.0) {
+  double angle = acos(dmnsn_vector_dot(from, to));
+
+  if (dmnsn_vector_dot(dmnsn_vector_cross(from, to), axis) > 0.0) {
     return angle;
   } else {
     return -angle;
   }
+}
+
+/* Alignment matrix */
+dmnsn_matrix
+dmnsn_alignment_matrix(dmnsn_vector from, dmnsn_vector to,
+                       dmnsn_vector axis1, dmnsn_vector axis2)
+{
+  double theta1 = dmnsn_axis_angle(from, to, axis1);
+  dmnsn_matrix align1 = dmnsn_rotation_matrix(dmnsn_vector_mul(theta1, axis1));
+  from  = dmnsn_transform_vector(align1, from);
+  axis2 = dmnsn_transform_vector(align1, axis2);
+
+  double theta2 = dmnsn_axis_angle(from, to, axis2);
+  dmnsn_matrix align2 = dmnsn_rotation_matrix(dmnsn_vector_mul(theta2, axis2));
+
+  return dmnsn_matrix_mul(align2, align1);
 }
 
 /* Matrix inversion helper functions */

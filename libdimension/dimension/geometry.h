@@ -178,6 +178,16 @@ dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d);
  * @return The transformation matrix.
  */
 dmnsn_matrix dmnsn_rotation_matrix(dmnsn_vector theta);
+/**
+ * An alignment matrix.
+ * @param[in] from   The initial vector.
+ * @param[in] to     The desired direction.
+ * @param[in] axis1  The first axis about which to rotate.
+ * @param[in] axis2  The second axis about which to rotate.
+ * @return A transformation matrix that will rotate \p from to \p to.
+ */
+dmnsn_matrix dmnsn_alignment_matrix(dmnsn_vector from, dmnsn_vector to,
+                                    dmnsn_vector axis1, dmnsn_vector axis2);
 
 /**
  * Construct a new line.
@@ -358,10 +368,6 @@ dmnsn_vector_max(dmnsn_vector a, dmnsn_vector b)
     dmnsn_max(a.z, b.z)
   );
 }
-
-/** Return the angle between two vectors with respect to an axis. */
-double dmnsn_vector_axis_angle(dmnsn_vector v1, dmnsn_vector v2,
-                               dmnsn_vector axis);
 
 /** Invert a matrix. */
 dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);

@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: libdimension
 Description: The Dimension Library
 Requires:
-Version: @VERSION@
+Version: @PACKAGE_VERSION@
 Libs: -L${libdir} -ldimension
 Cflags:
