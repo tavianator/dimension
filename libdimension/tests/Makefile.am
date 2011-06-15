@@ -20,24 +20,24 @@
 INCLUDES = -I$(top_srcdir)/libdimension
 
 check_LTLIBRARIES = libdimension-tests.la
-check_PROGRAMS    = warning-test                                               \
-                    warning-as-error-test                                      \
-                    error-test                                                 \
-                    polynomial-test                                            \
-                    prtree-test                                                \
-                    png-test                                                   \
-                    gl-test                                                    \
-                    render-test                                                \
-                    cxx-test
+check_PROGRAMS    = warning.test                                               \
+                    warning-as-error.test                                      \
+                    error.test                                                 \
+                    polynomial.test                                            \
+                    prtree.test                                                \
+                    png.test                                                   \
+                    gl.test                                                    \
+                    render.test                                                \
+                    cxx.test
 TESTS             = $(check_PROGRAMS)
-XFAIL_TESTS       = warning-as-error-test error-test
+XFAIL_TESTS       = warning-as-error.test error.test
 
 if !PNG
-XFAIL_TESTS += png-test
+XFAIL_TESTS += png.test
 endif
 
 if !GL
-XFAIL_TESTS += gl-test
+XFAIL_TESTS += gl.test
 endif
 
 libdimension_tests_la_SOURCES = tests.h
