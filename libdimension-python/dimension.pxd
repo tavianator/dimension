@@ -248,6 +248,10 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_finish dmnsn_new_finish()
   void dmnsn_delete_finish(dmnsn_finish finish)
 
+  void dmnsn_finish_incref(dmnsn_finish *finish)
+
+  void dmnsn_finish_cascade(dmnsn_finish *default_finish, dmnsn_finish *finish)
+
   dmnsn_ambient *dmnsn_new_basic_ambient(dmnsn_color ambient)
   dmnsn_diffuse *dmnsn_new_lambertian(double diffuse)
   dmnsn_specular *dmnsn_new_phong(double specular, double exp)

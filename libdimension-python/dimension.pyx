@@ -435,6 +435,12 @@ cdef class Pigment:
     self._pigment.trans = dmnsn_matrix_mul(trans._m, self._pigment.trans)
     return self
 
+cdef _rawPigment(dmnsn_pigment *pigment):
+  cdef Pigment self = Pigment.__new__(Pigment)
+  self._pigment = pigment
+  DMNSN_INCREF(self._pigment)
+  return self
+
 cdef class ColorMap(Pigment):
   def __init__(self, Pattern pattern not None, map, bool sRGB not None = True):
     cdef dmnsn_map *color_map = dmnsn_new_color_map()
@@ -499,44 +505,15 @@ cdef class Finish:
 
   def __add__(Finish lhs not None, Finish rhs not None):
     cdef Finish ret = Finish()
-
-    if lhs._finish.ambient != NULL and rhs._finish.ambient != NULL:
-      raise ValueError('both Finishes provide an ambient contribution')
-    elif lhs._finish.ambient != NULL:
-      ret._finish.ambient = lhs._finish.ambient
-      DMNSN_INCREF(ret._finish.ambient)
-    elif rhs._finish.ambient != NULL:
-      ret._finish.ambient = rhs._finish.ambient
-      DMNSN_INCREF(ret._finish.ambient)
-
-    if lhs._finish.diffuse != NULL and rhs._finish.diffuse != NULL:
-      raise ValueError('both Finishes provide a diffuse contribution')
-    elif lhs._finish.diffuse != NULL:
-      ret._finish.diffuse = lhs._finish.diffuse
-      DMNSN_INCREF(ret._finish.diffuse)
-    elif rhs._finish.diffuse != NULL:
-      ret._finish.diffuse = rhs._finish.diffuse
-      DMNSN_INCREF(ret._finish.diffuse)
-
-    if lhs._finish.specular != NULL and rhs._finish.specular != NULL:
-      raise ValueError('both Finishes provide a specular contribution')
-    elif lhs._finish.specular != NULL:
-      ret._finish.specular = lhs._finish.specular
-      DMNSN_INCREF(ret._finish.specular)
-    elif rhs._finish.specular != NULL:
-      ret._finish.specular = rhs._finish.specular
-      DMNSN_INCREF(ret._finish.specular)
-
-    if lhs._finish.reflection != NULL and rhs._finish.reflection != NULL:
-      raise ValueError('both Finishes provide a reflection contribution')
-    elif lhs._finish.reflection != NULL:
-      ret._finish.reflection = lhs._finish.reflection
-      DMNSN_INCREF(ret._finish.reflection)
-    elif rhs._finish.reflection != NULL:
-      ret._finish.reflection = rhs._finish.reflection
-      DMNSN_INCREF(ret._finish.reflection)
-
+    dmnsn_finish_cascade(&lhs._finish, &ret._finish)
+    dmnsn_finish_cascade(&rhs._finish, &ret._finish) # rhs gets priority
     return ret
+
+cdef _rawFinish(dmnsn_finish finish):
+  cdef Finish self = Finish.__new__(Finish)
+  self._finish = finish
+  dmnsn_finish_incref(&self._finish)
+  return self
 
 cdef class Ambient(Finish):
   def __init__(self, color):
@@ -572,23 +549,35 @@ cdef class Texture:
 
     cdef Pigment realPigment
     if pigment is not None:
-      realPigment = Pigment(pigment)
-      self._texture.pigment = realPigment._pigment
-      DMNSN_INCREF(self._texture.pigment)
+      self.pigment = Pigment(pigment)
 
     if finish is not None:
-      self._texture.finish = finish._finish
-      if self._texture.finish.ambient != NULL:
-        DMNSN_INCREF(self._texture.finish.ambient)
-      if self._texture.finish.diffuse != NULL:
-        DMNSN_INCREF(self._texture.finish.diffuse)
-      if self._texture.finish.specular != NULL:
-        DMNSN_INCREF(self._texture.finish.specular)
-      if self._texture.finish.reflection != NULL:
-        DMNSN_INCREF(self._texture.finish.reflection)
+      self.finish = finish
 
   def __dealloc__(self):
     dmnsn_delete_texture(self._texture)
+
+  property pigment:
+    def __get__(self):
+      return _rawPigment(self._texture.pigment)
+    def __set__(self, Pigment pigment not None):
+      dmnsn_delete_pigment(self._texture.pigment)
+      self._texture.pigment = pigment._pigment
+      DMNSN_INCREF(self._texture.pigment)
+
+  property finish:
+    def __get__(self):
+      return _rawFinish(self._texture.finish)
+    def __set__(self, Finish finish not None):
+      dmnsn_delete_finish(self._texture.finish)
+      self._texture.finish = finish._finish
+      dmnsn_finish_incref(&self._texture.finish)
+
+cdef _rawTexture(dmnsn_texture *texture):
+  cdef Texture self = Texture.__new__(Texture)
+  self._texture = texture
+  DMNSN_INCREF(self._texture)
+  return self
 
 #############
 # Interiors #
@@ -603,6 +592,12 @@ cdef class Interior:
 
   def __dealloc__(self):
     dmnsn_delete_interior(self._interior)
+
+cdef _rawInterior(dmnsn_interior *interior):
+  cdef Interior self = Interior.__new__(Interior)
+  self._interior = interior
+  DMNSN_INCREF(self._interior)
+  return self
 
 ###########
 # Objects #
@@ -782,7 +777,9 @@ cdef class Light:
 
 cdef class PointLight(Light):
   def __init__(self, location, color):
-    self._light = dmnsn_new_point_light(Vector(location)._v, Color(color)._c)
+    # Take the sRGB component because "color = 0.5*White" should really mean
+    # a half-intensity white light
+    self._light = dmnsn_new_point_light(Vector(location)._v, Color(color)._sRGB)
     Light.__init__(self)
 
 ###########
@@ -888,10 +885,19 @@ cdef class Scene:
     DMNSN_INCREF(self._scene.camera)
 
   property defaultTexture:
+    def __get__(self):
+      return _rawTexture(self._scene.default_texture)
     def __set__(self, Texture texture not None):
       dmnsn_delete_texture(self._scene.default_texture)
       self._scene.default_texture = texture._texture
       DMNSN_INCREF(self._scene.default_texture)
+  property defaultInterior:
+    def __get__(self):
+      return _rawInterior(self._scene.default_interior)
+    def __set__(self, Interior interior not None):
+      dmnsn_delete_interior(self._scene.default_interior)
+      self._scene.default_interior = interior._interior
+      DMNSN_INCREF(self._scene.default_interior)
 
   property background:
     def __get__(self):

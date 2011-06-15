@@ -130,6 +130,24 @@ dmnsn_delete_finish(dmnsn_finish finish)
 }
 
 void
+dmnsn_finish_incref(dmnsn_finish *finish)
+{
+  if (finish->ambient) {
+    DMNSN_INCREF(finish->ambient);
+  }
+  if (finish->diffuse) {
+    DMNSN_INCREF(finish->diffuse);
+  }
+  if (finish->specular) {
+    DMNSN_INCREF(finish->specular);
+  }
+  if (finish->reflection) {
+    DMNSN_INCREF(finish->reflection);
+  }
+
+}
+
+void
 dmnsn_finish_cascade(const dmnsn_finish *default_finish, dmnsn_finish *finish)
 {
   if (!finish->ambient) {

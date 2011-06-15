@@ -162,6 +162,12 @@ dmnsn_finish dmnsn_new_finish(void);
 void dmnsn_delete_finish(dmnsn_finish finish);
 
 /**
+ * Increment a finish's reference count.
+ * @param[in,out] finish  The finish to acquire.
+ */
+void dmnsn_finish_incref(dmnsn_finish *finish);
+
+/**
  * Fill missing finish properties from a default finish.
  * @param[in]     default_finish  The default finish.
  * @param[in,out] finish          The finish to fill.
