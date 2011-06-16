@@ -10,7 +10,7 @@
 /ltmain.sh
 /m4
 /missing
-/ylwrap
+/py-compile
 Makefile
 Makefile.in
 
@@ -19,17 +19,18 @@ Makefile.in
 Doxyfile
 __pycache__
 libdimension-python/*.c
+dimension/dimension
 
 # pkg-config files
 *.pc
 
 # Files created by `make check'
-/*/tests/*-test
+/*/tests/*.test
 /*/tests/*.png
 /*/tests/*.log
 
 # Files created by `make bench'
-/*/bench/bench-*
+/*/bench/*.bench
 
 # Files and folders created by libtool
 .libs/

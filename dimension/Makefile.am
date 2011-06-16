@@ -1,5 +1,5 @@
 ###########################################################################
-## Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     ##
+## Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          ##
 ##                                                                       ##
 ## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
@@ -17,17 +17,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = libdimension                                                         \
-          libdimension-python                                                  \
-          dimension
+SUBDIRS = .                                                                    \
+          tests
 
-EXTRA_DIST = autogen.sh
-
-bench:
-	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) bench
-
-doc:
-	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) doc
-
-.PHONY: bench doc
+python_PYTHON = dimension

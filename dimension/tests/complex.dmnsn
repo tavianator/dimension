@@ -1,0 +1,71 @@
+#########################################################################
+# Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     #
+#                                                                       #
+# This file is part of The Dimension Test Suite.                        #
+#                                                                       #
+# The Dimension Test Suite is free software; you can redistribute it    #
+# and/or modify it under the terms of the GNU General Public License as #
+# published by the Free Software Foundation; either version 3 of the    #
+# License, or (at your option) any later version.                       #
+#                                                                       #
+# The Dimension Test Suite is distributed in the hope that it will be   #
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty   #
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU  #
+# General Public License for more details.                              #
+#                                                                       #
+# You should have received a copy of the GNU General Public License     #
+# along with this program.  If not, see <http://www.gnu.org/licenses/>. #
+#########################################################################
+
+camera = PerspectiveCamera(location = (3, 6, -11),
+                           look_at   = 0)
+
+background = 0.5*Color(0.73, 0.90, 0.97)
+
+light_color = 0.25*White
+lights.append(PointLight(location = (-3, 0, -5), color = light_color))
+lights.append(PointLight(location = (-1, 0, -5), color = light_color))
+lights.append(PointLight(location = ( 1, 0, -5), color = light_color))
+lights.append(PointLight(location = ( 3, 0, -5), color = light_color))
+
+lights.append(PointLight(location = (-3, 5, -5), color = light_color))
+lights.append(PointLight(location = (-1, 5, -5), color = light_color))
+lights.append(PointLight(location = ( 1, 5, -5), color = light_color))
+lights.append(PointLight(location = ( 3, 5, -5), color = light_color))
+
+objects.append(
+  Plane(
+    normal = Y, distance = -4,
+
+    texture = Texture(
+      pigment = Color(0.73, 0.90, 0.97),
+      finish = Ambient(0.5),
+    )
+  )
+)
+
+def make_sphere(x, y, z, size):
+  size -= 1
+
+  dx = sin(2*pi*x/size)
+  dy = sin(2*pi*y/size)
+  dz = sin(2*pi*z/size)
+  return Sphere(
+    center = 5*Vector(x, y, z)/size
+             + Vector(dy + dz, dx + dz, dx + dy)/4
+             - Vector(2.5, 2.5, 2.5),
+    radius = 2/size,
+
+    texture = Texture(
+      pigment = Color(x/size, y/size, z/size),
+      finish  = Ambient(0.25) + Reflection(0.5)
+    )
+  )
+
+size = 10;
+for x in range(size):
+  for y in range(size):
+    for z in range(size):
+      objects.append(make_sphere(x, y, z, size))
+
+recursion_limit = 2*size

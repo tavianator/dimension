@@ -29,7 +29,6 @@ dnl Programs
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_CXX
-AM_PROG_LEX
 AM_PROG_AS
 AC_PROG_INSTALL
 AC_LIBTOOL_WIN32_DLL
@@ -175,6 +174,8 @@ AM_CONDITIONAL([GLX], [test "$enable_glx" != "no"])
 dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile
+                 dimension/Makefile
+                 dimension/tests/Makefile
                  libdimension/Makefile
                  libdimension/Doxyfile
                  libdimension/bench/Makefile
@@ -182,4 +183,5 @@ AC_CONFIG_FILES([Makefile
                  libdimension/tests/Makefile
                  libdimension-python/Makefile
                  libdimension-python/tests/Makefile])
+AC_CONFIG_FILES([dimension/dimension], [chmod +x dimension/dimension])
 AC_OUTPUT

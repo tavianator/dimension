@@ -1,0 +1,125 @@
+#!/usr/bin/python3
+
+#########################################################################
+# Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     #
+#                                                                       #
+# This file is part of Dimension.                                       #
+#                                                                       #
+# Dimension is free software; you can redistribute it and/or modify it  #
+# under the terms of the GNU General Public License as published by the #
+# Free Software Foundation; either version 3 of the License, or (at     #
+# your option) any later version.                                       #
+#                                                                       #
+# Dimension is distributed in the hope that it will be useful, but      #
+# WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     #
+# General Public License for more details.                              #
+#                                                                       #
+# You should have received a copy of the GNU General Public License     #
+# along with this program.  If not, see <http://www.gnu.org/licenses/>. #
+#########################################################################
+
+import argparse
+import os.path
+
+# Parse the command line
+
+_parser = argparse.ArgumentParser(
+  description = '@PACKAGE_NAME@ @PACKAGE_VERSION@',
+  conflict_handler = 'resolve', # For -h as height instead of help
+)
+
+_parser.add_argument('-V', '--version', action = 'version',
+                     version = '@PACKAGE_NAME@ @PACKAGE_VERSION@')
+
+_parser.add_argument('-w', '--width', action = 'store', default = 768,
+                     help = 'image width')
+_parser.add_argument('-h', '--height', action = 'store', default = 480,
+                     help = 'image height')
+
+_parser.add_argument('-v', '--verbose', action = 'store_true',
+                     help = 'print more information')
+_parser.add_argument('-q', '--quiet', action = 'store_true',
+                     help = 'print less information')
+
+_parser.add_argument('--strict', action = 'store_true',
+                     help = 'treat warnings as errors')
+_parser.add_argument('--threads', action = 'store',
+                     help = 'the number of threads to render with')
+
+_parser.add_argument('-o', '--output', action = 'store',
+                     help = 'the output image file')
+_parser.add_argument('input', action = 'store',
+                     help = 'the input scene description file')
+
+_args = _parser.parse_args()
+
+# Default output is basename(input).png
+if _args.output is None:
+  _noext = os.path.splitext(os.path.basename(_args.input))[0]
+  _args.output = _noext + '.png'
+
+# Imports available to scripts
+from math import *
+from dimension import *
+
+# --strict option
+die_on_warnings(_args.strict)
+
+# Defaults
+objects          = []
+lights           = []
+default_texture  = Texture(finish = Ambient(0.1) + Diffuse(0.6))
+default_interior = Interior()
+background       = Black
+sky_sphere       = None
+recursion_limit  = None
+
+# Execute the input script
+if not _args.quiet:
+  print('Parsing scene ...')
+
+parse_timer = Timer()
+with open(_args.input) as _fh:
+  exec(compile(_fh.read(), _args.input, 'exec'))
+parse_timer.complete()
+
+# Make the canvas
+canvas = Canvas(width = _args.width, height = _args.height)
+canvas.optimize_PNG()
+
+# Make the scene object
+scene = Scene(canvas  = canvas,
+              objects = objects,
+              lights  = lights,
+              camera  = camera)
+scene.default_texture = default_texture
+scene.background      = background
+if sky_sphere is not None:
+  scene.sky_sphere = sky_sphere
+if recursion_limit is not None:
+  scene.recursion_limit = recursion_limit
+if _args.threads is not None:
+  scene.nthreads = _args.threads
+
+# Raytrace the scene
+if not _args.quiet:
+  if scene.nthreads == 1:
+    print('Rendering scene ...')
+  else:
+    print('Rendering scene (using %d threads) ...' % scene.nthreads)
+
+scene.raytrace()
+
+# Write the output file
+export_timer = Timer()
+canvas.write_PNG(_args.output)
+export_timer.complete()
+
+# Print execution times
+if _args.verbose:
+  print()
+  print('Parsing time:   ', parse_timer)
+  print('Bounding time:  ', scene.bounding_timer)
+  print('Rendering time: ', scene.render_timer)
+  print('Exporting time: ', export_timer)

@@ -17,17 +17,14 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = libdimension                                                         \
-          libdimension-python                                                  \
-          dimension
+TESTS = demo.dmnsn                                                             \
+        complex.dmnsn
+TEST_EXTENSIONS = .dmnsn
+DMNSN_LOG_COMPILER = $(top_builddir)/dimension/dimension
+AM_DMNSN_LOG_FLAGS = --strict
+TESTS_ENVIRONMENT = PYTHONPATH=$(top_builddir)/libdimension-python/.libs
 
-EXTRA_DIST = autogen.sh
+EXTRA_DIST = $(TESTS)
 
-bench:
-	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) bench
-
-doc:
-	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) doc
-
-.PHONY: bench doc
+clean-local:
+	rm -f *.png
