@@ -101,7 +101,7 @@ cdef class Vector:
     if len(args) == 1:
       if isinstance(args[0], Vector):
         self._v = (<Vector>args[0])._v
-      elif hasattr(args[0], '__iter__'): # Faster than try: ... except:
+      elif hasattr(args[0], "__iter__"): # Faster than try: ... except:
         self._real_init(*args[0])
       elif args[0] == 0:
         self._v = dmnsn_zero
@@ -324,7 +324,7 @@ cdef class Color:
     if len(args) == 1:
       if isinstance(args[0], Color):
         self._sRGB = (<Color>args[0])._sRGB
-      elif hasattr(args[0], '__iter__'):
+      elif hasattr(args[0], "__iter__"):
         self._real_init(*args[0])
       else:
         self._sRGB = dmnsn_color_mul(args[0], dmnsn_white)
@@ -1303,14 +1303,14 @@ cdef class Scene:
     """The Timer for building the bounding hierarchy."""
     def __get__(self):
       if self._scene.bounding_timer == NULL:
-        raise RuntimeError('scene has not been rendered yet')
+        raise RuntimeError("scene has not been rendered yet")
 
       return _Timer(self._scene.bounding_timer)
   property render_timer:
     """The Timer for the actual render."""
     def __get__(self):
       if self._scene.render_timer == NULL:
-        raise RuntimeError('scene has not been rendered yet')
+        raise RuntimeError("scene has not been rendered yet")
 
       return _Timer(self._scene.render_timer)
 
