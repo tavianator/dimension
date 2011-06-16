@@ -432,7 +432,7 @@ cdef class Canvas:
   """A rendering target."""
   cdef dmnsn_canvas *_canvas
 
-  def __init__(self, size_t width, size_t height):
+  def __init__(self, width, height):
     """
     Create a Canvas.
 
@@ -1291,6 +1291,13 @@ cdef class Scene:
       return self._scene.nthreads
     def __set__(self, n):
       self._scene.nthreads = n
+
+  property quality:
+    """The render quality."""
+    def __get__(self):
+      return self._scene.quality
+    def __set__(self, q):
+      self._scene.quality = q
 
   property bounding_timer:
     """The Timer for building the bounding hierarchy."""

@@ -32,10 +32,10 @@ _parser = argparse.ArgumentParser(
 _parser.add_argument('-V', '--version', action = 'version',
                      version = '@PACKAGE_NAME@ @PACKAGE_VERSION@')
 
-_parser.add_argument('-w', '--width', action = 'store', default = 768,
-                     help = 'image width')
-_parser.add_argument('-h', '--height', action = 'store', default = 480,
-                     help = 'image height')
+_parser.add_argument('-w', '--width', action = 'store', type = int,
+                     default = 768, help = 'image width')
+_parser.add_argument('-h', '--height', action = 'store', type = int,
+                     default = 480, help = 'image height')
 
 _parser.add_argument('-v', '--verbose', action = 'store_true',
                      help = 'print more information')
@@ -44,12 +44,14 @@ _parser.add_argument('-q', '--quiet', action = 'store_true',
 
 _parser.add_argument('--strict', action = 'store_true',
                      help = 'treat warnings as errors')
-_parser.add_argument('--threads', action = 'store',
+_parser.add_argument('--threads', action = 'store', type = int,
                      help = 'the number of threads to render with')
+_parser.add_argument('--quality', action = 'store', type = int,
+                     help = 'the scene quality')
 
-_parser.add_argument('-o', '--output', action = 'store',
+_parser.add_argument('-o', '--output', action = 'store', type = str,
                      help = 'the output image file')
-_parser.add_argument('input', action = 'store',
+_parser.add_argument('input', action = 'store', type = str,
                      help = 'the input scene description file')
 
 _args = _parser.parse_args()
@@ -101,6 +103,8 @@ if recursion_limit is not None:
   scene.recursion_limit = recursion_limit
 if _args.threads is not None:
   scene.nthreads = _args.threads
+if _args.quality is not None:
+  scene.quality = _args.quality
 
 # Raytrace the scene
 if not _args.quiet:
