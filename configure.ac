@@ -17,7 +17,7 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 dnl Initialization
 AC_PREREQ(2.65)
-AC_INIT(Dimension, 0.0.0, tavianator@tavianator.com, dimension,
+AC_INIT(Dimension, 0.0, tavianator@tavianator.com, dimension,
         [http://www.tavianator.com/dimension/])
 AM_INIT_AUTOMAKE([parallel-tests color-tests std-options])
 AM_SILENT_RULES([yes])
