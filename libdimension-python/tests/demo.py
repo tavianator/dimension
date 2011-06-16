@@ -22,23 +22,23 @@
 from dimension import *
 
 # Treat warnings as errors for tests
-dieOnWarnings(True)
+die_on_warnings(True)
 
 # Canvas
 canvas = Canvas(width = 768, height = 480)
 
-havePNG = True
+have_PNG = True
 try:
-  canvas.optimizePNG()
+  canvas.optimize_PNG()
 except OSError as e:
   if e.errno == errno.ENOSYS:
-    havePNG = False
+    have_PNG = False
   else:
     raise
 
 # Camera
 camera = PerspectiveCamera(location = (0, 0.25, -4),
-                           lookAt   = 0)
+                           look_at   = 0)
 camera.transform(rotate(53*Y))
 
 # Lights
@@ -48,7 +48,7 @@ lights = [
 
 # Objects
 
-hollowCube = Difference(
+hollow_cube = Difference(
   [
     Box(
       (-1, -1, -1), (1, 1, 1),
@@ -77,8 +77,8 @@ arrow = Union(
   [
     Cylinder(bottom = -1.25*Y, top = 1.25*Y, radius = 0.1),
     Cone(
-      bottom = 1.25*Y, bottomRadius = 0.1,
-      top    = 1.5*Y,  topRadius    = 0,
+      bottom = 1.25*Y, bottom_radius = 0.1,
+      top    = 1.5*Y,  top_radius    = 0,
       open = True
     ),
   ],
@@ -103,12 +103,12 @@ arrow.transform(rotate(-45*X))
 
 torii = Union(
   [
-    Torus(majorRadius = 0.15, minorRadius = 0.05)
+    Torus(major_radius = 0.15, minor_radius = 0.05)
       .transform(translate(-Y)),
 
-    Torus(majorRadius = 0.15, minorRadius = 0.05),
+    Torus(major_radius = 0.15, minor_radius = 0.05),
 
-    Torus(majorRadius = 0.15, minorRadius = 0.05)
+    Torus(major_radius = 0.15, minor_radius = 0.05)
       .transform(translate(Y)),
   ],
   texture = Texture(
@@ -126,21 +126,21 @@ ground = Plane(
       Checker(),
       [
         White,
-        ColorMap(Checker(), [Black, White]).transform(scale(1/3, 1/3, 1/3))
+        ColorMap(Checker(), [Black, White]).transform(scale(1/3))
       ],
     ),
   ),
 )
 
 objects = [
-  hollowCube,
+  hollow_cube,
   arrow,
   torii,
   ground,
 ]
 
 # Sky sphere
-skySphere = SkySphere(
+sky_sphere = SkySphere(
   [
     ColorMap(
       pattern = Gradient(Y),
@@ -157,12 +157,12 @@ scene = Scene(canvas  = canvas,
               objects = objects,
               lights  = lights,
               camera  = camera)
-scene.defaultTexture = Texture(finish = Ambient(0.1) + Diffuse(0.6))
-scene.background     = Clear
-scene.skySphere      = skySphere
-scene.adcBailout     = 1/255
-scene.recursionLimit = 5
+scene.default_texture = Texture(finish = Ambient(0.1) + Diffuse(0.6))
+scene.background      = Clear
+scene.sky_sphere      = sky_sphere
+scene.adc_bailout     = 1/255
+scene.recursion_limit = 5
 scene.raytrace()
 
-if havePNG:
-  canvas.writePNG('demo.png')
+if have_PNG:
+  canvas.write_PNG('demo.png')

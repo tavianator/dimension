@@ -22,7 +22,7 @@
 from dimension import *
 
 # Treat warnings as errors for tests
-dieOnWarnings(True)
+die_on_warnings(True)
 
 c = Color(0, 0.5, 1, trans = 0.5, filter = 0.35)
 assert repr(c) == 'dimension.Color(0.0, 0.5, 1.0, 0.5, 0.35)', repr(c)

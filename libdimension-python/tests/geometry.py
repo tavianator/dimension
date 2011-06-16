@@ -22,7 +22,7 @@
 from dimension import *
 
 # Treat warnings as errors for tests
-dieOnWarnings(True)
+die_on_warnings(True)
 
 assert 0 == Vector(0, 0, 0), Vector(0)
 assert X == Vector(1, 0, 0), X
@@ -66,10 +66,10 @@ assert str(m) == '\n' \
                  '[9.0\t10.0\t11.0\t12.0]\n' \
                  '[0.0\t0.0\t0.0\t1.0]', str(m)
 
-s = scale(Vector(1, 2, 3))
-assert s == Matrix(1, 0, 0, 0,
-                   0, 2, 0, 0,
-                   0, 0, 3, 0), s
+s = scale(0.5)
+assert s == Matrix(0.5, 0,   0,   0,
+                   0,   0.5, 0,   0,
+                   0,   0,   0.5, 0), s
 
 t = translate(1, 2, 3)
 assert t == Matrix(1, 0, 0, 1,

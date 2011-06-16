@@ -23,25 +23,25 @@ from dimension import *
 import errno
 
 # Treat warnings as errors for tests
-dieOnWarnings(True)
+die_on_warnings(True)
 
 canvas = Canvas(768, 480)
 
 assert canvas.width  == 768, canvas.width
 assert canvas.height == 480, canvas.height
 
-havePNG = True
+have_PNG = True
 try:
-    canvas.optimizePNG()
+    canvas.optimize_PNG()
 except OSError as e:
     if e.errno == errno.ENOSYS:
         havePNG = False
     else:
         raise
 
-haveGL = True
+have_GL = True
 try:
-    canvas.optimizeGL()
+    canvas.optimize_GL()
 except OSError as e:
     if e.errno == errno.ENOSYS:
         haveGL = False
@@ -50,8 +50,8 @@ except OSError as e:
 
 canvas.clear(Blue)
 
-if havePNG:
-    canvas.writePNG('png.png')
+if have_PNG:
+    canvas.write_PNG('png.png')
 
 #if haveGL:
 #    canvas.drawGL()
