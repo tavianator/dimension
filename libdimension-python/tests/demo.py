@@ -82,22 +82,20 @@ arrow = Union(
       open = True
     ),
   ],
-  texture = Texture(
-    pigment = ColorMap(
-      Gradient(Y),
-      {
-        0/6: Red,
-        1/6: Orange,
-        2/6: Yellow,
-        3/6: Green,
-        4/6: Blue,
-        5/6: Magenta,
-        6/6: Red,
-      },
-    )
-    .transform(scale(1, 2.75, 1))
-    .transform(translate(-1.25*Y)),
-  ),
+  pigment = ColorMap(
+    Gradient(Y),
+    {
+      0/6: Red,
+      1/6: Orange,
+      2/6: Yellow,
+      3/6: Green,
+      4/6: Blue,
+      5/6: Magenta,
+      6/6: Red,
+    },
+  )
+  .transform(scale(1, 2.75, 1))
+  .transform(translate(-1.25*Y)),
 )
 arrow.transform(rotate(-45*X))
 
@@ -121,14 +119,12 @@ torii.transform(rotate(-45*X))
 ground = Plane(
   normal = Y, distance = -2,
 
-  texture = Texture(
-    pigment = PigmentMap(
-      Checker(),
-      [
-        White,
-        ColorMap(Checker(), [Black, White]).transform(scale(1/3))
-      ],
-    ),
+  pigment = PigmentMap(
+    Checker(),
+    [
+      White,
+      ColorMap(Checker(), [Black, White]).transform(scale(1/3))
+    ],
   ),
 )
 

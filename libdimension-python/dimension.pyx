@@ -793,11 +793,19 @@ cdef class Texture:
   property pigment:
     """The texture's pigment."""
     def __get__(self):
-      return _Pigment(self._texture.pigment)
-    def __set__(self, Pigment pigment not None):
+      if self._texture.pigment == NULL:
+        return None
+      else:
+        return _Pigment(self._texture.pigment)
+    def __set__(self, pigment):
       dmnsn_delete_pigment(self._texture.pigment)
-      self._texture.pigment = pigment._pigment
-      DMNSN_INCREF(self._texture.pigment)
+      cdef Pigment real_pigment
+      if pigment is None:
+        self._texture.pigment = NULL
+      else:
+        real_pigment = Pigment(pigment)
+        self._texture.pigment = real_pigment._pigment
+        DMNSN_INCREF(self._texture.pigment)
 
   property finish:
     """The texture's finish."""
@@ -859,26 +867,65 @@ cdef class Object:
   def __cinit__(self):
     self._object = NULL
 
-  def __init__(self, Texture texture = None, Interior interior = None):
+  def __init__(self, Texture texture = None, pigment = None,
+               Finish finish = None, Interior interior = None):
     """
     Initialize an Object.
 
     Keyword arguments:
     texture  -- the object's Texture
+    pigment  -- shorthand for specifying the texture's pigment
+    finish   -- shorthand for specifying the texture's finish
     interior -- the object's Interior
     """
     if self._object == NULL:
       raise TypeError("attempt to initialize base Object")
 
-    if texture is not None:
-      self._object.texture = texture._texture
-      DMNSN_INCREF(self._object.texture)
+    self.texture = texture
+    if pigment is not None:
+      if texture is not None:
+        raise TypeError('both texture and pigment specified.')
+      else:
+        if self.texture is None:
+          self.texture = Texture()
+        self.texture.pigment = pigment
+
+    if finish is not None:
+      if texture is not None:
+        raise TypeError('both texture and finish specified.')
+      else:
+        if self.texture is None:
+          self.texture = Texture()
+        self.texture.finish = finish
+
     if interior is not None:
-      self._object.interior = interior._interior
-      DMNSN_INCREF(self._object.interior)
+      self.interior = interior
 
   def __dealloc__(self):
     dmnsn_delete_object(self._object)
+
+  property texture:
+    """The object's Texture."""
+    def __get__(self):
+      if self._object.texture == NULL:
+        return None
+      else:
+        return _Texture(self._object.texture)
+    def __set__(self, Texture texture):
+      dmnsn_delete_texture(self._object.texture)
+      if texture is None:
+        self._object.texture = NULL
+      else:
+        self._object.texture = texture._texture
+        DMNSN_INCREF(self._object.texture)
+
+  property interior:
+    """The object's Interior."""
+    def __get__(self):
+      return _Interior(self._object.interior)
+    def __set__(self, Interior interior not None):
+      self._object.interior = interior._interior
+      DMNSN_INCREF(self._object.interior)
 
   def transform(self, Matrix trans not None):
     """Transform an object."""
