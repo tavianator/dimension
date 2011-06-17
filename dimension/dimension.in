@@ -21,6 +21,25 @@
 
 import argparse
 import os.path
+import sys
+
+# Display a progress bar
+def progress_bar(str, progress):
+  if not _args.quiet:
+    print(str, end = ' ')
+    sys.stdout.flush()
+
+    term_width = terminal_width()
+    width = term_width - (len(str) + 1)%term_width
+    for i in range(width):
+      progress.wait(i/width)
+      print('.', end = '')
+      sys.stdout.flush()
+
+    print()
+    sys.stdout.flush()
+
+  progress.finish()
 
 # Parse the command line
 _parser = argparse.ArgumentParser(
@@ -74,6 +93,7 @@ die_on_warnings(_args.strict)
 # Defaults
 objects          = []
 lights           = []
+camera           = PerspectiveCamera()
 default_texture  = Texture(finish = Ambient(0.1) + Diffuse(0.6))
 default_interior = Interior()
 background       = Black
@@ -110,17 +130,15 @@ if _args.quality is not None:
   scene.quality = _args.quality
 
 # Raytrace the scene
-if not _args.quiet:
-  if scene.nthreads == 1:
-    print("Rendering scene ...")
-  else:
-    print("Rendering scene (using %d threads) ..." % scene.nthreads)
-
-scene.raytrace()
+if scene.nthreads == 1:
+  render_message = "Rendering scene"
+else:
+  render_message = "Rendering scene (using %d threads)" % scene.nthreads
+progress_bar(render_message, scene.raytrace_async())
 
 # Write the output file
 export_timer = Timer()
-canvas.write_PNG(_args.output)
+progress_bar("Writing %s" % _args.output, canvas.write_PNG_async(_args.output))
 export_timer.complete()
 
 # Print execution times

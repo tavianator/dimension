@@ -28,10 +28,52 @@ import os
 # Globals #
 ###########
 
-# Make warnings fatal
 def die_on_warnings(always_die):
   """Whether to treat Dimension warnings as errors."""
   dmnsn_die_on_warnings(always_die)
+
+def terminal_width():
+  """Return the width of the terminal, if present."""
+  return dmnsn_terminal_width()
+
+############
+# Progress #
+############
+
+cdef class Progress:
+  cdef dmnsn_progress *_progress
+
+  def __cinit__(self):
+    self._progress = NULL
+
+  def __init__(self):
+    raise RuntimeError("attempt to create a Progress object.")
+
+  def __dealloc__(self):
+    self.finish()
+
+  def finish(self):
+    if self._progress != NULL:
+      try:
+        if dmnsn_finish_progress(self._progress) != 0:
+          raise RuntimeError("background task failed.")
+      finally:
+        self._progress = NULL
+
+  def progress(self):
+    if self._progress == NULL:
+      raise RuntimeError("background task finished.")
+    return dmnsn_get_progress(self._progress)
+
+  def wait(self, progress):
+    if self._progress == NULL:
+      raise RuntimeError("background task finished.")
+    dmnsn_wait_progress(self._progress, progress)
+
+cdef _Progress(dmnsn_progress *progress):
+  cdef Progress self = Progress.__new__(Progress)
+  self._progress = progress
+  return self
 
 ##########
 # Timers #
@@ -107,7 +149,7 @@ cdef class Vector:
       elif args[0] == 0:
         self._v = dmnsn_zero
       else:
-        raise TypeError, "expected a sequence or 0"
+        raise TypeError("expected a sequence or 0")
     else:
       self._real_init(*args, **kwargs)
 
@@ -471,14 +513,16 @@ cdef class Canvas:
 
   def write_PNG(self, path):
     """Export the canvas as a PNG file."""
+    self.write_PNG_async(path).finish()
+  def write_PNG_async(self, path):
+    """Export the canvas as a PNG file, in the background."""
     bpath = path.encode("UTF-8")
     cdef char *cpath = bpath
     cdef FILE *file = fopen(cpath, "wb")
     if file == NULL:
       raise OSError(errno, os.strerror(errno))
 
-    if dmnsn_png_write_canvas(self._canvas, file) != 0:
-      raise OSError(errno, os.strerror(errno))
+    return _Progress(dmnsn_png_write_canvas_async(self._canvas, file))
 
   def draw_GL(self):
     """Export the canvas to the current OpenGL context."""
@@ -1317,11 +1361,13 @@ cdef class Scene:
 
   def raytrace(self):
     """Render the scene."""
+    self.raytrace_async().finish()
+  def raytrace_async(self):
+    """Render the scene, in the background."""
     # Ensure the default texture is complete
     cdef Texture default = Texture(Black)
     dmnsn_texture_cascade(default._texture, &self._scene.default_texture)
-
-    dmnsn_raytrace_scene(self._scene)
+    return _Progress(dmnsn_raytrace_scene_async(self._scene))
 
   def __dealloc__(self):
     dmnsn_delete_scene(self._scene)

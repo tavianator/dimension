@@ -29,7 +29,9 @@ dimension.c: dimension.pyx dimension.pxd
 	cython --line-directives dimension.pyx
 
 pyexec_LTLIBRARIES = dimension.la
-dimension_la_SOURCES = dimension.c
+dimension_la_SOURCES = dimension.c                                             \
+                       platform.c                                              \
+                       platform.h
 dimension_la_LDFLAGS = -avoid-version -module
 dimension_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
