@@ -56,6 +56,7 @@ typedef enum dmnsn_pigment_map_flags {
  * A color-mapped pigment.
  * @param[in,out] pattern  The pattern of the pigment.
  * @param[in,out] map      The color map to apply to the pattern.
+ * @param[in]     flags    Gradient flags
  * @return A pigment mapping the pattern to color values.
  */
 dmnsn_pigment *dmnsn_new_color_map_pigment(dmnsn_pattern *pattern,
@@ -72,6 +73,7 @@ dmnsn_map *dmnsn_new_pigment_map(void);
  * A pigment-mapped pigment.
  * @param[in,out] pattern  The pattern of the pigment.
  * @param[in,out] map      The pigment map to apply to the pattern.
+ * @param[in]     flags    Gradient flags
  * @return A pigment mapping the pattern to other pigments.
  */
 dmnsn_pigment *dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern,

@@ -36,6 +36,7 @@ typedef struct dmnsn_ambient dmnsn_ambient;
 typedef dmnsn_color dmnsn_ambient_fn(const dmnsn_ambient *ambient,
                                      dmnsn_color pigment);
 
+/** Ambient finish component. */
 struct dmnsn_ambient {
   dmnsn_ambient_fn *ambient_fn; /**< Ambient callback. */
   dmnsn_free_fn    *free_fn;    /**< Destructor callback. */
@@ -97,6 +98,7 @@ typedef dmnsn_color dmnsn_specular_fn(const dmnsn_specular *specular,
                                       dmnsn_vector ray, dmnsn_vector normal,
                                       dmnsn_vector viewer);
 
+/** Specular finish component. */
 struct dmnsn_specular {
   dmnsn_specular_fn *specular_fn; /**< Specular callback. */
   dmnsn_free_fn     *free_fn;     /**< Destructor callback. */

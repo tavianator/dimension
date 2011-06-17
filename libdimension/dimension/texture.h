@@ -61,4 +61,4 @@ void dmnsn_initialize_texture(dmnsn_texture *texture);
  * @param[in,out] texturep         A pointer to the texture to fill.
  */
 void dmnsn_texture_cascade(dmnsn_texture *default_texture,
-                           dmnsn_texture **texture);
+                           dmnsn_texture **texturep);
