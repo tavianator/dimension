@@ -153,7 +153,7 @@ scene = Scene(canvas  = canvas,
               objects = objects,
               lights  = lights,
               camera  = camera)
-scene.default_texture = Texture(finish = Ambient(0.1) + Diffuse(0.6))
+scene.default_texture = Texture(finish = Ambient(0.1) + Diffuse(0.7))
 scene.background      = Clear
 scene.sky_sphere      = sky_sphere
 scene.adc_bailout     = 1/255

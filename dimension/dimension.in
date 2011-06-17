@@ -105,7 +105,7 @@ die_on_warnings(_args.strict)
 objects          = []
 lights           = []
 camera           = PerspectiveCamera()
-default_texture  = Texture(finish = Ambient(0.1) + Diffuse(0.6))
+default_texture  = Texture(finish = Ambient(0.1) + Diffuse(0.7))
 default_interior = Interior()
 background       = Black
 sky_sphere       = None

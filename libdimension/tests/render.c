@@ -39,7 +39,7 @@ dmnsn_new_test_scene(void)
   );
   default_finish->diffuse = dmnsn_new_lambertian(
     dmnsn_color_intensity(
-      dmnsn_color_from_sRGB(dmnsn_color_mul(0.6, dmnsn_white))
+      dmnsn_color_from_sRGB(dmnsn_color_mul(0.7, dmnsn_white))
     )
   );
 
