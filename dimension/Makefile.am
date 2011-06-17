@@ -20,4 +20,4 @@
 SUBDIRS = .                                                                    \
           tests
 
-python_PYTHON = dimension
+bin_SCRIPTS = dimension

@@ -41,8 +41,17 @@ def progress_bar(str, progress):
 
   progress.finish()
 
+# Specialized parser to print --version output to stdout rather than stderr,
+# to pass distcheck
+class _DimensionArgumentParser(argparse.ArgumentParser):
+  def exit(self, status = 0, message = None):
+    if message:
+      file = sys.stdout if status == 0 else sys.stderr
+      file.write(message)
+    sys.exit(status)
+
 # Parse the command line
-_parser = argparse.ArgumentParser(
+_parser = _DimensionArgumentParser(
   epilog = "@PACKAGE_STRING@\n"
            "@PACKAGE_URL@\n"
            "Copyright (C) 2009-2011 Tavian Barnes <@PACKAGE_BUGREPORT@>\n"
@@ -64,8 +73,6 @@ _parser.add_argument("-v", "--verbose", action = "store_true",
 _parser.add_argument("-q", "--quiet", action = "store_true",
                      help = "print less information")
 
-_parser.add_argument("--strict", action = "store_true",
-                     help = "treat warnings as errors")
 _parser.add_argument("--threads", action = "store", type = int,
                      help = "the number of threads to render with")
 _parser.add_argument("--quality", action = "store", type = int,
@@ -75,6 +82,10 @@ _parser.add_argument("-o", "--output", action = "store", type = str,
                      help = "the output image file")
 _parser.add_argument("input", action = "store", type = str,
                      help = "the input scene description file")
+
+# Debugging/testing options
+_parser.add_argument("--strict", action = "store_true",
+                     help = argparse.SUPPRESS)
 
 _args = _parser.parse_args()
 
