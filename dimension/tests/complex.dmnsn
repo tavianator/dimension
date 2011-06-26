@@ -18,7 +18,7 @@
 #########################################################################
 
 camera = PerspectiveCamera(location = (3, 6, -11),
-                           look_at   = 0)
+                           look_at  = 0)
 
 background = 0.5*Color(0.73, 0.90, 0.97)
 
@@ -62,7 +62,7 @@ def make_sphere(x, y, z, size):
     )
   )
 
-size = 10;
+size = 10
 for x in range(size):
   for y in range(size):
     for z in range(size):
