@@ -75,7 +75,7 @@ _parser.add_argument("-q", "--quiet", action = "store_true",
 
 _parser.add_argument("--threads", action = "store", type = int,
                      help = "the number of threads to render with")
-_parser.add_argument("--quality", action = "store", type = int,
+_parser.add_argument("--quality", action = "store", type = str,
                      help = "the scene quality")
 
 _parser.add_argument("-o", "--output", action = "store", type = str,

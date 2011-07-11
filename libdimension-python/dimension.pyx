@@ -884,7 +884,7 @@ cdef class Object:
     self.texture = texture
     if pigment is not None:
       if texture is not None:
-        raise TypeError('both texture and pigment specified.')
+        raise TypeError("both texture and pigment specified.")
       else:
         if self.texture is None:
           self.texture = Texture()
@@ -892,7 +892,7 @@ cdef class Object:
 
     if finish is not None:
       if texture is not None:
-        raise TypeError('both texture and finish specified.')
+        raise TypeError("both texture and finish specified.")
       else:
         if self.texture is None:
           self.texture = Texture()
@@ -1401,9 +1401,9 @@ cdef class Scene:
   property quality:
     """The render quality."""
     def __get__(self):
-      return self._scene.quality
+      return _quality_to_string(self._scene.quality)
     def __set__(self, q):
-      self._scene.quality = q
+      self._scene.quality = _string_to_quality(q)
 
   property bounding_timer:
     """The Timer for building the bounding hierarchy."""
@@ -1432,3 +1432,58 @@ cdef class Scene:
 
   def __dealloc__(self):
     dmnsn_delete_scene(self._scene)
+
+def _quality_to_string(int quality):
+  cdef str s = ""
+
+  if quality & DMNSN_RENDER_PIGMENT:
+    s += 'p'
+  if quality & DMNSN_RENDER_LIGHTS:
+    s += 'l'
+  if quality & DMNSN_RENDER_FINISH:
+    s += 'f'
+  if quality & DMNSN_RENDER_TRANSLUCENCY:
+    s += 't'
+  if quality & DMNSN_RENDER_REFLECTION:
+    s += 'r'
+
+  if s == "":
+    return "0"
+  else:
+    return s
+
+def _string_to_quality(str quality not None):
+  cdef int q = DMNSN_RENDER_NONE
+  inverse = False
+
+  if quality[0] == '^':
+    inverse = True
+    quality = quality[1:]
+
+  if quality != "0":
+    while len(quality) > 0:
+      ch = quality[0]
+      quality = quality[1:]
+
+      if ch == 'p':
+        flag = DMNSN_RENDER_PIGMENT
+      elif ch == 'l':
+        flag = DMNSN_RENDER_LIGHTS
+      elif ch == 'f':
+        flag = DMNSN_RENDER_FINISH
+      elif ch == 't':
+        flag = DMNSN_RENDER_TRANSLUCENCY
+      elif ch == 'r':
+        flag = DMNSN_RENDER_REFLECTION
+      else:
+        raise ValueError("unknown quality flag '%c'" % ch)
+
+      if q & flag:
+        raise ValueError("flag '%c' specified twice" % ch)
+      else:
+        q |= flag
+
+  if inverse:
+    q = ~q
+
+  return q
