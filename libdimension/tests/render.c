@@ -139,9 +139,7 @@ dmnsn_new_test_scene(void)
   dmnsn_array_push(arrow_array, &cone);
 
   dmnsn_object *arrow = dmnsn_new_csg_union(arrow_array);
-  arrow->trans = dmnsn_rotation_matrix(
-    dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)
-  );
+  dmnsn_delete_array(arrow_array);
   dmnsn_pattern *gradient = dmnsn_new_gradient_pattern(dmnsn_y);
   dmnsn_map *gradient_color_map = dmnsn_new_color_map();
   dmnsn_add_map_entry(gradient_color_map, 0.0,     &dmnsn_red);
@@ -161,8 +159,6 @@ dmnsn_new_test_scene(void)
       dmnsn_translation_matrix(dmnsn_new_vector(0.0, -1.25, 0.0)),
       dmnsn_scale_matrix(dmnsn_new_vector(1.0, 2.75, 1.0))
     );
-  dmnsn_array_push(scene->objects, &arrow);
-  dmnsn_delete_array(arrow_array);
 
   dmnsn_array *torus_array = dmnsn_new_array(sizeof(dmnsn_object *));
 
@@ -178,15 +174,21 @@ dmnsn_new_test_scene(void)
   dmnsn_array_push(torus_array, &torus3);
 
   dmnsn_object *torii = dmnsn_new_csg_union(torus_array);
-  torii->trans = dmnsn_rotation_matrix(
-    dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)
-  );
+  dmnsn_delete_array(torus_array);
   torii->texture = dmnsn_new_texture();
   torii->texture->pigment = dmnsn_new_solid_pigment(dmnsn_blue);
   torii->texture->finish.ambient
     = dmnsn_new_basic_ambient(dmnsn_white);
-  dmnsn_array_push(scene->objects, &torii);
-  dmnsn_delete_array(torus_array);
+
+  dmnsn_array *spike_array = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_array_push(spike_array, &arrow);
+  dmnsn_array_push(spike_array, &torii);
+  dmnsn_object *spike = dmnsn_new_csg_union(spike_array);
+  dmnsn_delete_array(spike_array);
+  spike->trans = dmnsn_rotation_matrix(
+    dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)
+  );
+  dmnsn_array_push(scene->objects, &spike);
 
   dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));

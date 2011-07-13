@@ -97,7 +97,6 @@ arrow = Union(
   .transform(scale(1, 2.75, 1))
   .transform(translate(-1.25*Y)),
 )
-arrow.transform(rotate(-45*X))
 
 torii = Union(
   [
@@ -114,7 +113,8 @@ torii = Union(
     finish  = Ambient(1),
   ),
 )
-torii.transform(rotate(-45*X))
+
+spike = Union([arrow, torii]).transform(rotate(-45*X))
 
 ground = Plane(
   normal = Y, distance = -2,
@@ -130,8 +130,7 @@ ground = Plane(
 
 objects = [
   hollow_cube,
-  arrow,
-  torii,
+  spike,
   ground,
 ]
 
