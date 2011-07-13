@@ -111,7 +111,8 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           threads.c                                            \
                           threads.h                                            \
                           timer.c                                              \
-                          torus.c
+                          torus.c                                              \
+                          triangle.c
 libdimension_la_CFLAGS  = $(AM_CFLAGS)
 libdimension_la_LDFLAGS = -version-info 0:0:0 -no-undefined $(AM_LDFLAGS)
 libdimension_la_LIBADD  = -lm -lpthread

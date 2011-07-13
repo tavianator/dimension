@@ -19,6 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
+from math import *
 from dimension import *
 
 # Treat warnings as errors for tests
@@ -116,6 +117,24 @@ torii = Union(
 
 spike = Union([arrow, torii]).transform(rotate(-45*X))
 
+strip_textures = [
+  Texture(pigment = Red),
+  Texture(pigment = Orange),
+  Texture(pigment = Yellow),
+]
+strip_triangles = []
+
+a = 0
+b = Vector(0, sqrt(3)/2, 0.5)
+c = Z
+for i in range(128):
+  strip_triangles.append(Triangle(a, b, c, texture = strip_textures[i%3]))
+  a = b
+  b = c
+  c = a + Z
+
+strip = Union(strip_triangles).transform(translate(5, -2, -4))
+
 ground = Plane(
   normal = Y, distance = -2,
 
@@ -131,6 +150,7 @@ ground = Plane(
 objects = [
   hollow_cube,
   spike,
+  strip,
   ground,
 ]
 

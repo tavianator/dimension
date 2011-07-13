@@ -939,6 +939,20 @@ cdef class Object:
       self._object.texture.trans = dmnsn_matrix_mul(self._object.texture.trans,
                                                     trans.inverse()._m)
 
+cdef class Triangle(Object):
+  """A triangle."""
+  def __init__(self, a, b, c, *args, **kwargs):
+    """
+    Create a Triangle.
+
+    Keyword arguments:
+    a, b, c -- the corners of the triangle
+
+    Additionally, Triangle() accepts any arguments that Object() accepts.
+    """
+    self._object = dmnsn_new_triangle(Vector(a)._v, Vector(b)._v, Vector(c)._v)
+    Object.__init__(self, *args, **kwargs)
+
 cdef class Plane(Object):
   """A plane."""
   def __init__(self, normal, double distance, *args, **kwargs):

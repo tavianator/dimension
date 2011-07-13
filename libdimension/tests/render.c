@@ -190,6 +190,39 @@ dmnsn_new_test_scene(void)
   );
   dmnsn_array_push(scene->objects, &spike);
 
+  /* Triangle strip */
+
+  dmnsn_array *strip_array = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_vector a = dmnsn_zero;
+  dmnsn_vector b = dmnsn_new_vector(0.0, sqrt(3.0)/2.0, 0.5);
+  dmnsn_vector c = dmnsn_z;
+  dmnsn_texture *strip_textures[3] = {
+    dmnsn_new_texture(),
+    dmnsn_new_texture(),
+    dmnsn_new_texture(),
+  };
+  strip_textures[0]->pigment = dmnsn_new_solid_pigment(dmnsn_red);
+  strip_textures[1]->pigment = dmnsn_new_solid_pigment(dmnsn_orange);
+  strip_textures[2]->pigment = dmnsn_new_solid_pigment(dmnsn_yellow);
+  for (unsigned int i = 0; i < 128; ++i) {
+    dmnsn_object *triangle = dmnsn_new_triangle(a, b, c);
+    triangle->texture = strip_textures[i%3];
+    DMNSN_INCREF(triangle->texture);
+    dmnsn_array_push(strip_array, &triangle);
+
+    a = b;
+    b = c;
+    c = dmnsn_vector_add(a, dmnsn_z);
+  }
+  for (unsigned int i = 0; i < 3; ++i) {
+    dmnsn_delete_texture(strip_textures[i]);
+  }
+
+  dmnsn_object *strip = dmnsn_new_csg_union(strip_array);
+  dmnsn_delete_array(strip_array);
+  strip->trans = dmnsn_translation_matrix(dmnsn_new_vector(5.0, -2.0, -4.0));
+  dmnsn_array_push(scene->objects, &strip);
+
   dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
   dmnsn_pattern *checker1 = dmnsn_new_checker_pattern();

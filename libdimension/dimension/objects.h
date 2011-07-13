@@ -26,6 +26,16 @@
 #include <stdbool.h>
 
 /**
+ * A triangle.
+ * @param[in] a  The first corner of the triangle.
+ * @param[in] b  The second corner of the triangle.
+ * @param[in] c  The third corner of the triangle.
+ */
+dmnsn_object *dmnsn_new_triangle(dmnsn_vector a,
+                                 dmnsn_vector b,
+                                 dmnsn_vector c);
+
+/**
  * A plane.
  * @param[in] normal  The normal vector of the plane.
  * @return A plane through the origin, with the given normal.
