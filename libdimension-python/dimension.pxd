@@ -226,6 +226,7 @@ cdef extern from "../libdimension/dimension.h":
 
   ctypedef struct dmnsn_pigment:
     dmnsn_matrix trans
+    dmnsn_color quick_color
 
   ctypedef enum dmnsn_pigment_map_flags:
     DMNSN_PIGMENT_MAP_REGULAR

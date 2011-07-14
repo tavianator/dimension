@@ -580,19 +580,25 @@ cdef class Pigment:
   def __cinit__(self):
     self._pigment = NULL
 
-  def __init__(self, arg = None):
+  def __init__(self, quick_color = None):
     """
     Create a Pigment.
 
     With an arguement, create a solid pigment of that color.  Otherwise, create
     a base Pigment.
+
+    Keyword arguments:
+    quick_color  -- the object's quick color for low-quality renders
     """
-    if arg is not None:
-      if isinstance(arg, Pigment):
-        self._pigment = (<Pigment>arg)._pigment
-        DMNSN_INCREF(self._pigment)
+    if quick_color is not None:
+      if self._pigment == NULL:
+        if isinstance(quick_color, Pigment):
+          self._pigment = (<Pigment>quick_color)._pigment
+          DMNSN_INCREF(self._pigment)
+        else:
+          self._pigment = dmnsn_new_solid_pigment(Color(quick_color)._c)
       else:
-        self._pigment = dmnsn_new_solid_pigment(Color(arg)._c)
+        self._pigment.quick_color = Color(quick_color)._c
 
   def __dealloc__(self):
     dmnsn_delete_pigment(self._pigment)
@@ -613,7 +619,8 @@ cdef _Pigment(dmnsn_pigment *pigment):
 
 cdef class ColorMap(Pigment):
   """A color map"""
-  def __init__(self, Pattern pattern not None, map, bool sRGB not None = True):
+  def __init__(self, Pattern pattern not None, map, bool sRGB not None = True,
+               *args, **kwargs):
     """
     Create a ColorMap.
 
@@ -641,11 +648,12 @@ cdef class ColorMap(Pigment):
     DMNSN_INCREF(pattern._pattern)
     self._pigment = dmnsn_new_color_map_pigment(pattern._pattern, color_map,
                                                 flags)
-    Pigment.__init__(self)
+    Pigment.__init__(self, *args, **kwargs)
 
 cdef class PigmentMap(Pigment):
   """A pigment map."""
-  def __init__(self, Pattern pattern not None, map, bool sRGB not None = True):
+  def __init__(self, Pattern pattern not None, map, bool sRGB not None = True,
+               *args, **kwargs):
     """
     Create a PigmentMap.
 
@@ -680,7 +688,7 @@ cdef class PigmentMap(Pigment):
     DMNSN_INCREF(pattern._pattern)
     self._pigment = dmnsn_new_pigment_map_pigment(pattern._pattern, pigment_map,
                                                   flags)
-    Pigment.__init__(self)
+    Pigment.__init__(self, *args, **kwargs)
 
 ############
 # Finishes #
