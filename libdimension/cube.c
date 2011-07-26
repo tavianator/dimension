@@ -112,11 +112,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
   }
 
   if (tmin >= 0.0) {
-    intersection->ray      = line;
-    intersection->t        = tmin;
-    intersection->normal   = nmin;
-    intersection->texture  = cube->texture;
-    intersection->interior = cube->interior;
+    intersection->t      = tmin;
+    intersection->normal = nmin;
     return true;
   } else {
     return false;

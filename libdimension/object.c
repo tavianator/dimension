@@ -34,6 +34,7 @@ dmnsn_new_object(void)
   object->texture         = NULL;
   object->interior        = NULL;
   object->trans           = dmnsn_identity_matrix();
+  object->intrinsic_trans = dmnsn_identity_matrix();
   object->children        = dmnsn_new_array(sizeof(dmnsn_object *));
   object->split_children  = false;
   object->intersection_fn = NULL;
@@ -72,17 +73,26 @@ dmnsn_initialize_object(dmnsn_object *object)
 
   /* Initialize the texture */
   if (!object->texture->initialized) {
-    object->texture->trans = dmnsn_matrix_mul(object->trans,
-                                              object->texture->trans);
     dmnsn_initialize_texture(object->texture);
   }
+
+  /* Precalculate object values */
+  object->pigment_trans = dmnsn_matrix_inverse(object->trans);
+  object->trans = dmnsn_matrix_mul(object->trans, object->intrinsic_trans);
 
   /* Initialize the object's children */
   DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
     (*child)->trans = dmnsn_matrix_mul(object->trans, (*child)->trans);
+    bool pigment_cascaded =
+      (*child)->texture == NULL || (*child)->texture->pigment == NULL;
+
     dmnsn_texture_cascade(object->texture, &(*child)->texture);
     dmnsn_interior_cascade(object->interior, &(*child)->interior);
     dmnsn_initialize_object(*child);
+
+    if (pigment_cascaded) {
+      (*child)->pigment_trans = object->pigment_trans;
+    }
   }
 
   /* Initialization callback */
@@ -90,7 +100,7 @@ dmnsn_initialize_object(dmnsn_object *object)
     object->initialize_fn(object);
   }
 
-  /* Precalculate object values */
+  /* Precalculate more object values */
   object->bounding_box
     = dmnsn_transform_bounding_box(object->trans, object->bounding_box);
   object->trans_inv = dmnsn_matrix_inverse(object->trans);

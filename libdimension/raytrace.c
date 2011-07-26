@@ -109,10 +109,13 @@ typedef struct dmnsn_raytrace_state {
 
   const dmnsn_scene *scene;
   const dmnsn_intersection *intersection;
+  const dmnsn_texture *texture;
+  const dmnsn_interior *interior;
   const dmnsn_prtree *prtree;
   unsigned int reclevel;
 
   dmnsn_vector r;
+  dmnsn_vector pigment_r;
   dmnsn_vector viewer;
   dmnsn_vector reflected;
   dmnsn_vector light;
@@ -125,6 +128,35 @@ typedef struct dmnsn_raytrace_state {
 
   dmnsn_color adc_value;
 } dmnsn_raytrace_state;
+
+/** Compute a raytrace state from an intersection. */
+static inline void
+dmnsn_initialize_raytrace_state(dmnsn_raytrace_state *state,
+                                const dmnsn_intersection *intersection)
+{
+  state->intersection = intersection;
+  state->texture      = intersection->object->texture;
+  state->interior     = intersection->object->interior;
+
+  state->r = dmnsn_line_point(intersection->ray, intersection->t);
+  state->pigment_r = dmnsn_transform_vector(
+    intersection->object->pigment_trans,
+    state->r
+  );
+  state->viewer = dmnsn_vector_normalized(
+    dmnsn_vector_negate(intersection->ray.n)
+  );
+  state->reflected = dmnsn_vector_sub(
+    dmnsn_vector_mul(
+      2*dmnsn_vector_dot(state->viewer, intersection->normal),
+      intersection->normal),
+    state->viewer
+  );
+
+  state->pigment    = dmnsn_black;
+  state->diffuse    = dmnsn_black;
+  state->additional = dmnsn_black;
+}
 
 /** Main helper for dmnsn_raytrace_scene_impl - shoot a ray. */
 static dmnsn_color dmnsn_raytrace_shoot(dmnsn_raytrace_state *state,
@@ -191,9 +223,9 @@ dmnsn_raytrace_background(dmnsn_raytrace_state *state, dmnsn_line ray)
 static void
 dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
 {
-  dmnsn_pigment *pigment = state->intersection->texture->pigment;
+  dmnsn_pigment *pigment = state->texture->pigment;
   if (state->scene->quality & DMNSN_RENDER_PIGMENT) {
-    state->pigment = dmnsn_evaluate_pigment(pigment, state->r);
+    state->pigment = dmnsn_evaluate_pigment(pigment, state->pigment_r);
   } else {
     state->pigment = pigment->quick_color;
   }
@@ -231,8 +263,7 @@ dmnsn_raytrace_light_ray(dmnsn_raytrace_state *state,
     }
 
     dmnsn_raytrace_state shadow_state = *state;
-    shadow_state.intersection = &shadow_caster;
-    shadow_state.reclevel     = reclevel;
+    dmnsn_initialize_raytrace_state(&shadow_state, &shadow_caster);
 
     dmnsn_raytrace_pigment(&shadow_state);
     if ((state->scene->quality & DMNSN_RENDER_TRANSLUCENCY)
@@ -261,7 +292,7 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
   /* The ambient color */
   state->diffuse = dmnsn_black;
 
-  const dmnsn_finish *finish = &state->intersection->texture->finish;
+  const dmnsn_finish *finish = &state->texture->finish;
   if (finish->ambient) {
     state->diffuse
       = finish->ambient->ambient_fn(finish->ambient, state->pigment);
@@ -306,7 +337,7 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
 {
   dmnsn_color reflected = dmnsn_black;
 
-  const dmnsn_finish *finish = &state->intersection->texture->finish;
+  const dmnsn_finish *finish = &state->texture->finish;
   if (finish->reflection) {
     dmnsn_line refl_ray = dmnsn_new_line(state->r, state->reflected);
     refl_ray = dmnsn_line_add_epsilon(refl_ray);
@@ -344,7 +375,7 @@ dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
 
     if (dmnsn_vector_dot(r, n) < 0.0) {
       /* We are entering an object */
-      recursive_state.ior = state->intersection->interior->ior;
+      recursive_state.ior = state->interior->ior;
       recursive_state.parent = state;
     } else {
       /* We are leaving an object */
@@ -403,22 +434,7 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
   dmnsn_intersection intersection;
   bool reset = state->reclevel == state->scene->reclimit - 1;
   if (dmnsn_prtree_intersection(state->prtree, ray, &intersection, reset)) {
-    state->intersection = &intersection;
-
-    state->r = dmnsn_line_point(intersection.ray, intersection.t);
-    state->viewer = dmnsn_vector_normalized(
-      dmnsn_vector_negate(intersection.ray.n)
-    );
-    state->reflected = dmnsn_vector_sub(
-      dmnsn_vector_mul(
-        2*dmnsn_vector_dot(state->viewer, intersection.normal),
-        intersection.normal),
-      state->viewer
-    );
-
-    state->pigment    = dmnsn_black;
-    state->diffuse    = dmnsn_black;
-    state->additional = dmnsn_black;
+    dmnsn_initialize_raytrace_state(state, &intersection);
 
     /* Pigment */
     dmnsn_raytrace_pigment(state);

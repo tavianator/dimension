@@ -101,11 +101,8 @@ dmnsn_cone_intersection_fn(const dmnsn_object *cone, dmnsn_line l,
           && (tcap < t || p.y <= -1.0 || p.y >= 1.0)
           && pcap.x*pcap.x + pcap.z*pcap.z < r*r)
       {
-        intersection->ray      = l;
-        intersection->t        = tcap;
-        intersection->normal   = norm;
-        intersection->texture  = cone->texture;
-        intersection->interior = cone->interior;
+        intersection->t      = tcap;
+        intersection->normal = norm;
         return true;
       }
     }
@@ -114,11 +111,8 @@ dmnsn_cone_intersection_fn(const dmnsn_object *cone, dmnsn_line l,
       dmnsn_vector norm = dmnsn_vector_normalized(
         dmnsn_new_vector(p.x, -(r2 - r1)*sqrt(p.x*p.x + p.z*p.z)/2.0, p.z)
       );
-      intersection->ray      = l;
-      intersection->t        = t;
-      intersection->normal   = norm;
-      intersection->texture  = cone->texture;
-      intersection->interior = cone->interior;
+      intersection->t      = t;
+      intersection->normal = norm;
       return true;
     }
   }

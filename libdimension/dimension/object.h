@@ -25,6 +25,9 @@
 
 #include <stdbool.h>
 
+/* Forward-declare dmnsn_object */
+typedef struct dmnsn_object dmnsn_object;
+
 /** A type to represent a ray-object intersection. */
 typedef struct dmnsn_intersection {
   dmnsn_line ray; /**< The ray that intersected. */
@@ -33,14 +36,9 @@ typedef struct dmnsn_intersection {
   /** The surface normal at the intersection point. */
   dmnsn_vector normal;
 
-  /** The texture at the intersection point. */
-  const dmnsn_texture *texture;
-  /** The interior at the intersection point. */
-  const dmnsn_interior *interior;
+  /** The object of intersection. */
+  const dmnsn_object *object;
 } dmnsn_intersection;
-
-/* Forward-declare dmnsn_object */
-typedef struct dmnsn_object dmnsn_object;
 
 /**
  * Object initialization callback.
@@ -74,8 +72,10 @@ struct dmnsn_object {
   dmnsn_texture  *texture;  /**< Surface properties. */
   dmnsn_interior *interior; /**< Interior properties. */
 
-  dmnsn_matrix trans;     /**< Transformation matrix. */
+  dmnsn_matrix trans; /**< Transformation matrix. */
   dmnsn_matrix trans_inv; /**< Inverse of the transformation matrix. */
+  dmnsn_matrix intrinsic_trans; /**< Transformations not affecting the texture. */
+  dmnsn_matrix pigment_trans; /**< Inverse transformation for the texture. */
 
   dmnsn_bounding_box bounding_box; /**< Object bounding box. */
 
@@ -141,11 +141,16 @@ dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
                           dmnsn_intersection *intersection)
 {
   dmnsn_line line_trans = dmnsn_transform_line(object->trans_inv, line);
+  intersection->object = NULL;
   if (object->intersection_fn(object, line_trans, intersection)) {
     /* Get us back into world coordinates */
     intersection->ray    = line;
     intersection->normal = dmnsn_transform_normal(object->trans,
                                                   intersection->normal);
+    if (!intersection->object) {
+      intersection->object = object;
+    }
+
     return true;
   } else {
     return false;

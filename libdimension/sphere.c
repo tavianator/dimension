@@ -44,11 +44,8 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line l,
     if (n == 2)
       t = dmnsn_min(t, x[1]);
 
-    intersection->ray      = l;
-    intersection->t        = t;
-    intersection->normal   = dmnsn_line_point(l, t);
-    intersection->texture  = sphere->texture;
-    intersection->interior = sphere->interior;
+    intersection->t      = t;
+    intersection->normal = dmnsn_line_point(l, t);
     return true;
   }
 }

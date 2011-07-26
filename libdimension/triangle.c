@@ -42,11 +42,8 @@ dmnsn_triangle_intersection_fn(const dmnsn_object *triangle, dmnsn_line l,
   double u = -dmnsn_vector_dot(l.n, dmnsn_vector_cross(ax0, payload->ac))/den;
   double v = -dmnsn_vector_dot(l.n, dmnsn_vector_cross(payload->ab, ax0))/den;
   if (t >= 0.0 && u >= 0.0 && v >= 0.0 && u + v <= 1.0) {
-    intersection->ray      = l;
-    intersection->t        = t;
-    intersection->normal   = payload->normal;
-    intersection->texture  = triangle->texture;
-    intersection->interior = triangle->interior;
+    intersection->t      = t;
+    intersection->normal = payload->normal;
     return true;
   }
 
