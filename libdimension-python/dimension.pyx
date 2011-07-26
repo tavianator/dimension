@@ -272,7 +272,7 @@ cdef class Matrix:
 
   cpdef Matrix inverse(self):
     """Return the inverse of a matrix."""
-    return _Matrix(dmnsn_matrix_inverse(self._m));
+    return _Matrix(dmnsn_matrix_inverse(self._m))
 
   def __repr__(self):
     return \
@@ -1404,6 +1404,8 @@ cdef class Scene:
     def __get__(self):
       return self._scene.nthreads
     def __set__(self, n):
+      if n <= 0:
+        raise ValueError("%d is an invalid thread count." % n)
       self._scene.nthreads = n
 
   property quality:
@@ -1463,6 +1465,9 @@ def _quality_to_string(int quality):
 def _string_to_quality(str quality not None):
   cdef int q = DMNSN_RENDER_NONE
   inverse = False
+
+  if quality == "":
+    return q
 
   if quality[0] == '^':
     inverse = True

@@ -93,6 +93,8 @@ int
 dmnsn_execute_concurrently(dmnsn_ccthread_fn *ccthread_fn,
                            void *arg, unsigned int nthreads)
 {
+  dmnsn_assert(nthreads > 0, "Attempt to execute using 0 concurrent threads.");
+
   pthread_t threads[nthreads];
   dmnsn_ccthread_payload payloads[nthreads];
 
