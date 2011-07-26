@@ -1,5 +1,5 @@
-This is Dimension, a project to create a GPLed, POV-Ray compatible ray tracer.
-It is currently stable but lacking in features.  But if you want to try it
-anyway, see the INSTALL file for how to compile and run it.  For a quick demo,
-run ./autogen.sh && ./configure && make check, and look at
-tests/dimension/demo.{pov,png}.
+This is Dimension, a project to create a GPLed high quality ray-tracer. It is
+currently stable but lacking in features.  But if you want to try it anyway, see
+the INSTALL file for how to compile and run it.  For a quick demo, run
+  $ ./autogen.sh && ./configure && make check
+and look at tests/dimension/demo.{dmnsn,png}.

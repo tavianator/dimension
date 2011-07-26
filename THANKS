@@ -1,1 +1,8 @@
 Dimension THANKS file
+
+- POV-Ray (http://povray.org/) inspired this project, and in fact Dimension
+  could be considered my effort to write the next generation of the POV-Ray
+  renderer.  POV-Ray is copyright Persistence of Vision Raytracer Pty. Ltd.
+- Python 3 (http://python.org/) is copyright the Python Software Foundation.
+- The PR-tree bounding hierarchy is due to Lars Arge, Mark de Berg, Herman J.
+  Haverkort, and Ke Yi.

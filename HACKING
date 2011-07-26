@@ -11,3 +11,16 @@ Bounding hierarchy:    libdimension/prtree.{c,h}
 Library internals:     libdimension/dimension-impl.h and its #includes
 Tests:                 libdimension/tests/*.{c,cpp}
 Benchmarks:            libdimension/bench/*.c
+
+Python Module (LGPLv3):
+=======================
+
+Implementation:               libdimension-python/dimension.{pyx,pxd}
+Platform-specific components: libdimension-python/platform.{c.h}
+Tests:                        libdimension-python/tests/*.py
+
+Client (GPLv3):
+===============
+
+Implementation: dimension/dimension.in
+Tests:          dimension/tests/*.dmnsn
