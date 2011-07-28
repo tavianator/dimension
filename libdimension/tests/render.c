@@ -22,15 +22,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/*
- * Test scene
- */
-static dmnsn_scene *
-dmnsn_new_test_scene(void)
+static void
+dmnsn_test_scene_set_defaults(dmnsn_scene *scene)
 {
-  /* Allocate a new scene */
-  dmnsn_scene *scene = dmnsn_new_scene();
-
   /* Default texture */
   scene->default_texture->pigment = dmnsn_new_solid_pigment(dmnsn_black);
   dmnsn_finish *default_finish = &scene->default_texture->finish;
@@ -43,9 +37,19 @@ dmnsn_new_test_scene(void)
     )
   );
 
-  /* Allocate a canvas */
-  scene->canvas = dmnsn_new_canvas(768, 480);
+  /* Background color */
+  scene->background = dmnsn_clear;
+}
 
+static void
+dmnsn_test_scene_add_canvas(dmnsn_scene *scene)
+{
+  scene->canvas = dmnsn_new_canvas(768, 480);
+}
+
+static void
+dmnsn_test_scene_add_camera(dmnsn_scene *scene)
+{
   /* Set up the transformation matrix for the perspective camera */
   dmnsn_matrix trans = dmnsn_scale_matrix(
     dmnsn_new_vector(
@@ -68,33 +72,38 @@ dmnsn_new_test_scene(void)
   /* Create a perspective camera */
   scene->camera = dmnsn_new_perspective_camera();
   scene->camera->trans = trans;
+}
 
-  /* Background color */
-  scene->background = dmnsn_clear;
-
-  /* Sky sphere */
+static void
+dmnsn_test_scene_add_sky_sphere(dmnsn_scene *scene)
+{
   scene->sky_sphere = dmnsn_new_sky_sphere();
   dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(dmnsn_y);
-  dmnsn_map *sky_gradient_color_map = dmnsn_new_color_map();
-  dmnsn_add_map_entry(sky_gradient_color_map, 0.0, &dmnsn_orange);
+  dmnsn_map *sky_gradient_pigment_map = dmnsn_new_pigment_map();
+  dmnsn_pigment_map_add_color(sky_gradient_pigment_map, 0.0, dmnsn_orange);
   dmnsn_color background = dmnsn_color_from_sRGB(
     dmnsn_new_color5(0.0, 0.1, 0.2, 0.1, 0.0)
   );
-  dmnsn_add_map_entry(sky_gradient_color_map, 0.35, &background);
-  dmnsn_pigment *sky_pigment
-    = dmnsn_new_color_map_pigment(sky_gradient, sky_gradient_color_map,
+  dmnsn_pigment_map_add_color(sky_gradient_pigment_map, 0.35, background);
+  dmnsn_pigment *sky_pigment =
+    dmnsn_new_pigment_map_pigment(sky_gradient, sky_gradient_pigment_map,
                                   DMNSN_PIGMENT_MAP_SRGB);
   dmnsn_array_push(scene->sky_sphere->pigments, &sky_pigment);
+}
 
-  /* Light source */
+static void
+dmnsn_test_scene_add_lights(dmnsn_scene *scene)
+{
   dmnsn_light *light = dmnsn_new_point_light(
     dmnsn_new_vector(-15.0, 20.0, 10.0),
     dmnsn_white
   );
   dmnsn_array_push(scene->lights, &light);
+}
 
-  /* Now make our objects */
-
+static void
+dmnsn_test_scene_add_hollow_cube(dmnsn_scene *scene)
+{
   dmnsn_object *cube = dmnsn_new_cube();
   cube->trans = dmnsn_rotation_matrix(
     dmnsn_new_vector(dmnsn_radians(45.0), 0.0, 0.0)
@@ -121,9 +130,13 @@ dmnsn_new_test_scene(void)
   sphere->texture->finish.specular = dmnsn_new_phong(0.2, 40.0);
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.25, 1.25, 1.25));
 
-  dmnsn_object *csg = dmnsn_new_csg_difference(cube, sphere);
-  dmnsn_array_push(scene->objects, &csg);
+  dmnsn_object *hollow_cube = dmnsn_new_csg_difference(cube, sphere);
+  dmnsn_array_push(scene->objects, &hollow_cube);
+}
 
+static void
+dmnsn_test_scene_add_spike(dmnsn_scene *scene)
+{
   dmnsn_array *arrow_array = dmnsn_new_array(sizeof(dmnsn_object *));
 
   dmnsn_object *cylinder = dmnsn_new_cone(0.1, 0.1, false);
@@ -141,17 +154,17 @@ dmnsn_new_test_scene(void)
   dmnsn_object *arrow = dmnsn_new_csg_union(arrow_array);
   dmnsn_delete_array(arrow_array);
   dmnsn_pattern *gradient = dmnsn_new_gradient_pattern(dmnsn_y);
-  dmnsn_map *gradient_color_map = dmnsn_new_color_map();
-  dmnsn_add_map_entry(gradient_color_map, 0.0,     &dmnsn_red);
-  dmnsn_add_map_entry(gradient_color_map, 1.0/6.0, &dmnsn_orange);
-  dmnsn_add_map_entry(gradient_color_map, 2.0/6.0, &dmnsn_yellow);
-  dmnsn_add_map_entry(gradient_color_map, 3.0/6.0, &dmnsn_green);
-  dmnsn_add_map_entry(gradient_color_map, 4.0/6.0, &dmnsn_blue);
-  dmnsn_add_map_entry(gradient_color_map, 5.0/6.0, &dmnsn_magenta);
-  dmnsn_add_map_entry(gradient_color_map, 1.0,     &dmnsn_red);
+  dmnsn_map *gradient_pigment_map = dmnsn_new_pigment_map();
+  dmnsn_pigment_map_add_color(gradient_pigment_map, 0.0,     dmnsn_red);
+  dmnsn_pigment_map_add_color(gradient_pigment_map, 1.0/6.0, dmnsn_orange);
+  dmnsn_pigment_map_add_color(gradient_pigment_map, 2.0/6.0, dmnsn_yellow);
+  dmnsn_pigment_map_add_color(gradient_pigment_map, 3.0/6.0, dmnsn_green);
+  dmnsn_pigment_map_add_color(gradient_pigment_map, 4.0/6.0, dmnsn_blue);
+  dmnsn_pigment_map_add_color(gradient_pigment_map, 5.0/6.0, dmnsn_magenta);
+  dmnsn_pigment_map_add_color(gradient_pigment_map, 1.0,     dmnsn_red);
   arrow->texture = dmnsn_new_texture();
-  arrow->texture->pigment
-    = dmnsn_new_color_map_pigment(gradient, gradient_color_map,
+  arrow->texture->pigment =
+    dmnsn_new_pigment_map_pigment(gradient, gradient_pigment_map,
                                   DMNSN_PIGMENT_MAP_SRGB);
 
   arrow->texture->trans =
@@ -189,9 +202,11 @@ dmnsn_new_test_scene(void)
     dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)
   );
   dmnsn_array_push(scene->objects, &spike);
+}
 
-  /* Triangle strip */
-
+static void
+dmnsn_test_scene_add_triangle_strip(dmnsn_scene *scene)
+{
   dmnsn_array *strip_array = dmnsn_new_array(sizeof(dmnsn_object *));
   dmnsn_vector a = dmnsn_zero;
   dmnsn_vector b = dmnsn_new_vector(0.0, sqrt(3.0)/2.0, 0.5);
@@ -222,32 +237,57 @@ dmnsn_new_test_scene(void)
   dmnsn_delete_array(strip_array);
   strip->trans = dmnsn_translation_matrix(dmnsn_new_vector(5.0, -2.0, -4.0));
   dmnsn_array_push(scene->objects, &strip);
+}
 
+static void
+dmnsn_test_scene_add_ground(dmnsn_scene *scene)
+{
   dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
   dmnsn_pattern *checker1 = dmnsn_new_checker_pattern();
   dmnsn_pattern *checker2 = dmnsn_new_checker_pattern();
-  dmnsn_map *checker_color_map = dmnsn_new_color_map();
-  dmnsn_add_map_entry(checker_color_map, 0.0, &dmnsn_black);
-  dmnsn_add_map_entry(checker_color_map, 1.0, &dmnsn_white);
-  dmnsn_pigment *pigment1 = dmnsn_new_solid_pigment(dmnsn_white);
-  dmnsn_pigment *pigment2
-    = dmnsn_new_color_map_pigment(checker1, checker_color_map,
+  dmnsn_map *small_map = dmnsn_new_pigment_map();
+  dmnsn_pigment_map_add_color(small_map, 0.0, dmnsn_black);
+  dmnsn_pigment_map_add_color(small_map, 1.0, dmnsn_white);
+  dmnsn_pigment *small_pigment =
+    dmnsn_new_pigment_map_pigment(checker1, small_map,
                                   DMNSN_PIGMENT_MAP_REGULAR);
-  pigment2->trans
-    = dmnsn_scale_matrix(dmnsn_new_vector(1.0/3.0, 1.0/3.0, 1.0/3.0));
-  dmnsn_map *checker_pigment_map = dmnsn_new_pigment_map();
-  dmnsn_add_map_entry(checker_pigment_map, 0.0, &pigment1);
-  dmnsn_add_map_entry(checker_pigment_map, 1.0, &pigment2);
+  small_pigment->trans =
+    dmnsn_scale_matrix(dmnsn_new_vector(1.0/3.0, 1.0/3.0, 1.0/3.0));
+  dmnsn_map *big_map = dmnsn_new_pigment_map();
+  dmnsn_pigment_map_add_color(big_map, 0.0, dmnsn_white);
+  dmnsn_add_map_entry(big_map, 1.0, &small_pigment);
   plane->texture = dmnsn_new_texture();
-  plane->texture->pigment
-    = dmnsn_new_pigment_map_pigment(checker2, checker_pigment_map,
-                                    DMNSN_PIGMENT_MAP_REGULAR);
+  plane->texture->pigment =
+    dmnsn_new_pigment_map_pigment(checker2, big_map, DMNSN_PIGMENT_MAP_REGULAR);
   plane->texture->pigment->quick_color = dmnsn_color_from_sRGB(
     dmnsn_new_color(1.0, 0.5, 0.75)
   );
   dmnsn_array_push(scene->objects, &plane);
+}
 
+static void
+dmnsn_test_scene_add_objects(dmnsn_scene *scene)
+{
+  dmnsn_test_scene_add_hollow_cube(scene);
+  dmnsn_test_scene_add_spike(scene);
+  dmnsn_test_scene_add_triangle_strip(scene);
+  dmnsn_test_scene_add_ground(scene);
+}
+
+/*
+ * Test scene
+ */
+static dmnsn_scene *
+dmnsn_new_test_scene(void)
+{
+  dmnsn_scene *scene = dmnsn_new_scene();
+  dmnsn_test_scene_set_defaults(scene);
+  dmnsn_test_scene_add_canvas(scene);
+  dmnsn_test_scene_add_camera(scene);
+  dmnsn_test_scene_add_sky_sphere(scene);
+  dmnsn_test_scene_add_lights(scene);
+  dmnsn_test_scene_add_objects(scene);
   return scene;
 }
 

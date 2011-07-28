@@ -56,6 +56,13 @@ typedef struct dmnsn_pigment_map_payload {
   dmnsn_pigment_map_flags flags;
 } dmnsn_pigment_map_payload;
 
+void
+dmnsn_pigment_map_add_color(dmnsn_map *map, double n, dmnsn_color color)
+{
+  dmnsn_pigment *pigment = dmnsn_new_solid_pigment(color);
+  dmnsn_add_map_entry(map, n, &pigment);
+}
+
 /** Free a pigment_map payload. */
 static void
 dmnsn_delete_pigment_map_payload(void *ptr)

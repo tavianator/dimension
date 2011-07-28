@@ -68,7 +68,6 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           canvas_pigment.c                                     \
                           checker.c                                            \
                           color.c                                              \
-                          color_map.c                                          \
                           compiler.h                                           \
                           cone.c                                               \
                           cube.c                                               \

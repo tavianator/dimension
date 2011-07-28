@@ -20,7 +20,7 @@
 
 /**
  * @file
- * Generic maps (backend for color_maps, pigment_maps, etc.).
+ * Generic maps (backend for pigment_maps, etc.).
  */
 
 /** A map. */
@@ -44,8 +44,8 @@ dmnsn_map *dmnsn_new_map(size_t size);
 void dmnsn_delete_map(dmnsn_map *map);
 
 /**
- * Add an entry (a scalar-object pair) to a color map.
- * @param[in,out] map  The color map to add to.
+ * Add an entry (a scalar-object pair) to a map.
+ * @param[in,out] map  The map to add to.
  * @param[in]     n    The index of the entry.
  * @param[in]     obj  The value of the entry.
  */

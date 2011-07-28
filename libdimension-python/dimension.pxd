@@ -217,7 +217,6 @@ cdef extern from "../libdimension/dimension.h":
   void dmnsn_add_map_entry(dmnsn_map *map, double n, void *obj)
   size_t dmnsn_map_size(dmnsn_map *map)
 
-  dmnsn_map *dmnsn_new_color_map()
   dmnsn_map *dmnsn_new_pigment_map()
 
   ############
@@ -236,9 +235,6 @@ cdef extern from "../libdimension/dimension.h":
 
   dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color)
   dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas)
-  dmnsn_pigment *dmnsn_new_color_map_pigment(dmnsn_pattern *pattern,
-                                             dmnsn_map *map,
-                                             dmnsn_pigment_map_flags flags)
   dmnsn_pigment *dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern,
                                                dmnsn_map *map,
                                                dmnsn_pigment_map_flags flags)

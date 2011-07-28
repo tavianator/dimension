@@ -617,39 +617,6 @@ cdef _Pigment(dmnsn_pigment *pigment):
   DMNSN_INCREF(self._pigment)
   return self
 
-cdef class ColorMap(Pigment):
-  """A color map"""
-  def __init__(self, Pattern pattern not None, map, bool sRGB not None = True,
-               *args, **kwargs):
-    """
-    Create a ColorMap.
-
-    Keyword arguments:
-    pattern -- the pattern to use for the mapping
-    map     -- a dictionary of the form { val1: color1, val2: color2, ... },
-               or a list of the form [color1, color2, ...]
-    sRGB    -- whether the gradients should be in sRGB or linear space
-               (default True)
-    """
-    cdef dmnsn_map *color_map = dmnsn_new_color_map()
-    if hasattr(map, "items"):
-      for i, color in map.items():
-        dmnsn_add_map_entry(color_map, i, &Color(color)._c)
-    else:
-      for i, color in enumerate(map):
-        dmnsn_add_map_entry(color_map, i/len(map), &Color(color)._c)
-
-    cdef dmnsn_pigment_map_flags flags
-    if sRGB:
-      flags = DMNSN_PIGMENT_MAP_SRGB
-    else:
-      flags = DMNSN_PIGMENT_MAP_REGULAR
-
-    DMNSN_INCREF(pattern._pattern)
-    self._pigment = dmnsn_new_color_map_pigment(pattern._pattern, color_map,
-                                                flags)
-    Pigment.__init__(self, *args, **kwargs)
-
 cdef class PigmentMap(Pigment):
   """A pigment map."""
   def __init__(self, Pattern pattern not None, map, bool sRGB not None = True,
