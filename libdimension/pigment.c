@@ -70,6 +70,10 @@ dmnsn_initialize_pigment(dmnsn_pigment *pigment)
 dmnsn_color
 dmnsn_evaluate_pigment(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
-  dmnsn_vector v_trans = dmnsn_transform_vector(pigment->trans_inv, v);
-  return pigment->pigment_fn(pigment, v_trans);
+  if (pigment->pigment_fn) {
+    dmnsn_vector v_trans = dmnsn_transform_vector(pigment->trans_inv, v);
+    return pigment->pigment_fn(pigment, v_trans);
+  } else {
+    return pigment->quick_color;
+  }
 }
