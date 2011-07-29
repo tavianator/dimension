@@ -52,7 +52,7 @@ _parser.add_argument("-h", "--height", action = "store", type = int,
                      default = 480, help = "image height")
 _parser.add_argument("--region", action = "store", type = str,
                      default = None,
-                     help = "subregion to render, as \"((x1, y1), (x2, y2))\"")
+                     help = "subregion to render, as \"(x1, y1)->(x2, y2)\"")
 
 _parser.add_argument("-v", "--verbose", action = "store_true",
                      help = "print more information")
@@ -82,7 +82,7 @@ if _args.region is None:
   _args.region_width = _args.width
   _args.region_height = _args.height
 else:
-  _pattern = r"^\s*\(\s*\(\s*(\d*)\s*,\s*(\d*)\s*\)\s*,\s*\(\s*(\d*)\s*,\s*(\d*)\s*\)\s*\)\s*$"
+  _pattern = r"^\s*\(\s*(\d*)\s*,\s*(\d*)\s*\)\s*->\s*\(\s*(\d*)\s*,\s*(\d*)\s*\)\s*$"
   _match = _re.match(_pattern, _args.region)
   if _match is None:
     raise RuntimeError("range specified in invalid format.")
