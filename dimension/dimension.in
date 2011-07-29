@@ -47,11 +47,12 @@ _parser.add_argument("-V", "--version", action = "version",
                      version = "@PACKAGE_STRING@")
 
 _parser.add_argument("-w", "--width", action = "store", type = int,
-                     default = 768, help = "image width")
+                     default = 768,
+                     help = "image width (default: %(default)s)")
 _parser.add_argument("-h", "--height", action = "store", type = int,
-                     default = 480, help = "image height")
+                     default = 480,
+                     help = "image height (default: %(default)s)")
 _parser.add_argument("--region", action = "store", type = str,
-                     default = None,
                      help = "subregion to render, as \"(x1, y1)->(x2, y2)\"")
 
 _parser.add_argument("-v", "--verbose", action = "store_true",
