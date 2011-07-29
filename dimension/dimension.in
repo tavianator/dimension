@@ -116,7 +116,7 @@ def _progress_bar(str, progress):
     term_width = terminal_width()
     width = term_width - (len(str) + 1)%term_width
     for i in range(width):
-      progress.wait(i/width)
+      progress.wait((i + 1)/width)
       print('.', end = '')
       _sys.stdout.flush()
 
