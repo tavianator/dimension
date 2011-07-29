@@ -484,6 +484,7 @@ cdef class Canvas:
     height -- the height of the canvas
     """
     self._canvas = dmnsn_new_canvas(width, height)
+    self.clear(Black)
 
   def __dealloc__(self):
     dmnsn_delete_canvas(self._canvas)
@@ -496,6 +497,15 @@ cdef class Canvas:
     """The height of the canvas."""
     def __get__(self):
       return self._canvas.height
+
+  def __len__(self):
+    """The width of the canvas."""
+    return self.width
+  def __getitem__(self, int x):
+    """Get a column of the canvas."""
+    if x < 0 or x >= self.width:
+      raise IndexError("x coordinate out of bounds.")
+    return _CanvasProxy(self, x)
 
   def optimize_PNG(self):
     """Optimize a canvas for PNG output."""
@@ -528,6 +538,28 @@ cdef class Canvas:
     """Export the canvas to the current OpenGL context."""
     if dmnsn_gl_write_canvas(self._canvas) != 0:
       raise OSError(errno, os.strerror(errno))
+
+cdef class _CanvasProxy:
+  cdef dmnsn_canvas *_canvas
+  cdef int _x
+
+  def __init__(self, Canvas canvas not None, int x):
+    self._canvas = canvas._canvas
+    self._x = x
+
+  def __len__(self):
+    """The height of the canvas."""
+    return self._canvas.height
+  def __getitem__(self, int y):
+    self._bounds_check(y)
+    return _Color(dmnsn_get_pixel(self._canvas, self._x, y))
+  def __setitem__(self, int y, color):
+    self._bounds_check(y)
+    dmnsn_set_pixel(self._canvas, self._x, y, Color(color)._c)
+
+  def _bounds_check(self, int y):
+    if y < 0 or y >= self._canvas.height:
+      raise IndexError("y coordinate out of bounds.")
 
 ############
 # Patterns #

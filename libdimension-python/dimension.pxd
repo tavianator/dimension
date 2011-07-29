@@ -184,6 +184,10 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_canvas *dmnsn_new_canvas(size_t width, size_t height)
   void dmnsn_delete_canvas(dmnsn_canvas *canvas)
 
+  dmnsn_color dmnsn_get_pixel(dmnsn_canvas *canvas, size_t x, size_t y)
+  void dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
+                       dmnsn_color color)
+
   void dmnsn_clear_canvas(dmnsn_canvas *canvas, dmnsn_color color)
 
   int dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
