@@ -89,12 +89,14 @@ else:
     raise RuntimeError("range specified in invalid format.")
   _args.region_x = int(_match.group(1))
   _args.region_y = int(_match.group(2))
-  _args.region_width = int(_match.group(3)) - _args.region_x
-  _args.region_height = int(_match.group(4)) - _args.region_y
-  if _args.region_x + _args.region_width >= _args.width:
-    raise RuntimeError("region exceeds width of image.")
-  if _args.region_y + _args.region_height >= _args.height:
-    raise RuntimeError("region exceeds height of image.")
+  _region_xmax = int(_match.group(3))
+  _region_ymax = int(_match.group(4))
+  _args.region_width = _region_xmax - _args.region_x
+  _args.region_height = _region_ymax - _args.region_y
+  if _args.region_width <= 0 or _args.region_height <= 0:
+    raise RuntimeError("region is degenerate.")
+  if _region_xmax >= _args.width or _region_ymax > _args.height:
+    raise RuntimeError("region exceeds bounds of image.")
 
 # Default output is basename(input).png
 if _args.output is None:
