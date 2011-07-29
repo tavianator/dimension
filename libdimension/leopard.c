@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -20,26 +20,29 @@
 
 /**
  * @file
- * Pre-defined patterns.
+ * Leopard pattern.
  */
 
-/**
- * A checker pattern.  The pattern is composed of tesselating unit cubes
- * alternating between 0 and 1.
- * @return A checker pattern.
- */
-dmnsn_pattern *dmnsn_new_checker_pattern(void);
+#include "dimension.h"
+#include <math.h>
 
-/**
- * A gradient.  The value starts at 0 at the origin, and goes linearly to 1 in
- * the direction of \p orientation, then repeats after a distance of 1.
- * @param[in] orientation  The direction of the gradient.
- * @return A gradient pattern.
- */
-dmnsn_pattern *dmnsn_new_gradient_pattern(dmnsn_vector orientation);
+/** Leopard pattern callback. */
+static double
+dmnsn_leopard_pattern_fn(const dmnsn_pattern *leopard, dmnsn_vector v)
+{
+  double val = (sin(v.x) + sin(v.y) + sin(v.z))/3.0;
+  return val*val;
+}
 
-/**
- * A leopard pattern.
- * @return A leopard pattern.
- */
-dmnsn_pattern *dmnsn_new_leopard_pattern(void);
+/** The singleton instance. */
+static dmnsn_pattern dmnsn_leopard_instance = {
+  .pattern_fn = dmnsn_leopard_pattern_fn,
+  .refcount = 1,
+};
+
+dmnsn_pattern *
+dmnsn_new_leopard_pattern(void)
+{
+  DMNSN_INCREF(&dmnsn_leopard_instance);
+  return &dmnsn_leopard_instance;
+}

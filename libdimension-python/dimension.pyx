@@ -561,6 +561,12 @@ cdef class Gradient(Pattern):
     self._pattern = dmnsn_new_gradient_pattern(Vector(orientation)._v)
     Pattern.__init__(self)
 
+cdef class Leopard(Pattern):
+  """A leopard pattern."""
+  def __init__(self):
+    self._pattern = dmnsn_new_leopard_pattern()
+    Pattern.__init__(self)
+
 ############
 # Pigments #
 ############

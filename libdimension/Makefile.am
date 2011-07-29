@@ -81,6 +81,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           inline.c                                             \
                           interior.c                                           \
                           lambertian.c                                         \
+                          leopard.c                                            \
                           light.c                                              \
                           malloc.c                                             \
                           map.c                                                \

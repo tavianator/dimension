@@ -204,6 +204,7 @@ cdef extern from "../libdimension/dimension.h":
 
   dmnsn_pattern *dmnsn_new_checker_pattern()
   dmnsn_pattern *dmnsn_new_gradient_pattern(dmnsn_vector orientation)
+  dmnsn_pattern *dmnsn_new_leopard_pattern()
 
   ########
   # Maps #

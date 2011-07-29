@@ -59,7 +59,7 @@ typedef struct dmnsn_prnode {
 
 /** Construct an empty PR-node. */
 static inline dmnsn_prnode *
-dmnsn_new_prnode()
+dmnsn_new_prnode(void)
 {
   dmnsn_prnode *node = dmnsn_malloc(sizeof(dmnsn_prnode));
   node->bounding_box = dmnsn_zero_bounding_box();
