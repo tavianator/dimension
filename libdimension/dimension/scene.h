@@ -48,6 +48,12 @@ typedef struct dmnsn_scene {
   /** Canvas. */
   dmnsn_canvas *canvas;
 
+  /* Support for rendering image subregions. */
+  size_t region_x; /**< The x position of the canvas in the broader image. */
+  size_t region_y; /**< The y position of the canvas in the broader image. */
+  size_t outer_width; /**< Width of the broader image. */
+  size_t outer_height; /**< Height of the broader image. */
+
   /** Objects. */
   dmnsn_array *objects;
 

@@ -184,8 +184,8 @@ dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
       /* Get the ray corresponding to the (x,y)'th pixel */
       dmnsn_line ray = dmnsn_camera_ray(
         scene->camera,
-        ((double)x)/(scene->canvas->width - 1),
-        ((double)y)/(scene->canvas->height - 1)
+        ((double)(x + scene->region_x))/(scene->outer_width - 1),
+        ((double)(y + scene->region_y))/(scene->outer_height - 1)
       );
 
       /* Shoot a ray */

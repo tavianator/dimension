@@ -372,10 +372,15 @@ cdef extern from "../libdimension/dimension.h":
     dmnsn_texture *default_texture
     dmnsn_interior *default_interior
 
+    dmnsn_canvas *canvas
+    size_t region_x
+    size_t region_y
+    size_t outer_width
+    size_t outer_height
+
     dmnsn_array *objects
     dmnsn_array *lights
     dmnsn_camera *camera
-    dmnsn_canvas *canvas
 
     dmnsn_quality quality
     unsigned int reclimit

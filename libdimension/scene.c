@@ -37,6 +37,10 @@ dmnsn_new_scene(void)
   scene->default_texture  = dmnsn_new_texture();
   scene->default_interior = dmnsn_new_interior();
   scene->canvas           = NULL;
+  scene->region_x         = 0;
+  scene->region_y         = 0;
+  scene->outer_width      = 0;
+  scene->outer_height     = 0;
   scene->objects          = dmnsn_new_array(sizeof(dmnsn_object *));
   scene->lights           = dmnsn_new_array(sizeof(dmnsn_light *));
   scene->camera           = NULL;
@@ -82,6 +86,13 @@ dmnsn_initialize_scene(dmnsn_scene *scene)
 {
   dmnsn_assert(!scene->initialized, "Texture double-initialized.");
   scene->initialized = true;
+
+  if (scene->outer_width == 0) {
+    scene->outer_width = scene->canvas->width;
+  }
+  if (scene->outer_height == 0) {
+    scene->outer_height = scene->canvas->height;
+  }
 
   dmnsn_initialize_texture(scene->default_texture);
 

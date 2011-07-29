@@ -1298,6 +1298,8 @@ cdef class Scene:
 
     self._scene.canvas = canvas._canvas
     DMNSN_INCREF(self._scene.canvas)
+    self.outer_width = self._scene.canvas.width
+    self.outer_height = self._scene.canvas.height
 
     cdef dmnsn_object *o
     for obj in objects:
@@ -1311,13 +1313,34 @@ cdef class Scene:
       DMNSN_INCREF(l)
       dmnsn_array_push(self._scene.lights, &l)
 
-    # Account for image dimensions in the camera
-    camera._camera.trans = dmnsn_matrix_mul(
-      camera._camera.trans,
-      dmnsn_scale_matrix(dmnsn_new_vector(canvas.width/canvas.height, 1.0, 1.0))
-    )
     self._scene.camera = camera._camera
     DMNSN_INCREF(self._scene.camera)
+
+  # Subregion render support
+  property region_x:
+    """The x-coordinate of the subregion in the broader image."""
+    def __get__(self):
+      return self._scene.region_x
+    def __set__(self, x):
+      self._scene.region_x = x
+  property region_y:
+    """The y-coordinate of the subregion in the broader image."""
+    def __get__(self):
+      return self._scene.region_y
+    def __set__(self, y):
+      self._scene.region_y = y
+  property outer_width:
+    """The width of the broader image."""
+    def __get__(self):
+      return self._scene.outer_width
+    def __set__(self, width):
+      self._scene.outer_width = width
+  property outer_height:
+    """The height of the broader image."""
+    def __get__(self):
+      return self._scene.outer_height
+    def __set__(self, height):
+      self._scene.outer_height = height
 
   property default_texture:
     """The default Texture for objects."""
@@ -1400,8 +1423,20 @@ cdef class Scene:
     self.raytrace_async().finish()
   def raytrace_async(self):
     """Render the scene, in the background."""
+    # Account for image dimensions in the camera
+    # Do this here so subregion renders can tell us the broader image size
+    self._scene.camera.trans = dmnsn_matrix_mul(
+      self._scene.camera.trans,
+      dmnsn_scale_matrix(
+        dmnsn_new_vector(
+          self.outer_width/self.outer_height,
+          1.0,
+          1.0
+        )
+      )
+    )
     # Ensure the default texture is complete
-    cdef Texture default = Texture(Black)
+    cdef Texture default = Texture(pigment = Black)
     dmnsn_texture_cascade(default._texture, &self._scene.default_texture)
     return _Progress(dmnsn_raytrace_scene_async(self._scene))
 
