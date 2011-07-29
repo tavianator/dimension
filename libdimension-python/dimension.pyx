@@ -543,14 +543,6 @@ cdef class Pattern:
   def __dealloc__(self):
     dmnsn_delete_pattern(self._pattern)
 
-  def transform(self, Matrix trans not None):
-    """Transform a pattern."""
-    if self._pattern == NULL:
-      raise TypeError("attempt to transform base Pattern")
-
-    self._pattern.trans = dmnsn_matrix_mul(trans._m, self._pattern.trans)
-    return self
-
 cdef class Checker(Pattern):
   """A checkerboard pattern."""
   def __init__(self):

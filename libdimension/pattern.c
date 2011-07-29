@@ -30,7 +30,6 @@ dmnsn_pattern *
 dmnsn_new_pattern(void)
 {
   dmnsn_pattern *pattern = dmnsn_malloc(sizeof(dmnsn_pattern));
-  pattern->trans    = dmnsn_identity_matrix();
   pattern->free_fn  = NULL;
   pattern->refcount = 1;
   return pattern;
@@ -48,17 +47,9 @@ dmnsn_delete_pattern(dmnsn_pattern *pattern)
   }
 }
 
-/* Precompute the transformation matrix inverse */
-void
-dmnsn_initialize_pattern(dmnsn_pattern *pattern)
-{
-  pattern->trans_inv = dmnsn_matrix_inverse(pattern->trans);
-}
-
 /* Invoke the pattern callback with the right transformation */
 double
 dmnsn_pattern_value(const dmnsn_pattern *pattern, dmnsn_vector v)
 {
-  v = dmnsn_transform_vector(pattern->trans_inv, v);
   return pattern->pattern_fn(pattern, v);
 }

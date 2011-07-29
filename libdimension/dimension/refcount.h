@@ -32,7 +32,14 @@ typedef unsigned int dmnsn_refcount;
  * Increment a reference count.
  * @param[in,out] object  The reference-counted object to acquire.
  */
-#define DMNSN_INCREF(object) ((void)((object) && ++(object)->refcount))
+#define DMNSN_INCREF(object)                                            \
+  do {                                                                  \
+    /* Suppress "address will always evaluate to true" warning */       \
+    void *testptr = (object);                                           \
+    if (testptr) {                                                      \
+      ++(object)->refcount;                                             \
+    }                                                                   \
+  } while (0)
 
 /**
  * @internal

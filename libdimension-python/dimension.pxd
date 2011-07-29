@@ -198,7 +198,7 @@ cdef extern from "../libdimension/dimension.h":
   ############
 
   ctypedef struct dmnsn_pattern:
-    dmnsn_matrix trans
+    pass
 
   void dmnsn_delete_pattern(dmnsn_pattern *pattern)
 

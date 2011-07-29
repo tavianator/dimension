@@ -102,7 +102,6 @@ static void
 dmnsn_pigment_map_initialize_fn(dmnsn_pigment *pigment)
 {
   dmnsn_pigment_map_payload *payload = pigment->ptr;
-  dmnsn_initialize_pattern(payload->pattern);
   dmnsn_map_apply(payload->map, dmnsn_initialize_mapped_pigment);
 }
 

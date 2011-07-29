@@ -51,10 +51,15 @@ dmnsn_checker_pattern_fn(const dmnsn_pattern *checker, dmnsn_vector v)
   return (n%2 == 0) ? 0.0 : 1.0;
 }
 
+/** The singleton instance. */
+static dmnsn_pattern dmnsn_checker_instance = {
+  .pattern_fn = dmnsn_checker_pattern_fn,
+  .refcount = 1,
+};
+
 dmnsn_pattern *
 dmnsn_new_checker_pattern(void)
 {
-  dmnsn_pattern *checker = dmnsn_new_pattern();
-  checker->pattern_fn = dmnsn_checker_pattern_fn;
-  return checker;
+  DMNSN_INCREF(&dmnsn_checker_instance);
+  return &dmnsn_checker_instance;
 }

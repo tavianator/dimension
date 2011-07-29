@@ -40,9 +40,6 @@ struct dmnsn_pattern {
   dmnsn_pattern_fn *pattern_fn; /**< The pattern callback. */
   dmnsn_free_fn    *free_fn;    /**< The destructor callback. */
 
-  dmnsn_matrix trans;     /**< The transformation matrix of the pattern. */
-  dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
-
   void *ptr; /**< Generic pointer. */
 
   dmnsn_refcount refcount; /**< @internal Reference count. */
@@ -59,15 +56,6 @@ dmnsn_pattern *dmnsn_new_pattern(void);
  * @param[in,out] pattern  The pattern to destroy.
  */
 void dmnsn_delete_pattern(dmnsn_pattern *pattern);
-
-/**
- * Initialize a pattern.  This precomputes some values that are used during
- * ray-tracing; the pattern will not work until it has been initialized, but
- * should not be modified after it has been initialized.  Patterns are generally
- * initialized for you.
- * @param[in,out] pattern  The pattern to initialize.
- */
-void dmnsn_initialize_pattern(dmnsn_pattern *pattern);
 
 /**
  * Invoke the pattern callback with the right transformation.
