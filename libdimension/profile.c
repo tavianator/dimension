@@ -65,13 +65,9 @@ dmnsn_delete_thread_profile(void *ptr)
 {
   dmnsn_dictionary *thread_profile = ptr;
 
-  if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error("Couldn't lock mutex.");
-  }
-  dmnsn_dictionary_apply(thread_profile, dmnsn_profile_globalize);
-  if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error("Couldn't unlock mutex.");
-  }
+  dmnsn_lock_mutex(&dmnsn_profile_mutex);
+    dmnsn_dictionary_apply(thread_profile, dmnsn_profile_globalize);
+  dmnsn_unlock_mutex(&dmnsn_profile_mutex);
 
   dmnsn_delete_dictionary(thread_profile);
 }
@@ -80,31 +76,18 @@ dmnsn_delete_thread_profile(void *ptr)
 static void
 dmnsn_initialize_thread_profile(void)
 {
-  if (pthread_key_create(&dmnsn_thread_profile, dmnsn_delete_thread_profile)
-      != 0)
-  {
-    dmnsn_error("pthread_key_create() failed.");
-  }
+  dmnsn_key_create(&dmnsn_thread_profile, dmnsn_delete_thread_profile);
 
-  if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error("Couldn't lock mutex.");
-  }
-  dmnsn_profile = dmnsn_new_dictionary(sizeof(dmnsn_branch));
-  if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error("Couldn't unlock mutex.");
-  }
+  dmnsn_lock_mutex(&dmnsn_profile_mutex);
+    dmnsn_profile = dmnsn_new_dictionary(sizeof(dmnsn_branch));
+  dmnsn_unlock_mutex(&dmnsn_profile_mutex);
 }
 
 /** Get the thread-specific profile data. */
 static dmnsn_dictionary *
 dmnsn_get_thread_profile(void)
 {
-  if (pthread_once(&dmnsn_thread_profile_once, dmnsn_initialize_thread_profile)
-      != 0)
-  {
-    dmnsn_error("pthread_once() failed.");
-  }
-
+  dmnsn_once(&dmnsn_thread_profile_once, dmnsn_initialize_thread_profile);
   return pthread_getspecific(dmnsn_thread_profile);
 }
 
@@ -112,9 +95,7 @@ dmnsn_get_thread_profile(void)
 static void
 dmnsn_set_thread_profile(dmnsn_dictionary *thread_profile)
 {
-  if (pthread_setspecific(dmnsn_thread_profile, thread_profile) != 0) {
-    dmnsn_error("pthread_setspecific() failed.");
-  }
+  dmnsn_setspecific(dmnsn_thread_profile, thread_profile);
 }
 
 bool
@@ -178,13 +159,9 @@ dmnsn_print_bad_predictions(void)
     dmnsn_set_thread_profile(NULL);
   }
 
-  if (pthread_mutex_lock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error("Couldn't lock mutex.");
-  }
-  dmnsn_dictionary_apply(dmnsn_profile, dmnsn_print_bad_prediction);
-  dmnsn_delete_dictionary(dmnsn_profile);
-  dmnsn_profile = NULL;
-  if (pthread_mutex_unlock(&dmnsn_profile_mutex) != 0) {
-    dmnsn_error("Couldn't unlock mutex.");
-  }
+  dmnsn_lock_mutex(&dmnsn_profile_mutex);
+    dmnsn_dictionary_apply(dmnsn_profile, dmnsn_print_bad_prediction);
+    dmnsn_delete_dictionary(dmnsn_profile);
+    dmnsn_profile = NULL;
+  dmnsn_unlock_mutex(&dmnsn_profile_mutex);
 }

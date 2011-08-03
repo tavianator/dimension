@@ -36,6 +36,29 @@
     abort();                                            \
   } while (0)
 
+/** dmnsn_local_lock_mutex implementation. */
+static void
+dmnsn_local_lock_mutex_impl(pthread_mutex_t *mutex)
+{
+  if (pthread_mutex_lock(mutex) != 0) {
+    DMNSN_LOCAL_ERROR("Couldn't lock mutex.");
+  }
+}
+
+/** dmnsn_local_unlock_mutex implementation. */
+static void
+dmnsn_local_unlock_mutex_impl(pthread_mutex_t *mutex)
+{
+  if (pthread_mutex_unlock(mutex) != 0) {
+    DMNSN_LOCAL_ERROR("Couldn't lock mutex.");
+  }
+}
+
+/** Lock a mutex, bailing out without dmnsn_error() on error. */
+#define dmnsn_local_lock_mutex(mutex) dmnsn_local_lock_mutex_impl((mutex)); {
+/** Unlock a mutex, bailing out without dmnsn_error() on error. */
+#define dmnsn_local_unlock_mutex(mutex) dmnsn_local_unlock_mutex_impl((mutex)); }
+
 /** The default fatal error handler. */
 static void dmnsn_default_fatal_error_fn(void);
 
@@ -54,13 +77,10 @@ void
 dmnsn_report_error(bool die, const char *func, const char *file,
                    unsigned int line, const char *str)
 {
-  if (pthread_mutex_lock(&dmnsn_always_die_mutex) != 0) {
-    DMNSN_LOCAL_ERROR("Couldn't lock mutex.");
-  }
-  bool always_die = dmnsn_always_die;
-  if (pthread_mutex_unlock(&dmnsn_always_die_mutex) != 0) {
-    DMNSN_LOCAL_ERROR("Couldn't unlock mutex.");
-  }
+  bool always_die;
+  dmnsn_local_lock_mutex(&dmnsn_always_die_mutex);
+    always_die = dmnsn_always_die;
+  dmnsn_local_unlock_mutex(&dmnsn_always_die_mutex);
 
   fprintf(stderr, "Dimension %s: %s, %s:%u: %s\n",
           die ? "ERROR" : "WARNING", func, file, line, str);
@@ -87,39 +107,27 @@ dmnsn_report_error(bool die, const char *func, const char *file,
 void
 dmnsn_die_on_warnings(bool always_die)
 {
-  if (pthread_mutex_lock(&dmnsn_always_die_mutex) != 0) {
-    DMNSN_LOCAL_ERROR("Couldn't lock mutex.");
-  }
-  dmnsn_always_die = always_die;
-  if (pthread_mutex_unlock(&dmnsn_always_die_mutex) != 0) {
-    DMNSN_LOCAL_ERROR("Couldn't unlock mutex.");
-  }
+  dmnsn_local_lock_mutex(&dmnsn_always_die_mutex);
+    dmnsn_always_die = always_die;
+  dmnsn_local_unlock_mutex(&dmnsn_always_die_mutex);
 }
 
 dmnsn_fatal_error_fn *
 dmnsn_get_fatal_error_fn(void)
 {
   dmnsn_fatal_error_fn *fatal;
-  if (pthread_mutex_lock(&dmnsn_fatal_mutex) != 0) {
-    DMNSN_LOCAL_ERROR("Couldn't lock fatal error handler mutex.");
-  }
-  fatal = dmnsn_fatal;
-  if (pthread_mutex_unlock(&dmnsn_fatal_mutex) != 0) {
-    DMNSN_LOCAL_ERROR("Couldn't unlock fatal error handler mutex.");
-  }
+  dmnsn_local_lock_mutex(&dmnsn_fatal_mutex);
+    fatal = dmnsn_fatal;
+  dmnsn_local_unlock_mutex(&dmnsn_fatal_mutex);
   return fatal;
 }
 
 void
 dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal)
 {
-  if (pthread_mutex_lock(&dmnsn_fatal_mutex) != 0) {
-    DMNSN_LOCAL_ERROR("Couldn't lock fatal error handler mutex.");
-  }
-  dmnsn_fatal = fatal;
-  if (pthread_mutex_unlock(&dmnsn_fatal_mutex) != 0) {
-    DMNSN_LOCAL_ERROR("Couldn't unlock fatal error handler mutex.");
-  }
+  dmnsn_local_lock_mutex(&dmnsn_fatal_mutex);
+    dmnsn_fatal = fatal;
+  dmnsn_local_unlock_mutex(&dmnsn_fatal_mutex);
 }
 
 static void

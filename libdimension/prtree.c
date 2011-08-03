@@ -448,13 +448,9 @@ dmnsn_new_prtree(const dmnsn_array *objects)
     prtree->bounding_box = dmnsn_zero_bounding_box();
   }
 
-  if (pthread_mutex_lock(&dmnsn_prtree_seq_mutex) != 0) {
-    dmnsn_error("Couldn't lock mutex.");
-  }
-  prtree->id = dmnsn_prtree_seq++;
-  if (pthread_mutex_unlock(&dmnsn_prtree_seq_mutex) != 0) {
-    dmnsn_error("Couldn't unlock mutex.");
-  }
+  dmnsn_lock_mutex(&dmnsn_prtree_seq_mutex);
+    prtree->id = dmnsn_prtree_seq++;
+  dmnsn_unlock_mutex(&dmnsn_prtree_seq_mutex);
 
   return prtree;
 }
@@ -545,20 +541,13 @@ dmnsn_delete_prtree_caches(void *caches)
 static void
 dmnsn_initialize_prtree_caches(void)
 {
-  if (pthread_key_create(&dmnsn_prtree_caches, dmnsn_delete_prtree_caches) != 0)
-  {
-    dmnsn_error("pthread_key_create() failed.");
-  }
+  dmnsn_key_create(&dmnsn_prtree_caches, dmnsn_delete_prtree_caches);
 }
 
 static dmnsn_array *
 dmnsn_get_prtree_caches(void)
 {
-  if (pthread_once(&dmnsn_prtree_caches_once, dmnsn_initialize_prtree_caches)
-      != 0)
-  {
-    dmnsn_error("pthread_once() failed.");
-  }
+  dmnsn_once(&dmnsn_prtree_caches_once, dmnsn_initialize_prtree_caches);
   return pthread_getspecific(dmnsn_prtree_caches);
 }
 
@@ -567,8 +556,8 @@ dmnsn_get_prtree_caches(void)
 DMNSN_DESTRUCTOR static void
 dmnsn_delete_main_prtree_caches(void)
 {
-  dmnsn_delete_array(dmnsn_get_prtree_caches());
-  pthread_key_delete(dmnsn_prtree_caches);
+  dmnsn_delete_prtree_caches(dmnsn_get_prtree_caches());
+  dmnsn_key_delete(dmnsn_prtree_caches);
 }
 
 static dmnsn_intersection_cache *
@@ -577,9 +566,7 @@ dmnsn_get_intersection_cache(size_t id)
   dmnsn_array *caches = dmnsn_get_prtree_caches();
   if (!caches) {
     caches = dmnsn_new_array(sizeof(dmnsn_intersection_cache));
-    if (pthread_setspecific(dmnsn_prtree_caches, caches) != 0) {
-      dmnsn_error("pthread_setspecific() failed.");
-    }
+    dmnsn_setspecific(dmnsn_prtree_caches, caches);
   }
 
   while (dmnsn_array_size(caches) <= id) {

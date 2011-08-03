@@ -124,3 +124,141 @@ dmnsn_execute_concurrently(dmnsn_ccthread_fn *ccthread_fn,
 
   return ret;
 }
+
+/* pthread wrappers */
+
+void
+dmnsn_initialize_mutex(pthread_mutex_t *mutex)
+{
+  if (pthread_mutex_init(mutex, NULL) != 0) {
+    dmnsn_error("Couldn't initialize mutex.");
+  }
+}
+
+void
+dmnsn_lock_mutex_impl(pthread_mutex_t *mutex)
+{
+  if (pthread_mutex_lock(mutex) != 0) {
+    dmnsn_error("Couldn't lock mutex.");
+  }
+}
+
+void
+dmnsn_unlock_mutex_impl(pthread_mutex_t *mutex)
+{
+  if (pthread_mutex_unlock(mutex) != 0) {
+    dmnsn_error("Couldn't unlock mutex.");
+  }
+}
+
+void
+dmnsn_destroy_mutex(pthread_mutex_t *mutex)
+{
+  if (pthread_mutex_destroy(mutex) != 0) {
+    dmnsn_warning("Couldn't destroy mutex.");
+  }
+}
+
+void
+dmnsn_initialize_rwlock(pthread_rwlock_t *rwlock)
+{
+  if (pthread_rwlock_init(rwlock, NULL) != 0) {
+    dmnsn_error("Couldn't initialize read-write lock.");
+  }
+}
+
+void
+dmnsn_read_lock_impl(pthread_rwlock_t *rwlock)
+{
+  if (pthread_rwlock_rdlock(rwlock) != 0) {
+    dmnsn_error("Couldn't acquire read lock.");
+  }
+}
+
+void
+dmnsn_write_lock_impl(pthread_rwlock_t *rwlock)
+{
+  if (pthread_rwlock_wrlock(rwlock) != 0) {
+    dmnsn_error("Couldn't acquire write lock.");
+  }
+}
+
+void
+dmnsn_unlock_rwlock_impl(pthread_rwlock_t *rwlock)
+{
+  if (pthread_rwlock_unlock(rwlock) != 0) {
+    dmnsn_error("Couldn't unlock read-write lock.");
+  }
+}
+
+void
+dmnsn_destroy_rwlock(pthread_rwlock_t *rwlock)
+{
+  if (pthread_rwlock_destroy(rwlock) != 0) {
+    dmnsn_warning("Couldn't destroy read-write lock.");
+  }
+}
+
+void
+dmnsn_initialize_cond(pthread_cond_t *cond)
+{
+  if (pthread_cond_init(cond, NULL) != 0) {
+    dmnsn_error("Couldn't initialize condition variable.");
+  }
+}
+
+void
+dmnsn_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
+{
+  if (pthread_cond_wait(cond, mutex) != 0) {
+    dmnsn_error("Couldn't wait on condition variable.");
+  }
+}
+
+void
+dmnsn_cond_broadcast(pthread_cond_t *cond)
+{
+  if (pthread_cond_broadcast(cond) != 0) {
+    dmnsn_error("Couldn't signal condition variable.");
+  }
+}
+
+void
+dmnsn_destroy_cond(pthread_cond_t *cond)
+{
+  if (pthread_cond_destroy(cond) != 0) {
+    dmnsn_warning("Couldn't destroy condition variable.");
+  }
+}
+
+void
+dmnsn_once(pthread_once_t *once, dmnsn_once_fn *once_fn)
+{
+  if (pthread_once(once, once_fn) != 0) {
+    dmnsn_error("Couldn't call one-shot function.");
+  }
+}
+
+void
+dmnsn_key_create(pthread_key_t *key, dmnsn_callback_fn *destructor)
+{
+  if (pthread_key_create(key, destructor) != 0) {
+    dmnsn_error("Couldn't initialize thread-specific pointer.");
+  }
+}
+
+void
+dmnsn_setspecific(pthread_key_t key, const void *value)
+{
+  if (pthread_setspecific(key, value) != 0) {
+    dmnsn_error("Couldn't set thread-specific pointer.");
+  }
+}
+
+void
+dmnsn_key_delete(pthread_key_t key)
+{
+  if (pthread_key_delete(key) != 0) {
+    dmnsn_warning("Couldn't destroy thread-specific pointer.");
+  }
+}
