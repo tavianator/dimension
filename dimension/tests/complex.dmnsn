@@ -22,16 +22,12 @@ camera = PerspectiveCamera(location = (3, 6, -11),
 
 background = 0.5*Color(0.73, 0.90, 0.97)
 
-light_color = 0.25*White
-lights.append(PointLight(location = (-3, 0, -5), color = light_color))
-lights.append(PointLight(location = (-1, 0, -5), color = light_color))
-lights.append(PointLight(location = ( 1, 0, -5), color = light_color))
-lights.append(PointLight(location = ( 3, 0, -5), color = light_color))
+def make_light(x, y, z):
+  return PointLight(location = (x, y, z), color = 1/4*White)
 
-lights.append(PointLight(location = (-3, 5, -5), color = light_color))
-lights.append(PointLight(location = (-1, 5, -5), color = light_color))
-lights.append(PointLight(location = ( 1, 5, -5), color = light_color))
-lights.append(PointLight(location = ( 3, 5, -5), color = light_color))
+for x in range(-3, 4, 2):
+  for y in range(0, 6, 5):
+    lights.append(make_light(x, y, -5))
 
 objects.append(
   Plane(
