@@ -141,11 +141,11 @@ pkgconfig_DATA = libdimension.pc
 bench: all-recursive
 	cd bench && $(MAKE) $(AM_MAKEFLAGS) bench
 
-clean-local: clean-docs
+clean-local: clean-doc
 
 doc:
 	doxygen Doxyfile
-clean-docs:
-	rm -rf $(top_builddir)/doc/libdimension
+clean-doc:
+	rm -rf doc
 
 .PHONY: bench doc
