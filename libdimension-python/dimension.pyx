@@ -1049,7 +1049,8 @@ cdef class Cone(Object):
 
 cdef class Cylinder(Cone):
   """A cylinder."""
-  def __init__(self, bottom, top, double radius, bool open not None = False):
+  def __init__(self, bottom, top, double radius, bool open not None = False,
+               *args, **kwargs):
     """
     Create a Cylinder.
 
@@ -1064,7 +1065,8 @@ cdef class Cylinder(Cone):
     Cone.__init__(self,
                   bottom = bottom, bottom_radius = radius,
                   top    = top,    top_radius    = radius,
-                  open = open)
+                  open = open,
+                  *args, **kwargs)
 
 cdef class Torus(Object):
   """A torus."""
