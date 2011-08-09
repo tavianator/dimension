@@ -51,6 +51,5 @@ struct dmnsn_progress {
   pthread_mutex_t *mutex;
 
   /* Minimum waited-on value */
-  volatile double min_wait;
-  volatile double *min_waitp; /* Hack for const values */
+  double *min_wait;
 };

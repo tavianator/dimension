@@ -45,8 +45,8 @@ dmnsn_new_progress(void)
   progress->mutex = dmnsn_malloc(sizeof(pthread_mutex_t));
   dmnsn_initialize_mutex(progress->mutex);
 
-  progress->min_wait = 1.0;
-  progress->min_waitp = &progress->min_wait;
+  progress->min_wait = dmnsn_malloc(sizeof(double));
+  *progress->min_wait = 1.0;
 
   return progress;
 }
@@ -68,6 +68,8 @@ dmnsn_finish_progress(dmnsn_progress *progress)
     }
 
     /* Free the progress object */
+
+    dmnsn_free(progress->min_wait);
 
     dmnsn_destroy_mutex(progress->mutex);
     dmnsn_free(progress->mutex);
@@ -104,8 +106,8 @@ dmnsn_wait_progress(const dmnsn_progress *progress, double prog)
   dmnsn_lock_mutex(progress->mutex);
     while (dmnsn_get_progress(progress) < prog) {
       /* Set the minimum waited-on value */
-      if (prog < progress->min_wait)
-        *progress->min_waitp = prog;
+      if (prog < *progress->min_wait)
+        *progress->min_wait = prog;
 
       dmnsn_cond_wait(progress->cond, progress->mutex);
     }
@@ -130,8 +132,8 @@ dmnsn_increment_progress(dmnsn_progress *progress)
   dmnsn_unlock_rwlock(progress->rwlock);
 
   dmnsn_lock_mutex(progress->mutex);
-    if (dmnsn_get_progress(progress) >= progress->min_wait) {
-      progress->min_wait = 1.0;
+    if (dmnsn_get_progress(progress) >= *progress->min_wait) {
+      *progress->min_wait = 1.0;
 
       dmnsn_cond_broadcast(progress->cond);
     }
