@@ -1487,7 +1487,7 @@ def _quality_to_string(int quality):
     s += 'l'
   if quality & DMNSN_RENDER_FINISH:
     s += 'f'
-  if quality & DMNSN_RENDER_TRANSLUCENCY:
+  if quality & DMNSN_RENDER_TRANSPARENCY:
     s += 't'
   if quality & DMNSN_RENDER_REFLECTION:
     s += 'r'
@@ -1520,7 +1520,7 @@ def _string_to_quality(str quality not None):
       elif ch == 'f':
         flag = DMNSN_RENDER_FINISH
       elif ch == 't':
-        flag = DMNSN_RENDER_TRANSLUCENCY
+        flag = DMNSN_RENDER_TRANSPARENCY
       elif ch == 'r':
         flag = DMNSN_RENDER_REFLECTION
       else:

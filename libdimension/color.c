@@ -263,7 +263,7 @@ dmnsn_filter_light(dmnsn_color light, dmnsn_color filter)
 
 /* Adds the background contribution, `filtered', to `filter' */
 dmnsn_color
-dmnsn_apply_translucency(dmnsn_color filtered, dmnsn_color filter)
+dmnsn_apply_transparency(dmnsn_color filtered, dmnsn_color filter)
 {
   dmnsn_color ret = dmnsn_color_add(
     dmnsn_color_mul(1.0 - filter.trans, filter),
@@ -278,7 +278,7 @@ dmnsn_apply_translucency(dmnsn_color filtered, dmnsn_color filter)
 dmnsn_color
 dmnsn_apply_filter(dmnsn_color color, dmnsn_color filter)
 {
-  return dmnsn_apply_translucency(dmnsn_filter_light(color, filter), filter);
+  return dmnsn_apply_transparency(dmnsn_filter_light(color, filter), filter);
 }
 
 /* Remove the filter channel */

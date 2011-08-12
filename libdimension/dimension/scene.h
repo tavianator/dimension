@@ -29,7 +29,7 @@ enum {
   DMNSN_RENDER_PIGMENT      = 1 << 0, /**< Render pigments. */
   DMNSN_RENDER_LIGHTS       = 1 << 1, /**< Render lights and shadows. */
   DMNSN_RENDER_FINISH       = 1 << 2, /**< Render object finishes. */
-  DMNSN_RENDER_TRANSLUCENCY = 1 << 3, /**< Render translucency/refraction. */
+  DMNSN_RENDER_TRANSPARENCY = 1 << 3, /**< Render transparency/refraction. */
   DMNSN_RENDER_REFLECTION   = 1 << 4, /**< Render specular reflection. */
   DMNSN_RENDER_FULL         = ~DMNSN_RENDER_NONE /**< Render everything. */
 };

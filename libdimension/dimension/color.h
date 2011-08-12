@@ -31,7 +31,7 @@ typedef struct {
   double G; /**< sRGB green value. */
   double B; /**< sRGB blue value. */
 
-  double trans;  /**< Translucency. */
+  double trans;  /**< Transparency. */
   double filter; /**< Degree of filtering. */
 } dmnsn_color;
 
@@ -92,7 +92,7 @@ dmnsn_color dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n);
 /** Filter \p light through \p filter. */
 dmnsn_color dmnsn_filter_light(dmnsn_color light, dmnsn_color filter);
 /** Add the background contribution \p filtered to \p filter. */
-dmnsn_color dmnsn_apply_translucency(dmnsn_color filtered, dmnsn_color filter);
+dmnsn_color dmnsn_apply_transparency(dmnsn_color filtered, dmnsn_color filter);
 /** Add the background contribution of \p color to \p filter. */
 dmnsn_color dmnsn_apply_filter(dmnsn_color color, dmnsn_color filter);
 /** Convert the color into a close equivalent with only transmittance. */

@@ -266,7 +266,7 @@ dmnsn_raytrace_light_ray(dmnsn_raytrace_state *state,
     dmnsn_initialize_raytrace_state(&shadow_state, &shadow_caster);
 
     dmnsn_raytrace_pigment(&shadow_state);
-    if ((state->scene->quality & DMNSN_RENDER_TRANSLUCENCY)
+    if ((state->scene->quality & DMNSN_RENDER_TRANSPARENCY)
         && shadow_state.pigment.trans >= dmnsn_epsilon)
     {
       color = dmnsn_filter_light(color, shadow_state.pigment);
@@ -360,9 +360,9 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
   return reflected;
 }
 
-/** Handle translucency - must be called last to work correctly. */
+/** Handle transparency - must be called last to work correctly. */
 static void
-dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
+dmnsn_raytrace_transparency(dmnsn_raytrace_state *state)
 {
   if (state->pigment.trans >= dmnsn_epsilon) {
     dmnsn_line trans_ray = dmnsn_new_line(state->r, state->intersection->ray.n);
@@ -412,7 +412,7 @@ dmnsn_raytrace_translucency(dmnsn_raytrace_state *state)
     dmnsn_color filtered = dmnsn_filter_light(rec, state->pigment);
     state->diffuse.filter = state->pigment.filter;
     state->diffuse.trans  = state->pigment.trans;
-    state->diffuse = dmnsn_apply_translucency(filtered, state->diffuse);
+    state->diffuse = dmnsn_apply_transparency(filtered, state->diffuse);
   }
 }
 
@@ -452,9 +452,9 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
       );
     }
 
-    /* Translucency */
-    if (state->scene->quality & DMNSN_RENDER_TRANSLUCENCY) {
-      dmnsn_raytrace_translucency(state);
+    /* Transparency */
+    if (state->scene->quality & DMNSN_RENDER_TRANSPARENCY) {
+      dmnsn_raytrace_transparency(state);
     }
 
     color = dmnsn_color_add(state->diffuse, state->additional);
