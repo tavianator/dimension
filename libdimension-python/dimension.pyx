@@ -270,7 +270,7 @@ cdef class Matrix:
     else:
       return NotImplemented
 
-  cpdef Matrix inverse(self):
+  def inverse(self):
     """Return the inverse of a matrix."""
     return _Matrix(dmnsn_matrix_inverse(self._m))
 
@@ -940,9 +940,10 @@ cdef class Object:
   # Transform an object without affecting the texture
   cdef _intrinsic_transform(self, Matrix trans):
     self._object.trans = dmnsn_matrix_mul(self._object.trans, trans._m)
+    cdef Matrix inv = trans.inverse()
     if self._object.texture != NULL:
       self._object.texture.trans = dmnsn_matrix_mul(self._object.texture.trans,
-                                                    trans.inverse()._m)
+                                                    inv._m)
 
 cdef class Triangle(Object):
   """A triangle."""
