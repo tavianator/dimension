@@ -169,6 +169,7 @@ dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
 
   payload->progress = progress;
   payload->canvas   = canvas;
+  *payload->canvas  = NULL;
   payload->file     = file;
 
   /* Create the worker thread */
@@ -186,13 +187,6 @@ static int
 dmnsn_png_write_canvas_thread(void *ptr)
 {
   dmnsn_png_write_payload *payload = ptr;
-
-  if (!payload->file) {
-    /* file was NULL */
-    errno = EINVAL;
-    dmnsn_free(payload);
-    return -1;
-  }
 
   png_uint_32 width = payload->canvas->width;
   png_uint_32 height = payload->canvas->height;
@@ -343,16 +337,14 @@ dmnsn_png_read_canvas_thread(void *ptr)
   dmnsn_png_read_payload *payload = ptr;
   dmnsn_tl_png_read_progress = payload->progress;
 
-  if (!payload->file) {
-    /* file was NULL */
-    errno = EINVAL;
+  png_byte header[8];
+  if (fread(header, 1, 8, payload->file) != 8) {
+    dmnsn_free(payload);
     return -1;
   }
-
-  png_byte header[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-  fread(header, 1, 8, payload->file);
   if (png_sig_cmp(header, 0, 8)) {
-    /* payload->file is not a PNG file, or the read failed */
+    /* payload->file is not a PNG file */
+    dmnsn_free(payload);
     errno = EINVAL;
     return -1;
   }
@@ -361,6 +353,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
   png_structp png_ptr
     = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (!png_ptr) {
+    dmnsn_free(payload);
     return -1;
   }
 
@@ -368,6 +361,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
   png_infop info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr) {
     png_destroy_read_struct(&png_ptr, NULL, NULL);
+    dmnsn_free(payload);
     return -1;
   }
 
@@ -379,6 +373,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
     dmnsn_free(row_pointers);
     dmnsn_free(image);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    dmnsn_free(payload);
     return -1;
   }
 
