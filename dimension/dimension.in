@@ -64,6 +64,8 @@ _parser.add_argument("--threads", action = "store", type = int,
                      help = "the number of threads to render with")
 _parser.add_argument("--quality", action = "store", type = str,
                      help = "the scene quality")
+_parser.add_argument("--adc-bailout", action = "store", type = str,
+                     help = "the ADC bailout (default: 1/255)")
 
 _parser.add_argument("-o", "--output", action = "store", type = str,
                      help = "the output image file")
@@ -172,6 +174,12 @@ if _args.threads is not None:
   scene.nthreads = _args.threads
 if _args.quality is not None:
   scene.quality = _args.quality
+if _args.adc_bailout is not None:
+  _pattern = r"^(.*)/(.*)"
+  _match = _re.match(_pattern, _args.adc_bailout)
+  if _match is not None:
+    _args.adc_bailout = float(_match.group(1))/float(_match.group(2))
+  scene.adc_bailout = float(_args.adc_bailout)
 
 # Raytrace the scene
 if scene.nthreads == 1:
