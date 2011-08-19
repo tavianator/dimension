@@ -84,7 +84,9 @@ dmnsn_color dmnsn_color_to_sRGB(dmnsn_color color);
 /** Greyscale color intensity. */
 double dmnsn_color_intensity(dmnsn_color color);
 /** Add two colors together. */
-dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2);
+dmnsn_color dmnsn_color_add(dmnsn_color lhs, dmnsn_color rhs);
+/** Subtract two colors. */
+dmnsn_color dmnsn_color_sub(dmnsn_color lhs, dmnsn_color rhs);
 /** Multiply a color's intensity by \p n. */
 dmnsn_color dmnsn_color_mul(double n, dmnsn_color color);
 /** Return the color at \p n on a gradient from \p c1 at 0 to \p c2 at 1. */

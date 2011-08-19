@@ -33,11 +33,11 @@ typedef struct dmnsn_point_light_payload {
 } dmnsn_point_light_payload;
 
 /** Point light direction callback. */
-static dmnsn_line
+static dmnsn_vector
 dmnsn_point_light_direction_fn(const dmnsn_light *light, dmnsn_vector v)
 {
   dmnsn_point_light_payload *payload = light->ptr;
-  return dmnsn_new_line(v, dmnsn_vector_sub(payload->origin, v));
+  return dmnsn_vector_sub(payload->origin, v);
 }
 
 /** Point light illumination callback. */

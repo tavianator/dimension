@@ -34,8 +34,8 @@ typedef struct dmnsn_light dmnsn_light;
  * @param[in] v      The point to illuminate.
  * @return The direction of light rays pointing from \p v
  */
-typedef dmnsn_line dmnsn_light_direction_fn(const dmnsn_light *light,
-                                            dmnsn_vector v);
+typedef dmnsn_vector dmnsn_light_direction_fn(const dmnsn_light *light,
+                                              dmnsn_vector v);
 
 /**
  * Light illumination callback.

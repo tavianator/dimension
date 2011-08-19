@@ -197,6 +197,29 @@ dmnsn_color_add(dmnsn_color c1, dmnsn_color c2)
   return ret;
 }
 
+/* Subtract two colors */
+dmnsn_color
+dmnsn_color_sub(dmnsn_color c1, dmnsn_color c2)
+{
+  dmnsn_color ret = dmnsn_new_color(c1.R - c2.R, c1.G - c2.G, c1.B - c2.B);
+
+  /* Switch into absolute filter and transmittance space */
+  double n1 = dmnsn_color_intensity(c1), n2 = dmnsn_color_intensity(c2);
+  double f1 = c1.filter*c1.trans, f2 = c2.filter*c2.trans;
+  double t1 = c1.trans - f1, t2 = c2.trans - f2;
+  double f = 0.0;
+  if (n1 - n2 >= dmnsn_epsilon)
+    f = (n1*f1 - n2*f2)/(n1 - n2);
+  double t = t1 - t2;
+
+  /* Switch back */
+  ret.trans = f + t;
+  if (ret.trans >= dmnsn_epsilon)
+    ret.filter = f/ret.trans;
+
+  return ret;
+}
+
 /* Multiply a color by a scalar */
 dmnsn_color
 dmnsn_color_mul(double n, dmnsn_color color)
