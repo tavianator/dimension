@@ -764,8 +764,11 @@ cdef class Reflection(Finish):
     """
     if max is None:
       max = min
-    self._finish.reflection = dmnsn_new_basic_reflection(Color(min)._c,
-                                                         Color(max)._c,
+
+    # Use sRGB value because Reflection(0.5) should really mean "reflect half
+    # the light"
+    self._finish.reflection = dmnsn_new_basic_reflection(Color(min)._sRGB,
+                                                         Color(max)._sRGB,
                                                          falloff)
 
 ############

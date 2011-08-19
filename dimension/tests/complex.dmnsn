@@ -54,7 +54,7 @@ def make_sphere(x, y, z, size):
 
     texture = Texture(
       pigment = Color(x/size, y/size, z/size),
-      finish  = Ambient(0.25) + Diffuse(0.8) + Reflection(0.5)
+      finish  = Ambient(0.25) + Diffuse(0.8) + Reflection(0.0, 0.25)
     )
   )
 

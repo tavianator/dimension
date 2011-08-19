@@ -115,11 +115,9 @@ dmnsn_test_scene_add_hollow_cube(dmnsn_scene *scene)
   cube->texture = dmnsn_new_texture();
   cube->texture->pigment = dmnsn_new_solid_pigment(cube_color);
 
-  dmnsn_color reflect = dmnsn_color_from_sRGB(
-    dmnsn_color_mul(0.5, dmnsn_white)
-  );
+  dmnsn_color reflect = dmnsn_color_mul(0.5, dmnsn_white);
   cube->texture->finish.reflection
-    = dmnsn_new_basic_reflection(reflect, reflect, 1.0);
+    = dmnsn_new_basic_reflection(dmnsn_black, reflect, 1.0);
 
   cube->interior = dmnsn_new_interior();
   cube->interior->ior = 1.1;
