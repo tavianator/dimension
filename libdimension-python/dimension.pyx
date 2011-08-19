@@ -60,15 +60,21 @@ cdef class Progress:
       finally:
         self._progress = NULL
 
+  def cancel(self):
+    self._assert_unfinished()
+    dmnsn_cancel_progress(self._progress)
+
   def progress(self):
-    if self._progress == NULL:
-      raise RuntimeError("background task finished.")
+    self._assert_unfinished()
     return dmnsn_get_progress(self._progress)
 
   def wait(self, progress):
+    self._assert_unfinished()
+    dmnsn_wait_progress(self._progress, progress)
+
+  def _assert_unfinished(self):
     if self._progress == NULL:
       raise RuntimeError("background task finished.")
-    dmnsn_wait_progress(self._progress, progress)
 
 cdef _Progress(dmnsn_progress *progress):
   cdef Progress self = Progress.__new__(Progress)

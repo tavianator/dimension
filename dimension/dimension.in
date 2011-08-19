@@ -111,21 +111,33 @@ from dimension import *
 
 # Display a progress bar
 def _progress_bar(str, progress):
-  if not _args.quiet:
-    print(str, end = ' ')
-    _sys.stdout.flush()
-
-    term_width = terminal_width()
-    width = term_width - (len(str) + 1)%term_width
-    for i in range(width):
-      progress.wait((i + 1)/width)
-      print('.', end = '')
+  try:
+    if not _args.quiet:
+      print(str, end = ' ')
       _sys.stdout.flush()
 
+      term_width = terminal_width()
+      width = term_width - (len(str) + 1)%term_width
+      for i in range(width):
+        progress.wait((i + 1)/width)
+        print('.', end = '')
+        _sys.stdout.flush()
+
+      print()
+      _sys.stdout.flush()
+
+    progress.finish()
+  except KeyboardInterrupt:
     print()
     _sys.stdout.flush()
 
-  progress.finish()
+    progress.cancel()
+    try:
+      progress.finish()
+    except:
+      # Swallow the failure exception
+      pass
+    raise
 
 # --strict option
 die_on_warnings(_args.strict)

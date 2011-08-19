@@ -60,9 +60,8 @@ dmnsn_finish_progress(dmnsn_progress *progress)
 
   if (progress) {
     /* Get the thread's return value */
-    if (pthread_join(progress->thread, &ptr) != 0) {
-      dmnsn_error("Joining worker thread failed.");
-    } else if (ptr) {
+    dmnsn_join_thread(progress->thread, &ptr);
+    if (ptr && ptr != PTHREAD_CANCELED) {
       retval = *(int *)ptr;
       dmnsn_free(ptr);
     }
@@ -84,6 +83,13 @@ dmnsn_finish_progress(dmnsn_progress *progress)
   }
 
   return retval;
+}
+
+/* Cancel a background thread */
+void
+dmnsn_cancel_progress(dmnsn_progress *progress)
+{
+  pthread_cancel(progress->thread);
 }
 
 /* Get the current progress of the worker thread, in [0.0, 1.0] */
@@ -127,6 +133,11 @@ dmnsn_set_progress_total(dmnsn_progress *progress, size_t total)
 void
 dmnsn_increment_progress(dmnsn_progress *progress)
 {
+  /* Allow a thread to be canceled whenever it increments a progress object --
+     this is close to PTHREAD_CANCEL_ASYNCHRONOUS but allows consistent state
+     on cancellation */
+  pthread_testcancel();
+
   dmnsn_write_lock(progress->rwlock);
     ++progress->progress;
   dmnsn_unlock_rwlock(progress->rwlock);

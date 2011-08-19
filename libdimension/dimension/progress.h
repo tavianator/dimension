@@ -38,6 +38,12 @@ typedef struct dmnsn_progress dmnsn_progress;
 int dmnsn_finish_progress(dmnsn_progress *progress);
 
 /**
+ * Interrupt the execution of a background thread.
+ * @param[in,out] progress  The background task to cancel.
+ */
+void dmnsn_cancel_progress(dmnsn_progress *progress);
+
+/**
  * Get the progress of the background task.
  * @param[in] progress  The background task to examine.
  * @return The progress of the background task, out of 1.0.

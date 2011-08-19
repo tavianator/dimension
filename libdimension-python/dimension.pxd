@@ -71,6 +71,7 @@ cdef extern from "../libdimension/dimension.h":
   ctypedef struct dmnsn_progress
 
   int dmnsn_finish_progress(dmnsn_progress *progress)
+  void dmnsn_cancel_progress(dmnsn_progress *progress)
   double dmnsn_get_progress(dmnsn_progress *progress)
   void dmnsn_wait_progress(dmnsn_progress *progress, double prog)
 

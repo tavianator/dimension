@@ -187,7 +187,13 @@ DMNSN_INTERNAL void dmnsn_key_create(pthread_key_t *key,
 DMNSN_INTERNAL void dmnsn_setspecific(pthread_key_t key, const void *value);
 
 /**
- * Destroy a thread-local storage key, warning out on failure.
+ * Destroy a thread-local storage key, warning on failure.
  * @param[out] key         The key to destroy.
  */
 DMNSN_INTERNAL void dmnsn_key_delete(pthread_key_t key);
+
+/**
+ * Join a thread, bailing out on failure.
+ * @param[in,out] thread  The thread to join.
+ */
+DMNSN_INTERNAL void dmnsn_join_thread(pthread_t thread, void **retval);
