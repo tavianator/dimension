@@ -100,9 +100,15 @@ static void
 dmnsn_ccthread_cleanup(void *ptr)
 {
   dmnsn_ccthread_cleanup_payload *payload = ptr;
+
   for (unsigned int i = 0; i < payload->nthreads; ++i) {
     if (payload->payloads[i].started) {
       pthread_cancel(payload->threads[i]);
+    }
+  }
+
+  for (unsigned int i = 0; i < payload->nthreads; ++i) {
+    if (payload->payloads[i].started) {
       dmnsn_join_thread(payload->threads[i], NULL);
     }
   }
