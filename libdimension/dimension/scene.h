@@ -40,8 +40,7 @@ typedef unsigned int dmnsn_quality;
 /** An entire scene. */
 typedef struct dmnsn_scene {
   /* World attributes */
-  dmnsn_color background;           /**< Background color. */
-  dmnsn_sky_sphere *sky_sphere;     /**< Sky sphere. */
+  dmnsn_pigment *background;        /**< Background pigment. */
   dmnsn_texture *default_texture;   /**< Default object texture. */
   dmnsn_interior *default_interior; /**< Default object interior. */
 

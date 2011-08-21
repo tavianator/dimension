@@ -1283,38 +1283,6 @@ cdef class PerspectiveCamera(Camera):
     # Move the camera into position
     self.transform(translate(Vector(location)))
 
-###############
-# Sky Spheres #
-###############
-
-cdef class SkySphere:
-  """A scene background."""
-  cdef dmnsn_sky_sphere *_sky_sphere
-
-  def __init__(self, pigments):
-    """
-    Create a SkySphere.
-
-    Keyword arguments:
-    pigments -- the list of pigments that make up the background, in back-to-
-                front order
-    """
-    self._sky_sphere = dmnsn_new_sky_sphere()
-
-    cdef Pigment real_pigment
-    for pigment in pigments:
-      real_pigment = Pigment(pigment)
-      DMNSN_INCREF(real_pigment._pigment)
-      dmnsn_array_push(self._sky_sphere.pigments, &real_pigment._pigment)
-
-  def __dealloc__(self):
-    dmnsn_delete_sky_sphere(self._sky_sphere)
-
-  def transform(self, Matrix trans not None):
-    """Transform a sky sphere."""
-    self._sky_sphere.trans = dmnsn_matrix_mul(trans._m, self._sky_sphere.trans)
-    return self
-
 ##########
 # Scenes #
 ##########
@@ -1400,18 +1368,17 @@ cdef class Scene:
       DMNSN_INCREF(self._scene.default_interior)
 
   property background:
-    """The solid background color of the scene (default: Black)."""
+    """The background pigment of the scene (default: Black)."""
     def __get__(self):
-      return _Color(self._scene.background)
-    def __set__(self, color):
-      self._scene.background = Color(color)._c
-
-  property sky_sphere:
-    """The background sky pattern of the scene."""
-    def __set__(self, SkySphere sky_sphere not None):
-      dmnsn_delete_sky_sphere(self._scene.sky_sphere)
-      self._scene.sky_sphere = sky_sphere._sky_sphere
-      DMNSN_INCREF(self._scene.sky_sphere)
+      if self._scene.background == NULL:
+        return None
+      else:
+        return _Pigment(self._scene.background)
+    def __set__(self, pigment):
+      dmnsn_delete_pigment(self._scene.background)
+      cdef Pigment real_pigment = Pigment(pigment)
+      self._scene.background = real_pigment._pigment
+      DMNSN_INCREF(self._scene.background)
 
   property adc_bailout:
     """The adaptive depth control bailout (default: 1/255)."""

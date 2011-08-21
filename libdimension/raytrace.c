@@ -205,18 +205,14 @@ dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
 
 /** Calculate the background color. */
 static dmnsn_color
-dmnsn_raytrace_background(dmnsn_raytrace_state *state, dmnsn_line ray)
+dmnsn_raytrace_background(const dmnsn_raytrace_state *state, dmnsn_line ray)
 {
-  dmnsn_color color = state->scene->background;
-  if (state->scene->sky_sphere
-      && (state->scene->quality & DMNSN_RENDER_PIGMENT))
-  {
-    dmnsn_color sky = dmnsn_sky_sphere_color(state->scene->sky_sphere,
-                                             dmnsn_vector_normalized(ray.n));
-    color = dmnsn_apply_filter(color, sky);
+  dmnsn_pigment *background = state->scene->background;
+  if (state->scene->quality & DMNSN_RENDER_PIGMENT) {
+    return dmnsn_evaluate_pigment(background, dmnsn_vector_normalized(ray.n));
+  } else {
+    return background->quick_color;
   }
-
-  return color;
 }
 
 /** Calculate the base pigment at the intersection. */

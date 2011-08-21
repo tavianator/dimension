@@ -32,8 +32,7 @@ dmnsn_new_scene(void)
 {
   dmnsn_scene *scene = dmnsn_malloc(sizeof(dmnsn_scene));
 
-  scene->background       = dmnsn_black;
-  scene->sky_sphere       = NULL;
+  scene->background       = NULL;
   scene->default_texture  = dmnsn_new_texture();
   scene->default_interior = dmnsn_new_interior();
   scene->canvas           = NULL;
@@ -71,7 +70,7 @@ dmnsn_delete_scene(dmnsn_scene *scene)
     dmnsn_delete_camera(scene->camera);
     dmnsn_delete_interior(scene->default_interior);
     dmnsn_delete_texture(scene->default_texture);
-    dmnsn_delete_sky_sphere(scene->sky_sphere);
+    dmnsn_delete_pigment(scene->background);
     dmnsn_free(scene);
   }
 }
@@ -89,11 +88,9 @@ dmnsn_initialize_scene(dmnsn_scene *scene)
     scene->outer_height = scene->canvas->height;
   }
 
-  dmnsn_initialize_texture(scene->default_texture);
+  dmnsn_initialize_pigment(scene->background);
 
-  if (scene->sky_sphere) {
-    dmnsn_initialize_sky_sphere(scene->sky_sphere);
-  }
+  dmnsn_initialize_texture(scene->default_texture);
 
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
     dmnsn_texture_cascade(scene->default_texture, &(*object)->texture);

@@ -49,8 +49,7 @@ scene = Scene(canvas  = canvas,
               lights  = lights,
               camera  = camera)
 scene.default_texture = Texture(finish = Ambient(0.1) + Diffuse(0.7))
-scene.background      = Clear
-scene.sky_sphere      = sky_sphere
+scene.background      = background
 scene.adc_bailout     = 1/255
 scene.recursion_limit = 5
 scene.raytrace()

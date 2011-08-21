@@ -23,19 +23,12 @@ camera = PerspectiveCamera(location = (0, 0.25, -4),
 camera.transform(rotate(53*Y))
 
 # Background
-background = Clear
-
-# Sky sphere
-sky_sphere = SkySphere(
-  [
-    PigmentMap(
-      pattern = Gradient(Y),
-      map     = {
-        0:    Orange,
-        0.35: Color(0, 0.1, 0.2, trans = 0.1, filter = 0.0),
-      },
-    ),
-  ]
+background = PigmentMap(
+  pattern = Gradient(Y),
+  map     = {
+    0:    Orange,
+    0.35: Color(0, 0.1, 0.2, trans = 0.1, filter = 0.0),
+  },
 )
 
 # Lights

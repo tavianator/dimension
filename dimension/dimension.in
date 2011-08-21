@@ -151,7 +151,6 @@ camera           = PerspectiveCamera()
 default_texture  = Texture(finish = Ambient(0.1) + Diffuse(0.7))
 default_interior = Interior()
 background       = Black
-sky_sphere       = None
 recursion_limit  = None
 
 # Execute the input script
@@ -178,8 +177,6 @@ scene.outer_width     = _args.width
 scene.outer_height    = _args.height
 scene.default_texture = default_texture
 scene.background      = background
-if sky_sphere is not None:
-  scene.sky_sphere = sky_sphere
 if recursion_limit is not None:
   scene.recursion_limit = recursion_limit
 if _args.threads is not None:

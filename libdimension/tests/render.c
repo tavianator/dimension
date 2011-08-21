@@ -36,9 +36,6 @@ dmnsn_test_scene_set_defaults(dmnsn_scene *scene)
       dmnsn_color_from_sRGB(dmnsn_color_mul(0.7, dmnsn_white))
     )
   );
-
-  /* Background color */
-  scene->background = dmnsn_clear;
 }
 
 static void
@@ -75,9 +72,8 @@ dmnsn_test_scene_add_camera(dmnsn_scene *scene)
 }
 
 static void
-dmnsn_test_scene_add_sky_sphere(dmnsn_scene *scene)
+dmnsn_test_scene_add_background(dmnsn_scene *scene)
 {
-  scene->sky_sphere = dmnsn_new_sky_sphere();
   dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(dmnsn_y);
   dmnsn_map *sky_gradient_pigment_map = dmnsn_new_pigment_map();
   dmnsn_pigment_map_add_color(sky_gradient_pigment_map, 0.0, dmnsn_orange);
@@ -85,10 +81,9 @@ dmnsn_test_scene_add_sky_sphere(dmnsn_scene *scene)
     dmnsn_new_color5(0.0, 0.1, 0.2, 0.1, 0.0)
   );
   dmnsn_pigment_map_add_color(sky_gradient_pigment_map, 0.35, background);
-  dmnsn_pigment *sky_pigment =
+  scene->background =
     dmnsn_new_pigment_map_pigment(sky_gradient, sky_gradient_pigment_map,
                                   DMNSN_PIGMENT_MAP_SRGB);
-  dmnsn_array_push(scene->sky_sphere->pigments, &sky_pigment);
 }
 
 static void
@@ -283,7 +278,7 @@ dmnsn_new_test_scene(void)
   dmnsn_test_scene_set_defaults(scene);
   dmnsn_test_scene_add_canvas(scene);
   dmnsn_test_scene_add_camera(scene);
-  dmnsn_test_scene_add_sky_sphere(scene);
+  dmnsn_test_scene_add_background(scene);
   dmnsn_test_scene_add_lights(scene);
   dmnsn_test_scene_add_objects(scene);
   return scene;

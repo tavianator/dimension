@@ -346,17 +346,6 @@ cdef extern from "../libdimension/dimension.h":
 
   dmnsn_camera *dmnsn_new_perspective_camera()
 
-  ###############
-  # Sky Spheres #
-  ###############
-
-  ctypedef struct dmnsn_sky_sphere:
-    dmnsn_array *pigments
-    dmnsn_matrix trans
-
-  dmnsn_sky_sphere *dmnsn_new_sky_sphere()
-  void dmnsn_delete_sky_sphere(dmnsn_sky_sphere *sky_sphere)
-
   ##########
   # Scenes #
   ##########
@@ -371,8 +360,7 @@ cdef extern from "../libdimension/dimension.h":
     DMNSN_RENDER_FULL
 
   ctypedef struct dmnsn_scene:
-    dmnsn_color background
-    dmnsn_sky_sphere *sky_sphere
+    dmnsn_pigment *background
     dmnsn_texture *default_texture
     dmnsn_interior *default_interior
 
