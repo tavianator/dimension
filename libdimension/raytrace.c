@@ -465,12 +465,10 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
 
   --state->reclevel;
 
-  /* Calculate the background color */
-  dmnsn_color color = dmnsn_raytrace_background(state, ray);
-
   dmnsn_intersection intersection;
   bool reset = state->reclevel == state->scene->reclimit - 1;
   if (dmnsn_prtree_intersection(state->prtree, ray, &intersection, reset)) {
+    /* Found an intersection */
     dmnsn_initialize_raytrace_state(state, &intersection);
 
     /* Pigment */
@@ -494,8 +492,9 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
       dmnsn_raytrace_transparency(state);
     }
 
-    color = dmnsn_color_add(state->diffuse, state->additional);
+    return dmnsn_color_add(state->diffuse, state->additional);
+  } else {
+    /* No intersection, return the background color */
+    return dmnsn_raytrace_background(state, ray);
   }
-
-  return color;
 }
