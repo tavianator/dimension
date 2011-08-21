@@ -28,8 +28,6 @@ typedef struct dmnsn_timer {
   double real;   /**< Wall-clock time. */
   double user;   /**< Time spent executing. */
   double system; /**< Time spent waiting for the system. */
-
-  dmnsn_refcount refcount; /**< @internal Reference count. */
 } dmnsn_timer;
 
 /** A standard format string for timers. */
@@ -41,22 +39,16 @@ typedef struct dmnsn_timer {
  * @endcode
  * will print something like "1.00s (user: 0.99s; system: 0.01s)".
  */
-#define DMNSN_TIMER_PRINTF(t) (t)->real, (t)->user, (t)->system
+#define DMNSN_TIMER_PRINTF(t) (t).real, (t).user, (t).system
 
 /**
- * Create a new timer.  Timing starts right before this function returns.
- * @return A new timer object.
+ * Start a timer.  The values of an unfinished timer are undefined.
+ * @param[in,out] timer  The timer to start.
  */
-dmnsn_timer *dmnsn_new_timer(void);
+void dmnsn_start_timer(dmnsn_timer *timer);
 
 /**
  * Finish timing.  The members of the timer struct will now contain timing data.
  * @param[in,out] timer  The timer to stop.
  */
-void dmnsn_complete_timer(dmnsn_timer *timer);
-
-/**
- * Delete a timer.
- * @param[in,out] timer  The timer to delete.
- */
-void dmnsn_delete_timer(dmnsn_timer *timer);
+void dmnsn_stop_timer(dmnsn_timer *timer);

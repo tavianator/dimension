@@ -161,7 +161,7 @@ if not _args.quiet:
 parse_timer = Timer()
 with open(_args.input) as _fh:
   exec(compile(_fh.read(), _args.input, "exec"))
-parse_timer.complete()
+parse_timer.stop()
 
 # Make the canvas
 canvas = Canvas(width = _args.region_width, height = _args.region_height)
@@ -203,7 +203,7 @@ _progress_bar(render_message, scene.raytrace_async())
 # Write the output file
 export_timer = Timer()
 _progress_bar("Writing %s" % _args.output, canvas.write_PNG_async(_args.output))
-export_timer.complete()
+export_timer.stop()
 
 # Print execution times
 if _args.verbose:

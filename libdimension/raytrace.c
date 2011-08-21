@@ -80,18 +80,18 @@ dmnsn_raytrace_scene_thread(void *ptr)
   dmnsn_initialize_scene(payload->scene);
 
   /* Time the bounding tree construction */
-  payload->scene->bounding_timer = dmnsn_new_timer();
+  dmnsn_start_timer(&payload->scene->bounding_timer);
     payload->prtree = dmnsn_new_prtree(payload->scene->objects);
-  dmnsn_complete_timer(payload->scene->bounding_timer);
+  dmnsn_stop_timer(&payload->scene->bounding_timer);
 
   /* Set up the progress object */
   dmnsn_set_progress_total(payload->progress, payload->scene->canvas->height);
 
   /* Time the render itself */
-  payload->scene->render_timer = dmnsn_new_timer();
+  dmnsn_start_timer(&payload->scene->render_timer);
     int ret = dmnsn_execute_concurrently(dmnsn_raytrace_scene_concurrent,
                                          payload, payload->scene->nthreads);
-  dmnsn_complete_timer(payload->scene->render_timer);
+  dmnsn_stop_timer(&payload->scene->render_timer);
 
   dmnsn_delete_prtree(payload->prtree);
   dmnsn_free(payload);

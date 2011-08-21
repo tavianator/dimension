@@ -76,8 +76,8 @@ typedef struct dmnsn_scene {
   unsigned int nthreads;
 
   /** Timers. */
-  dmnsn_timer *bounding_timer;
-  dmnsn_timer *render_timer;
+  dmnsn_timer bounding_timer;
+  dmnsn_timer render_timer;
 
   bool initialized; /**< @internal Whether the scene is initialized. */
 } dmnsn_scene;

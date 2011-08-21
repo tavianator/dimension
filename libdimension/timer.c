@@ -25,29 +25,18 @@
 
 #include "dimension-impl.h"
 
-dmnsn_timer *
-dmnsn_new_timer(void)
+void
+dmnsn_start_timer(dmnsn_timer *timer)
 {
-  dmnsn_timer *timer = dmnsn_malloc(sizeof(dmnsn_timer));
   dmnsn_get_times(timer);
-  timer->refcount = 1;
-  return timer;
 }
 
 void
-dmnsn_complete_timer(dmnsn_timer *timer)
+dmnsn_stop_timer(dmnsn_timer *timer)
 {
   dmnsn_timer now;
   dmnsn_get_times(&now);
   timer->real   = now.real   - timer->real;
   timer->user   = now.user   - timer->user;
   timer->system = now.system - timer->system;
-}
-
-void
-dmnsn_delete_timer(dmnsn_timer *timer)
-{
-  if (DMNSN_DECREF(timer)) {
-    dmnsn_free(timer);
-  }
 }

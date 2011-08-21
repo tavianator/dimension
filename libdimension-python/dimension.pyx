@@ -87,7 +87,7 @@ cdef _Progress(dmnsn_progress *progress):
 
 cdef class Timer:
   """A timer for Dimension tasks."""
-  cdef dmnsn_timer *_timer
+  cdef dmnsn_timer _timer
 
   def __init__(self):
     """
@@ -95,14 +95,11 @@ cdef class Timer:
 
     Timing starts as soon as the object is created.
     """
-    self._timer = dmnsn_new_timer()
+    dmnsn_start_timer(&self._timer)
 
-  def __dealloc__(self):
-    dmnsn_delete_timer(self._timer)
-
-  def complete(self):
+  def stop(self):
     """Stop the Timer."""
-    dmnsn_complete_timer(self._timer)
+    dmnsn_stop_timer(&self._timer)
 
   property real:
     """Real (wall clock) time."""
@@ -121,10 +118,9 @@ cdef class Timer:
     return "%.2fs (user: %.2fs; system: %.2fs)" % \
            (self._timer.real, self._timer.user, self._timer.system)
 
-cdef _Timer(dmnsn_timer *timer):
+cdef _Timer(dmnsn_timer timer):
   cdef Timer self = Timer.__new__(Timer)
   self._timer = timer
-  DMNSN_INCREF(self._timer)
   return self
 
 ############
@@ -1450,16 +1446,10 @@ cdef class Scene:
   property bounding_timer:
     """The Timer for building the bounding hierarchy."""
     def __get__(self):
-      if self._scene.bounding_timer == NULL:
-        raise RuntimeError("scene has not been rendered yet")
-
       return _Timer(self._scene.bounding_timer)
   property render_timer:
     """The Timer for the actual render."""
     def __get__(self):
-      if self._scene.render_timer == NULL:
-        raise RuntimeError("scene has not been rendered yet")
-
       return _Timer(self._scene.render_timer)
 
   def raytrace(self):

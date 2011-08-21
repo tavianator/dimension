@@ -48,8 +48,6 @@ dmnsn_new_scene(void)
   scene->reclimit         = 5;
   scene->adc_bailout      = 1.0/255.0;
   scene->nthreads         = dmnsn_ncpus();
-  scene->bounding_timer   = NULL;
-  scene->render_timer     = NULL;
   scene->initialized      = false;
 
   return scene;
@@ -60,9 +58,6 @@ void
 dmnsn_delete_scene(dmnsn_scene *scene)
 {
   if (scene) {
-    dmnsn_delete_timer(scene->render_timer);
-    dmnsn_delete_timer(scene->bounding_timer);
-
     DMNSN_ARRAY_FOREACH (dmnsn_light **, light, scene->lights) {
       dmnsn_delete_light(*light);
     }
@@ -84,7 +79,7 @@ dmnsn_delete_scene(dmnsn_scene *scene)
 void
 dmnsn_initialize_scene(dmnsn_scene *scene)
 {
-  dmnsn_assert(!scene->initialized, "Texture double-initialized.");
+  dmnsn_assert(!scene->initialized, "Scene double-initialized.");
   scene->initialized = true;
 
   if (scene->outer_width == 0) {
