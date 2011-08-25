@@ -23,7 +23,7 @@
  * Dynamic memory.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #include <stdlib.h>
 #include <string.h>
 

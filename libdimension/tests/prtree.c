@@ -21,7 +21,7 @@
  * Basic tests of PR-trees
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #define DMNSN_PRTREE_B 8
 #include <stdio.h>
 #include <stdlib.h>

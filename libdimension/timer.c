@@ -23,7 +23,7 @@
  * Performance counter.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 
 void
 dmnsn_start_timer(dmnsn_timer *timer)

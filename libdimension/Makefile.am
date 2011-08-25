@@ -72,7 +72,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           cube.c                                               \
                           csg.c                                                \
                           dictionary.c                                         \
-                          dimension-impl.h                                     \
+                          dimension-internal.h                                 \
                           error.c                                              \
                           finish.c                                             \
                           geometry.c                                           \

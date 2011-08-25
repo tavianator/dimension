@@ -23,7 +23,7 @@
  * Polynomials.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #include <math.h>
 
 /** Get the real degree of a polynomial, ignoring leading zeros. */

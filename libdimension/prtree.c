@@ -24,7 +24,7 @@
  * libdimension.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #include <pthread.h>
 #include <stdlib.h>
 

@@ -23,7 +23,7 @@
  * Background threading.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #include <pthread.h>
 
 /** The payload to pass to the pthread callback. */

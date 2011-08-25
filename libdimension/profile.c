@@ -23,7 +23,7 @@
  * Branch profile accounting.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <inttypes.h>

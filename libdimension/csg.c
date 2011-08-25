@@ -23,7 +23,7 @@
  * Constructive solid geometry.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #include <stdlib.h>
 
 /*

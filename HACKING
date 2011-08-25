@@ -8,7 +8,7 @@ API:                   libdimension/dimension.h, libdimension/dimension/*.h
                        are generally at libdimension/$file.c)
 Ray tracing algorithm: libdimension/raytrace.c
 Bounding hierarchy:    libdimension/prtree.{c,h}
-Library internals:     libdimension/dimension-impl.h and its #includes
+Library internals:     libdimension/dimension-internal.h and its #includes
 Tests:                 libdimension/tests/*.{c,cpp}
 Benchmarks:            libdimension/bench/*.c
 

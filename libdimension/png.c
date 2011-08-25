@@ -23,7 +23,7 @@
  * PNG import/export.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #include <png.h>
 #include <errno.h>
 #include <setjmp.h>

@@ -24,8 +24,8 @@
  * implement libdimension, but are not part of its public API.
  */
 
-#ifndef DIMENSION_IMPL_H
-#define DIMENSION_IMPL_H
+#ifndef DIMENSION_INTERNAL_H
+#define DIMENSION_INTERNAL_H
 
 #define _GNU_SOURCE
 #include "dimension.h"
@@ -36,4 +36,4 @@
 #include "threads.h"
 #include "prtree.h"
 
-#endif /* DIMENSION_IMPL_H */
+#endif /* DIMENSION_INTERNAL_H */

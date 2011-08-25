@@ -23,7 +23,7 @@
  * Geometrical function implementations.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #include <math.h>
 
 /* Identity matrix */

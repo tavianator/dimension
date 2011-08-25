@@ -23,7 +23,7 @@
  * Error handling.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #include <pthread.h>
 #include <stdio.h>     /* For fprintf() */
 #include <stdlib.h>    /* For exit() */

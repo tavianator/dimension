@@ -23,7 +23,7 @@
  * Progress objects.
  */
 
-#include "dimension-impl.h"
+#include "dimension-internal.h"
 #include <pthread.h>
 
 /* Allocate a new dmnsn_progress* */
