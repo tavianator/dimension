@@ -16,8 +16,8 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 dnl Initialization
-AC_PREREQ(2.65)
-AC_INIT(Dimension, 0.0, tavianator@tavianator.com, dimension,
+AC_PREREQ([2.68])
+AC_INIT([Dimension], [0.0], [tavianator@tavianator.com], [dimension],
         [http://www.tavianator.com/dimension/])
 AM_INIT_AUTOMAKE([parallel-tests color-tests std-options])
 AM_SILENT_RULES([yes])
@@ -31,18 +31,27 @@ AM_PROG_CC_C_O
 AC_PROG_CXX
 AM_PROG_AS
 AC_PROG_INSTALL
-AC_LIBTOOL_WIN32_DLL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_LIBTOOL
+LT_INIT([win32-dll disable-static])
 AM_PATH_PYTHON([3.2])
+
+dnl Find the math library
+AC_SEARCH_LIBS([sqrt], [m], [], [AC_MSG_ERROR([sqrt() function not found])])
 
 dnl PNG canvas export
 AC_ARG_ENABLE([png],
               [AS_HELP_STRING([--enable-png],
                               [Enable PNG canvas export [default=yes]])],
               [],
-              [enable_png=yes])
+              [enable_png=maybe])
+if test "$enable_png" != "no"; then
+  PKG_CHECK_MODULES([libpng], [libpng], [enable_png=yes],
+                    [test "$enable_png" = "yes" && AC_MSG_ERROR([libpng not found])
+                     enable_png-no])
+  AC_SUBST(libpng_CFLAGS)
+  AC_SUBST(libpng_LIBS)
+fi
 AM_CONDITIONAL([PNG], [test "$enable_png" = "yes"])
 
 dnl OpenGL canvas export
@@ -50,7 +59,12 @@ AC_ARG_ENABLE([gl],
               [AS_HELP_STRING([--enable-gl],
                               [Enable OpenGL canvas export [default=yes]])],
               [],
-              [enable_gl=yes])
+              [enable_gl=maybe])
+if test "$enable_gl" != "no"; then
+  AC_CHECK_LIB([GL], [glDrawPixels], [enable_gl=yes],
+               [test "$enable_gl" = "yes" && AC_MSG_ERROR([libGL not found])
+                enable_gl=no])
+fi
 AM_CONDITIONAL([GL], [test "$enable_gl" = "yes"])
 
 dnl Built-in profiling support
@@ -78,19 +92,15 @@ AC_SUBST(libsandglass_LIBS)
 dnl Platform feature tests
 
 m4_include(ax_pthread.m4)
-AX_PTHREAD(, [AC_MSG_ERROR([pthread support not detected])])
+AX_PTHREAD([], [AC_MSG_ERROR([pthread support not detected])])
 
 AC_MSG_CHECKING([for sched_getaffinity()])
 AC_LINK_IFELSE([
   AC_LANG_PROGRAM(
-    [
-      #define _GNU_SOURCE
-      #include <sched.h>
-    ],
-    [
-      cpu_set_t cpuset;
-      sched_getaffinity(0, sizeof(cpuset), &cpuset);
-    ]
+    [ #define _GNU_SOURCE
+      #include <sched.h> ],
+    [ cpu_set_t cpuset;
+      sched_getaffinity(0, sizeof(cpuset), &cpuset); ]
   )],
   [AC_DEFINE([DMNSN_SCHED_GETAFFINITY], [1])
    AC_MSG_RESULT([yes])],
@@ -172,6 +182,9 @@ AC_COMPILE_IFELSE([
 )
 
 AC_CHECK_HEADER([GL/glx.h], [have_glx=yes], [have_glx=no])
+if test "$enable_gl" = "yes" -a "$have_glx" = "yes"; then
+  AC_CHECK_LIB([X11], [XOpenDisplay], [], [have_glx=no])
+fi
 AM_CONDITIONAL([GLX], [test "$enable_gl" = "yes" -a "$have_glx" = "yes"])
 
 dnl Generate Makefiles

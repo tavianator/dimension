@@ -113,12 +113,14 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           timer.c                                              \
                           torus.c                                              \
                           triangle.c
+libdimension_la_CFLAGS  = $(AM_CFLAGS)
 libdimension_la_LDFLAGS = -version-info 0:0:0 -no-undefined $(AM_LDFLAGS)
-libdimension_la_LIBADD  = -lm
+libdimension_la_LIBADD  =
 
 if PNG
 libdimension_la_SOURCES += png.c
-libdimension_la_LIBADD  += -lpng
+libdimension_la_CFLAGS  += $(libpng_CFLAGS)
+libdimension_la_LIBADD  += $(libpng_LIBS)
 else
 libdimension_la_SOURCES += png-stubs.c
 endif
