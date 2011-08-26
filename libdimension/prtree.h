@@ -38,12 +38,15 @@ typedef struct dmnsn_prtree {
 } dmnsn_prtree;
 
 /** Create a PR-tree. */
-dmnsn_prtree *dmnsn_new_prtree(const dmnsn_array *objects);
+DMNSN_INTERNAL dmnsn_prtree *dmnsn_new_prtree(const dmnsn_array *objects);
 /** Delete a PR-tree. */
-void dmnsn_delete_prtree(dmnsn_prtree *tree);
+DMNSN_INTERNAL void dmnsn_delete_prtree(dmnsn_prtree *tree);
 
 /** Find the closest ray-object intersection in the tree. */
-bool dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
-                               dmnsn_intersection *intersection, bool reset);
+DMNSN_INTERNAL bool dmnsn_prtree_intersection(const dmnsn_prtree *tree,
+                                              dmnsn_line ray,
+                                              dmnsn_intersection *intersection,
+                                              bool reset);
 /** Determine whether a point is inside any object in the tree. */
-bool dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point);
+DMNSN_INTERNAL bool dmnsn_prtree_inside(const dmnsn_prtree *tree,
+                                        dmnsn_vector point);

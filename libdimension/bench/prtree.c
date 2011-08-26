@@ -17,7 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include "dimension-internal.h"
+#include "../prtree.c"
+#include "../threads.c"
+#include "../progress.c"
 #include <sandglass.h>
 #include <stdlib.h>
 

@@ -31,6 +31,7 @@ array_bench_SOURCES = array.c
 geometry_bench_SOURCES = geometry.c
 polynomial_bench_SOURCES = polynomial.c
 prtree_bench_SOURCES = prtree.c
+prtree_bench_CFLAGS = $(AM_CFLAGS) -finline
 
 bench: $(EXTRA_PROGRAMS)
 	./array.bench

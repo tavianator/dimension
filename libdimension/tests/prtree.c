@@ -21,8 +21,9 @@
  * Basic tests of PR-trees
  */
 
-#include "dimension-internal.h"
-#define DMNSN_PRTREE_B 8
+#include "../prtree.c"
+#include "../threads.c"
+#include "../progress.c"
 #include <stdio.h>
 #include <stdlib.h>
 
