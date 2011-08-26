@@ -39,4 +39,7 @@ bench: $(EXTRA_PROGRAMS)
 	./polynomial.bench
 	./prtree.bench
 
+clean-local:
+	rm -f *.bench
+
 .PHONY: bench
