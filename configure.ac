@@ -22,8 +22,8 @@ AC_INIT(Dimension, 0.0, tavianator@tavianator.com, dimension,
 AM_INIT_AUTOMAKE([parallel-tests color-tests std-options])
 AM_SILENT_RULES([yes])
 
-dnl Use C99 mode with GNU extensions
-CFLAGS="-std=gnu99 -D_REENTRANT $CFLAGS"
+dnl Use C99 mode with GNU extensions by default
+CFLAGS="-std=gnu99 $CFLAGS"
 
 dnl Programs
 AC_PROG_CC
@@ -43,7 +43,7 @@ AC_ARG_ENABLE([png],
                               [Enable PNG canvas export [default=yes]])],
               [],
               [enable_png=yes])
-AM_CONDITIONAL([PNG], [test "$enable_png" != "no"])
+AM_CONDITIONAL([PNG], [test "$enable_png" = "yes"])
 
 dnl OpenGL canvas export
 AC_ARG_ENABLE([gl],
@@ -51,7 +51,7 @@ AC_ARG_ENABLE([gl],
                               [Enable OpenGL canvas export [default=yes]])],
               [],
               [enable_gl=yes])
-AM_CONDITIONAL([GL], [test "$enable_gl" != "no"])
+AM_CONDITIONAL([GL], [test "$enable_gl" = "yes"])
 
 dnl Built-in profiling support
 AC_ARG_ENABLE([profile],
@@ -76,6 +76,9 @@ AC_SUBST(libsandglass_CFLAGS)
 AC_SUBST(libsandglass_LIBS)
 
 dnl Platform feature tests
+
+m4_include(ax_pthread.m4)
+AX_PTHREAD(, [AC_MSG_ERROR([pthread support not detected])])
 
 AC_MSG_CHECKING([for sched_getaffinity()])
 AC_LINK_IFELSE([
@@ -168,8 +171,8 @@ AC_COMPILE_IFELSE([
    AC_MSG_RESULT([no])]
 )
 
-AC_CHECK_HEADER([GL/glx.h], [enable_glx=yes], [enable_glx=no])
-AM_CONDITIONAL([GLX], [test "$enable_glx" != "no"])
+AC_CHECK_HEADER([GL/glx.h], [have_glx=yes], [have_glx=no])
+AM_CONDITIONAL([GLX], [test "$enable_gl" = "yes" -a "$have_glx" = "yes"])
 
 dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])

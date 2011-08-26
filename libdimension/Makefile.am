@@ -21,8 +21,10 @@ SUBDIRS = .                                                                    \
           bench                                                                \
           tests
 
+AM_CFLAGS = $(PTHREAD_CFLAGS)
 # Make dmnsn_error() backtraces useful
-AM_LDFLAGS = -rdynamic
+AM_LDFLAGS = $(PTHREAD_LIBS) -rdynamic
+CC = $(PTHREAD_CC)
 
 nobase_include_HEADERS = dimension.h                                           \
                          dimension/array.h                                     \
@@ -111,9 +113,8 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           timer.c                                              \
                           torus.c                                              \
                           triangle.c
-libdimension_la_CFLAGS  = $(AM_CFLAGS)
 libdimension_la_LDFLAGS = -version-info 0:0:0 -no-undefined $(AM_LDFLAGS)
-libdimension_la_LIBADD  = -lm -lpthread
+libdimension_la_LIBADD  = -lm
 
 if PNG
 libdimension_la_SOURCES += png.c
