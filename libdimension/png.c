@@ -69,38 +69,10 @@ dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
   color = dmnsn_color_to_sRGB(color);
 
   /* Saturate R, G, and B to [0, UINT16_MAX] */
-
-  if (color.R <= 0.0) {
-    pixel[0] = 0;
-  } else if (color.R >= 1.0) {
-    pixel[0] = UINT16_MAX;
-  } else {
-    pixel[0] = color.R*UINT16_MAX;
-  }
-
-  if (color.G <= 0.0) {
-    pixel[1] = 0;
-  } else if (color.G >= 1.0) {
-    pixel[1] = UINT16_MAX;
-  } else {
-    pixel[1] = color.G*UINT16_MAX;
-  }
-
-  if (color.B <= 0.0) {
-    pixel[2] = 0;
-  } else if (color.B >= 1.0) {
-    pixel[2] = UINT16_MAX;
-  } else {
-    pixel[2] = color.B*UINT16_MAX;
-  }
-
-  if (color.trans <= 0.0) {
-    pixel[3] = 0;
-  } else if (color.trans >= 1.0) {
-    pixel[3] = UINT16_MAX;
-  } else {
-    pixel[3] = color.trans*UINT16_MAX;
-  }
+  pixel[0] = dmnsn_min(dmnsn_max(color.R,     0.0), 1.0)*UINT16_MAX;
+  pixel[1] = dmnsn_min(dmnsn_max(color.G,     0.0), 1.0)*UINT16_MAX;
+  pixel[2] = dmnsn_min(dmnsn_max(color.B,     0.0), 1.0)*UINT16_MAX;
+  pixel[3] = dmnsn_min(dmnsn_max(color.trans, 0.0), 1.0)*UINT16_MAX;
 }
 
 /** Payload type for PNG write thread callback. */
@@ -272,37 +244,10 @@ dmnsn_png_write_canvas_thread(void *ptr)
 
       /* Saturate R, G, and B to [0, UINT16_MAX] */
 
-      if (color.R <= 0.0) {
-        row[4*x] = 0;
-      } else if (color.R >= 1.0) {
-        row[4*x] = UINT16_MAX;
-      } else {
-        row[4*x] = color.R*UINT16_MAX;
-      }
-
-      if (color.G <= 0.0) {
-        row[4*x + 1] = 0;
-      } else if (color.G >= 1.0) {
-        row[4*x + 1] = UINT16_MAX;
-      } else {
-        row[4*x + 1] = color.G*UINT16_MAX;
-      }
-
-      if (color.B <= 0.0) {
-        row[4*x + 2] = 0;
-      } else if (color.B >= 1.0) {
-        row[4*x + 2] = UINT16_MAX;
-      } else {
-        row[4*x + 2] = color.B*UINT16_MAX;
-      }
-
-      if (color.trans <= 0.0) {
-        row[4*x + 3] = 0;
-      } else if (color.trans >= 1.0) {
-        row[4*x + 3] = UINT16_MAX;
-      } else {
-        row[4*x + 3] = color.trans*UINT16_MAX;
-      }
+      row[4*x]     = dmnsn_min(dmnsn_max(color.R,     0.0), 1.0)*UINT16_MAX;
+      row[4*x + 1] = dmnsn_min(dmnsn_max(color.G,     0.0), 1.0)*UINT16_MAX;
+      row[4*x + 2] = dmnsn_min(dmnsn_max(color.B,     0.0), 1.0)*UINT16_MAX;
+      row[4*x + 3] = dmnsn_min(dmnsn_max(color.trans, 0.0), 1.0)*UINT16_MAX;
     }
 
     /* Write the row */

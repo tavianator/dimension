@@ -29,9 +29,21 @@
 #include <stdint.h>
 
 /** GL optimizer callback. */
-static void dmnsn_gl_optimizer_fn(const dmnsn_canvas *canvas,
-                                  dmnsn_canvas_optimizer optimizer,
-                                  size_t x, size_t y);
+static void
+dmnsn_gl_optimizer_fn(const dmnsn_canvas *canvas,
+                      dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
+{
+  GLushort *pixel = (GLushort *)optimizer.ptr + 4*(y*canvas->width + x);
+  dmnsn_color color = dmnsn_get_pixel(canvas, x, y);
+  color = dmnsn_remove_filter(color);
+  color = dmnsn_color_to_sRGB(color);
+
+  /* Saturate R, G, and B to [0, UINT16_MAX] */
+  pixel[0] = dmnsn_min(dmnsn_max(color.R,     0.0), 1.0)*UINT16_MAX;
+  pixel[1] = dmnsn_min(dmnsn_max(color.G,     0.0), 1.0)*UINT16_MAX;
+  pixel[2] = dmnsn_min(dmnsn_max(color.B,     0.0), 1.0)*UINT16_MAX;
+  pixel[3] = dmnsn_min(dmnsn_max(color.trans, 0.0), 1.0)*UINT16_MAX;
+}
 
 /* Optimize canvas for GL drawing */
 int
@@ -87,38 +99,10 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
       color = dmnsn_color_to_sRGB(color);
 
       /* Saturate R, G, and B to [0, UINT16_MAX] */
-
-      if (color.R <= 0.0) {
-        pixel[0] = 0;
-      } else if (color.R >= 1.0) {
-        pixel[0] = UINT16_MAX;
-      } else {
-        pixel[0] = color.R*UINT16_MAX;
-      }
-
-      if (color.G <= 0.0) {
-        pixel[1] = 0;
-      } else if (color.G >= 1.0) {
-        pixel[1] = UINT16_MAX;
-      } else {
-        pixel[1] = color.G*UINT16_MAX;
-      }
-
-      if (color.B <= 0.0) {
-        pixel[2] = 0;
-      } else if (color.B >= 1.0) {
-        pixel[2] = UINT16_MAX;
-      } else {
-        pixel[2] = color.B*UINT16_MAX;
-      }
-
-      if (color.trans <= 0.0) {
-        pixel[3] = 0;
-      } else if (color.trans >= 1.0) {
-        pixel[3] = UINT16_MAX;
-      } else {
-        pixel[3] = color.trans*UINT16_MAX;
-      }
+      pixel[0] = dmnsn_min(dmnsn_max(color.R,     0.0), 1.0)*UINT16_MAX;
+      pixel[1] = dmnsn_min(dmnsn_max(color.G,     0.0), 1.0)*UINT16_MAX;
+      pixel[2] = dmnsn_min(dmnsn_max(color.B,     0.0), 1.0)*UINT16_MAX;
+      pixel[3] = dmnsn_min(dmnsn_max(color.trans, 0.0), 1.0)*UINT16_MAX;
     }
   }
 
@@ -162,49 +146,4 @@ dmnsn_gl_read_canvas(size_t x0, size_t y0,
 
   dmnsn_free(pixels);
   return canvas;
-}
-
-/* GL optimizer callback */
-static void
-dmnsn_gl_optimizer_fn(const dmnsn_canvas *canvas,
-                      dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
-{
-  GLushort *pixel = (GLushort *)optimizer.ptr + 4*(y*canvas->width + x);
-  dmnsn_color color = dmnsn_get_pixel(canvas, x, y);
-  color = dmnsn_remove_filter(color);
-  color = dmnsn_color_to_sRGB(color);
-
-  /* Saturate R, G, and B to [0, UINT16_MAX] */
-
-  if (color.R <= 0.0) {
-    pixel[0] = 0;
-  } else if (color.R >= 1.0) {
-    pixel[0] = UINT16_MAX;
-  } else {
-    pixel[0] = color.R*UINT16_MAX;
-  }
-
-  if (color.G <= 0.0) {
-    pixel[1] = 0;
-  } else if (color.G >= 1.0) {
-    pixel[1] = UINT16_MAX;
-  } else {
-    pixel[1] = color.G*UINT16_MAX;
-  }
-
-  if (color.B <= 0.0) {
-    pixel[2] = 0;
-  } else if (color.B >= 1.0) {
-    pixel[2] = UINT16_MAX;
-  } else {
-    pixel[2] = color.B*UINT16_MAX;
-  }
-
-  if (color.trans <= 0.0) {
-    pixel[3] = 0;
-  } else if (color.trans >= 1.0) {
-    pixel[3] = UINT16_MAX;
-  } else {
-    pixel[3] = color.trans*UINT16_MAX;
-  }
 }
