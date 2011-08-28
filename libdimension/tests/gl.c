@@ -36,8 +36,8 @@ main(void)
     return EXIT_FAILURE;
   }
 
-  /* Paint the canvas blue */
-  dmnsn_clear_canvas(canvas, dmnsn_blue);
+  /* Paint the test pattern */
+  dmnsn_paint_test_canvas(canvas);
 
   /* Create a new glX display */
   dmnsn_display *display = dmnsn_new_display(canvas);

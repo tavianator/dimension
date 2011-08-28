@@ -40,7 +40,8 @@ if !GL
 XFAIL_TESTS += gl.test
 endif
 
-libdimension_tests_la_SOURCES = tests.h
+libdimension_tests_la_SOURCES = test_canvas.c                                  \
+                                tests.h
 libdimension_tests_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
 if GLX

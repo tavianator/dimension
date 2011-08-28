@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -17,35 +17,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#ifndef TESTS_H
-#define TESTS_H
+#include "tests.h"
 
-#include "dimension.h"
+void
+dmnsn_paint_test_canvas(dmnsn_canvas *canvas)
+{
+  static const size_t size = 8;
 
-#ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
+  for (size_t y = 0; y < canvas->height; ++y) {
+    for (size_t x = 0; x < canvas->width; ++x) {
+      dmnsn_color a, b;
+      double n = 3.0*x/canvas->width;
+      if (x < canvas->width/3) {
+        a = dmnsn_red;
+        b = dmnsn_green;
+      } else if (x < 2*canvas->width/3) {
+        a = dmnsn_green;
+        b = dmnsn_blue;
+        n -= 1.0;
+      } else {
+        a = dmnsn_blue;
+        b = dmnsn_red;
+        n -= 2.0;
+      }
 
-/*
- * Test canvas
- */
-void dmnsn_paint_test_canvas(dmnsn_canvas *canvas);
+      if ((x*y)%(2*size) < size) {
+        a = dmnsn_color_to_sRGB(a);
+        b = dmnsn_color_to_sRGB(b);
+      }
+      dmnsn_color color = dmnsn_color_gradient(a, b, n);
+      if ((x*y)%(2*size) < size) {
+        color = dmnsn_color_from_sRGB(color);
+      }
 
-/*
- * Windowing
- */
-
-typedef struct dmnsn_display dmnsn_display;
-
-dmnsn_display *dmnsn_new_display(const dmnsn_canvas *canvas);
-void dmnsn_delete_display(dmnsn_display *display);
-
-/* Flush the GL buffers */
-void dmnsn_display_flush(dmnsn_display *display);
-
-#ifdef __cplusplus
+      dmnsn_set_pixel(canvas, x, y, color);
+    }
+  }
 }
-#endif
-
-#endif /* TESTS_H */
