@@ -50,15 +50,16 @@ cdef class Progress:
     raise RuntimeError("attempt to create a Progress object.")
 
   def __dealloc__(self):
-    self.finish()
+    if self._progress != NULL:
+      self.finish()
 
   def finish(self):
-    if self._progress != NULL:
-      try:
-        if dmnsn_finish_progress(self._progress) != 0:
-          raise RuntimeError("background task failed.")
-      finally:
-        self._progress = NULL
+    self._assert_unfinished()
+    try:
+      if dmnsn_finish_progress(self._progress) != 0:
+        raise RuntimeError("background task failed.")
+    finally:
+      self._progress = NULL
 
   def cancel(self):
     self._assert_unfinished()
@@ -88,6 +89,7 @@ cdef _Progress(dmnsn_progress *progress):
 cdef class Timer:
   """A timer for Dimension tasks."""
   cdef dmnsn_timer _timer
+  cdef bool _stopped
 
   def __init__(self):
     """
@@ -95,11 +97,16 @@ cdef class Timer:
 
     Timing starts as soon as the object is created.
     """
+    self._stopped = False
     dmnsn_start_timer(&self._timer)
 
   def stop(self):
     """Stop the Timer."""
+    if self._stopped:
+      raise RuntimeError("timer already stopped.")
+
     dmnsn_stop_timer(&self._timer)
+    self._stopped = True
 
   property real:
     """Real (wall clock) time."""
@@ -121,6 +128,7 @@ cdef class Timer:
 cdef _Timer(dmnsn_timer timer):
   cdef Timer self = Timer.__new__(Timer)
   self._timer = timer
+  self._stopped = True
   return self
 
 ############
