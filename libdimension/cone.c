@@ -29,7 +29,6 @@
 /** Cone payload type. */
 typedef struct dmnsn_cone_payload {
   double r1, r2;
-  bool open;
 } dmnsn_cone_payload;
 
 /** Intersection callback for a cone. */
@@ -66,47 +65,6 @@ dmnsn_cone_intersection_fn(const dmnsn_object *cone, dmnsn_line l,
       p = dmnsn_line_point(l, t);
     }
 
-    if (!payload->open && l.n.y) {
-      /* Test for cap intersections */
-      double tcap1 = (-1.0 - l.x0.y)/l.n.y;
-      double tcap2 = (+1.0 - l.x0.y)/l.n.y;
-
-      double tcap, r;
-      dmnsn_vector norm;
-      if (tcap1 < tcap2) {
-        tcap = tcap1;
-        r    = r1;
-        norm = dmnsn_new_vector(0.0, -1.0, 0.0);
-      } else {
-        tcap = tcap2;
-        r    = r2;
-        norm = dmnsn_new_vector(0.0, 1.0, 0.0);
-      }
-      dmnsn_vector pcap = dmnsn_line_point(l, tcap);
-
-      if (tcap < 0.0 || pcap.x*pcap.x + pcap.z*pcap.z >= r*r) {
-        if (tcap2 <= tcap1) {
-          tcap = tcap1;
-          r    = r1;
-          norm = dmnsn_new_vector(0.0, -1.0, 0.0);
-        } else {
-          tcap = tcap2;
-          r    = r2;
-          norm = dmnsn_new_vector(0.0, 1.0, 0.0);
-        }
-        pcap = dmnsn_line_point(l, tcap);
-      }
-
-      if (tcap >= 0.0
-          && (tcap < t || p.y <= -1.0 || p.y >= 1.0)
-          && pcap.x*pcap.x + pcap.z*pcap.z < r*r)
-      {
-        intersection->t      = tcap;
-        intersection->normal = norm;
-        return true;
-      }
-    }
-
     if (t >= 0.0 && p.y > -1.0 && p.y < 1.0) {
       dmnsn_vector norm = dmnsn_vector_normalized(
         dmnsn_new_vector(p.x, -(r2 - r1)*sqrt(p.x*p.x + p.z*p.z)/2.0, p.z)
@@ -131,6 +89,50 @@ dmnsn_cone_inside_fn(const dmnsn_object *cone, dmnsn_vector point)
          && point.y > -1.0 && point.y < 1.0;
 }
 
+/** Cone cap intersection function. */
+static bool
+dmnsn_cone_cap_intersection_fn(const dmnsn_object *cap, dmnsn_line l,
+                               dmnsn_intersection *intersection)
+{
+  if (l.n.y != 0.0) {
+    double *rptr = cap->ptr, r = *rptr;
+    double t = -l.x0.y/l.n.y;
+    dmnsn_vector p = dmnsn_line_point(l, t);
+    if (t >= 0.0 && p.x*p.x + p.z*p.z <= r*r) {
+      intersection->t      = t;
+      intersection->normal = dmnsn_new_vector(0.0, -1.0, 0.0);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/** Inside callback for a cone cap. */
+static bool
+dmnsn_cone_cap_inside_fn(const dmnsn_object *cone, dmnsn_vector point)
+{
+  return false;
+}
+
+/** Allocate a new cone cap. */
+dmnsn_object *
+dmnsn_new_cone_cap(double r)
+{
+  dmnsn_object *cap = dmnsn_new_object();
+  cap->intersection_fn  = dmnsn_cone_cap_intersection_fn;
+  cap->inside_fn        = dmnsn_cone_cap_inside_fn;
+  cap->bounding_box.min = dmnsn_new_vector(-r, 0.0, -r);
+  cap->bounding_box.max = dmnsn_new_vector(+r, 0.0, +r);
+
+  double *payload = dmnsn_malloc(sizeof(double));
+  *payload = r;
+  cap->ptr     = payload;
+  cap->free_fn = dmnsn_free;
+
+  return cap;
+}
+
 /* Allocate a new cone object */
 dmnsn_object *
 dmnsn_new_cone(double r1, double r2, bool open)
@@ -143,10 +145,31 @@ dmnsn_new_cone(double r1, double r2, bool open)
   cone->bounding_box.max = dmnsn_new_vector(rmax, 1.0, rmax);
 
   dmnsn_cone_payload *payload = dmnsn_malloc(sizeof(dmnsn_cone_payload));
-  payload->r1       = r1;
-  payload->r2       = r2;
-  payload->open     = open;
+  payload->r1 = r1;
+  payload->r2 = r2;
   cone->ptr     = payload;
   cone->free_fn = dmnsn_free;
+
+  /* Implement closed cones as a union with the caps */
+  if (!open) {
+    dmnsn_object *cap1 = dmnsn_new_cone_cap(r1);
+    dmnsn_object *cap2 = dmnsn_new_cone_cap(r2);
+    cap1->intrinsic_trans  = dmnsn_translation_matrix(
+      dmnsn_new_vector(0.0, -1.0, 0.0)
+    );
+    cap2->intrinsic_trans  = dmnsn_translation_matrix(
+      dmnsn_new_vector(0.0, +1.0, 0.0)
+    );
+    /* Flip the normal around for the top cap */
+    cap2->intrinsic_trans.n[1][1] = -1.0;
+
+    dmnsn_array *withcaps = dmnsn_new_array(sizeof(dmnsn_object *));
+    dmnsn_array_push(withcaps, &cone);
+    dmnsn_array_push(withcaps, &cap1);
+    dmnsn_array_push(withcaps, &cap2);
+    cone = dmnsn_new_csg_union(withcaps);
+    dmnsn_delete_array(withcaps);
+  }
+
   return cone;
 }
