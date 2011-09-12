@@ -27,13 +27,19 @@
 
 /** A color value. */
 typedef struct {
-  double R; /**< sRGB red value. */
-  double G; /**< sRGB green value. */
-  double B; /**< sRGB blue value. */
+  double R; /**< Red. */
+  double G; /**< Green. */
+  double B; /**< Blue. */
 
   double trans;  /**< Transparency. */
   double filter; /**< Degree of filtering. */
 } dmnsn_color;
+
+/** A standard format string for colors. */
+#define DMNSN_COLOR_FORMAT                                      \
+  "<red = %g, green = %g, blue = %g, trans = %g, filter = %g>"
+/** The appropriate arguements to printf() a color. */
+#define DMNSN_COLOR_PRINTF(c) (c).R, (c).G, (c).B, (c).trans, (c).filter
 
 /* Standard colors */
 extern const dmnsn_color dmnsn_black;   /**< Black.   */
