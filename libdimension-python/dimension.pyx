@@ -952,11 +952,10 @@ cdef class Object:
 
   # Transform an object without affecting the texture
   cdef _intrinsic_transform(self, Matrix trans):
-    self._object.trans = dmnsn_matrix_mul(self._object.trans, trans._m)
-    cdef Matrix inv = trans.inverse()
-    if self._object.texture != NULL:
-      self._object.texture.trans = dmnsn_matrix_mul(self._object.texture.trans,
-                                                    inv._m)
+    self._object.intrinsic_trans = dmnsn_matrix_mul(
+      trans._m,
+      self._object.intrinsic_trans
+    )
 
 cdef class Triangle(Object):
   """A triangle."""

@@ -74,7 +74,7 @@ struct dmnsn_object {
 
   dmnsn_matrix trans; /**< Transformation matrix. */
   dmnsn_matrix trans_inv; /**< Inverse of the transformation matrix. */
-  dmnsn_matrix intrinsic_trans; /**< Transformations not affecting the texture. */
+  dmnsn_matrix intrinsic_trans; /**< Transformations intrinsic to the object. */
   dmnsn_matrix pigment_trans; /**< Inverse transformation for the texture. */
 
   dmnsn_bounding_box bounding_box; /**< Object bounding box. */

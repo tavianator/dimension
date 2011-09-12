@@ -305,6 +305,7 @@ cdef extern from "../libdimension/dimension.h":
     dmnsn_texture *texture
     dmnsn_interior *interior
     dmnsn_matrix trans
+    dmnsn_matrix intrinsic_trans
 
   dmnsn_object *dmnsn_new_object()
   void dmnsn_delete_object(dmnsn_object *object)
