@@ -46,7 +46,7 @@ dmnsn_cone_intersection_fn(const dmnsn_object *cone, dmnsn_line l,
   poly[1] = 2.0*(l.n.x*l.x0.x + l.n.z*l.x0.z)
             - l.n.y*(r2 - r1)*(l.x0.y*(r2 - r1) + r2 + r1)/2.0;
   poly[0] = l.x0.x*l.x0.x + l.x0.z*l.x0.z
-            - (l.x0.y*(r2 - r1) + r2 + r1)*(l.x0.y*(r2 - r1) + r2 + r1)/4;
+            - (l.x0.y*(r2 - r1) + r2 + r1)*(l.x0.y*(r2 - r1) + r2 + r1)/4.0;
 
   size_t n = dmnsn_solve_polynomial(poly, 2, x);
 
@@ -65,9 +65,10 @@ dmnsn_cone_intersection_fn(const dmnsn_object *cone, dmnsn_line l,
       p = dmnsn_line_point(l, t);
     }
 
-    if (t >= 0.0 && p.y > -1.0 && p.y < 1.0) {
+    if (t >= 0.0 && p.y >= -1.0 && p.y <= 1.0) {
+      double r = ((r2 - r1)*p.y + r1 + r2)/2.0;
       dmnsn_vector norm = dmnsn_vector_normalized(
-        dmnsn_new_vector(p.x, -(r2 - r1)*sqrt(p.x*p.x + p.z*p.z)/2.0, p.z)
+        dmnsn_new_vector(p.x, -r*(r2 - r1)/2.0, p.z)
       );
       intersection->t      = t;
       intersection->normal = norm;
