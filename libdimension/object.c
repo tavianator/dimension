@@ -64,9 +64,10 @@ dmnsn_delete_object(dmnsn_object *object)
   }
 }
 
-/* Precompute object properties */
-void
-dmnsn_initialize_object(dmnsn_object *object)
+/** Recursively initialize objects. */
+static void
+dmnsn_initialize_object_recursive(dmnsn_object *object,
+                                  dmnsn_matrix pigment_trans)
 {
   dmnsn_assert(!object->initialized, "Object double-initialized.");
   object->initialized = true;
@@ -77,22 +78,24 @@ dmnsn_initialize_object(dmnsn_object *object)
   }
 
   /* Precalculate object values */
-  object->pigment_trans = dmnsn_matrix_inverse(object->trans);
+  object->pigment_trans = pigment_trans;
   object->trans = dmnsn_matrix_mul(object->trans, object->intrinsic_trans);
 
   /* Initialize the object's children */
   DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
     (*child)->trans = dmnsn_matrix_mul(object->trans, (*child)->trans);
-    bool pigment_cascaded =
-      (*child)->texture == NULL || (*child)->texture->pigment == NULL;
+
+    dmnsn_matrix child_pigment_trans;
+    if ((*child)->texture == NULL || (*child)->texture->pigment == NULL) {
+      /* Don't transform cascaded pigments with the child object */
+      child_pigment_trans = pigment_trans;
+    } else {
+      child_pigment_trans = dmnsn_matrix_inverse((*child)->trans);
+    }
 
     dmnsn_texture_cascade(object->texture, &(*child)->texture);
     dmnsn_interior_cascade(object->interior, &(*child)->interior);
-    dmnsn_initialize_object(*child);
-
-    if (pigment_cascaded) {
-      (*child)->pigment_trans = object->pigment_trans;
-    }
+    dmnsn_initialize_object_recursive(*child, child_pigment_trans);
   }
 
   /* Initialization callback */
@@ -104,4 +107,12 @@ dmnsn_initialize_object(dmnsn_object *object)
   object->bounding_box
     = dmnsn_transform_bounding_box(object->trans, object->bounding_box);
   object->trans_inv = dmnsn_matrix_inverse(object->trans);
+}
+
+/* Precompute object properties */
+void
+dmnsn_initialize_object(dmnsn_object *object)
+{
+  dmnsn_matrix pigment_trans = dmnsn_matrix_inverse(object->trans);
+  dmnsn_initialize_object_recursive(object, pigment_trans);
 }
