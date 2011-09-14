@@ -139,7 +139,7 @@ dmnsn_initialize_raytrace_state(dmnsn_raytrace_state *state,
   state->interior     = intersection->object->interior;
 
   state->r = dmnsn_line_point(intersection->ray, intersection->t);
-  state->pigment_r = dmnsn_transform_vector(
+  state->pigment_r = dmnsn_transform_point(
     intersection->object->pigment_trans,
     state->r
   );

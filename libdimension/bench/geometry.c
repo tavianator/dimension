@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Benchmark Suite.                   *
  *                                                                       *
@@ -149,11 +149,23 @@ main(void)
   });
   printf("dmnsn_matrix_mul(): %ld\n", sandglass.grains);
 
-  /* dmnsn_transform_vector() */
+  /* dmnsn_transform_point() */
   sandglass_bench_fine(&sandglass, {
-    vector = dmnsn_transform_vector(matrix, vector);
+    vector = dmnsn_transform_point(matrix, vector);
   });
-  printf("dmnsn_transform_vector(): %ld\n", sandglass.grains);
+  printf("dmnsn_transform_point(): %ld\n", sandglass.grains);
+
+  /* dmnsn_transform_direction() */
+  sandglass_bench_fine(&sandglass, {
+    vector = dmnsn_transform_direction(matrix, vector);
+  });
+  printf("dmnsn_transform_direction(): %ld\n", sandglass.grains);
+
+  /* dmnsn_transform_normal() */
+  sandglass_bench_fine(&sandglass, {
+    vector = dmnsn_transform_normal(matrix, vector);
+  });
+  printf("dmnsn_transform_normal(): %ld\n", sandglass.grains);
 
   /* dmnsn_transform_line() */
   sandglass_bench_fine(&sandglass, {

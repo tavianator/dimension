@@ -375,15 +375,45 @@ dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
 /** Multiply two matricies. */
 dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
 
-/** Transform a vector by a matrix. */
+/** Transform a point by a matrix. */
 DMNSN_INLINE dmnsn_vector
-dmnsn_transform_vector(dmnsn_matrix T, dmnsn_vector v)
+dmnsn_transform_point(dmnsn_matrix T, dmnsn_vector v)
 {
   /* 9 multiplications, 9 additions */
   dmnsn_vector r;
   r.x = T.n[0][0]*v.x + T.n[0][1]*v.y + T.n[0][2]*v.z + T.n[0][3];
   r.y = T.n[1][0]*v.x + T.n[1][1]*v.y + T.n[1][2]*v.z + T.n[1][3];
   r.z = T.n[2][0]*v.x + T.n[2][1]*v.y + T.n[2][2]*v.z + T.n[2][3];
+  return r;
+}
+
+/** Transform a direction by a matrix. */
+DMNSN_INLINE dmnsn_vector
+dmnsn_transform_direction(dmnsn_matrix T, dmnsn_vector v)
+{
+  /* 9 multiplications, 9 additions */
+  dmnsn_vector r;
+  r.x = T.n[0][0]*v.x + T.n[0][1]*v.y + T.n[0][2]*v.z;
+  r.y = T.n[1][0]*v.x + T.n[1][1]*v.y + T.n[1][2]*v.z;
+  r.z = T.n[2][0]*v.x + T.n[2][1]*v.y + T.n[2][2]*v.z;
+  return r;
+}
+
+/**
+ * Transform a pseudovector by a matrix.
+ * @param[in] Tinv  The inverse of the transformation matrix.
+ * @param[in] v     The pseudovector to transform
+ * @return The transformed pseudovector.
+ */
+DMNSN_INLINE dmnsn_vector
+dmnsn_transform_normal(dmnsn_matrix Tinv, dmnsn_vector v)
+{
+  /* Multiply by the transpose of the inverse
+     (9 multiplications, 6 additions) */
+  dmnsn_vector r;
+  r.x = Tinv.n[0][0]*v.x + Tinv.n[1][0]*v.y + Tinv.n[2][0]*v.z;
+  r.y = Tinv.n[0][1]*v.x + Tinv.n[1][1]*v.y + Tinv.n[2][1]*v.z;
+  r.z = Tinv.n[0][2]*v.x + Tinv.n[1][2]*v.y + Tinv.n[2][2]*v.z;
   return r;
 }
 
@@ -401,11 +431,8 @@ dmnsn_transform_line(dmnsn_matrix T, dmnsn_line l)
 {
   /* 18 multiplications, 24 additions */
   dmnsn_line ret;
-  ret.x0 = dmnsn_transform_vector(T, l.x0);
-  ret.n  = dmnsn_vector_sub(
-    dmnsn_transform_vector(T, dmnsn_vector_add(l.x0, l.n)),
-    ret.x0
-  );
+  ret.x0 = dmnsn_transform_point(T, l.x0);
+  ret.n  = dmnsn_transform_direction(T, l.n);
   return ret;
 }
 

@@ -113,8 +113,8 @@ dmnsn_alignment_matrix(dmnsn_vector from, dmnsn_vector to,
 {
   double theta1 = dmnsn_axis_angle(from, to, axis1);
   dmnsn_matrix align1 = dmnsn_rotation_matrix(dmnsn_vector_mul(theta1, axis1));
-  from  = dmnsn_transform_vector(align1, from);
-  axis2 = dmnsn_transform_vector(align1, axis2);
+  from  = dmnsn_transform_direction(align1, from);
+  axis2 = dmnsn_transform_direction(align1, axis2);
 
   double theta2 = dmnsn_axis_angle(from, to, axis2);
   dmnsn_matrix align2 = dmnsn_rotation_matrix(dmnsn_vector_mul(theta2, axis2));
@@ -381,41 +381,41 @@ dmnsn_transform_bounding_box(dmnsn_matrix trans, dmnsn_bounding_box box)
 
   dmnsn_vector corner;
   dmnsn_bounding_box ret;
-  ret.min = dmnsn_transform_vector(trans, box.min);
+  ret.min = dmnsn_transform_point(trans, box.min);
   ret.max = ret.min;
 
   corner  = dmnsn_new_vector(box.min.x, box.min.y, box.max.z);
-  corner  = dmnsn_transform_vector(trans, corner);
+  corner  = dmnsn_transform_point(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.min.x, box.max.y, box.min.z);
-  corner  = dmnsn_transform_vector(trans, corner);
+  corner  = dmnsn_transform_point(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.min.x, box.max.y, box.max.z);
-  corner  = dmnsn_transform_vector(trans, corner);
+  corner  = dmnsn_transform_point(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.max.x, box.min.y, box.min.z);
-  corner  = dmnsn_transform_vector(trans, corner);
+  corner  = dmnsn_transform_point(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.max.x, box.min.y, box.max.z);
-  corner  = dmnsn_transform_vector(trans, corner);
+  corner  = dmnsn_transform_point(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.max.x, box.max.y, box.min.z);
-  corner  = dmnsn_transform_vector(trans, corner);
+  corner  = dmnsn_transform_point(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 
   corner  = dmnsn_new_vector(box.max.x, box.max.y, box.max.z);
-  corner  = dmnsn_transform_vector(trans, corner);
+  corner  = dmnsn_transform_point(trans, corner);
   ret.min = dmnsn_vector_min(ret.min, corner);
   ret.max = dmnsn_vector_max(ret.max, corner);
 

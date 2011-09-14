@@ -130,7 +130,9 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix m)
 
   dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs)
-  dmnsn_vector dmnsn_transform_vector(dmnsn_matrix lhs, dmnsn_vector rhs)
+  dmnsn_vector dmnsn_transform_point(dmnsn_matrix lhs, dmnsn_vector rhs)
+  dmnsn_vector dmnsn_transform_direction(dmnsn_matrix lhs, dmnsn_vector rhs)
+  dmnsn_vector dmnsn_transform_normal(dmnsn_matrix lhs, dmnsn_vector rhs)
 
   dmnsn_matrix dmnsn_scale_matrix(dmnsn_vector s)
   dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d)

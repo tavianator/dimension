@@ -112,24 +112,6 @@ void dmnsn_delete_object(dmnsn_object *object);
 void dmnsn_initialize_object(dmnsn_object *object);
 
 /**
- * Transform a surface normal vector.
- * @param[in] trans   The transformation matrix.
- * @param[in] normal  The normal vector to transform
- * @return The transformed normal vector.
- */
-DMNSN_INLINE dmnsn_vector
-dmnsn_transform_normal(dmnsn_matrix trans, dmnsn_vector normal)
-{
-  return dmnsn_vector_normalized(
-    dmnsn_vector_sub(
-      dmnsn_transform_vector(trans, normal),
-      /* Optimized form of dmnsn_transform_vector(trans, dmnsn_zero) */
-      dmnsn_new_vector(trans.n[0][3], trans.n[1][3], trans.n[2][3])
-    )
-  );
-}
-
-/**
  * Appropriately transform a ray, then test for an intersection.
  * @param[in]  object        The object to test.
  * @param[in]  line          The ray to test.
@@ -144,9 +126,10 @@ dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
   intersection->object = NULL;
   if (object->intersection_fn(object, line_trans, intersection)) {
     /* Get us back into world coordinates */
-    intersection->ray    = line;
-    intersection->normal = dmnsn_transform_normal(object->trans,
-                                                  intersection->normal);
+    intersection->ray = line;
+    intersection->normal = dmnsn_vector_normalized(
+      dmnsn_transform_normal(object->trans_inv, intersection->normal)
+    );
     if (!intersection->object) {
       intersection->object = object;
     }
@@ -166,6 +149,6 @@ dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
 DMNSN_INLINE bool
 dmnsn_object_inside(const dmnsn_object *object, dmnsn_vector point)
 {
-  point = dmnsn_transform_vector(object->trans_inv, point);
+  point = dmnsn_transform_point(object->trans_inv, point);
   return object->inside_fn(object, point);
 }

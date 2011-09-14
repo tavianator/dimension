@@ -263,7 +263,7 @@ cdef class Matrix:
     if isinstance(rhs, Matrix):
       return _Matrix(dmnsn_matrix_mul(lhs._m, (<Matrix>rhs)._m))
     else:
-      return _Vector(dmnsn_transform_vector(lhs._m, (<Vector>rhs)._v))
+      return _Vector(dmnsn_transform_point(lhs._m, (<Vector>rhs)._v))
 
   def __richcmp__(Matrix lhs not None, Matrix rhs not None, int op):
     cdef double sum = 0.0
