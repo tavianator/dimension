@@ -834,6 +834,11 @@ cdef class Texture:
       self._texture.finish = finish._finish
       dmnsn_finish_incref(&self._texture.finish)
 
+  def transform(self, Matrix trans not None):
+    """Transform a texture."""
+    self._texture.trans = dmnsn_matrix_mul(trans._m, self._texture.trans)
+    return self
+
 cdef _Texture(dmnsn_texture *texture):
   cdef Texture self = Texture.__new__(Texture)
   self._texture = texture
