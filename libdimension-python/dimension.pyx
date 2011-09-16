@@ -77,7 +77,8 @@ cdef class Progress:
     if self._progress == NULL:
       raise RuntimeError("background task finished.")
 
-cdef _Progress(dmnsn_progress *progress):
+cdef Progress _Progress(dmnsn_progress *progress):
+  """Wrap a Progress object around an existing dmnsn_progress *."""
   cdef Progress self = Progress.__new__(Progress)
   self._progress = progress
   return self
@@ -125,7 +126,8 @@ cdef class Timer:
     return "%.2fs (user: %.2fs; system: %.2fs)" % \
            (self._timer.real, self._timer.user, self._timer.system)
 
-cdef _Timer(dmnsn_timer timer):
+cdef Timer _Timer(dmnsn_timer timer):
+  """Wrap a Timer object around a dmnsn_timer."""
   cdef Timer self = Timer.__new__(Timer)
   self._timer = timer
   self._stopped = True
@@ -194,7 +196,7 @@ cdef class Vector:
     if isinstance(lhs, Vector):
       return _Vector(dmnsn_vector_mul(rhs, (<Vector>lhs)._v))
     else:
-      return _Vector(dmnsn_vector_mul(lhs, (<Vector>rhs)._v))
+      return _Vector(dmnsn_vector_mul(lhs, (<Vector?>rhs)._v))
   def __truediv__(Vector lhs not None, double rhs):
     return _Vector(dmnsn_vector_div(lhs._v, rhs))
 
@@ -220,7 +222,8 @@ cdef class Vector:
   def __str__(self):
     return "<%s, %s, %s>" % (self.x, self.y, self.z)
 
-cdef _Vector(dmnsn_vector v):
+cdef Vector _Vector(dmnsn_vector v):
+  """Wrap a Vector object around a dmnsn_vector."""
   cdef Vector self = Vector.__new__(Vector)
   self._v = v
   return self
@@ -263,7 +266,7 @@ cdef class Matrix:
     if isinstance(rhs, Matrix):
       return _Matrix(dmnsn_matrix_mul(lhs._m, (<Matrix>rhs)._m))
     else:
-      return _Vector(dmnsn_transform_point(lhs._m, (<Vector>rhs)._v))
+      return _Vector(dmnsn_transform_point(lhs._m, (<Vector?>rhs)._v))
 
   def __richcmp__(Matrix lhs not None, Matrix rhs not None, int op):
     cdef double sum = 0.0
@@ -303,6 +306,7 @@ cdef class Matrix:
        0.0, 0.0, 0.0, 1.0)
 
 cdef Matrix _Matrix(dmnsn_matrix m):
+  """Wrap a Matrix object around a dmnsn_matrix."""
   cdef Matrix self = Matrix.__new__(Matrix)
   self._m = m
   return self
@@ -342,8 +346,6 @@ def rotate(*args, **kwargs):
   """
   cdef Vector rad = dmnsn_radians(1.0)*Vector(*args, **kwargs)
   return _Matrix(dmnsn_rotation_matrix(rad._v))
-def _Rotate(*args, **kwargs):
-  return _Matrix(dmnsn_rotation_matrix(Vector(*args, **kwargs)._v))
 
 ##########
 # Colors #
@@ -421,7 +423,7 @@ cdef class Color:
     if isinstance(lhs, Color):
       return _sRGBColor(dmnsn_color_mul(rhs, (<Color>lhs)._sRGB))
     else:
-      return _sRGBColor(dmnsn_color_mul(lhs, (<Color>rhs)._sRGB))
+      return _sRGBColor(dmnsn_color_mul(lhs, (<Color?>rhs)._sRGB))
 
   def __richcmp__(lhs, rhs, int op):
     cdef clhs = Color(lhs)
@@ -454,13 +456,15 @@ cdef class Color:
       return "<red = %s, green = %s, blue = %s>" % \
              (self.red, self.green, self.blue)
 
-cdef _sRGBColor(dmnsn_color sRGB):
+cdef Color _sRGBColor(dmnsn_color sRGB):
+  """Wrap a color object around a dmnsn_color already in sRGB."""
   cdef Color self = Color.__new__(Color)
   self._sRGB = sRGB
   self._c    = dmnsn_color_from_sRGB(sRGB)
   return self
 
-cdef _Color(dmnsn_color c):
+cdef Color _Color(dmnsn_color c):
+  """Wrap a Color object around a dmnsn_color."""
   cdef Color self = Color.__new__(Color)
   self._c    = c
   self._sRGB = dmnsn_color_to_sRGB(c)
@@ -645,13 +649,11 @@ cdef class Pigment:
 
   def transform(self, Matrix trans not None):
     """Transform a pigment."""
-    if self._pigment == NULL:
-      raise TypeError("attempt to transform base Pigment")
-
     self._pigment.trans = dmnsn_matrix_mul(trans._m, self._pigment.trans)
     return self
 
-cdef _Pigment(dmnsn_pigment *pigment):
+cdef Pigment _Pigment(dmnsn_pigment *pigment):
+  """Wrap a Pigment object around a dmnsn_pigment *."""
   cdef Pigment self = Pigment.__new__(Pigment)
   self._pigment = pigment
   DMNSN_INCREF(self._pigment)
@@ -676,13 +678,13 @@ cdef class PigmentMap(Pigment):
     if hasattr(map, "items"):
       for i, pigment in map.items():
         pigment = Pigment(pigment)
-        real_pigment = (<Pigment>pigment)._pigment
+        real_pigment = (<Pigment?>pigment)._pigment
         DMNSN_INCREF(real_pigment)
         dmnsn_add_map_entry(pigment_map, i, &real_pigment)
     else:
       for i, pigment in enumerate(map):
         pigment = Pigment(pigment)
-        real_pigment = (<Pigment>pigment)._pigment
+        real_pigment = (<Pigment?>pigment)._pigment
         DMNSN_INCREF(real_pigment)
         dmnsn_add_map_entry(pigment_map, i/len(map), &real_pigment)
 
@@ -723,7 +725,8 @@ cdef class Finish:
     dmnsn_finish_cascade(&rhs._finish, &ret._finish) # rhs gets priority
     return ret
 
-cdef _Finish(dmnsn_finish finish):
+cdef Finish _Finish(dmnsn_finish finish):
+  """Wrap a Finish object around a dmnsn_finish."""
   cdef Finish self = Finish.__new__(Finish)
   self._finish = finish
   dmnsn_finish_incref(&self._finish)
@@ -839,7 +842,8 @@ cdef class Texture:
     self._texture.trans = dmnsn_matrix_mul(trans._m, self._texture.trans)
     return self
 
-cdef _Texture(dmnsn_texture *texture):
+cdef Texture _Texture(dmnsn_texture *texture):
+  """Wrap a Texture object around a dmnsn_texture *."""
   cdef Texture self = Texture.__new__(Texture)
   self._texture = texture
   DMNSN_INCREF(self._texture)
@@ -873,7 +877,8 @@ cdef class Interior:
     def __set__(self, double ior):
       self._interior.ior = ior
 
-cdef _Interior(dmnsn_interior *interior):
+cdef Interior _Interior(dmnsn_interior *interior):
+  """Wrap an Interior object around a dmnsn_interior *."""
   cdef Interior self = Interior.__new__(Interior)
   self._interior = interior
   DMNSN_INCREF(self._interior)
@@ -1249,14 +1254,15 @@ cdef class Camera:
   def __cinit__(self):
     self._camera = NULL
 
+  def __init__(self):
+    if self._camera == NULL:
+      raise TypeError("attempt to initialize base Camera")
+
   def __dealloc__(self):
     dmnsn_delete_camera(self._camera)
 
   def transform(self, Matrix trans not None):
     """Transform a camera."""
-    if self._camera == NULL:
-      raise TypeError("attempt to transform base Camera")
-
     self._camera.trans = dmnsn_matrix_mul(trans._m, self._camera.trans)
     return self
 
