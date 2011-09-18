@@ -569,9 +569,19 @@ cdef class Canvas:
       if fclose(file) != 0:
         _raise_OSError()
 
-    progress = _Progress(dmnsn_png_write_canvas_async(self._canvas, file))
-    progress._finalizer = finalize
-    return progress
+    cdef dmnsn_progress *progress = dmnsn_png_write_canvas_async(self._canvas,
+                                                                 file)
+
+    try:
+      if progress == NULL:
+        _raise_OSError()
+
+      ret = _Progress(progress)
+      ret._finalizer = finalize
+      return ret
+    except:
+      finalize()
+      raise
 
   def draw_GL(self):
     """Export the canvas to the current OpenGL context."""

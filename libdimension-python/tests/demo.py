@@ -21,6 +21,7 @@
 
 import os
 import os.path
+import errno
 from math import *
 from dimension import *
 

@@ -23,10 +23,16 @@ camera = PerspectiveCamera(location = (0, 0.25, -4),
 camera.rotate(53*Y)
 
 # Background
+
+try:
+  image_map = ImageMap("../../libdimension/tests/png2.png").rotate(53*Y)
+except OSError:
+  image_map = Orange
+
 background = PigmentMap(
   pattern = Gradient(Y),
   map     = {
-    0:    ImageMap("../../libdimension/tests/png2.png").rotate(53*Y),
+    0:    image_map,
     0.35: Color(0, 0.1, 0.2, trans = 0.1, filter = 0.0),
   },
 )

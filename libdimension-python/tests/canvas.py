@@ -19,8 +19,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-from dimension import *
 import errno
+from dimension import *
 
 # Treat warnings as errors for tests
 die_on_warnings(True)
@@ -35,7 +35,7 @@ try:
     canvas.optimize_PNG()
 except OSError as e:
     if e.errno == errno.ENOSYS:
-        havePNG = False
+        have_PNG = False
     else:
         raise
 
