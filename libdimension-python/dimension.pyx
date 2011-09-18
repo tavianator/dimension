@@ -347,6 +347,14 @@ def rotate(*args, **kwargs):
   cdef Vector rad = dmnsn_radians(1.0)*Vector(*args, **kwargs)
   return _Matrix(dmnsn_rotation_matrix(rad._v))
 
+cdef class _Transformable:
+  def scale(self, *args, **kwargs):
+    return self.transform(scale(*args, **kwargs))
+  def translate(self, *args, **kwargs):
+    return self.transform(translate(*args, **kwargs))
+  def rotate(self, *args, **kwargs):
+    return self.transform(rotate(*args, **kwargs))
+
 ##########
 # Colors #
 ##########
@@ -617,7 +625,7 @@ cdef class Leopard(Pattern):
 # Pigments #
 ############
 
-cdef class Pigment:
+cdef class Pigment(_Transformable):
   """Object surface coloring."""
   cdef dmnsn_pigment *_pigment
 
@@ -788,7 +796,7 @@ cdef class Reflection(Finish):
 # Textures #
 ############
 
-cdef class Texture:
+cdef class Texture(_Transformable):
   """Object surface properties."""
   cdef dmnsn_texture *_texture
 
@@ -888,7 +896,7 @@ cdef Interior _Interior(dmnsn_interior *interior):
 # Objects #
 ###########
 
-cdef class Object:
+cdef class Object(_Transformable):
   """Physical objects."""
   cdef dmnsn_object *_object
 
@@ -1247,7 +1255,7 @@ cdef class PointLight(Light):
 # Cameras #
 ###########
 
-cdef class Camera:
+cdef class Camera(_Transformable):
   """A camera."""
   cdef dmnsn_camera *_camera
 
@@ -1283,7 +1291,7 @@ cdef class PerspectiveCamera(Camera):
     Camera.__init__(self)
 
     # Apply the field of view angle
-    self.transform(scale(tan(dmnsn_radians(angle))*(X + Y) + Z))
+    self.scale(tan(dmnsn_radians(angle))*(X + Y) + Z)
 
     cdef Vector dir = Vector(look_at) - Vector(location)
     cdef Vector vsky = Vector(sky)
@@ -1299,7 +1307,7 @@ cdef class PerspectiveCamera(Camera):
                                                   vsky._v, right._v)))
 
     # Move the camera into position
-    self.transform(translate(Vector(location)))
+    self.translate(Vector(location))
 
 ##########
 # Scenes #
