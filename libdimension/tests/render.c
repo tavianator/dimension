@@ -76,11 +76,31 @@ dmnsn_test_scene_add_background(dmnsn_scene *scene)
 {
   dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(dmnsn_y);
   dmnsn_map *sky_gradient_pigment_map = dmnsn_new_pigment_map();
-  dmnsn_pigment_map_add_color(sky_gradient_pigment_map, 0.0, dmnsn_orange);
+
+  dmnsn_canvas *png_canvas = NULL;
+  dmnsn_pigment *png_pigment;
+  FILE *png = fopen("png2.png", "rb");
+  if (png) {
+    png_canvas = dmnsn_png_read_canvas(png);
+    fclose(png);
+  }
+  if (png_canvas) {
+    png_pigment = dmnsn_new_canvas_pigment(png_canvas);
+    png_pigment->trans = dmnsn_rotation_matrix(
+      dmnsn_new_vector(0.0, dmnsn_radians(53.0), 0.0)
+    );
+  } else {
+    /* Loading png2.png failed, possibly compiled with --disable-png */
+    fprintf(stderr, "--- WARNING: Couldn't open or read png2.png! ---\n");
+    png_pigment = dmnsn_new_solid_pigment(dmnsn_orange);
+  }
+  dmnsn_add_map_entry(sky_gradient_pigment_map, 0.0, &png_pigment);
+
   dmnsn_color background = dmnsn_color_from_sRGB(
     dmnsn_new_color5(0.0, 0.1, 0.2, 0.1, 0.0)
   );
   dmnsn_pigment_map_add_color(sky_gradient_pigment_map, 0.35, background);
+
   scene->background =
     dmnsn_new_pigment_map_pigment(sky_gradient, sky_gradient_pigment_map,
                                   DMNSN_PIGMENT_MAP_SRGB);

@@ -25,6 +25,13 @@ Dimension: a high-performance photo-realistic 3D renderer.
 import os
 
 ###########
+# Helpers #
+###########
+
+cdef _raise_OSError():
+  raise OSError(errno, os.strerror(errno))
+
+###########
 # Globals #
 ###########
 
@@ -536,12 +543,12 @@ cdef class Canvas:
   def optimize_PNG(self):
     """Optimize a canvas for PNG output."""
     if dmnsn_png_optimize_canvas(self._canvas) != 0:
-      raise OSError(errno, os.strerror(errno))
+      _raise_OSError()
 
   def optimize_GL(self):
     """Optimize a canvas for OpenGL output."""
     if dmnsn_gl_optimize_canvas(self._canvas) != 0:
-      raise OSError(errno, os.strerror(errno))
+      _raise_OSError()
 
   def clear(self, c):
     """Clear a canvas with a solid color."""
@@ -556,11 +563,11 @@ cdef class Canvas:
     cdef char *cpath = bpath
     cdef FILE *file = fopen(cpath, "wb")
     if file == NULL:
-      raise OSError(errno, os.strerror(errno))
+      _raise_OSError()
 
     def finalize():
       if fclose(file) != 0:
-        raise OSError(errno, os.strerror(errno))
+        _raise_OSError()
 
     progress = _Progress(dmnsn_png_write_canvas_async(self._canvas, file))
     progress._finalizer = finalize
@@ -569,7 +576,7 @@ cdef class Canvas:
   def draw_GL(self):
     """Export the canvas to the current OpenGL context."""
     if dmnsn_gl_write_canvas(self._canvas) != 0:
-      raise OSError(errno, os.strerror(errno))
+      _raise_OSError()
 
 cdef class _CanvasProxy:
   cdef dmnsn_canvas *_canvas
@@ -677,6 +684,29 @@ cdef Pigment _Pigment(dmnsn_pigment *pigment):
   DMNSN_INCREF(self._pigment)
   return self
 
+cdef class ImageMap(Pigment):
+  """An image-mapped pigment."""
+  def __init__(self, path, *args, **kwargs):
+    """
+    Create an ImageMap.
+
+    Keyword arguments:
+    path -- the path of the PNG file to open
+    """
+    bpath = path.encode("UTF-8")
+    cdef char *cpath = bpath
+    cdef FILE *file = fopen(cpath, "rb")
+    if file == NULL:
+      _raise_OSError()
+    cdef dmnsn_canvas *canvas = dmnsn_png_read_canvas(file)
+    if canvas == NULL:
+      _raise_OSError()
+    if fclose(file) != 0:
+      _raise_OSError()
+
+    self._pigment = dmnsn_new_canvas_pigment(canvas)
+    Pigment.__init__(self, *args, **kwargs)
+
 cdef class PigmentMap(Pigment):
   """A pigment map."""
   def __init__(self, Pattern pattern not None, map, bool sRGB not None = True,
@@ -696,13 +726,13 @@ cdef class PigmentMap(Pigment):
     if hasattr(map, "items"):
       for i, pigment in map.items():
         pigment = Pigment(pigment)
-        real_pigment = (<Pigment?>pigment)._pigment
+        real_pigment = (<Pigment>pigment)._pigment
         DMNSN_INCREF(real_pigment)
         dmnsn_add_map_entry(pigment_map, i, &real_pigment)
     else:
       for i, pigment in enumerate(map):
         pigment = Pigment(pigment)
-        real_pigment = (<Pigment?>pigment)._pigment
+        real_pigment = (<Pigment>pigment)._pigment
         DMNSN_INCREF(real_pigment)
         dmnsn_add_map_entry(pigment_map, i/len(map), &real_pigment)
 

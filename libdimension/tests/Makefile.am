@@ -32,6 +32,8 @@ check_PROGRAMS    = warning.test                                               \
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = warning-as-error.test error.test
 
+render.log: png.log
+
 if !PNG
 XFAIL_TESTS += png.test
 endif

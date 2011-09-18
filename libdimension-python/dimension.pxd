@@ -195,6 +195,8 @@ cdef extern from "../libdimension/dimension.h":
   int dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
   int dmnsn_png_write_canvas(dmnsn_canvas *canvas, FILE *file)
   dmnsn_progress *dmnsn_png_write_canvas_async(dmnsn_canvas *canvas, FILE *file)
+  dmnsn_canvas *dmnsn_png_read_canvas(FILE *file)
+  dmnsn_progress *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
 
   int dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
   int dmnsn_gl_write_canvas(dmnsn_canvas *canvas)
