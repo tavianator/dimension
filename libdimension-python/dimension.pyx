@@ -42,9 +42,11 @@ def terminal_width():
 
 cdef class Progress:
   cdef dmnsn_progress *_progress
+  cdef _finalizer
 
   def __cinit__(self):
     self._progress = NULL
+    self._finalizer = None
 
   def __init__(self):
     raise RuntimeError("attempt to create a Progress object.")
@@ -58,6 +60,8 @@ cdef class Progress:
     try:
       if dmnsn_finish_progress(self._progress) != 0:
         raise RuntimeError("background task failed.")
+      if self._finalizer is not None:
+        self._finalizer()
     finally:
       self._progress = NULL
 
@@ -554,7 +558,13 @@ cdef class Canvas:
     if file == NULL:
       raise OSError(errno, os.strerror(errno))
 
-    return _Progress(dmnsn_png_write_canvas_async(self._canvas, file))
+    def finalize():
+      if fclose(file) != 0:
+        raise OSError(errno, os.strerror(errno))
+
+    progress = _Progress(dmnsn_png_write_canvas_async(self._canvas, file))
+    progress._finalizer = finalize
+    return progress
 
   def draw_GL(self):
     """Export the canvas to the current OpenGL context."""
