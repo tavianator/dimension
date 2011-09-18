@@ -35,6 +35,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 LT_INIT([win32-dll disable-static])
 AM_PATH_PYTHON([3.2])
+PKG_PROG_PKG_CONFIG
 
 dnl Find the math library
 AC_SEARCH_LIBS([sqrt], [m], [], [AC_MSG_ERROR([sqrt() function not found])])
