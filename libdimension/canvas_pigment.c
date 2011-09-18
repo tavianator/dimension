@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -31,8 +31,8 @@ dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
   dmnsn_canvas *canvas = pigment->ptr;
 
-  int x = (fmod(v.x, 1.0) + 1.0)*(canvas->width  - 1) + 0.5;
-  int y = (fmod(v.y, 1.0) + 1.0)*(canvas->height - 1) + 0.5;
+  size_t x = llround((fmod(v.x, 1.0) + 1.0)*(canvas->width  - 1));
+  size_t y = llround((fmod(v.y, 1.0) + 1.0)*(canvas->height - 1));
   dmnsn_color c = dmnsn_get_pixel(canvas, x%canvas->width, y%canvas->height);
   return c;
 }

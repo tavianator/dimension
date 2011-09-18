@@ -37,12 +37,12 @@ dmnsn_gl_optimizer_fn(const dmnsn_canvas *canvas,
   dmnsn_color color = dmnsn_get_pixel(canvas, x, y);
   color = dmnsn_remove_filter(color);
   color = dmnsn_color_to_sRGB(color);
+  color = dmnsn_color_saturate(color);
 
-  /* Saturate R, G, and B to [0, UINT16_MAX] */
-  pixel[0] = dmnsn_min(dmnsn_max(color.R,     0.0), 1.0)*UINT16_MAX;
-  pixel[1] = dmnsn_min(dmnsn_max(color.G,     0.0), 1.0)*UINT16_MAX;
-  pixel[2] = dmnsn_min(dmnsn_max(color.B,     0.0), 1.0)*UINT16_MAX;
-  pixel[3] = dmnsn_min(dmnsn_max(color.trans, 0.0), 1.0)*UINT16_MAX;
+  pixel[0] = lround(color.R*UINT16_MAX);
+  pixel[1] = lround(color.G*UINT16_MAX);
+  pixel[2] = lround(color.B*UINT16_MAX);
+  pixel[3] = lround(color.trans*UINT16_MAX);
 }
 
 /* Optimize canvas for GL drawing */
@@ -97,12 +97,12 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
       color = dmnsn_get_pixel(canvas, x, y);
       color = dmnsn_remove_filter(color);
       color = dmnsn_color_to_sRGB(color);
+      color = dmnsn_color_saturate(color);
 
-      /* Saturate R, G, and B to [0, UINT16_MAX] */
-      pixel[0] = dmnsn_min(dmnsn_max(color.R,     0.0), 1.0)*UINT16_MAX;
-      pixel[1] = dmnsn_min(dmnsn_max(color.G,     0.0), 1.0)*UINT16_MAX;
-      pixel[2] = dmnsn_min(dmnsn_max(color.B,     0.0), 1.0)*UINT16_MAX;
-      pixel[3] = dmnsn_min(dmnsn_max(color.trans, 0.0), 1.0)*UINT16_MAX;
+      pixel[0] = lround(color.R*UINT16_MAX);
+      pixel[1] = lround(color.G*UINT16_MAX);
+      pixel[2] = lround(color.B*UINT16_MAX);
+      pixel[3] = lround(color.trans*UINT16_MAX);
     }
   }
 

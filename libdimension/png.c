@@ -67,12 +67,12 @@ dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
   color = dmnsn_get_pixel(canvas, x, y);
   color = dmnsn_remove_filter(color);
   color = dmnsn_color_to_sRGB(color);
+  color = dmnsn_color_saturate(color);
 
-  /* Saturate R, G, and B to [0, UINT16_MAX] */
-  pixel[0] = dmnsn_min(dmnsn_max(color.R,     0.0), 1.0)*UINT16_MAX;
-  pixel[1] = dmnsn_min(dmnsn_max(color.G,     0.0), 1.0)*UINT16_MAX;
-  pixel[2] = dmnsn_min(dmnsn_max(color.B,     0.0), 1.0)*UINT16_MAX;
-  pixel[3] = dmnsn_min(dmnsn_max(color.trans, 0.0), 1.0)*UINT16_MAX;
+  pixel[0] = lround(color.R*UINT16_MAX);
+  pixel[1] = lround(color.G*UINT16_MAX);
+  pixel[2] = lround(color.B*UINT16_MAX);
+  pixel[3] = lround(color.trans*UINT16_MAX);
 }
 
 /** Payload type for PNG write thread callback. */
@@ -241,13 +241,12 @@ dmnsn_png_write_canvas_thread(void *ptr)
       dmnsn_color color = dmnsn_get_pixel(payload->canvas, x, height - y - 1);
       color = dmnsn_remove_filter(color);
       color = dmnsn_color_to_sRGB(color);
+      color = dmnsn_color_saturate(color);
 
-      /* Saturate R, G, and B to [0, UINT16_MAX] */
-
-      row[4*x]     = dmnsn_min(dmnsn_max(color.R,     0.0), 1.0)*UINT16_MAX;
-      row[4*x + 1] = dmnsn_min(dmnsn_max(color.G,     0.0), 1.0)*UINT16_MAX;
-      row[4*x + 2] = dmnsn_min(dmnsn_max(color.B,     0.0), 1.0)*UINT16_MAX;
-      row[4*x + 3] = dmnsn_min(dmnsn_max(color.trans, 0.0), 1.0)*UINT16_MAX;
+      row[4*x]     = lround(color.R*UINT16_MAX);
+      row[4*x + 1] = lround(color.G*UINT16_MAX);
+      row[4*x + 2] = lround(color.B*UINT16_MAX);
+      row[4*x + 3] = lround(color.trans*UINT16_MAX);
     }
 
     /* Write the row */

@@ -81,6 +81,18 @@ dmnsn_color_is_black(dmnsn_color color)
          && fabs(color.trans) < dmnsn_epsilon;
 }
 
+/** Saturate the color components to [0.0, 1.0]. */
+DMNSN_INLINE dmnsn_color
+dmnsn_color_saturate(dmnsn_color color)
+{
+  color.R      = dmnsn_min(dmnsn_max(color.R,      0.0), 1.0);
+  color.G      = dmnsn_min(dmnsn_max(color.G,      0.0), 1.0);
+  color.B      = dmnsn_min(dmnsn_max(color.B,      0.0), 1.0);
+  color.trans  = dmnsn_min(dmnsn_max(color.trans,  0.0), 1.0);
+  color.filter = dmnsn_min(dmnsn_max(color.filter, 0.0), 1.0);
+  return color;
+}
+
 /* Perceptual color manipulation */
 
 /** Convert from sRGB space. */
