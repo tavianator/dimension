@@ -227,6 +227,7 @@ dmnsn_color_mul(double n, dmnsn_color color)
   color.R *= n;
   color.G *= n;
   color.B *= n;
+  color.trans *= n;
   return color;
 }
 
@@ -267,7 +268,12 @@ dmnsn_filter_light(dmnsn_color light, dmnsn_color filter)
     filter.filter*filter.trans,
     dmnsn_color_illuminate(filter, light)
   );
-  dmnsn_color ret = dmnsn_color_add(transmitted, filtered);
+
+  dmnsn_color ret = dmnsn_new_color(
+    transmitted.R + filtered.R,
+    transmitted.G + filtered.G,
+    transmitted.B + filtered.B
+  );
 
   /* Switch into absolute filter and transmittance space */
   double lf = light.filter*light.trans, ff = filter.filter*filter.trans;
@@ -277,7 +283,6 @@ dmnsn_filter_light(dmnsn_color light, dmnsn_color filter)
 
   /* Switch back */
   ret.trans = f + t;
-  ret.filter = 0.0;
   if (ret.trans >= dmnsn_epsilon)
     ret.filter = f/ret.trans;
 
