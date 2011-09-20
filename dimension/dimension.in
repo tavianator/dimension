@@ -21,8 +21,9 @@
 
 import argparse as _argparse
 import re as _re
-import os.path as _path
+import os as _os
 import sys as _sys
+from contextlib import contextmanager as _contextmanager
 
 # Specialized parser to print --version output to stdout rather than stderr,
 # to pass distcheck
@@ -32,6 +33,16 @@ class _DimensionArgumentParser(_argparse.ArgumentParser):
       file = _sys.stdout if status == 0 else _sys.stderr
       file.write(message)
     _sys.exit(status)
+
+# Change the working directory within a with statement
+@_contextmanager
+def _chdir(newwd):
+  oldwd = _os.getcwd()
+  try:
+    _os.chdir(newwd)
+    yield
+  finally:
+    _os.chdir(oldwd)
 
 # Parse the command line
 _parser = _DimensionArgumentParser(
@@ -102,7 +113,7 @@ else:
 
 # Default output is basename(input).png
 if _args.output is None:
-  _noext = _path.splitext(_path.basename(_args.input))[0]
+  _noext = _os.path.splitext(_os.path.basename(_args.input))[0]
   _args.output = _noext + ".png"
 
 # Imports available to scripts
@@ -157,8 +168,11 @@ recursion_limit  = None
 if not _args.quiet:
   print("Parsing scene ...")
 
+# Run with the script's dirname as the working directory
+_workdir = _os.path.dirname(_os.path.abspath(_args.input))
+
 parse_timer = Timer()
-with open(_args.input) as _fh:
+with open(_args.input) as _fh, _chdir(_workdir):
   exec(compile(_fh.read(), _args.input, "exec"))
 parse_timer.stop()
 
