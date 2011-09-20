@@ -28,8 +28,11 @@ import os
 # Helpers #
 ###########
 
-cdef _raise_OSError():
-  raise OSError(errno, os.strerror(errno))
+cdef _raise_OSError(filename = None):
+  if filename is None:
+    raise OSError(errno, os.strerror(errno))
+  else:
+    raise OSError(errno, os.strerror(errno), filename)
 
 ###########
 # Globals #
@@ -563,7 +566,7 @@ cdef class Canvas:
     cdef char *cpath = bpath
     cdef FILE *file = fopen(cpath, "wb")
     if file == NULL:
-      _raise_OSError()
+      _raise_OSError(path)
 
     def finalize():
       if fclose(file) != 0:
@@ -707,10 +710,10 @@ cdef class ImageMap(Pigment):
     cdef char *cpath = bpath
     cdef FILE *file = fopen(cpath, "rb")
     if file == NULL:
-      _raise_OSError()
+      _raise_OSError(path)
     cdef dmnsn_canvas *canvas = dmnsn_png_read_canvas(file)
     if canvas == NULL:
-      _raise_OSError()
+      _raise_OSError(path)
     if fclose(file) != 0:
       _raise_OSError()
 
