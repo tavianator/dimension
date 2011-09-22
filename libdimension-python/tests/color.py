@@ -25,9 +25,9 @@ from dimension import *
 die_on_warnings(True)
 
 c = Color(0, 0.5, 1, trans = 0.5, filter = 0.35)
-assert repr(c) == 'dimension.Color(0.0, 0.5, 1.0, 0.5, 0.35)', repr(c)
-assert str(c) == '<red = 0.0, green = 0.5, blue = 1.0, \
-trans = 0.5, filter = 0.35>', str(c)
+assert repr(c) == "dimension.Color(0.0, 0.5, 1.0, 0.5, 0.35)", repr(c)
+assert str(c) == "<red = 0.0, green = 0.5, blue = 1.0, \
+trans = 0.5, filter = 0.35>", str(c)
 assert c.red    == 0,    c.red
 assert c.green  == 0.5,  c.green
 assert c.blue   == 1,    c.blue
@@ -35,7 +35,7 @@ assert c.trans  == 0.5,  c.filter
 assert c.filter == 0.35, c.trans
 
 c = Color(1, 0.5, 0)
-assert str(c) == '<red = 1.0, green = 0.5, blue = 0.0>', str(c)
+assert str(c) == "<red = 1.0, green = 0.5, blue = 0.0>", str(c)
 
 assert Black   == Color(0, 0, 0), Black
 assert White   == Color(1, 1, 1), White

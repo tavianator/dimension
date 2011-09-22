@@ -56,4 +56,4 @@ scene.recursion_limit = 5
 scene.raytrace()
 
 if have_PNG:
-  canvas.write_PNG('demo.png')
+  canvas.write_PNG("demo.png")

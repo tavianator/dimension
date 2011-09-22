@@ -51,7 +51,7 @@ except OSError as e:
 canvas.clear(Blue)
 
 if have_PNG:
-    canvas.write_PNG('png.png')
+    canvas.write_PNG("png.png")
 
 #if haveGL:
 #    canvas.drawGL()
