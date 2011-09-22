@@ -19,205 +19,209 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-import argparse as _argparse
-import re as _re
-import os as _os
-import sys as _sys
-from contextlib import contextmanager as _contextmanager
+import argparse
+import re
+import os
+import sys
+from contextlib import contextmanager
+from dimension import *
 
 # Specialized parser to print --version output to stdout rather than stderr,
 # to pass distcheck
-class _DimensionArgumentParser(_argparse.ArgumentParser):
+class DimensionArgumentParser(argparse.ArgumentParser):
   def exit(self, status = 0, message = None):
     if message:
-      file = _sys.stdout if status == 0 else _sys.stderr
+      file = sys.stdout if status == 0 else sys.stderr
       file.write(message)
-    _sys.exit(status)
+    sys.exit(status)
 
 # Change the working directory within a with statement
-@_contextmanager
-def _chdir(newwd):
-  oldwd = _os.getcwd()
+@contextmanager
+def working_directory(newwd):
+  oldwd = os.getcwd()
   try:
-    _os.chdir(newwd)
+    os.chdir(newwd)
     yield
   finally:
-    _os.chdir(oldwd)
+    os.chdir(oldwd)
 
 # Parse the command line
-_parser = _DimensionArgumentParser(
+parser = DimensionArgumentParser(
   epilog = "@PACKAGE_STRING@\n"
            "@PACKAGE_URL@\n"
            "Copyright (C) 2009-2011 Tavian Barnes <@PACKAGE_BUGREPORT@>\n"
            "Licensed under the GNU General Public License",
-  formatter_class = _argparse.RawDescriptionHelpFormatter,
+  formatter_class = argparse.RawDescriptionHelpFormatter,
   conflict_handler = "resolve", # For -h as height instead of help
 )
 
-_parser.add_argument("-V", "--version", action = "version",
-                     version = "@PACKAGE_STRING@")
+parser.add_argument("-V", "--version", action = "version",
+                    version = "@PACKAGE_STRING@")
 
-_parser.add_argument("-w", "--width", action = "store", type = int,
-                     default = 768,
-                     help = "image width (default: %(default)s)")
-_parser.add_argument("-h", "--height", action = "store", type = int,
-                     default = 480,
-                     help = "image height (default: %(default)s)")
-_parser.add_argument("--region", action = "store", type = str,
-                     help = "subregion to render, as \"(x1, y1)->(x2, y2)\"")
+parser.add_argument("-w", "--width", action = "store", type = int,
+                    default = 768,
+                    help = "image width (default: %(default)s)")
+parser.add_argument("-h", "--height", action = "store", type = int,
+                    default = 480,
+                    help = "image height (default: %(default)s)")
+parser.add_argument("--region", action = "store", type = str,
+                    help = "subregion to render, as \"(x1, y1)->(x2, y2)\"")
 
-_parser.add_argument("-v", "--verbose", action = "store_true",
-                     help = "print more information")
-_parser.add_argument("-q", "--quiet", action = "store_true",
-                     help = "print less information")
+parser.add_argument("-v", "--verbose", action = "store_true",
+                    help = "print more information")
+parser.add_argument("-q", "--quiet", action = "store_true",
+                    help = "print less information")
 
-_parser.add_argument("--threads", action = "store", type = int,
-                     help = "the number of threads to render with")
-_parser.add_argument("--quality", action = "store", type = str,
-                     help = "the scene quality")
-_parser.add_argument("--adc-bailout", action = "store", type = str,
-                     help = "the ADC bailout (default: 1/255)")
+parser.add_argument("--threads", action = "store", type = int,
+                    help = "the number of threads to render with")
+parser.add_argument("--quality", action = "store", type = str,
+                    help = "the scene quality")
+parser.add_argument("--adc-bailout", action = "store", type = str,
+                    help = "the ADC bailout (default: 1/255)")
 
-_parser.add_argument("-o", "--output", action = "store", type = str,
-                     help = "the output image file")
-_parser.add_argument("input", action = "store", type = str,
-                     help = "the input scene description file")
+parser.add_argument("-o", "--output", action = "store", type = str,
+                    help = "the output image file")
+parser.add_argument("input", action = "store", type = str,
+                    help = "the input scene description file")
 
 # Debugging/testing options
-_parser.add_argument("--strict", action = "store_true",
-                     help = _argparse.SUPPRESS)
+parser.add_argument("--strict", action = "store_true",
+                    help = argparse.SUPPRESS)
 
-_args = _parser.parse_args()
+args = parser.parse_args()
 
 # Calculate subregion
-if _args.region is None:
-  _args.region_x = 0
-  _args.region_y = 0
-  _args.region_width = _args.width
-  _args.region_height = _args.height
+if args.region is None:
+  args.region_x = 0
+  args.region_y = 0
+  args.region_width = args.width
+  args.region_height = args.height
 else:
-  _pattern = r"^\s*\(\s*(\d*)\s*,\s*(\d*)\s*\)\s*->\s*\(\s*(\d*)\s*,\s*(\d*)\s*\)\s*$"
-  _match = _re.match(_pattern, _args.region)
-  if _match is None:
+  pattern = r"^\s*\(\s*(\d*)\s*,\s*(\d*)\s*\)\s*->\s*\(\s*(\d*)\s*,\s*(\d*)\s*\)\s*$"
+  match = re.match(pattern, args.region)
+  if match is None:
     raise RuntimeError("range specified in invalid format.")
-  _args.region_x = int(_match.group(1))
-  _args.region_y = int(_match.group(2))
-  _region_xmax = int(_match.group(3))
-  _region_ymax = int(_match.group(4))
-  _args.region_width = _region_xmax - _args.region_x
-  _args.region_height = _region_ymax - _args.region_y
-  if _args.region_width <= 0 or _args.region_height <= 0:
+  args.region_x = int(match.group(1))
+  args.region_y = int(match.group(2))
+  region_xmax = int(match.group(3))
+  region_ymax = int(match.group(4))
+  args.region_width = region_xmax - args.region_x
+  args.region_height = region_ymax - args.region_y
+  if args.region_width <= 0 or args.region_height <= 0:
     raise RuntimeError("region is degenerate.")
-  if _region_xmax >= _args.width or _region_ymax > _args.height:
+  if region_xmax >= args.width or region_ymax > args.height:
     raise RuntimeError("region exceeds bounds of image.")
 
 # Default output is basename(input).png
-if _args.output is None:
-  _noext = _os.path.splitext(_os.path.basename(_args.input))[0]
-  _args.output = _noext + ".png"
-
-# Imports available to scripts
-from math import *
-from dimension import *
+if args.output is None:
+  noext = os.path.splitext(os.path.basename(args.input))[0]
+  args.output = noext + ".png"
 
 # Display a progress bar
-def _progress_bar(str, progress):
+def progress_bar(str, progress):
   try:
-    if not _args.quiet:
+    if not args.quiet:
       print(str, end = ' ')
-      _sys.stdout.flush()
+      sys.stdout.flush()
 
       term_width = terminal_width()
       width = term_width - (len(str) + 1)%term_width
       for i in range(width):
         progress.wait((i + 1)/width)
         print('.', end = '')
-        _sys.stdout.flush()
+        sys.stdout.flush()
 
       print()
-      _sys.stdout.flush()
+      sys.stdout.flush()
 
     progress.finish()
   except KeyboardInterrupt:
     print()
-    _sys.stdout.flush()
+    sys.stdout.flush()
 
     progress.cancel()
     try:
       progress.finish()
-    except:
+    except RuntimeError:
       # Swallow the failure exception
       pass
     raise
 
 # --strict option
-die_on_warnings(_args.strict)
+die_on_warnings(args.strict)
+
+# Sandbox dictionary for scene
+sandbox = __import__("dimension").__dict__
+sandbox.update(__import__("math").__dict__)
 
 # Defaults/available variables
-image_width      = _args.width
-image_height     = _args.height
-objects          = []
-lights           = []
-camera           = PerspectiveCamera()
-default_texture  = Texture(finish = Ambient(0.1) + Diffuse(0.7))
-default_interior = Interior()
-background       = Black
-recursion_limit  = None
+sandbox.update({
+  "image_width"      : args.width,
+  "image_height"     : args.height,
+  "objects"          : [],
+  "lights"           : [],
+  "camera"           : PerspectiveCamera(),
+  "default_texture"  : Texture(finish = Ambient(0.1) + Diffuse(0.7)),
+  "default_interior" : Interior(),
+  "background"       : Black,
+  "recursion_limit"  : None,
+})
 
 # Execute the input script
-if not _args.quiet:
+if not args.quiet:
   print("Parsing scene ...")
 
 # Run with the script's dirname as the working directory
-_workdir = _os.path.dirname(_os.path.abspath(_args.input))
+workdir = os.path.dirname(os.path.abspath(args.input))
 
 parse_timer = Timer()
-with open(_args.input) as _fh, _chdir(_workdir):
-  exec(compile(_fh.read(), _args.input, "exec"))
+with open(args.input) as fh, working_directory(workdir):
+  exec(compile(fh.read(), args.input, "exec"), sandbox)
 parse_timer.stop()
 
 # Make the canvas
-canvas = Canvas(width = _args.region_width, height = _args.region_height)
+canvas = Canvas(width = args.region_width, height = args.region_height)
 canvas.optimize_PNG()
 
 # Make the scene object
-scene = Scene(canvas  = canvas,
-              objects = objects,
-              lights  = lights,
-              camera  = camera)
-scene.region_x        = _args.region_x
-scene.region_y        = _args.region_y
-scene.outer_width     = _args.width
-scene.outer_height    = _args.height
-scene.default_texture = default_texture
-scene.background      = background
-if recursion_limit is not None:
-  scene.recursion_limit = recursion_limit
-if _args.threads is not None:
-  scene.nthreads = _args.threads
-if _args.quality is not None:
-  scene.quality = _args.quality
-if _args.adc_bailout is not None:
-  _pattern = r"^(.*)/(.*)"
-  _match = _re.match(_pattern, _args.adc_bailout)
-  if _match is not None:
-    _args.adc_bailout = float(_match.group(1))/float(_match.group(2))
-  scene.adc_bailout = float(_args.adc_bailout)
+scene = Scene(canvas   = canvas,
+              objects  = sandbox["objects"],
+              lights   = sandbox["lights"],
+              camera   = sandbox["camera"])
+scene.region_x         = args.region_x
+scene.region_y         = args.region_y
+scene.outer_width      = args.width
+scene.outer_height     = args.height
+scene.default_texture  = sandbox["default_texture"]
+scene.default_interior = sandbox["default_interior"]
+scene.background       = sandbox["background"]
+if sandbox["recursion_limit"] is not None:
+  scene.recursion_limit = sandbox["recursion_limit"]
+if args.threads is not None:
+  scene.nthreads = args.threads
+if args.quality is not None:
+  scene.quality = args.quality
+if args.adc_bailout is not None:
+  pattern = r"^(.*)/(.*)"
+  match = re.match(pattern, args.adc_bailout)
+  if match is not None:
+    args.adc_bailout = float(match.group(1))/float(match.group(2))
+  scene.adc_bailout = float(args.adc_bailout)
 
 # Raytrace the scene
 if scene.nthreads == 1:
   render_message = "Rendering scene"
 else:
   render_message = "Rendering scene (using %d threads)" % scene.nthreads
-_progress_bar(render_message, scene.raytrace_async())
+progress_bar(render_message, scene.raytrace_async())
 
 # Write the output file
 export_timer = Timer()
-_progress_bar("Writing %s" % _args.output, canvas.write_PNG_async(_args.output))
+progress_bar("Writing %s" % args.output, canvas.write_PNG_async(args.output))
 export_timer.stop()
 
 # Print execution times
-if _args.verbose:
+if args.verbose:
   print()
   print("Parsing time:   ", parse_timer)
   print("Bounding time:  ", scene.bounding_timer)
