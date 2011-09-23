@@ -363,10 +363,13 @@ def rotate(*args, **kwargs):
 
 cdef class _Transformable:
   def scale(self, *args, **kwargs):
+    """Scale.  Equivalent to self.transform(scale(...))."""
     return self.transform(scale(*args, **kwargs))
   def translate(self, *args, **kwargs):
+    """Translate.  Equivalent to self.transform(translate(...))."""
     return self.transform(translate(*args, **kwargs))
   def rotate(self, *args, **kwargs):
+    """Rotate.  Equivalent to self.transform(rotate(...))."""
     return self.transform(rotate(*args, **kwargs))
 
 ##########
