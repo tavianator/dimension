@@ -58,7 +58,7 @@ dmnsn_pattern *dmnsn_new_pattern(void);
 void dmnsn_delete_pattern(dmnsn_pattern *pattern);
 
 /**
- * Invoke the pattern callback with the right transformation.
+ * Invoke the pattern callback.
  * @param[in] pattern  The pattern to evaluate.
  * @param[in] v        The point to get the pattern value for.
  * @return The value of the pattern at \p v.
