@@ -1,4 +1,4 @@
-# Files and folders created by aclocal, autoconf, automake, and libtoolize
+# Files and folders created by ./autogen.sh, ./configure, and make
 /aclocal.m4
 /autom4te.cache/
 /compile
@@ -13,11 +13,6 @@
 /py-compile
 Makefile
 Makefile.in
-
-# Documentation files created by make
-/*/doc
-Doxyfile
-__pycache__
 libdimension-python/dimension.c
 dimension/dimension
 
@@ -31,6 +26,10 @@ dimension/dimension
 
 # Files created by `make bench'
 /*/bench/*.bench
+
+# Files created by make doc
+/*/doc/
+Doxyfile
 
 # Files and folders created by libtool
 .libs/

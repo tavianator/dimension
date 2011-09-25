@@ -29,5 +29,6 @@ bench:
 
 doc:
 	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) doc
+	cd libdimension-python && $(MAKE) $(AM_MAKEFLAGS) doc
 
 .PHONY: bench doc

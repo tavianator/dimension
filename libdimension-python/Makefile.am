@@ -37,3 +37,12 @@ dimension_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
 EXTRA_DIST = dimension.pyx                                                     \
              dimension.pxd
+
+doc:
+	mkdir -p doc
+	PYTHONPATH=$(top_builddir)/libdimension-python/.libs pydoc -w dimension
+	mv dimension.html doc/
+clean-doc:
+	rm -rf doc
+
+.PHONY: doc
