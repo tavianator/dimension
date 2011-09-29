@@ -1390,6 +1390,7 @@ cdef class Scene:
     DMNSN_INCREF(self._scene.canvas)
     self.outer_width = self._scene.canvas.width
     self.outer_height = self._scene.canvas.height
+    self.background = Black
 
     cdef dmnsn_object *o
     for obj in objects:
@@ -1452,10 +1453,7 @@ cdef class Scene:
   property background:
     """The background pigment of the scene (default: Black)."""
     def __get__(self):
-      if self._scene.background == NULL:
-        return None
-      else:
-        return _Pigment(self._scene.background)
+      return _Pigment(self._scene.background)
     def __set__(self, pigment):
       dmnsn_delete_pigment(self._scene.background)
       cdef Pigment real_pigment = Pigment(pigment)
