@@ -42,6 +42,10 @@
 #if DMNSN_TIMES
   #include <sys/times.h>
 #endif
+#if DMNSN_GETRUSAGE
+  #include <sys/time.h>
+  #include <sys/resource.h>
+#endif
 
 void
 dmnsn_backtrace(FILE *file)
@@ -107,15 +111,34 @@ dmnsn_ncpus(void)
 #endif
 }
 
-#if DMNSN_TIMES
-/** Clock ticks per second. */
-static long clk_tck = 0;
+#if DMNSN_GETRUSAGE
+/** Convert a struct timeval to a double. */
+static inline double
+dmnsn_timeval2double(struct timeval tv)
+{
+  return tv.tv_sec + tv.tv_usec/1.0e6;
+}
 #endif
 
 void
 dmnsn_get_times(dmnsn_timer *timer)
 {
-#if DMNSN_TIMES
+#if DMNSN_GETRUSAGE
+  struct timeval real;
+  gettimeofday(&real, NULL);
+
+  struct rusage usage;
+  if (getrusage(RUSAGE_SELF, &usage) == 0) {
+    timer->real   = dmnsn_timeval2double(real);
+    timer->user   = dmnsn_timeval2double(usage.ru_utime);
+    timer->system = dmnsn_timeval2double(usage.ru_stime);
+  } else {
+    dmnsn_warning("getrusage() failed.");
+    timer->real = timer->user = timer->system = 0.0;
+  }
+#elif DMNSN_TIMES
+  static long clk_tck = 0;
+
   /* Figure out the clock ticks per second */
   if (!clk_tck) {
     clk_tck = sysconf(_SC_CLK_TCK);
@@ -127,9 +150,14 @@ dmnsn_get_times(dmnsn_timer *timer)
 
   struct tms buf;
   clock_t real = times(&buf);
-  timer->real   = (double)real/clk_tck;
-  timer->user   = (double)buf.tms_utime/clk_tck;
-  timer->system = (double)buf.tms_stime/clk_tck;
+  if (real == (clock_t)-1) {
+    dmnsn_warning("times() failed.");
+    timer->real = timer->user = timer->system = 0.0;
+  } else {
+    timer->real   = (double)real/clk_tck;
+    timer->user   = (double)buf.tms_utime/clk_tck;
+    timer->system = (double)buf.tms_stime/clk_tck;
+  }
 #elif defined(_WIN32)
   FILETIME real;
   GetSystemTimeAsFileTime(&real);
@@ -147,13 +175,9 @@ dmnsn_get_times(dmnsn_timer *timer)
       = (((uint64_t)system.dwHighDateTime << 32) + system.dwLowDateTime)/1.0e7;
   } else {
     dmnsn_warning("GetProcessTimes() failed.");
-    timer->real   = 0.0;
-    timer->user   = 0.0;
-    timer->system = 0.0;
+    timer->real = timer->user = timer->system = 0.0;
   }
 #else
-  timer->real   = 0.0;
-  timer->user   = 0.0;
-  timer->system = 0.0;
+  timer->real = timer->user = timer->system = 0.0;
 #endif
 }

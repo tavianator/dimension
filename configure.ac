@@ -145,6 +145,27 @@ AC_COMPILE_IFELSE([
    AC_MSG_RESULT([no])]
 )
 
+AC_MSG_CHECKING([for getrusage()])
+AC_COMPILE_IFELSE([
+  AC_LANG_PROGRAM(
+    [
+      #include <stddef.h>
+      #include <sys/time.h>
+      #include <sys/resource.h>
+    ],
+    [
+      struct timeval real;
+      gettimeofday(&real, NULL);
+      struct rusage usage;
+      getrusage(RUSAGE_SELF, &usage);
+    ]
+  )],
+  [AC_DEFINE([DMNSN_GETRUSAGE], [1])
+   AC_MSG_RESULT([yes])],
+  [AC_DEFINE([DMNSN_GETRUSAGE], [0])
+   AC_MSG_RESULT([no])]
+)
+
 AC_MSG_CHECKING([for times()])
 AC_COMPILE_IFELSE([
   AC_LANG_PROGRAM(
