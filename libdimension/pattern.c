@@ -23,7 +23,7 @@
  * Patterns.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 
 /* Allocate a dummy pattern */
 dmnsn_pattern *

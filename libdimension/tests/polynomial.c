@@ -40,7 +40,7 @@ main(void)
   poly[1] = -646.270936;
   poly[0] =  1447.8216;
 
-  size_t n = dmnsn_solve_polynomial(poly, 5, x);
+  size_t n = dmnsn_polynomial_solve(poly, 5, x);
   if (n != 4) {
     fprintf(stderr,
             "--- Wrong number of roots found (%zu, should be %u) ---\n",
@@ -49,9 +49,9 @@ main(void)
   }
 
   for (size_t i = 0; i < n; ++i) {
-    double evmin = dmnsn_evaluate_polynomial(poly, 5, x[i] - dmnsn_epsilon);
-    double ev    = dmnsn_evaluate_polynomial(poly, 5, x[i]);
-    double evmax = dmnsn_evaluate_polynomial(poly, 5, x[i] + dmnsn_epsilon);
+    double evmin = dmnsn_polynomial_evaluate(poly, 5, x[i] - dmnsn_epsilon);
+    double ev    = dmnsn_polynomial_evaluate(poly, 5, x[i]);
+    double evmax = dmnsn_polynomial_evaluate(poly, 5, x[i] + dmnsn_epsilon);
     if (fabs(evmin) < ev || fabs(evmax) < ev) {
       fprintf(stderr, "--- Root %.15g is inaccurate! ---\n", x[i]);
       return EXIT_FAILURE;

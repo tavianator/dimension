@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -20,39 +20,13 @@
 
 /**
  * @file
- * Cameras.
+ * Reference count internal API.
  */
 
-#include "dimension-internal.h"
-#include <stdlib.h>
-
-/* Allocate a new dummy camera */
-dmnsn_camera *
-dmnsn_new_camera(void)
-{
-  dmnsn_camera *camera = dmnsn_malloc(sizeof(dmnsn_camera));
-  camera->free_fn  = NULL;
-  camera->trans    = dmnsn_identity_matrix();
-  camera->refcount = 1;
-  return camera;
-}
-
-/* Free a dummy camera */
-void
-dmnsn_delete_camera(dmnsn_camera *camera)
-{
-  if (DMNSN_DECREF(camera)) {
-    if (camera->free_fn) {
-      camera->free_fn(camera->ptr);
-    }
-    dmnsn_free(camera);
-  }
-}
-
-/* Invoke the camera ray function */
-dmnsn_line
-dmnsn_camera_ray(const dmnsn_camera *camera, double x, double y)
-{
-  dmnsn_line ray = camera->ray_fn(camera, x, y);
-  return dmnsn_transform_line(camera->trans, ray);
-}
+/**
+ * Decrement a reference count.
+ * @param[in,out] object  The reference-counted object to release.
+ * @return Whether the object is now garbage.
+ */
+#define DMNSN_DECREF(object)                                            \
+  ((object) && ((object)->refcount == 0 || --(object)->refcount == 0))

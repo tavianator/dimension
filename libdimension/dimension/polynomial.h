@@ -37,7 +37,7 @@
  * @param[in] x       The value of the variable at which to evaluate.
  */
 DMNSN_INLINE double
-dmnsn_evaluate_polynomial(const double poly[], size_t degree, double x)
+dmnsn_polynomial_evaluate(const double poly[], size_t degree, double x)
 {
   double ret = poly[degree];
   size_t i;
@@ -54,7 +54,7 @@ dmnsn_evaluate_polynomial(const double poly[], size_t degree, double x)
  * @param[in] x       The value of the variable at which to evaluate.
  */
 DMNSN_INLINE double
-dmnsn_evaluate_polynomial_derivative(const double poly[], size_t degree,
+dmnsn_polynomial_evaluate_derivative(const double poly[], size_t degree,
                                      double x)
 {
   double ret = poly[degree]*degree;
@@ -73,7 +73,7 @@ dmnsn_evaluate_polynomial_derivative(const double poly[], size_t degree,
  *                     dimension \p degree.
  * @return The number of positive roots stored in \c x[].
  */
-size_t dmnsn_solve_polynomial(const double poly[], size_t degree, double x[]);
+size_t dmnsn_polynomial_solve(const double poly[], size_t degree, double x[]);
 
 /**
  * Output a polynomial.  The polynomial is printed as a function of x suitable
@@ -82,4 +82,4 @@ size_t dmnsn_solve_polynomial(const double poly[], size_t degree, double x[]);
  * @param[in]     poly    The coefficients of the polynomial to print.
  * @param[in]     degree  The degree of the polynomial.
  */
-void dmnsn_print_polynomial(FILE *file, const double poly[], size_t degree);
+void dmnsn_polynomial_print(FILE *file, const double poly[], size_t degree);

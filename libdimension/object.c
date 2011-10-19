@@ -23,7 +23,7 @@
  * Objects.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 #include <stdlib.h>
 
 /* Allocate a dummy object */
@@ -66,7 +66,7 @@ dmnsn_delete_object(dmnsn_object *object)
 
 /** Recursively initialize objects. */
 static void
-dmnsn_initialize_object_recursive(dmnsn_object *object,
+dmnsn_object_initialize_recursive(dmnsn_object *object,
                                   dmnsn_matrix pigment_trans)
 {
   dmnsn_assert(!object->initialized, "Object double-initialized.");
@@ -74,7 +74,7 @@ dmnsn_initialize_object_recursive(dmnsn_object *object,
 
   /* Initialize the texture */
   if (!object->texture->initialized) {
-    dmnsn_initialize_texture(object->texture);
+    dmnsn_texture_initialize(object->texture);
   }
 
   /* Precalculate object values */
@@ -95,7 +95,7 @@ dmnsn_initialize_object_recursive(dmnsn_object *object,
 
     dmnsn_texture_cascade(object->texture, &(*child)->texture);
     dmnsn_interior_cascade(object->interior, &(*child)->interior);
-    dmnsn_initialize_object_recursive(*child, child_pigment_trans);
+    dmnsn_object_initialize_recursive(*child, child_pigment_trans);
   }
 
   /* Initialization callback */
@@ -111,8 +111,8 @@ dmnsn_initialize_object_recursive(dmnsn_object *object,
 
 /* Precompute object properties */
 void
-dmnsn_initialize_object(dmnsn_object *object)
+dmnsn_object_initialize(dmnsn_object *object)
 {
   dmnsn_matrix pigment_trans = dmnsn_matrix_inverse(object->trans);
-  dmnsn_initialize_object_recursive(object, pigment_trans);
+  dmnsn_object_initialize_recursive(object, pigment_trans);
 }

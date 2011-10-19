@@ -50,7 +50,7 @@ dmnsn_paint_test_canvas(dmnsn_canvas *canvas)
         color = dmnsn_color_from_sRGB(color);
       }
 
-      dmnsn_set_pixel(canvas, x, y, color);
+      dmnsn_canvas_set_pixel(canvas, x, y, color);
     }
   }
 }

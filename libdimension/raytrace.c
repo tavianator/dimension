@@ -35,63 +35,63 @@ typedef struct {
   dmnsn_future *future;
   dmnsn_scene *scene;
   dmnsn_prtree *prtree;
-} dmnsn_raytrace_payload;
+} dmnsn_ray_trace_payload;
 
-/* Raytrace a scene */
+/* Ray-trace a scene */
 void
-dmnsn_raytrace_scene(dmnsn_scene *scene)
+dmnsn_ray_trace(dmnsn_scene *scene)
 {
-  dmnsn_future *future = dmnsn_raytrace_scene_async(scene);
+  dmnsn_future *future = dmnsn_ray_trace_async(scene);
   if (dmnsn_future_join(future) != 0) {
-    dmnsn_error("Error occured while raytracing.");
+    dmnsn_error("Error occured while ray-tracing.");
   }
 }
 
 /** Background thread callback. */
-static int dmnsn_raytrace_scene_thread(void *ptr);
+static int dmnsn_ray_trace_scene_thread(void *ptr);
 
-/* Raytrace a scene in the background */
+/* Ray-trace a scene in the background */
 dmnsn_future *
-dmnsn_raytrace_scene_async(dmnsn_scene *scene)
+dmnsn_ray_trace_async(dmnsn_scene *scene)
 {
   dmnsn_future *future = dmnsn_new_future();
 
-  dmnsn_raytrace_payload *payload =
-    dmnsn_malloc(sizeof(dmnsn_raytrace_payload));
+  dmnsn_ray_trace_payload *payload =
+    dmnsn_malloc(sizeof(dmnsn_ray_trace_payload));
   payload->future = future;
   payload->scene  = scene;
 
-  dmnsn_new_thread(future, dmnsn_raytrace_scene_thread, payload);
+  dmnsn_new_thread(future, dmnsn_ray_trace_scene_thread, payload);
 
   return future;
 }
 
 /** Worker thread callback. */
-static int dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
-                                           unsigned int nthreads);
+static int dmnsn_ray_trace_scene_concurrent(void *ptr, unsigned int thread,
+                                            unsigned int nthreads);
 
 /* Thread callback -- set up the multithreaded engine */
 static int
-dmnsn_raytrace_scene_thread(void *ptr)
+dmnsn_ray_trace_scene_thread(void *ptr)
 {
-  dmnsn_raytrace_payload *payload = ptr;
+  dmnsn_ray_trace_payload *payload = ptr;
 
   /* Pre-calculate bounding box transformations, etc. */
-  dmnsn_initialize_scene(payload->scene);
+  dmnsn_scene_initialize(payload->scene);
 
   /* Time the bounding tree construction */
-  dmnsn_start_timer(&payload->scene->bounding_timer);
+  dmnsn_timer_start(&payload->scene->bounding_timer);
     payload->prtree = dmnsn_new_prtree(payload->scene->objects);
-  dmnsn_stop_timer(&payload->scene->bounding_timer);
+  dmnsn_timer_stop(&payload->scene->bounding_timer);
 
   /* Set up the future object */
   dmnsn_future_set_total(payload->future, payload->scene->canvas->height);
 
   /* Time the render itself */
-  dmnsn_start_timer(&payload->scene->render_timer);
-    int ret = dmnsn_execute_concurrently(dmnsn_raytrace_scene_concurrent,
+  dmnsn_timer_start(&payload->scene->render_timer);
+    int ret = dmnsn_execute_concurrently(dmnsn_ray_trace_scene_concurrent,
                                          payload, payload->scene->nthreads);
-  dmnsn_stop_timer(&payload->scene->render_timer);
+  dmnsn_timer_stop(&payload->scene->render_timer);
 
   dmnsn_delete_prtree(payload->prtree);
   dmnsn_free(payload);
@@ -100,12 +100,12 @@ dmnsn_raytrace_scene_thread(void *ptr)
 }
 
 /*
- * Raytracing algorithm
+ * Ray-tracing algorithm
  */
 
 /** The current state of the ray-tracing engine. */
-typedef struct dmnsn_raytrace_state {
-  const struct dmnsn_raytrace_state *parent;
+typedef struct dmnsn_rtstate {
+  const struct dmnsn_rtstate *parent;
 
   const dmnsn_scene *scene;
   const dmnsn_intersection *intersection;
@@ -127,12 +127,12 @@ typedef struct dmnsn_raytrace_state {
   double ior;
 
   dmnsn_color adc_value;
-} dmnsn_raytrace_state;
+} dmnsn_rtstate;
 
-/** Compute a raytrace state from an intersection. */
+/** Compute a ray-tracing state from an intersection. */
 static inline void
-dmnsn_initialize_raytrace_state(dmnsn_raytrace_state *state,
-                                const dmnsn_intersection *intersection)
+dmnsn_rtstate_initialize(dmnsn_rtstate *state,
+                         const dmnsn_intersection *intersection)
 {
   state->intersection = intersection;
   state->texture      = intersection->object->texture;
@@ -158,21 +158,20 @@ dmnsn_initialize_raytrace_state(dmnsn_raytrace_state *state,
   state->additional = dmnsn_black;
 }
 
-/** Main helper for dmnsn_raytrace_scene_impl - shoot a ray. */
-static dmnsn_color dmnsn_raytrace_shoot(dmnsn_raytrace_state *state,
-                                        dmnsn_line ray);
+/** Main helper for dmnsn_ray_trace_scene_impl - shoot a ray. */
+static dmnsn_color dmnsn_ray_shoot(dmnsn_rtstate *state, dmnsn_line ray);
 
-/* Actually raytrace a scene */
+/* Actually ray-trace a scene */
 static int
-dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
-                                unsigned int nthreads)
+dmnsn_ray_trace_scene_concurrent(void *ptr, unsigned int thread,
+                                 unsigned int nthreads)
 {
-  const dmnsn_raytrace_payload *payload = ptr;
+  const dmnsn_ray_trace_payload *payload = ptr;
   dmnsn_future *future = payload->future;
   dmnsn_scene *scene = payload->scene;
   dmnsn_prtree *prtree = payload->prtree;
 
-  dmnsn_raytrace_state state = {
+  dmnsn_rtstate state = {
     .parent = NULL,
     .scene  = scene,
     .prtree = prtree,
@@ -192,9 +191,9 @@ dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
       state.reclevel = scene->reclimit;
       state.ior = 1.0;
       state.adc_value = dmnsn_white;
-      dmnsn_color color = dmnsn_raytrace_shoot(&state, ray);
+      dmnsn_color color = dmnsn_ray_shoot(&state, ray);
 
-      dmnsn_set_pixel(scene->canvas, x, y, color);
+      dmnsn_canvas_set_pixel(scene->canvas, x, y, color);
     }
 
     dmnsn_future_increment(future);
@@ -205,11 +204,11 @@ dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
 
 /** Calculate the background color. */
 static dmnsn_color
-dmnsn_raytrace_background(const dmnsn_raytrace_state *state, dmnsn_line ray)
+dmnsn_trace_background(const dmnsn_rtstate *state, dmnsn_line ray)
 {
   dmnsn_pigment *background = state->scene->background;
   if (state->scene->quality & DMNSN_RENDER_PIGMENT) {
-    return dmnsn_evaluate_pigment(background, dmnsn_vector_normalized(ray.n));
+    return dmnsn_pigment_evaluate(background, dmnsn_vector_normalized(ray.n));
   } else {
     return background->quick_color;
   }
@@ -217,11 +216,11 @@ dmnsn_raytrace_background(const dmnsn_raytrace_state *state, dmnsn_line ray)
 
 /** Calculate the base pigment at the intersection. */
 static void
-dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
+dmnsn_trace_pigment(dmnsn_rtstate *state)
 {
   dmnsn_pigment *pigment = state->texture->pigment;
   if (state->scene->quality & DMNSN_RENDER_PIGMENT) {
-    state->pigment = dmnsn_evaluate_pigment(pigment, state->pigment_r);
+    state->pigment = dmnsn_pigment_evaluate(pigment, state->pigment_r);
   } else {
     state->pigment = pigment->quick_color;
   }
@@ -231,8 +230,7 @@ dmnsn_raytrace_pigment(dmnsn_raytrace_state *state)
 
 /** Get the color of a light ray at an intersection point. */
 static dmnsn_color
-dmnsn_raytrace_light_ray(dmnsn_raytrace_state *state,
-                         const dmnsn_light *light)
+dmnsn_trace_light_ray(dmnsn_rtstate *state, const dmnsn_light *light)
 {
   /** @todo: Start at the light source */
   dmnsn_line shadow_ray = dmnsn_new_line(
@@ -265,9 +263,9 @@ dmnsn_raytrace_light_ray(dmnsn_raytrace_state *state,
 
     /* Handle transparency */
     if (state->scene->quality & DMNSN_RENDER_TRANSPARENCY) {
-      dmnsn_raytrace_state shadow_state = *state;
-      dmnsn_initialize_raytrace_state(&shadow_state, &shadow_caster);
-      dmnsn_raytrace_pigment(&shadow_state);
+      dmnsn_rtstate shadow_state = *state;
+      dmnsn_rtstate_initialize(&shadow_state, &shadow_caster);
+      dmnsn_trace_pigment(&shadow_state);
 
       if (shadow_state.pigment.trans >= dmnsn_epsilon) {
         /* Reflect the light */
@@ -298,7 +296,7 @@ dmnsn_raytrace_light_ray(dmnsn_raytrace_state *state,
 
 /** Handle light, shadow, and shading. */
 static void
-dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
+dmnsn_trace_lighting(dmnsn_rtstate *state)
 {
   /* The ambient color */
   state->diffuse = dmnsn_black;
@@ -311,7 +309,7 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
 
   /* Iterate over each light */
   DMNSN_ARRAY_FOREACH (dmnsn_light **, light, state->scene->lights) {
-    dmnsn_color light_color = dmnsn_raytrace_light_ray(state, *light);
+    dmnsn_color light_color = dmnsn_trace_light_ray(state, *light);
     if (!dmnsn_color_is_black(light_color)) {
       if (state->scene->quality & DMNSN_RENDER_FINISH) {
         /* Reflect the light */
@@ -354,7 +352,7 @@ dmnsn_raytrace_lighting(dmnsn_raytrace_state *state)
 
 /** Trace a reflected ray. */
 static dmnsn_color
-dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
+dmnsn_trace_reflection(const dmnsn_rtstate *state)
 {
   dmnsn_color reflected = dmnsn_black;
 
@@ -363,7 +361,7 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
     dmnsn_line refl_ray = dmnsn_new_line(state->r, state->reflected);
     refl_ray = dmnsn_line_add_epsilon(refl_ray);
 
-    dmnsn_raytrace_state recursive_state = *state;
+    dmnsn_rtstate recursive_state = *state;
 
     /* Calculate ADC value */
     recursive_state.adc_value = reflection->reflection_fn(
@@ -372,7 +370,7 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
     );
 
     /* Shoot the reflected ray */
-    dmnsn_color rec = dmnsn_raytrace_shoot(&recursive_state, refl_ray);
+    dmnsn_color rec = dmnsn_ray_shoot(&recursive_state, refl_ray);
     reflected = reflection->reflection_fn(
       reflection, rec, state->pigment, state->reflected,
       state->intersection->normal
@@ -386,7 +384,7 @@ dmnsn_raytrace_reflection(const dmnsn_raytrace_state *state)
 
 /** Handle transparency - must be called last to work correctly. */
 static void
-dmnsn_raytrace_transparency(dmnsn_raytrace_state *state)
+dmnsn_trace_transparency(dmnsn_rtstate *state)
 {
   if (state->pigment.trans >= dmnsn_epsilon) {
     dmnsn_line trans_ray = dmnsn_new_line(state->r, state->intersection->ray.n);
@@ -395,7 +393,7 @@ dmnsn_raytrace_transparency(dmnsn_raytrace_state *state)
     dmnsn_vector r = dmnsn_vector_normalized(trans_ray.n);
     dmnsn_vector n = state->intersection->normal;
 
-    dmnsn_raytrace_state recursive_state = *state;
+    dmnsn_rtstate recursive_state = *state;
 
     /* Calculate new refractive index */
     if (dmnsn_vector_dot(r, n) < 0.0) {
@@ -434,7 +432,7 @@ dmnsn_raytrace_transparency(dmnsn_raytrace_state *state)
       dmnsn_filter_light(state->adc_value, state->pigment);
 
     /* Shoot the transmitted ray */
-    dmnsn_color rec = dmnsn_raytrace_shoot(&recursive_state, trans_ray);
+    dmnsn_color rec = dmnsn_ray_shoot(&recursive_state, trans_ray);
     dmnsn_color filtered = dmnsn_filter_light(rec, state->pigment);
 
     /* Conserve energy */
@@ -455,7 +453,7 @@ dmnsn_raytrace_transparency(dmnsn_raytrace_state *state)
 
 /* Shoot a ray, and calculate the color */
 static dmnsn_color
-dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
+dmnsn_ray_shoot(dmnsn_rtstate *state, dmnsn_line ray)
 {
   if (state->reclevel == 0
       || dmnsn_color_intensity(state->adc_value) < state->scene->adc_bailout)
@@ -469,32 +467,32 @@ dmnsn_raytrace_shoot(dmnsn_raytrace_state *state, dmnsn_line ray)
   bool reset = state->reclevel == state->scene->reclimit - 1;
   if (dmnsn_prtree_intersection(state->prtree, ray, &intersection, reset)) {
     /* Found an intersection */
-    dmnsn_initialize_raytrace_state(state, &intersection);
+    dmnsn_rtstate_initialize(state, &intersection);
 
     /* Pigment */
-    dmnsn_raytrace_pigment(state);
+    dmnsn_trace_pigment(state);
 
     /* Finishes and shadows */
     if (state->scene->quality & DMNSN_RENDER_LIGHTS) {
-      dmnsn_raytrace_lighting(state);
+      dmnsn_trace_lighting(state);
     }
 
     /* Reflection */
     if (state->scene->quality & DMNSN_RENDER_REFLECTION) {
       state->additional = dmnsn_color_add(
-        dmnsn_raytrace_reflection(state),
+        dmnsn_trace_reflection(state),
         state->additional
       );
     }
 
     /* Transparency */
     if (state->scene->quality & DMNSN_RENDER_TRANSPARENCY) {
-      dmnsn_raytrace_transparency(state);
+      dmnsn_trace_transparency(state);
     }
 
     return dmnsn_color_add(state->diffuse, state->additional);
   } else {
     /* No intersection, return the background color */
-    return dmnsn_raytrace_background(state, ray);
+    return dmnsn_trace_background(state, ray);
   }
 }

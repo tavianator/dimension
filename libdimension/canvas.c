@@ -23,7 +23,7 @@
  * Canveses.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 #include <stdlib.h> /* For dmnsn_free() */
 
 /* Allocate a new canvas, of width x and height y */
@@ -62,15 +62,15 @@ dmnsn_delete_canvas(dmnsn_canvas *canvas)
 
 /* Set a canvas optimizer */
 void
-dmnsn_optimize_canvas(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer)
+dmnsn_canvas_optimize(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer)
 {
   dmnsn_array_push(canvas->optimizers, &optimizer);
 }
 
 /* Set the color of a pixel */
 void
-dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
-                dmnsn_color color)
+dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
+                       dmnsn_color color)
 {
   dmnsn_assert(x < canvas->width && y < canvas->height,
                "Canvas access out of bounds.");
@@ -86,11 +86,11 @@ dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
 
 /* Fill a canvas with a solid color */
 void
-dmnsn_clear_canvas(dmnsn_canvas *canvas, dmnsn_color color)
+dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_color color)
 {
   for (size_t x = 0; x < canvas->width; ++x) {
     for (size_t y = 0; y < canvas->height; ++y) {
-      dmnsn_set_pixel(canvas, x, y, color);
+      dmnsn_canvas_set_pixel(canvas, x, y, color);
     }
   }
 }

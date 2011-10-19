@@ -45,10 +45,10 @@ typedef struct dmnsn_timer {
  * Start a timer.  The values of an unfinished timer are undefined.
  * @param[in,out] timer  The timer to start.
  */
-void dmnsn_start_timer(dmnsn_timer *timer);
+void dmnsn_timer_start(dmnsn_timer *timer);
 
 /**
  * Finish timing.  The members of the timer struct will now contain timing data.
  * @param[in,out] timer  The timer to stop.
  */
-void dmnsn_stop_timer(dmnsn_timer *timer);
+void dmnsn_timer_stop(dmnsn_timer *timer);

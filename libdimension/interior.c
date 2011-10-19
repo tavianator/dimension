@@ -23,7 +23,7 @@
  * Interiors.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 #include <stdlib.h>
 
 /* Allocate an interior */

@@ -209,12 +209,12 @@ if args.adc_bailout is not None:
     args.adc_bailout = float(match.group(1))/float(match.group(2))
   scene.adc_bailout = float(args.adc_bailout)
 
-# Raytrace the scene
+# Ray-trace the scene
 if scene.nthreads == 1:
   render_message = "Rendering scene"
 else:
   render_message = "Rendering scene (using %d threads)" % scene.nthreads
-progress_bar(render_message, scene.raytrace_async())
+progress_bar(render_message, scene.ray_trace_async())
 
 # Write the output file
 export_timer = Timer()

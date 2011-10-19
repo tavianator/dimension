@@ -49,7 +49,7 @@ void dmnsn_delete_map(dmnsn_map *map);
  * @param[in]     n    The index of the entry.
  * @param[in]     obj  The value of the entry.
  */
-void dmnsn_add_map_entry(dmnsn_map *map, double n, const void *obj);
+void dmnsn_map_add_entry(dmnsn_map *map, double n, const void *obj);
 
 /**
  * Return the number of entries in a map.
@@ -66,7 +66,7 @@ size_t dmnsn_map_size(const dmnsn_map *map);
  * @param[out] obj1  The first object.
  * @param[out] obj2  The second object.
  */
-void dmnsn_evaluate_map(const dmnsn_map *map, double n,
+void dmnsn_map_evaluate(const dmnsn_map *map, double n,
                         double *val, void *obj1, void *obj2);
 
 /**

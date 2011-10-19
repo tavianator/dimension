@@ -64,8 +64,8 @@ main(void)
   }
 
   for (size_t i = 0; i < NPOLY; ++i) {
-    sandglass_bench_fine(&sandglass, dmnsn_solve_polynomial(p[i], i + 1, x));
-    printf("dmnsn_solve_polynomial(x^%zu): %ld\n", i + 1, sandglass.grains);
+    sandglass_bench_fine(&sandglass, dmnsn_polynomial_solve(p[i], i + 1, x));
+    printf("dmnsn_polynomial_solve(x^%zu): %ld\n", i + 1, sandglass.grains);
   }
 
   return EXIT_SUCCESS;

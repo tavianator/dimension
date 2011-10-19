@@ -53,7 +53,7 @@ void dmnsn_delete_texture(dmnsn_texture *texture);
  * initialized for you.
  * @param[in,out] texture  The texture to initialize.
  */
-void dmnsn_initialize_texture(dmnsn_texture *texture);
+void dmnsn_texture_initialize(dmnsn_texture *texture);
 
 /**
  * Fill missing texture properties from a default texture.

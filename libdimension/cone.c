@@ -48,7 +48,7 @@ dmnsn_cone_intersection_fn(const dmnsn_object *cone, dmnsn_line l,
   poly[0] = l.x0.x*l.x0.x + l.x0.z*l.x0.z
             - (l.x0.y*(r2 - r1) + r2 + r1)*(l.x0.y*(r2 - r1) + r2 + r1)/4.0;
 
-  size_t n = dmnsn_solve_polynomial(poly, 2, x);
+  size_t n = dmnsn_polynomial_solve(poly, 2, x);
 
   if (n > 0) {
     double t = x[0];

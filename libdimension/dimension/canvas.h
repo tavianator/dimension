@@ -84,7 +84,7 @@ void dmnsn_delete_canvas(dmnsn_canvas *canvas);
  * @param[in,out] canvas    The canvas to optimize.
  * @param[in]     optimizer The optimizer to use.
  */
-void dmnsn_optimize_canvas(dmnsn_canvas *canvas,
+void dmnsn_canvas_optimize(dmnsn_canvas *canvas,
                            dmnsn_canvas_optimizer optimizer);
 
 /* Pixel accessors */
@@ -97,7 +97,7 @@ void dmnsn_optimize_canvas(dmnsn_canvas *canvas,
  * @return The color of the canvas at (\p x, \p y).
  */
 DMNSN_INLINE dmnsn_color
-dmnsn_get_pixel(const dmnsn_canvas *canvas, size_t x, size_t y)
+dmnsn_canvas_get_pixel(const dmnsn_canvas *canvas, size_t x, size_t y)
 {
   dmnsn_assert(x < canvas->width && y < canvas->height,
                "Canvas access out of bounds.");
@@ -111,12 +111,12 @@ dmnsn_get_pixel(const dmnsn_canvas *canvas, size_t x, size_t y)
  * @param[in]     y       The y coordinate of the pixel.
  * @param[in]     color   The color to set the pixel at (\p x, \p y) to.
  */
-void dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
-                     dmnsn_color color);
+void dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
+                            dmnsn_color color);
 
 /**
  * Clear a canvas uniformly with a given color.
  * @param[in,out] canvas  The canvas to erase.
  * @param[in]     color   The color to paint it with.
  */
-void dmnsn_clear_canvas(dmnsn_canvas *canvas, dmnsn_color color);
+void dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_color color);

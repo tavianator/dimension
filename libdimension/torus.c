@@ -56,8 +56,8 @@ dmnsn_torus_bound_intersection(const dmnsn_torus_payload *payload, dmnsn_line l)
     smallcyl[0] = dist2 - rmin2;
 
     double x[4];
-    size_t n = dmnsn_solve_polynomial(bigcyl, 2, x);
-    n += dmnsn_solve_polynomial(smallcyl, 2, x + n);
+    size_t n = dmnsn_polynomial_solve(bigcyl, 2, x);
+    n += dmnsn_polynomial_solve(smallcyl, 2, x + n);
 
     size_t i;
     for (i = 0; i < n; ++i) {
@@ -105,7 +105,7 @@ dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line l,
   poly[0] = x0x0*x0x0 + R2*(R2 - 2.0*x0x0mod) - r2*(2.0*(R2 + x0x0) - r2);
 
   double x[4];
-  size_t n = dmnsn_solve_polynomial(poly, 4, x);
+  size_t n = dmnsn_polynomial_solve(poly, 4, x);
   if (n == 0)
     return false;
 

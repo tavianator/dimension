@@ -23,7 +23,7 @@
  * Pigments.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 
 /* Allocate a dummy pigment */
 dmnsn_pigment *
@@ -54,7 +54,7 @@ dmnsn_delete_pigment(dmnsn_pigment *pigment)
 
 /* Precompute pigment properties */
 void
-dmnsn_initialize_pigment(dmnsn_pigment *pigment)
+dmnsn_pigment_initialize(dmnsn_pigment *pigment)
 {
   dmnsn_assert(!pigment->initialized, "Pigment double-initialized.");
   pigment->initialized = true;
@@ -68,7 +68,7 @@ dmnsn_initialize_pigment(dmnsn_pigment *pigment)
 
 /* Evaluate a pigment */
 dmnsn_color
-dmnsn_evaluate_pigment(const dmnsn_pigment *pigment, dmnsn_vector v)
+dmnsn_pigment_evaluate(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
   if (pigment->pigment_fn) {
     dmnsn_vector v_trans = dmnsn_transform_point(pigment->trans_inv, v);

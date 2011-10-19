@@ -33,7 +33,8 @@ dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 
   size_t x = llround((fmod(v.x, 1.0) + 1.0)*(canvas->width  - 1));
   size_t y = llround((fmod(v.y, 1.0) + 1.0)*(canvas->height - 1));
-  dmnsn_color c = dmnsn_get_pixel(canvas, x%canvas->width, y%canvas->height);
+  dmnsn_color c = dmnsn_canvas_get_pixel(canvas,
+                                         x%canvas->width, y%canvas->height);
   return c;
 }
 

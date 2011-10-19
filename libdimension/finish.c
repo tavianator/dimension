@@ -23,7 +23,7 @@
  * Finishes.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 
 dmnsn_ambient *
 dmnsn_new_ambient(void)

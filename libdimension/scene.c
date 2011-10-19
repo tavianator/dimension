@@ -76,7 +76,7 @@ dmnsn_delete_scene(dmnsn_scene *scene)
 }
 
 void
-dmnsn_initialize_scene(dmnsn_scene *scene)
+dmnsn_scene_initialize(dmnsn_scene *scene)
 {
   dmnsn_assert(!scene->initialized, "Scene double-initialized.");
   scene->initialized = true;
@@ -88,13 +88,13 @@ dmnsn_initialize_scene(dmnsn_scene *scene)
     scene->outer_height = scene->canvas->height;
   }
 
-  dmnsn_initialize_pigment(scene->background);
+  dmnsn_pigment_initialize(scene->background);
 
-  dmnsn_initialize_texture(scene->default_texture);
+  dmnsn_texture_initialize(scene->default_texture);
 
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
     dmnsn_texture_cascade(scene->default_texture, &(*object)->texture);
     dmnsn_interior_cascade(scene->default_interior, &(*object)->interior);
-    dmnsn_initialize_object(*object);
+    dmnsn_object_initialize(*object);
   }
 }

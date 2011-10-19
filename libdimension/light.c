@@ -23,7 +23,7 @@
  * Lights.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 #include <stdlib.h>
 
 /* Allocate a new dummy light */

@@ -40,12 +40,3 @@ typedef unsigned int dmnsn_refcount;
       ++(object)->refcount;                                             \
     }                                                                   \
   } while (0)
-
-/**
- * @internal
- * Decrement a reference count.
- * @param[in,out] object  The reference-counted object to release.
- * @return Whether the object is now garbage.
- */
-#define DMNSN_DECREF(object)                                            \
-  ((object) && ((object)->refcount == 0 || --(object)->refcount == 0))

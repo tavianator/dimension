@@ -29,6 +29,7 @@
 
 #define _GNU_SOURCE
 #include "dimension.h"
+#include "refcount-internal.h"
 #include "compiler.h"
 #include "profile.h"
 #include "platform.h"

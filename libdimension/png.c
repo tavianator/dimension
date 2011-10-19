@@ -52,7 +52,7 @@ dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
 
   optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(uint16_t));
 
-  dmnsn_optimize_canvas(canvas, optimizer);
+  dmnsn_canvas_optimize(canvas, optimizer);
   return 0;
 }
 
@@ -64,7 +64,7 @@ dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
   dmnsn_color color;
   uint16_t *pixel = (uint16_t *)optimizer.ptr + 4*(y*canvas->width + x);
 
-  color = dmnsn_get_pixel(canvas, x, y);
+  color = dmnsn_canvas_get_pixel(canvas, x, y);
   color = dmnsn_remove_filter(color);
   color = dmnsn_color_to_sRGB(color);
   color = dmnsn_color_saturate(color);
@@ -238,7 +238,8 @@ dmnsn_png_write_canvas_thread(void *ptr)
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
       /* Invert the rows.  PNG coordinates are fourth quadrant. */
-      dmnsn_color color = dmnsn_get_pixel(payload->canvas, x, height - y - 1);
+      dmnsn_color color = dmnsn_canvas_get_pixel(payload->canvas,
+                                                 x, height - y - 1);
       color = dmnsn_remove_filter(color);
       color = dmnsn_color_to_sRGB(color);
       color = dmnsn_color_saturate(color);
@@ -420,7 +421,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
       }
 
       color = dmnsn_color_from_sRGB(color);
-      dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
+      dmnsn_canvas_set_pixel(*payload->canvas, x, height - y - 1, color);
     }
 
     dmnsn_future_increment(payload->future);

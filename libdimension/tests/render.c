@@ -94,7 +94,7 @@ dmnsn_test_scene_add_background(dmnsn_scene *scene)
     fprintf(stderr, "--- WARNING: Couldn't open or read png2.png! ---\n");
     png_pigment = dmnsn_new_solid_pigment(dmnsn_orange);
   }
-  dmnsn_add_map_entry(sky_gradient_pigment_map, 0.0, &png_pigment);
+  dmnsn_map_add_entry(sky_gradient_pigment_map, 0.0, &png_pigment);
 
   dmnsn_color background = dmnsn_color_from_sRGB(
     dmnsn_new_color5(0.0, 0.1, 0.2, 0.1, 0.0)
@@ -269,7 +269,7 @@ dmnsn_test_scene_add_ground(dmnsn_scene *scene)
     dmnsn_scale_matrix(dmnsn_new_vector(1.0/3.0, 1.0/3.0, 1.0/3.0));
   dmnsn_map *big_map = dmnsn_new_pigment_map();
   dmnsn_pigment_map_add_color(big_map, 0.0, dmnsn_white);
-  dmnsn_add_map_entry(big_map, 1.0, &small_pigment);
+  dmnsn_map_add_entry(big_map, 1.0, &small_pigment);
   plane->texture = dmnsn_new_texture();
   plane->texture->pigment =
     dmnsn_new_pigment_map_pigment(checker2, big_map, DMNSN_PIGMENT_MAP_REGULAR);
@@ -339,7 +339,7 @@ main(void)
     }
   }
 
-  dmnsn_clear_canvas(scene->canvas, dmnsn_black);
+  dmnsn_canvas_clear(scene->canvas, dmnsn_black);
 
   /* Create a new glX display */
   dmnsn_display *display = NULL;
@@ -353,7 +353,7 @@ main(void)
   /* Render the scene */
 
   printf("Rendering scene\n");
-  dmnsn_future *future = dmnsn_raytrace_scene_async(scene);
+  dmnsn_future *future = dmnsn_ray_trace_async(scene);
 
   /* Display the scene as it's rendered */
   if (display) {

@@ -78,7 +78,7 @@ void dmnsn_delete_pigment(dmnsn_pigment *pigment);
  * initialized for you.
  * @param[in,out] pigment  The pigment to initialize.
  */
-void dmnsn_initialize_pigment(dmnsn_pigment *pigment);
+void dmnsn_pigment_initialize(dmnsn_pigment *pigment);
 
 /**
  * Evaluate the color of a pigment at a point.
@@ -86,5 +86,5 @@ void dmnsn_initialize_pigment(dmnsn_pigment *pigment);
  * @param[in] v        The point to color.
  * @return The color at \p v.
  */
-dmnsn_color dmnsn_evaluate_pigment(const dmnsn_pigment *pigment,
+dmnsn_color dmnsn_pigment_evaluate(const dmnsn_pigment *pigment,
                                    dmnsn_vector v);

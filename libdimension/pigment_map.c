@@ -30,7 +30,7 @@ static void
 dmnsn_initialize_mapped_pigment(void *ptr)
 {
   dmnsn_pigment **pigment = ptr;
-  dmnsn_initialize_pigment(*pigment);
+  dmnsn_pigment_initialize(*pigment);
 }
 
 /** Free a pigment in a pigment map. */
@@ -60,7 +60,7 @@ void
 dmnsn_pigment_map_add_color(dmnsn_map *map, double n, dmnsn_color color)
 {
   dmnsn_pigment *pigment = dmnsn_new_solid_pigment(color);
-  dmnsn_add_map_entry(map, n, &pigment);
+  dmnsn_map_add_entry(map, n, &pigment);
 }
 
 /** Free a pigment_map payload. */
@@ -80,10 +80,10 @@ dmnsn_pigment_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
   const dmnsn_pigment_map_payload *payload = pigment->ptr;
   double n;
   dmnsn_pigment *pigment1, *pigment2;
-  dmnsn_evaluate_map(payload->map, dmnsn_pattern_value(payload->pattern, v),
+  dmnsn_map_evaluate(payload->map, dmnsn_pattern_value(payload->pattern, v),
                      &n, &pigment1, &pigment2);
-  dmnsn_color color1 = dmnsn_evaluate_pigment(pigment1, v);
-  dmnsn_color color2 = dmnsn_evaluate_pigment(pigment2, v);
+  dmnsn_color color1 = dmnsn_pigment_evaluate(pigment1, v);
+  dmnsn_color color2 = dmnsn_pigment_evaluate(pigment2, v);
 
   if (payload->flags == DMNSN_PIGMENT_MAP_SRGB) {
     color1 = dmnsn_color_to_sRGB(color1);

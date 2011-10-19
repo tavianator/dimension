@@ -109,7 +109,7 @@ void dmnsn_delete_object(dmnsn_object *object);
  * Initialize an object and potentially its children.
  * @param[in,out] object  The object to initialize.
  */
-void dmnsn_initialize_object(dmnsn_object *object);
+void dmnsn_object_initialize(dmnsn_object *object);
 
 /**
  * Appropriately transform a ray, then test for an intersection.

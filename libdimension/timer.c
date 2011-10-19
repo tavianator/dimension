@@ -26,13 +26,13 @@
 #include "dimension-internal.h"
 
 void
-dmnsn_start_timer(dmnsn_timer *timer)
+dmnsn_timer_start(dmnsn_timer *timer)
 {
   dmnsn_get_times(timer);
 }
 
 void
-dmnsn_stop_timer(dmnsn_timer *timer)
+dmnsn_timer_stop(dmnsn_timer *timer)
 {
   dmnsn_timer now;
   dmnsn_get_times(&now);

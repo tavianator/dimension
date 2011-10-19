@@ -244,15 +244,15 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
     return dmnsn_improve_root(poly, degree, min);
   }
 
-  double evmin = dmnsn_evaluate_polynomial(poly, degree, min);
-  double evmax = dmnsn_evaluate_polynomial(poly, degree, max);
+  double evmin = dmnsn_polynomial_evaluate(poly, degree, min);
+  double evmax = dmnsn_polynomial_evaluate(poly, degree, max);
   double initial_evmin = fabs(evmin), initial_evmax = fabs(evmax);
   double mid = 0.0, evmid;
   int lastsign = -1;
 
   do {
     mid = (min*evmax - max*evmin)/(evmax - evmin);
-    evmid = dmnsn_evaluate_polynomial(poly, degree, mid);
+    evmid = dmnsn_polynomial_evaluate(poly, degree, mid);
     int sign = dmnsn_signbit(evmid);
 
     if (mid < min) {
@@ -394,7 +394,7 @@ dmnsn_solve_cubic(double poly[4], double x[3])
 
 /* Uspensky's algorithm */
 DMNSN_HOT size_t
-dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
+dmnsn_polynomial_solve(const double poly[], size_t degree, double x[])
 {
   /* Copy the polynomial so we can be destructive */
   double p[degree + 1];
@@ -454,7 +454,7 @@ dmnsn_solve_polynomial(const double poly[], size_t degree, double x[])
 
 /* Print a polynomial */
 void
-dmnsn_print_polynomial(FILE *file, const double poly[], size_t degree)
+dmnsn_polynomial_print(FILE *file, const double poly[], size_t degree)
 {
   for (size_t i = degree + 1; i-- > 0;) {
     if (i < degree) {

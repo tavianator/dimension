@@ -58,7 +58,7 @@ dmnsn_delete_map(dmnsn_map *map)
 }
 
 void
-dmnsn_add_map_entry(dmnsn_map *map, double n, const void *obj)
+dmnsn_map_add_entry(dmnsn_map *map, double n, const void *obj)
 {
   dmnsn_map_entry *entry
     = dmnsn_malloc(sizeof(dmnsn_map_entry) + map->obj_size);
@@ -84,7 +84,7 @@ dmnsn_map_size(const dmnsn_map *map)
 }
 
 void
-dmnsn_evaluate_map(const dmnsn_map *map, double n,
+dmnsn_map_evaluate(const dmnsn_map *map, double n,
                    double *val, void *obj1, void *obj2)
 {
   dmnsn_assert(dmnsn_array_size(map->array) > 0,

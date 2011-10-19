@@ -103,6 +103,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           prtree.c                                             \
                           prtree.h                                             \
                           raytrace.c                                           \
+                          refcount-internal.h                                  \
                           reflection.c                                         \
                           scene.c                                              \
                           solid_pigment.c                                      \

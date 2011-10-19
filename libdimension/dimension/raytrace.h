@@ -24,14 +24,14 @@
  */
 
 /**
- * Render a scene by raytracing.
+ * Render a scene by ray tracing.
  * @param[in,out] scene  The scene to render.
  */
-void dmnsn_raytrace_scene(dmnsn_scene *scene);
+void dmnsn_ray_trace(dmnsn_scene *scene);
 
 /**
  * Render a scene in the background.
  * @param[in,out] scene  The scene to render.
  * @return A \p dmnsn_future object.
  */
-dmnsn_future *dmnsn_raytrace_scene_async(dmnsn_scene *scene);
+dmnsn_future *dmnsn_ray_trace_async(dmnsn_scene *scene);

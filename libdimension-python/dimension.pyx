@@ -113,32 +113,40 @@ cdef class Timer:
     Timing starts as soon as the object is created.
     """
     self._stopped = False
-    dmnsn_start_timer(&self._timer)
+    dmnsn_timer_start(&self._timer)
 
   def stop(self):
     """Stop the Timer."""
     if self._stopped:
       raise RuntimeError("timer already stopped.")
 
-    dmnsn_stop_timer(&self._timer)
+    dmnsn_timer_stop(&self._timer)
     self._stopped = True
 
   property real:
     """Real (wall clock) time."""
     def __get__(self):
+      self._assert_stopped()
       return self._timer.real
   property user:
     """User (CPU) time."""
     def __get__(self):
+      self._assert_stopped()
       return self._timer.user
   property system:
     """System time."""
     def __get__(self):
+      self._assert_stopped()
       return self._timer.system
 
   def __str__(self):
+    self._assert_stopped()
     return "%.2fs (user: %.2fs; system: %.2fs)" % \
            (self._timer.real, self._timer.user, self._timer.system)
+
+  def _assert_stopped(self):
+    if not self._stopped:
+      raise RuntimeError("timer still running.")
 
 cdef Timer _Timer(dmnsn_timer timer):
   """Wrap a Timer object around a dmnsn_timer."""
@@ -558,7 +566,7 @@ cdef class Canvas:
 
   def clear(self, c):
     """Clear a canvas with a solid color."""
-    dmnsn_clear_canvas(self._canvas, Color(c)._c)
+    dmnsn_canvas_clear(self._canvas, Color(c)._c)
 
   def write_PNG(self, path):
     """Export the canvas as a PNG file."""
@@ -606,10 +614,10 @@ cdef class _CanvasProxy:
     return self._canvas.height
   def __getitem__(self, int y):
     self._bounds_check(y)
-    return _Color(dmnsn_get_pixel(self._canvas, self._x, y))
+    return _Color(dmnsn_canvas_get_pixel(self._canvas, self._x, y))
   def __setitem__(self, int y, color):
     self._bounds_check(y)
-    dmnsn_set_pixel(self._canvas, self._x, y, Color(color)._c)
+    dmnsn_canvas_set_pixel(self._canvas, self._x, y, Color(color)._c)
 
   def _bounds_check(self, int y):
     if y < 0 or y >= self._canvas.height:
@@ -743,13 +751,13 @@ cdef class PigmentMap(Pigment):
         pigment = Pigment(pigment)
         real_pigment = (<Pigment>pigment)._pigment
         DMNSN_INCREF(real_pigment)
-        dmnsn_add_map_entry(pigment_map, i, &real_pigment)
+        dmnsn_map_add_entry(pigment_map, i, &real_pigment)
     else:
       for i, pigment in enumerate(map):
         pigment = Pigment(pigment)
         real_pigment = (<Pigment>pigment)._pigment
         DMNSN_INCREF(real_pigment)
-        dmnsn_add_map_entry(pigment_map, i/len(map), &real_pigment)
+        dmnsn_map_add_entry(pigment_map, i/len(map), &real_pigment)
 
     cdef dmnsn_pigment_map_flags flags
     if sRGB:
@@ -1498,10 +1506,10 @@ cdef class Scene:
     def __get__(self):
       return _Timer(self._scene.render_timer)
 
-  def raytrace(self):
+  def ray_trace(self):
     """Render the scene."""
-    self.raytrace_async().join()
-  def raytrace_async(self):
+    self.ray_trace_async().join()
+  def ray_trace_async(self):
     """Render the scene, in the background."""
     # Account for image dimensions in the camera
     # Do this here so subregion renders can tell us the broader image size
@@ -1518,7 +1526,7 @@ cdef class Scene:
     # Ensure the default texture is complete
     cdef Texture default = Texture(pigment = Black)
     dmnsn_texture_cascade(default._texture, &self._scene.default_texture)
-    return _Future(dmnsn_raytrace_scene_async(self._scene))
+    return _Future(dmnsn_ray_trace_async(self._scene))
 
   def __dealloc__(self):
     dmnsn_delete_scene(self._scene)

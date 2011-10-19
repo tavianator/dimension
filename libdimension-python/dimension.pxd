@@ -84,8 +84,8 @@ cdef extern from "../libdimension/dimension.h":
     double user
     double system
 
-  void dmnsn_start_timer(dmnsn_timer *timer)
-  void dmnsn_stop_timer(dmnsn_timer *timer)
+  void dmnsn_timer_start(dmnsn_timer *timer)
+  void dmnsn_timer_stop(dmnsn_timer *timer)
 
   ############
   # Geometry #
@@ -186,11 +186,11 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_canvas *dmnsn_new_canvas(size_t width, size_t height)
   void dmnsn_delete_canvas(dmnsn_canvas *canvas)
 
-  dmnsn_color dmnsn_get_pixel(dmnsn_canvas *canvas, size_t x, size_t y)
-  void dmnsn_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
-                       dmnsn_color color)
+  dmnsn_color dmnsn_canvas_get_pixel(dmnsn_canvas *canvas, size_t x, size_t y)
+  void dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
+                              dmnsn_color color)
 
-  void dmnsn_clear_canvas(dmnsn_canvas *canvas, dmnsn_color color)
+  void dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_color color)
 
   int dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
   int dmnsn_png_write_canvas(dmnsn_canvas *canvas, FILE *file)
@@ -223,7 +223,7 @@ cdef extern from "../libdimension/dimension.h":
 
   void dmnsn_delete_map(dmnsn_map *map)
 
-  void dmnsn_add_map_entry(dmnsn_map *map, double n, void *obj)
+  void dmnsn_map_add_entry(dmnsn_map *map, double n, void *obj)
   size_t dmnsn_map_size(dmnsn_map *map)
 
   dmnsn_map *dmnsn_new_pigment_map()
@@ -390,8 +390,8 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_scene *dmnsn_new_scene()
   void dmnsn_delete_scene(dmnsn_scene *scene)
 
-  void dmnsn_raytrace_scene(dmnsn_scene *scene)
-  dmnsn_future *dmnsn_raytrace_scene_async(dmnsn_scene *scene)
+  void dmnsn_ray_trace(dmnsn_scene *scene)
+  dmnsn_future *dmnsn_ray_trace_async(dmnsn_scene *scene)
 
 cdef extern from "platform.h":
   unsigned int dmnsn_terminal_width()

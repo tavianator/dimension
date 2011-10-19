@@ -84,7 +84,7 @@ main(void)
     dmnsn_object *object = dmnsn_new_fake_object();
     object->texture = texture;
     DMNSN_INCREF(object->texture);
-    dmnsn_initialize_object(object);
+    dmnsn_object_initialize(object);
     dmnsn_array_push(objects, &object);
   }
 

@@ -23,7 +23,7 @@
  * Textures.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 
 /* Allocate a dummy texture */
 dmnsn_texture *
@@ -51,7 +51,7 @@ dmnsn_delete_texture(dmnsn_texture *texture)
 
 /* Calculate matrix inverses */
 void
-dmnsn_initialize_texture(dmnsn_texture *texture)
+dmnsn_texture_initialize(dmnsn_texture *texture)
 {
   dmnsn_assert(!texture->initialized, "Texture double-initialized.");
   texture->initialized = true;
@@ -61,7 +61,7 @@ dmnsn_initialize_texture(dmnsn_texture *texture)
   if (!texture->pigment->initialized) {
     texture->pigment->trans = dmnsn_matrix_mul(texture->trans,
                                                texture->pigment->trans);
-    dmnsn_initialize_pigment(texture->pigment);
+    dmnsn_pigment_initialize(texture->pigment);
   }
 }
 

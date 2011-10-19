@@ -36,7 +36,7 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line l,
   poly[1] = 2.0*dmnsn_vector_dot(l.n, l.x0);
   poly[0] = dmnsn_vector_dot(l.x0, l.x0) - 1.0;
 
-  size_t n = dmnsn_solve_polynomial(poly, 2, x);
+  size_t n = dmnsn_polynomial_solve(poly, 2, x);
   if (n == 0) {
     return false;
   } else {
