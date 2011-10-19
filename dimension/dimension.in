@@ -119,7 +119,7 @@ if args.output is None:
   args.output = noext + ".png"
 
 # Display a progress bar
-def progress_bar(str, progress):
+def progress_bar(str, future):
   try:
     if not args.quiet:
       print(str, end = " ")
@@ -128,21 +128,21 @@ def progress_bar(str, progress):
       term_width = terminal_width()
       width = term_width - (len(str) + 1)%term_width
       for i in range(width):
-        progress.wait((i + 1)/width)
+        future.wait((i + 1)/width)
         print(".", end = "")
         sys.stdout.flush()
 
       print()
       sys.stdout.flush()
 
-    progress.finish()
+    future.join()
   except KeyboardInterrupt:
     print()
     sys.stdout.flush()
 
-    progress.cancel()
+    future.cancel()
     try:
-      progress.finish()
+      future.join()
     except RuntimeError:
       # Swallow the failure exception
       pass

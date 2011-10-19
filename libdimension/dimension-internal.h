@@ -32,7 +32,7 @@
 #include "compiler.h"
 #include "profile.h"
 #include "platform.h"
-#include "progress-impl.h"
+#include "future-impl.h"
 #include "threads.h"
 #include "prtree.h"
 

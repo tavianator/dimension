@@ -64,16 +64,16 @@ cdef extern from "../libdimension/dimension.h":
   void dmnsn_array_remove(dmnsn_array *array, size_t i)
   void dmnsn_array_apply(dmnsn_array *array, dmnsn_callback_fn *callback)
 
-  ############
-  # Progress #
-  ############
+  ###########
+  # Futures #
+  ###########
 
-  ctypedef struct dmnsn_progress
+  ctypedef struct dmnsn_future
 
-  int dmnsn_finish_progress(dmnsn_progress *progress)
-  void dmnsn_cancel_progress(dmnsn_progress *progress)
-  double dmnsn_get_progress(dmnsn_progress *progress)
-  void dmnsn_wait_progress(dmnsn_progress *progress, double prog)
+  int dmnsn_future_join(dmnsn_future *future)
+  void dmnsn_future_cancel(dmnsn_future *future)
+  double dmnsn_future_progress(dmnsn_future *future)
+  void dmnsn_future_wait(dmnsn_future *future, double progress)
 
   ##########
   # Timers #
@@ -194,9 +194,9 @@ cdef extern from "../libdimension/dimension.h":
 
   int dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
   int dmnsn_png_write_canvas(dmnsn_canvas *canvas, FILE *file)
-  dmnsn_progress *dmnsn_png_write_canvas_async(dmnsn_canvas *canvas, FILE *file)
+  dmnsn_future *dmnsn_png_write_canvas_async(dmnsn_canvas *canvas, FILE *file)
   dmnsn_canvas *dmnsn_png_read_canvas(FILE *file)
-  dmnsn_progress *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
+  dmnsn_future *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
 
   int dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
   int dmnsn_gl_write_canvas(dmnsn_canvas *canvas)
@@ -391,7 +391,7 @@ cdef extern from "../libdimension/dimension.h":
   void dmnsn_delete_scene(dmnsn_scene *scene)
 
   void dmnsn_raytrace_scene(dmnsn_scene *scene)
-  dmnsn_progress *dmnsn_raytrace_scene_async(dmnsn_scene *scene)
+  dmnsn_future *dmnsn_raytrace_scene_async(dmnsn_scene *scene)
 
 cdef extern from "platform.h":
   unsigned int dmnsn_terminal_width()

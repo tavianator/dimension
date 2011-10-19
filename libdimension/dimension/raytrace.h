@@ -32,6 +32,6 @@ void dmnsn_raytrace_scene(dmnsn_scene *scene);
 /**
  * Render a scene in the background.
  * @param[in,out] scene  The scene to render.
- * @return A \p dmnsn_progress object.
+ * @return A \p dmnsn_future object.
  */
-dmnsn_progress *dmnsn_raytrace_scene_async(dmnsn_scene *scene);
+dmnsn_future *dmnsn_raytrace_scene_async(dmnsn_scene *scene);

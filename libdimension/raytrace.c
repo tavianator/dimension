@@ -32,7 +32,7 @@
 
 /** Payload type for passing arguments to worker threads. */
 typedef struct {
-  dmnsn_progress *progress;
+  dmnsn_future *future;
   dmnsn_scene *scene;
   dmnsn_prtree *prtree;
 } dmnsn_raytrace_payload;
@@ -41,8 +41,8 @@ typedef struct {
 void
 dmnsn_raytrace_scene(dmnsn_scene *scene)
 {
-  dmnsn_progress *progress = dmnsn_raytrace_scene_async(scene);
-  if (dmnsn_finish_progress(progress) != 0) {
+  dmnsn_future *future = dmnsn_raytrace_scene_async(scene);
+  if (dmnsn_future_join(future) != 0) {
     dmnsn_error("Error occured while raytracing.");
   }
 }
@@ -51,19 +51,19 @@ dmnsn_raytrace_scene(dmnsn_scene *scene)
 static int dmnsn_raytrace_scene_thread(void *ptr);
 
 /* Raytrace a scene in the background */
-dmnsn_progress *
+dmnsn_future *
 dmnsn_raytrace_scene_async(dmnsn_scene *scene)
 {
-  dmnsn_progress *progress = dmnsn_new_progress();
+  dmnsn_future *future = dmnsn_new_future();
 
   dmnsn_raytrace_payload *payload =
     dmnsn_malloc(sizeof(dmnsn_raytrace_payload));
-  payload->progress = progress;
-  payload->scene    = scene;
+  payload->future = future;
+  payload->scene  = scene;
 
-  dmnsn_new_thread(progress, dmnsn_raytrace_scene_thread, payload);
+  dmnsn_new_thread(future, dmnsn_raytrace_scene_thread, payload);
 
-  return progress;
+  return future;
 }
 
 /** Worker thread callback. */
@@ -84,8 +84,8 @@ dmnsn_raytrace_scene_thread(void *ptr)
     payload->prtree = dmnsn_new_prtree(payload->scene->objects);
   dmnsn_stop_timer(&payload->scene->bounding_timer);
 
-  /* Set up the progress object */
-  dmnsn_set_progress_total(payload->progress, payload->scene->canvas->height);
+  /* Set up the future object */
+  dmnsn_future_set_total(payload->future, payload->scene->canvas->height);
 
   /* Time the render itself */
   dmnsn_start_timer(&payload->scene->render_timer);
@@ -168,7 +168,7 @@ dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
                                 unsigned int nthreads)
 {
   const dmnsn_raytrace_payload *payload = ptr;
-  dmnsn_progress *progress = payload->progress;
+  dmnsn_future *future = payload->future;
   dmnsn_scene *scene = payload->scene;
   dmnsn_prtree *prtree = payload->prtree;
 
@@ -197,7 +197,7 @@ dmnsn_raytrace_scene_concurrent(void *ptr, unsigned int thread,
       dmnsn_set_pixel(scene->canvas, x, y, color);
     }
 
-    dmnsn_increment_progress(progress);
+    dmnsn_future_increment(future);
   }
 
   return 0;

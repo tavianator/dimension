@@ -20,36 +20,35 @@
 
 /**
  * @file
- * Progress object implementation.
+ * Future object implementation.
  */
 
 #include <pthread.h>
 
-/** Allocate a new progress object. */
-DMNSN_INTERNAL dmnsn_progress *dmnsn_new_progress(void);
+/** Allocate a new future object. */
+DMNSN_INTERNAL dmnsn_future *dmnsn_new_future(void);
 
 /** Set the total number of loop iterations. */
-DMNSN_INTERNAL void dmnsn_set_progress_total(dmnsn_progress *progress,
-                                             size_t total);
-/** Increment the progress counter. */
-DMNSN_INTERNAL void dmnsn_increment_progress(dmnsn_progress *progress);
-/** Instantly complete the progress. */
-DMNSN_INTERNAL void dmnsn_done_progress(dmnsn_progress *progress);
+DMNSN_INTERNAL void dmnsn_future_set_total(dmnsn_future *future, size_t total);
+/** Increment the progress of a background task. */
+DMNSN_INTERNAL void dmnsn_future_increment(dmnsn_future *future);
+/** Instantly complete the background teask. */
+DMNSN_INTERNAL void dmnsn_future_done(dmnsn_future *future);
 
-struct dmnsn_progress {
+struct dmnsn_future {
   size_t progress; /**< Completed loop iterations. */
   size_t total;    /**< Total expected loop iterations. */
 
-  /* The worker thread */
+  /** The worker thread. */
   pthread_t thread;
 
-  /* Read-write synchronization */
+  /** Read-write synchronization. */
   pthread_rwlock_t *rwlock;
 
-  /* Condition variable for waiting for a particular amount of progress */
+  /** Condition variable for waiting for a particular amount of progress. */
   pthread_cond_t  *cond;
   pthread_mutex_t *mutex;
 
-  /* Minimum waited-on value */
+  /** Minimum waited-on value. */
   double *min_wait;
 };

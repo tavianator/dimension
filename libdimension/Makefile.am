@@ -37,6 +37,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/error.h                                     \
                          dimension/finish.h                                    \
                          dimension/finishes.h                                  \
+                         dimension/future.h                                    \
                          dimension/geometry.h                                  \
                          dimension/gl.h                                        \
                          dimension/inline.h                                    \
@@ -53,7 +54,6 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/pigments.h                                  \
                          dimension/png.h                                       \
                          dimension/polynomial.h                                \
-                         dimension/progress.h                                  \
                          dimension/raytrace.h                                  \
                          dimension/refcount.h                                  \
                          dimension/scene.h                                     \
@@ -77,6 +77,8 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           dimension-internal.h                                 \
                           error.c                                              \
                           finish.c                                             \
+                          future.c                                             \
+                          future-impl.h                                        \
                           geometry.c                                           \
                           gradient.c                                           \
                           inline.c                                             \
@@ -98,8 +100,6 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           profile.h                                            \
                           point_light.c                                        \
                           polynomial.c                                         \
-                          progress.c                                           \
-                          progress-impl.h                                      \
                           prtree.c                                             \
                           prtree.h                                             \
                           raytrace.c                                           \

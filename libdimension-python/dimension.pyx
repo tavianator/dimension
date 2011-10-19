@@ -46,55 +46,55 @@ def terminal_width():
   """Return the width of the terminal, if present."""
   return dmnsn_terminal_width()
 
-############
-# Progress #
-############
+###########
+# Futures #
+###########
 
-cdef class Progress:
-  cdef dmnsn_progress *_progress
+cdef class Future:
+  cdef dmnsn_future *_future
   cdef _finalizer
 
   def __cinit__(self):
-    self._progress = NULL
+    self._future = NULL
     self._finalizer = None
 
   def __init__(self):
-    raise RuntimeError("attempt to create a Progress object.")
+    raise RuntimeError("attempt to create a Future object.")
 
   def __dealloc__(self):
-    if self._progress != NULL:
-      self.finish()
+    if self._future != NULL:
+      self.join()
 
-  def finish(self):
+  def join(self):
     self._assert_unfinished()
     try:
-      if dmnsn_finish_progress(self._progress) != 0:
+      if dmnsn_future_join(self._future) != 0:
         raise RuntimeError("background task failed.")
       if self._finalizer is not None:
         self._finalizer()
     finally:
-      self._progress = NULL
+      self._future = NULL
 
   def cancel(self):
     self._assert_unfinished()
-    dmnsn_cancel_progress(self._progress)
+    dmnsn_future_cancel(self._future)
 
   def progress(self):
     self._assert_unfinished()
-    return dmnsn_get_progress(self._progress)
+    return dmnsn_future_progress(self._future)
 
   def wait(self, progress):
     self._assert_unfinished()
-    dmnsn_wait_progress(self._progress, progress)
+    dmnsn_future_wait(self._future, progress)
 
   def _assert_unfinished(self):
-    if self._progress == NULL:
+    if self._future == NULL:
       raise RuntimeError("background task finished.")
 
-cdef Progress _Progress(dmnsn_progress *progress):
-  """Wrap a Progress object around an existing dmnsn_progress *."""
-  cdef Progress self = Progress.__new__(Progress)
-  self._progress = progress
+cdef Future _Future(dmnsn_future *future):
+  """Wrap a Future object around an existing dmnsn_future *."""
+  cdef Future self = Future.__new__(Future)
+  self._future = future
   return self
 
 ##########
@@ -562,7 +562,7 @@ cdef class Canvas:
 
   def write_PNG(self, path):
     """Export the canvas as a PNG file."""
-    self.write_PNG_async(path).finish()
+    self.write_PNG_async(path).join()
   def write_PNG_async(self, path):
     """Export the canvas as a PNG file, in the background."""
     bpath = path.encode("UTF-8")
@@ -575,14 +575,13 @@ cdef class Canvas:
       if fclose(file) != 0:
         _raise_OSError()
 
-    cdef dmnsn_progress *progress = dmnsn_png_write_canvas_async(self._canvas,
-                                                                 file)
+    cdef dmnsn_future *future = dmnsn_png_write_canvas_async(self._canvas, file)
 
     try:
-      if progress == NULL:
+      if future == NULL:
         _raise_OSError()
 
-      ret = _Progress(progress)
+      ret = _Future(future)
       ret._finalizer = finalize
       return ret
     except:
@@ -1501,7 +1500,7 @@ cdef class Scene:
 
   def raytrace(self):
     """Render the scene."""
-    self.raytrace_async().finish()
+    self.raytrace_async().join()
   def raytrace_async(self):
     """Render the scene, in the background."""
     # Account for image dimensions in the camera
@@ -1519,7 +1518,7 @@ cdef class Scene:
     # Ensure the default texture is complete
     cdef Texture default = Texture(pigment = Black)
     dmnsn_texture_cascade(default._texture, &self._scene.default_texture)
-    return _Progress(dmnsn_raytrace_scene_async(self._scene))
+    return _Future(dmnsn_raytrace_scene_async(self._scene))
 
   def __dealloc__(self):
     dmnsn_delete_scene(self._scene)

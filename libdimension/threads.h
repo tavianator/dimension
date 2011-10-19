@@ -34,11 +34,11 @@ typedef int dmnsn_thread_fn(void *ptr);
 
 /**
  * Create a thread that cleans up after itself on errors.
- * @param[in,out] progress   The progress object to associate with the thread.
+ * @param[in,out] future     The future object to associate with the thread.
  * @param[in]     thread_fn  The thread callback.
  * @param[in,out] arg        The pointer to pass to the thread callback.
  */
-DMNSN_INTERNAL void dmnsn_new_thread(dmnsn_progress *progress,
+DMNSN_INTERNAL void dmnsn_new_thread(dmnsn_future *future,
                                      dmnsn_thread_fn *thread_fn, void *arg);
 
 /**

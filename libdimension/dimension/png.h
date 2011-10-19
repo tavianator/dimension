@@ -44,10 +44,10 @@ int dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file);
  * Write a canvas to a PNG file in the background.
  * @param[in]     canvas  The canvas to write.
  * @param[in,out] file    The file to write to.
- * @return A \ref dmnsn_progress object, or NULL on failure.
+ * @return A \ref dmnsn_future object, or NULL on failure.
  */
-dmnsn_progress *dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas,
-                                             FILE *file);
+dmnsn_future *dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas,
+                                           FILE *file);
 
 /**
  * Read a canvas from a PNG file.
@@ -63,6 +63,6 @@ dmnsn_canvas *dmnsn_png_read_canvas(FILE *file);
  *                        contents of \p file.  Do not read from this object
  *                        until the background task has finished.
  * @param[in,out] file    The PNG file to read.
- * @return A \ref dmnsn_progress object, or NULL on failure.
+ * @return A \ref dmnsn_future object, or NULL on failure.
  */
-dmnsn_progress *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file);
+dmnsn_future *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file);

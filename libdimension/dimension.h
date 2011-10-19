@@ -80,7 +80,7 @@ typedef void dmnsn_free_fn(void *ptr);
 #include <dimension/refcount.h>
 #include <dimension/array.h>
 #include <dimension/dictionary.h>
-#include <dimension/progress.h>
+#include <dimension/future.h>
 #include <dimension/timer.h>
 #include <dimension/geometry.h>
 #include <dimension/polynomial.h>

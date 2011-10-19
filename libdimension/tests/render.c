@@ -353,11 +353,11 @@ main(void)
   /* Render the scene */
 
   printf("Rendering scene\n");
-  dmnsn_progress *progress = dmnsn_raytrace_scene_async(scene);
+  dmnsn_future *future = dmnsn_raytrace_scene_async(scene);
 
   /* Display the scene as it's rendered */
   if (display) {
-    while (dmnsn_get_progress(progress) < 1.0) {
+    while (dmnsn_future_progress(future) < 1.0) {
       if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
         dmnsn_delete_display(display);
         dmnsn_delete_scene(scene);
@@ -368,7 +368,7 @@ main(void)
     }
   }
 
-  if (dmnsn_finish_progress(progress) != 0) {
+  if (dmnsn_future_join(future) != 0) {
     dmnsn_delete_display(display);
     dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Raytracing failed! ---\n");

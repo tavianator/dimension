@@ -21,39 +21,39 @@
 /**
  * @file
  * An interface for asynchronous tasks.  *_async() versions of functions
- * return a dmnsn_progress* object which can indicate the progress of the
+ * return a dmnsn_future* object which can indicate the progress of the
  * background task, and wait for task completion.  The task's return value
  * is returned as an int from dmnsn_finish_progress().
  */
 
-/** A progress object. */
-typedef struct dmnsn_progress dmnsn_progress;
+/** A future object. */
+typedef struct dmnsn_future dmnsn_future;
 
 /**
- * Join the worker thread and return it's integer return value in addition to
- * deleting \p progress.
- * @param[in,out] progress  The background task to finish.
+ * Join the worker thread and return its integer return value in addition to
+ * deleting \p future.
+ * @param[in,out] future  The background task to join.
  * @return The return value of the background task.
  */
-int dmnsn_finish_progress(dmnsn_progress *progress);
+int dmnsn_future_join(dmnsn_future *future);
 
 /**
  * Interrupt the execution of a background thread.
- * @param[in,out] progress  The background task to cancel.
+ * @param[in,out] future  The background task to cancel.
  */
-void dmnsn_cancel_progress(dmnsn_progress *progress);
+void dmnsn_future_cancel(dmnsn_future *future);
 
 /**
  * Get the progress of the background task.
- * @param[in] progress  The background task to examine.
- * @return The progress of the background task, out of 1.0.
+ * @param[in] future  The background task to examine.
+ * @return The progress of the background task, in [0.0, 1.0].
  */
-double dmnsn_get_progress(const dmnsn_progress *progress);
+double dmnsn_future_progress(const dmnsn_future *future);
 
 /**
  * Wait for a certain amount of progress.  Always use this rather than
  * spinlocking.
- * @param[in] progress  The background task to monitor.
- * @param[in] prog      The progress value to wait for.
+ * @param[in] future    The background task to monitor.
+ * @param[in] progress  The progress value to wait for.
  */
-void dmnsn_wait_progress(const dmnsn_progress *progress, double prog);
+void dmnsn_future_wait(const dmnsn_future *future, double progress);

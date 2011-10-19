@@ -23,7 +23,7 @@
 
 #include "../prtree.c"
 #include "../threads.c"
-#include "../progress.c"
+#include "../future.c"
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -30,7 +30,7 @@
 typedef struct dmnsn_thread_payload {
   dmnsn_thread_fn *thread_fn;
   void *arg;
-  dmnsn_progress *progress;
+  dmnsn_future *future;
 } dmnsn_thread_payload;
 
 /** Clean up after a thread. */
@@ -38,10 +38,10 @@ static void
 dmnsn_thread_cleanup(void *arg)
 {
   dmnsn_thread_payload *payload = arg;
-  dmnsn_progress *progress = payload->progress;
+  dmnsn_future *future = payload->future;
   dmnsn_free(payload);
 
-  dmnsn_done_progress(progress);
+  dmnsn_future_done(future);
 }
 
 /** pthread callback -- call the real thread callback. */
@@ -59,15 +59,14 @@ dmnsn_thread(void *arg)
 }
 
 void
-dmnsn_new_thread(dmnsn_progress *progress, dmnsn_thread_fn *thread_fn,
-                 void *arg)
+dmnsn_new_thread(dmnsn_future *future, dmnsn_thread_fn *thread_fn, void *arg)
 {
   dmnsn_thread_payload *payload = dmnsn_malloc(sizeof(dmnsn_thread_payload));
   payload->thread_fn = thread_fn;
   payload->arg       = arg;
-  payload->progress  = progress;
+  payload->future    = future;
 
-  if (pthread_create(&progress->thread, NULL, dmnsn_thread, payload) != 0) {
+  if (pthread_create(&future->thread, NULL, dmnsn_thread, payload) != 0) {
     dmnsn_error("Couldn't start thread.");
   }
 }

@@ -77,14 +77,14 @@ dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
 
 /** Payload type for PNG write thread callback. */
 typedef struct {
-  dmnsn_progress *progress;
+  dmnsn_future *future;
   const dmnsn_canvas *canvas;
   FILE *file;
 } dmnsn_png_write_payload;
 
 /** Payload type for PNG read thread callback. */
 typedef struct {
-  dmnsn_progress *progress;
+  dmnsn_future *future;
   dmnsn_canvas **canvas;
   FILE *file;
 } dmnsn_png_read_payload;
@@ -99,26 +99,26 @@ static int dmnsn_png_read_canvas_thread(void *ptr);
 int
 dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
 {
-  dmnsn_progress *progress = dmnsn_png_write_canvas_async(canvas, file);
-  return dmnsn_finish_progress(progress);
+  dmnsn_future *future = dmnsn_png_write_canvas_async(canvas, file);
+  return dmnsn_future_join(future);
 }
 
 /* Write a canvas to a png file in the background */
-dmnsn_progress *
+dmnsn_future *
 dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
 {
-  dmnsn_progress *progress = dmnsn_new_progress();
+  dmnsn_future *future = dmnsn_new_future();
 
   dmnsn_png_write_payload *payload
     = dmnsn_malloc(sizeof(dmnsn_png_write_payload));
-  payload->progress = progress;
-  payload->canvas   = canvas;
-  payload->file     = file;
+  payload->future = future;
+  payload->canvas = canvas;
+  payload->file   = file;
 
   /* Create the worker thread */
-  dmnsn_new_thread(progress, dmnsn_png_write_canvas_thread, payload);
+  dmnsn_new_thread(future, dmnsn_png_write_canvas_thread, payload);
 
-  return progress;
+  return future;
 }
 
 /* Read a canvas from the PNG file `file'.  Return NULL on error. */
@@ -126,28 +126,28 @@ dmnsn_canvas *
 dmnsn_png_read_canvas(FILE *file)
 {
   dmnsn_canvas *canvas;
-  dmnsn_progress *progress = dmnsn_png_read_canvas_async(&canvas, file);
-  dmnsn_finish_progress(progress);
+  dmnsn_future *future = dmnsn_png_read_canvas_async(&canvas, file);
+  dmnsn_future_join(future);
   return canvas;
 }
 
 /* Read a canvas from a png file in the background */
-dmnsn_progress *
+dmnsn_future *
 dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
 {
-  dmnsn_progress *progress = dmnsn_new_progress();
+  dmnsn_future *future = dmnsn_new_future();
   dmnsn_png_read_payload *payload
     = dmnsn_malloc(sizeof(dmnsn_png_write_payload));
 
-  payload->progress = progress;
-  payload->canvas   = canvas;
-  *payload->canvas  = NULL;
-  payload->file     = file;
+  payload->future  = future;
+  payload->canvas  = canvas;
+  *payload->canvas = NULL;
+  payload->file    = file;
 
   /* Create the worker thread */
-  dmnsn_new_thread(progress, dmnsn_png_read_canvas_thread, payload);
+  dmnsn_new_thread(future, dmnsn_png_read_canvas_thread, payload);
 
-  return progress;
+  return future;
 }
 
 /*
@@ -163,7 +163,7 @@ dmnsn_png_write_canvas_thread(void *ptr)
   png_uint_32 width = payload->canvas->width;
   png_uint_32 height = payload->canvas->height;
 
-  dmnsn_set_progress_total(payload->progress, height);
+  dmnsn_future_set_total(payload->future, height);
 
   png_structp png_ptr
     = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -220,7 +220,7 @@ dmnsn_png_write_canvas_thread(void *ptr)
         /* Invert the rows.  PNG coordinates are fourth quadrant. */
         uint16_t *row = (uint16_t *)i->ptr + 4*(height - y - 1)*width;
         png_write_row(png_ptr, (png_bytep)row);
-        dmnsn_increment_progress(payload->progress);
+        dmnsn_future_increment(payload->future);
       }
 
       /* Finish the PNG file */
@@ -251,7 +251,7 @@ dmnsn_png_write_canvas_thread(void *ptr)
 
     /* Write the row */
     png_write_row(png_ptr, (png_bytep)row);
-    dmnsn_increment_progress(payload->progress);
+    dmnsn_future_increment(payload->future);
   }
 
   /* Finish the PNG file */
@@ -263,15 +263,15 @@ dmnsn_png_write_canvas_thread(void *ptr)
   return 0;
 }
 
-/** Thread-specific pointer to the appropriate dmnsn_progress* for
+/** Thread-specific pointer to the appropriate dmnsn_future* for
     dmnsn_png_read_row_callback. */
-static __thread dmnsn_progress *dmnsn_tl_png_read_progress;
+static __thread dmnsn_future *dmnsn_tl_png_read_future;
 
 /** Callback to increment the progress after a row has been read. */
 static void
 dmnsn_png_read_row_callback(png_structp png_ptr, png_uint_32 row, int pass)
 {
-  dmnsn_increment_progress(dmnsn_tl_png_read_progress);
+  dmnsn_future_increment(dmnsn_tl_png_read_future);
 }
 
 /* Read a PNG file */
@@ -279,7 +279,7 @@ static int
 dmnsn_png_read_canvas_thread(void *ptr)
 {
   dmnsn_png_read_payload *payload = ptr;
-  dmnsn_tl_png_read_progress = payload->progress;
+  dmnsn_tl_png_read_future = payload->future;
 
   png_byte header[8];
   if (fread(header, 1, 8, payload->file) != 8) {
@@ -336,7 +336,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
                &interlace_type, &compression_type, &filter_method);
   int number_of_passes = png_set_interlace_handling(png_ptr);
 
-  dmnsn_set_progress_total(payload->progress, (number_of_passes + 1)*height);
+  dmnsn_future_set_total(payload->future, (number_of_passes + 1)*height);
   png_set_read_status_fn(png_ptr, dmnsn_png_read_row_callback);
 
   /*
@@ -423,7 +423,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
       dmnsn_set_pixel(*payload->canvas, x, height - y - 1, color);
     }
 
-    dmnsn_increment_progress(payload->progress);
+    dmnsn_future_increment(payload->future);
   }
 
   dmnsn_free(row_pointers);
