@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -20,22 +20,13 @@
 
 /**
  * @file
- * The internal libdimension API.  These functions and types are used to
- * implement libdimension, but are not part of its public API.
+ * 16-bit RGBA canvas optimizer interface, shared between PNG and GL optimizers.
  */
 
-#ifndef DIMENSION_INTERNAL_H
-#define DIMENSION_INTERNAL_H
+/** Apply the rgba16 optimizer to a canvas. */
+void dmnsn_rgba16_optimize_canvas(dmnsn_canvas *canvas);
 
-#define _GNU_SOURCE
-#include "dimension.h"
-#include "refcount-internal.h"
-#include "compiler.h"
-#include "profile.h"
-#include "platform.h"
-#include "future-impl.h"
-#include "threads.h"
-#include "prtree.h"
-#include "rgba16.h"
-
-#endif /* DIMENSION_INTERNAL_H */
+/** RGBA16 optimizer callback. */
+void dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas,
+                               dmnsn_canvas_optimizer optimizer,
+                               size_t x, size_t y);

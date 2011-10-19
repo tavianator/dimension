@@ -105,6 +105,8 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           raytrace.c                                           \
                           refcount-internal.h                                  \
                           reflection.c                                         \
+                          rgba16.c                                             \
+                          rgba16.h                                             \
                           scene.c                                              \
                           solid_pigment.c                                      \
                           sphere.c                                             \

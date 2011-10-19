@@ -30,49 +30,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-/** PNG optimizer callback. */
-static void dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
-                                   dmnsn_canvas_optimizer optimizer,
-                                   size_t x, size_t y);
-
 /* Optimize canvas for PNG exporting */
 int
 dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
 {
-  /* Check if we've already optimized this canvas */
-  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    if (i->optimizer_fn == dmnsn_png_optimizer_fn) {
-      return 0;
-    }
-  }
-
-  dmnsn_canvas_optimizer optimizer;
-  optimizer.optimizer_fn = dmnsn_png_optimizer_fn;
-  optimizer.free_fn = dmnsn_free;
-
-  optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(uint16_t));
-
-  dmnsn_canvas_optimize(canvas, optimizer);
+  dmnsn_rgba16_optimize_canvas(canvas);
   return 0;
-}
-
-/* PNG optimizer callback */
-static void
-dmnsn_png_optimizer_fn(const dmnsn_canvas *canvas,
-                       dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
-{
-  dmnsn_color color;
-  uint16_t *pixel = (uint16_t *)optimizer.ptr + 4*(y*canvas->width + x);
-
-  color = dmnsn_canvas_get_pixel(canvas, x, y);
-  color = dmnsn_remove_filter(color);
-  color = dmnsn_color_to_sRGB(color);
-  color = dmnsn_color_saturate(color);
-
-  pixel[0] = lround(color.R*UINT16_MAX);
-  pixel[1] = lround(color.G*UINT16_MAX);
-  pixel[2] = lround(color.B*UINT16_MAX);
-  pixel[3] = lround(color.trans*UINT16_MAX);
 }
 
 /** Payload type for PNG write thread callback. */
@@ -215,7 +178,7 @@ dmnsn_png_write_canvas_thread(void *ptr)
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i,
                        payload->canvas->optimizers)
   {
-    if (i->optimizer_fn == dmnsn_png_optimizer_fn) {
+    if (i->optimizer_fn == dmnsn_rgba16_optimizer_fn) {
       for (size_t y = 0; y < height; ++y) {
         /* Invert the rows.  PNG coordinates are fourth quadrant. */
         uint16_t *row = (uint16_t *)i->ptr + 4*(height - y - 1)*width;

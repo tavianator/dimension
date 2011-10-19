@@ -23,48 +23,16 @@
  * OpenGL import/export.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 #include <GL/gl.h>
 #include <stdlib.h>
 #include <stdint.h>
-
-/** GL optimizer callback. */
-static void
-dmnsn_gl_optimizer_fn(const dmnsn_canvas *canvas,
-                      dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
-{
-  GLushort *pixel = (GLushort *)optimizer.ptr + 4*(y*canvas->width + x);
-  dmnsn_color color = dmnsn_canvas_get_pixel(canvas, x, y);
-  color = dmnsn_remove_filter(color);
-  color = dmnsn_color_to_sRGB(color);
-  color = dmnsn_color_saturate(color);
-
-  pixel[0] = lround(color.R*UINT16_MAX);
-  pixel[1] = lround(color.G*UINT16_MAX);
-  pixel[2] = lround(color.B*UINT16_MAX);
-  pixel[3] = lround(color.trans*UINT16_MAX);
-}
 
 /* Optimize canvas for GL drawing */
 int
 dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 {
-  /* Check if we've already optimized this canvas */
-  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    if (i->optimizer_fn == dmnsn_gl_optimizer_fn) {
-      return 0;
-    }
-  }
-
-  dmnsn_canvas_optimizer optimizer;
-  optimizer.optimizer_fn = dmnsn_gl_optimizer_fn;
-  optimizer.free_fn = dmnsn_free;
-
-  /* Allocate a buffer to hold RGB values */
-  optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(GLushort));
-
-  /* Set a new optimizer */
-  dmnsn_canvas_optimize(canvas, optimizer);
+  dmnsn_rgba16_optimize_canvas(canvas);
   return 0;
 }
 
@@ -81,7 +49,7 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 
   /* Check if we can optimize this */
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    if (i->optimizer_fn == dmnsn_gl_optimizer_fn) {
+    if (i->optimizer_fn == dmnsn_rgba16_optimizer_fn) {
       glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT, i->ptr);
       return glGetError() == GL_NO_ERROR ? 0 : 1;
     }
