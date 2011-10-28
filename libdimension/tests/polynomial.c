@@ -32,13 +32,13 @@ main(void)
   dmnsn_die_on_warnings(true);
 
   double poly[6], x[5];
-  /* poly[] = (x + 1)*(x - 1.2345)*(x - 2.3456)*(x - 5)*(x - 100) */
-  poly[5] =  1.0;
-  poly[4] = -107.5801;
-  poly[3] =  770.2260432;
-  poly[2] = -1215.2863928;
-  poly[1] = -646.270936;
-  poly[0] =  1447.8216;
+  /* poly[] = 2*(x + 1)*(x - 1.2345)*(x - 2.3456)*(x - 5)*(x - 100) */
+  poly[5] =  2.0;
+  poly[4] = -215.1602;
+  poly[3] =  1540.4520864;
+  poly[2] = -2430.5727856;
+  poly[1] = -1292.541872;
+  poly[0] =  2895.6432;
 
   size_t n = dmnsn_polynomial_solve(poly, 5, x);
   if (n != 4) {
@@ -52,7 +52,7 @@ main(void)
     double evmin = dmnsn_polynomial_evaluate(poly, 5, x[i] - dmnsn_epsilon);
     double ev    = dmnsn_polynomial_evaluate(poly, 5, x[i]);
     double evmax = dmnsn_polynomial_evaluate(poly, 5, x[i] + dmnsn_epsilon);
-    if (fabs(evmin) < ev || fabs(evmax) < ev) {
+    if (fabs(evmin) < fabs(ev) || fabs(evmax) < fabs(ev)) {
       fprintf(stderr, "--- Root %.15g is inaccurate! ---\n", x[i]);
       return EXIT_FAILURE;
     }

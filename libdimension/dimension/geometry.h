@@ -124,12 +124,17 @@ dmnsn_degrees(double radians)
   return radians*45.0/atan(1.0);
 }
 
-/** Return the sign bit of a scalar. */
+/** Return the sign of a scalar. */
 DMNSN_INLINE int
-dmnsn_signbit(double n)
+dmnsn_sign(double n)
 {
-  /* Guarantee a 1 or 0 return, to allow testing two signs for equality */
-  return signbit(n) ? 1 : 0;
+  if (n > 0.0) {
+    return 1;
+  } else if (n < 0.0) {
+    return -1;
+  } else {
+    return 0;
+  }
 }
 
 /* Shorthand for vector/matrix construction */

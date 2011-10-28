@@ -20,7 +20,8 @@
 
 /**
  * @file
- * Polynomials.
+ * Real root isolation algorithm based on work by Vincent, Uspensky, Collins and
+ * Akritas, Johnson, Krandick, and Rouillier and Zimmerman.
  */
 
 #include "dimension-internal.h"
@@ -41,7 +42,7 @@ dmnsn_real_degree(const double poly[], size_t degree)
 
 /** Divide each coefficient by the leading coefficient. */
 static inline void
-dmnsn_normalize_polynomial(double poly[], size_t degree)
+dmnsn_polynomial_normalize(double poly[], size_t degree)
 {
   for (size_t i = 0; i < degree; ++i) {
     poly[i] /= poly[degree];
@@ -50,188 +51,157 @@ dmnsn_normalize_polynomial(double poly[], size_t degree)
 }
 
 /** Eliminate trivial zero roots from \p poly[]. */
-static inline size_t
-dmnsn_eliminate_zero_roots(double poly[], size_t degree)
+static inline void
+dmnsn_eliminate_zero_roots(double **poly, size_t *degree)
 {
   size_t i;
-  for (i = 0; i <= degree && fabs(poly[i]) < dmnsn_epsilon; ++i);
-
-  if (i > 0) {
-    for (size_t j = 0; j + i <= degree; ++j) {
-      poly[j] = poly[j + i];
+  for (i = 0; i <= *degree; ++i) {
+    if (fabs((*poly)[i]) >= dmnsn_epsilon) {
+      break;
     }
   }
 
-  return degree - i;
+  *poly += i;
+  *degree -= i;
 }
 
-/** Returns the number of sign changes between coefficients of \p poly[]. */
-static inline size_t
-dmnsn_descartes_rule(const double poly[], size_t degree)
-{
-  size_t changes = 0;
-  int lastsign = dmnsn_signbit(poly[degree]);
-  for (size_t i = degree; i-- > 0;) {
-    int sign = dmnsn_signbit(poly[i]);
-    if (fabs(poly[i]) >= dmnsn_epsilon && sign != lastsign) {
-      lastsign = sign;
-      ++changes;
-    }
-  }
-
-  return changes;
-}
-
-/** How many levels of Pascal's triangle to precompute. */
-#define DMNSN_NBINOM 11
-
-/** Pre-computed values of Pascal's triangle. */
-static const double dmnsn_pascals_triangle[DMNSN_NBINOM][DMNSN_NBINOM] = {
-  { 1.0 },
-  { 1.0, 1.0 },
-  { 1.0, 2.0, 1.0 },
-  { 1.0, 3.0, 3.0, 1.0 },
-  { 1.0, 4.0, 6.0, 4.0, 1.0 },
-  { 1.0, 5.0, 10.0, 10.0, 5.0, 1.0 },
-  { 1.0, 6.0, 15.0, 20.0, 15.0, 6.0, 1.0 },
-  { 1.0, 7.0, 21.0, 35.0, 35.0, 21.0, 7.0, 1.0 },
-  { 1.0, 8.0, 28.0, 56.0, 70.0, 56.0, 28.0, 8.0, 1.0 },
-  { 1.0, 9.0, 36.0, 84.0, 126.0, 126.0, 84.0, 36.0, 9.0, 1.0 },
-  { 1.0, 10.0, 45.0, 120.0, 210.0, 252.0, 210.0, 120.0, 45.0, 10.0, 1.0 }
-};
-
-/** Compute the (n k) binomial coefficient. */
-static inline double
-dmnsn_binom(size_t n, size_t k)
-{
-  if (k > n - k) {
-    k = n - k;
-  }
-
-  double ret = 1.0;
-  for (size_t i = 0; i < k; ++i) {
-    ret *= n - i;
-    ret /= i + 1;
-  }
-
-  return ret;
-}
-
-/** Find ranges that contain a single root, with Uspensky's algorithm. */
-static size_t
-dmnsn_uspensky_bounds(const double poly[], size_t degree, double bounds[][2],
-                      size_t max_roots)
-{
-  size_t signchanges = dmnsn_descartes_rule(poly, degree);
-  if (signchanges == 0) {
-    return 0;
-  } else if (signchanges == 1) {
-    bounds[0][0] = +0.0;
-    bounds[0][1] = INFINITY;
-    return 1;
-  } else {
-    /* Number of roots found so far */
-    size_t n = 0;
-
-    /* First divide poly[] by (x - 1) to test for a root at x = 1 */
-    double pdiv1[degree], rem = poly[degree];
-    for (size_t i = degree; i-- > 0;) {
-      pdiv1[i] = rem;
-      rem += poly[i];
-    }
-    if (fabs(rem) < dmnsn_epsilon) {
-      bounds[n][0] = 1.0;
-      bounds[n][1] = 1.0;
-      ++n;
-      if (n == max_roots)
-        return n;
-
-      --degree;
-      poly = pdiv1;
-    }
-
-    /* a[] is the expanded form of poly(x + 1), b[] is the expanded form of
-       (x + 1)^degree * poly(1/(x + 1)) */
-    double a[degree + 1], b[degree + 1];
-    if (dmnsn_likely(degree < DMNSN_NBINOM)) {
-      /* Use precomputed binomial coefficients if possible */
-      for (size_t i = 0; i <= degree; ++i) {
-        a[i] = poly[i];
-        b[i] = poly[degree - i];
-        for (size_t j = i + 1; j <= degree; ++j) {
-          double binom = dmnsn_pascals_triangle[j][i];
-          a[i] += binom*poly[j];
-          b[i] += binom*poly[degree - j];
-        }
-      }
-    } else {
-      for (size_t i = 0; i <= degree; ++i) {
-        a[i] = poly[i];
-        b[i] = poly[degree - i];
-        for (size_t j = i + 1; j <= degree; ++j) {
-          double binom = dmnsn_binom(j, i);
-          a[i] += binom*poly[j];
-          b[i] += binom*poly[degree - j];
-        }
-      }
-    }
-
-    /* Recursively test for roots in b[] */
-    size_t nb = dmnsn_uspensky_bounds(b, degree, bounds + n, max_roots - n);
-    for (size_t i = n; i < n + nb; ++i) {
-      /* Transform the found roots of b[] into roots of poly[] */
-      double temp = bounds[i][0];
-      bounds[i][0] = 1.0/(bounds[i][1] + 1.0);
-      bounds[i][1] = 1.0/(temp + 1.0);
-    }
-    n += nb;
-    if (n == max_roots)
-      return n;
-
-    /* Recursively test for roots in a[] */
-    size_t na = dmnsn_uspensky_bounds(a, degree, bounds + n, max_roots - n);
-    for (size_t i = n; i < n + na; ++i) {
-      /* Transform the found roots of a[] into roots of poly[] */
-      bounds[i][0] += 1.0;
-      bounds[i][1] += 1.0;
-    }
-    n += na;
-
-    return n;
-  }
-}
-
-/** Calculate a finite upper bound for the roots of the normalized polynomial
-    \p poly[]. */
+/** Calculate a finite upper bound on the roots of a normalized polynomial. */
 static inline double
 dmnsn_root_bound(const double poly[], size_t degree)
 {
-  double bound = 0.0;
-  for (size_t i = 0; i < degree; ++i) {
+  double bound = fabs(poly[0]);
+  for (size_t i = 1; i < degree; ++i) {
     bound = dmnsn_max(bound, fabs(poly[i]));
   }
   bound += 1.0;
   return bound;
 }
 
-/** Improve a root with Newton's method. */
-static inline double
-dmnsn_improve_root(const double poly[], size_t degree, double x)
+/** Copy a polynomial. */
+static inline void
+dmnsn_polynomial_copy(double dest[], const double src[], size_t degree)
 {
-  double p;
-  do {
-    /* Calculate the value of the polynomial and its derivative at once */
-    p = poly[degree];
-    double dp = 0.0;
-    for (size_t i = degree; i-- > 0;) {
-      dp = dp*x + p;
-      p  = p*x  + poly[i];
+  for (size_t i = 0; i <= degree; ++i) {
+    dest[i] = src[i];
+  }
+}
+
+/** Transform a polynomial by P'(x) = P(x + 1). */
+static inline void
+dmnsn_polynomial_translate(double poly[], size_t degree)
+{
+  for (size_t i = 0; i <= degree; ++i) {
+    for (size_t j = degree - i; j <= degree - 1; ++j) {
+      poly[j] += poly[j + 1];
+    }
+  }
+}
+
+/** Transform a polynomial by P'(x) = P(c*x). */
+static inline void
+dmnsn_polynomial_scale(double poly[], size_t degree, double c)
+{
+  double factor = c;
+  for (size_t i = 1; i <= degree; ++i) {
+    poly[i] *= factor;
+    factor *= c;
+  }
+}
+
+/** Returns the result of Descartes' rule on x^degree * poly(1/(x + 1)). */
+static size_t
+dmnsn_descartes_bound(const double poly[], size_t degree)
+{
+  /* Copy the polynomial so we can be destructive */
+  double p[degree + 1];
+  dmnsn_polynomial_copy(p, poly, degree);
+
+  /* Calculate poly(1/(1/x + 1)) which avoids reversal */
+  for (size_t i = 1; i <= degree; ++i) {
+    for (size_t j = i; j >= 1; --j) {
+      p[j] += p[j - 1];
+    }
+  }
+
+  /* Find the number of sign changes in p[] */
+  size_t changes = 0;
+  int lastsign = dmnsn_sign(p[0]);
+  for (size_t i = 1; changes <= 1 && i <= degree; ++i) {
+    int sign = dmnsn_sign(p[i]);
+    if (sign != 0 && sign != lastsign) {
+      ++changes;
+      lastsign = sign;
+    }
+  }
+
+  return changes;
+}
+
+/** Depth-first search of possible isolating intervals. */
+static size_t
+dmnsn_root_bounds_recursive(double poly[], size_t degree, double *c, double *k,
+                            double bounds[][2], size_t nbounds)
+{
+  size_t s = dmnsn_descartes_bound(poly, degree);
+  if (s >= 2) {
+    *c *= 2.0;
+    *k /= 2.0;
+    double currc = *c, currk = *k;
+
+    /* Get the left child */
+    dmnsn_polynomial_scale(poly, degree, 1.0/2.0);
+
+    size_t n = dmnsn_root_bounds_recursive(poly, degree, c, k, bounds, nbounds);
+    if (n == nbounds) {
+      return n;
     }
 
-    x -= p/dp;
-  } while (fabs(p) >= fabs(x)*dmnsn_epsilon);
+    /* Get the right child from the last tested polynomial */
+    dmnsn_polynomial_translate(poly, degree);
+    dmnsn_polynomial_scale(poly, degree, currk/(*k));
 
-  return x;
+    *c = currc + 1.0;
+    *k = currk;
+
+    bounds += n;
+    nbounds -= n;
+    n += dmnsn_root_bounds_recursive(poly, degree, c, k, bounds, nbounds);
+    return n;
+  } else if (s == 1) {
+    bounds[0][0] = (*c)*(*k);
+    bounds[0][1] = (*c + 1.0)*(*k);
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+/** Find ranges that contain a single root. */
+static size_t
+dmnsn_root_bounds(const double poly[], size_t degree, double bounds[][2],
+                  size_t nbounds)
+{
+  /* Copy the polynomial so we can be destructive */
+  double p[degree + 1];
+  dmnsn_polynomial_copy(p, poly, degree);
+
+  /* Scale the roots to within (0, 1] */
+  double bound = dmnsn_root_bound(p, degree);
+  dmnsn_polynomial_scale(p, degree, bound);
+
+  /* Bounding intervals are of the form (c*k, (c + 1)*k) */
+  double c = 0.0, k = 1.0;
+
+  /* Isolate the roots */
+  size_t n = dmnsn_root_bounds_recursive(p, degree, &c, &k, bounds, nbounds);
+
+  /* Scale the roots back to within (0, bound] */
+  for (size_t i = 0; i < n; ++i) {
+    bounds[i][0] *= bound;
+    bounds[i][1] *= bound;
+  }
+
+  return n;
 }
 
 /** Use the false position method to find a root in a range that contains
@@ -239,21 +209,16 @@ dmnsn_improve_root(const double poly[], size_t degree, double x)
 static inline double
 dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
 {
-  if (max - min < dmnsn_epsilon) {
-    /* Bounds are equal, use Newton's method */
-    return dmnsn_improve_root(poly, degree, min);
-  }
-
   double evmin = dmnsn_polynomial_evaluate(poly, degree, min);
   double evmax = dmnsn_polynomial_evaluate(poly, degree, max);
-  double initial_evmin = fabs(evmin), initial_evmax = fabs(evmax);
-  double mid = 0.0, evmid;
-  int lastsign = -1;
+  double evinitial = dmnsn_min(fabs(evmin), fabs(evmax));
+  double mid, evmid;
+  int lastsign = 0;
 
   do {
     mid = (min*evmax - max*evmin)/(evmax - evmin);
     evmid = dmnsn_polynomial_evaluate(poly, degree, mid);
-    int sign = dmnsn_signbit(evmid);
+    int sign = dmnsn_sign(evmid);
 
     if (mid < min) {
       /* This can happen due to numerical instability in the root bounding
@@ -267,7 +232,7 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
       evmin = evmax;
       max = mid;
       evmax = evmid;
-    } else if (sign == dmnsn_signbit(evmax)) {
+    } else if (sign == dmnsn_sign(evmax)) {
       max = mid;
       evmax = evmid;
       if (sign == lastsign) {
@@ -284,11 +249,11 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
     }
 
     lastsign = sign;
-  } while (fabs(evmid) >= fabs(mid)*dmnsn_epsilon
-           /* These conditions improve stability when one of the bounds is
-              close to a different root than we are trying to find */
-           || fabs(evmid) > initial_evmin
-           || fabs(evmid) > initial_evmax);
+  } while ((fabs(evmid) >= fabs(mid)*dmnsn_epsilon
+            /* This condition improves stability when one of the bounds is
+               close to a different root than we are trying to find */
+            || fabs(evmid) > evinitial)
+           && max - min >= fabs(mid)*dmnsn_epsilon);
 
   return mid;
 }
@@ -348,7 +313,7 @@ dmnsn_solve_cubic(double poly[4], double x[3])
   double q = poly[0] - poly[2]*(9.0*poly[1] - 2.0*b2)/27.0;
 
   double disc = 4.0*p*p*p + 27.0*q*q;
-  double bdiv3 = poly[2]/3;
+  double bdiv3 = poly[2]/3.0;
 
   if (disc < 0.0) {
     /* Three real roots -- this implies p < 0 */
@@ -392,15 +357,13 @@ dmnsn_solve_cubic(double poly[4], double x[3])
     return 0;
 }
 
-/* Uspensky's algorithm */
+/* Solve a polynomial */
 DMNSN_HOT size_t
 dmnsn_polynomial_solve(const double poly[], size_t degree, double x[])
 {
   /* Copy the polynomial so we can be destructive */
-  double p[degree + 1];
-  for (size_t i = 0; i <= degree; ++i) {
-    p[i] = poly[i];
-  }
+  double copy[degree + 1], *p = copy;
+  dmnsn_polynomial_copy(p, poly, degree);
 
   /* Index into x[] */
   size_t i = 0;
@@ -408,23 +371,17 @@ dmnsn_polynomial_solve(const double poly[], size_t degree, double x[])
   /* Account for leading zero coefficients */
   degree = dmnsn_real_degree(p, degree);
   /* Normalize the leading coefficient to 1.0 */
-  dmnsn_normalize_polynomial(p, degree);
+  dmnsn_polynomial_normalize(p, degree);
   /* Eliminate simple zero roots */
-  degree = dmnsn_eliminate_zero_roots(p, degree);
+  dmnsn_eliminate_zero_roots(&p, &degree);
 
   static const size_t max_algebraic = 3;
   if (degree > max_algebraic) {
     /* Find isolating intervals for (degree - max_algebraic) roots of p[] */
     double ranges[degree - max_algebraic][2];
-    size_t n = dmnsn_uspensky_bounds(p, degree, ranges, degree - max_algebraic);
-
-    /* Calculate a finite upper bound for the roots of p[] */
-    double absmax = dmnsn_root_bound(p, degree);
+    size_t n = dmnsn_root_bounds(p, degree, ranges, degree - max_algebraic);
 
     for (size_t j = 0; j < n; ++j) {
-      /* Replace large or infinite upper bounds with a finite one */
-      ranges[j][1] = dmnsn_min(ranges[j][1], absmax);
-
       /* Bisect within the found range */
       double r = dmnsn_bisect_root(p, degree, ranges[j][0], ranges[j][1]);
 
