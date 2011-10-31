@@ -1,4 +1,4 @@
-# Files and folders created by ./autogen.sh, ./configure, and make
+# Files and folders created by ./autogen.sh, and ./configure
 /aclocal.m4
 /autom4te.cache/
 /compile
@@ -13,8 +13,6 @@
 /py-compile
 Makefile
 Makefile.in
-libdimension-python/dimension.c
-dimension/dimension
 
 # pkg-config files
 *.pc
@@ -38,6 +36,10 @@ Doxyfile
 # Files and folders created by compilation
 .deps/
 *.[oa]
+libdimension-python/wrapper.c
+dimension/client.py
+dimension/wrapper.so
+__pycache__
 
 # Core dumps
 core

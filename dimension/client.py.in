@@ -1,0 +1,240 @@
+#!/usr/bin/env python3
+
+#########################################################################
+# Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          #
+#                                                                       #
+# This file is part of Dimension.                                       #
+#                                                                       #
+# Dimension is free software; you can redistribute it and/or modify it  #
+# under the terms of the GNU General Public License as published by the #
+# Free Software Foundation; either version 3 of the License, or (at     #
+# your option) any later version.                                       #
+#                                                                       #
+# Dimension is distributed in the hope that it will be useful, but      #
+# WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     #
+# General Public License for more details.                              #
+#                                                                       #
+# You should have received a copy of the GNU General Public License     #
+# along with this program.  If not, see <http://www.gnu.org/licenses/>. #
+#########################################################################
+
+import argparse
+import re
+import os
+import sys
+from contextlib import contextmanager
+from dimension import *
+
+def main():
+  """Invoke the client from the command line."""
+
+  # Parse the command line
+  parser = DimensionArgumentParser(
+    epilog = "@PACKAGE_STRING@\n"
+             "@PACKAGE_URL@\n"
+             "Copyright (C) 2009-2011 Tavian Barnes <@PACKAGE_BUGREPORT@>\n"
+             "Licensed under the GNU General Public License",
+    formatter_class = argparse.RawDescriptionHelpFormatter,
+    conflict_handler = "resolve", # For -h as height instead of help
+  )
+
+  parser.add_argument("-V", "--version", action = "version",
+                      version = "@PACKAGE_STRING@")
+
+  parser.add_argument("-w", "--width", action = "store", type = int,
+                      default = 768,
+                      help = "image width (default: %(default)s)")
+  parser.add_argument("-h", "--height", action = "store", type = int,
+                      default = 480,
+                      help = "image height (default: %(default)s)")
+  parser.add_argument("--region", action = "store", type = str,
+                      help = "subregion to render, as \"(x1, y1)->(x2, y2)\"")
+
+  parser.add_argument("-v", "--verbose", action = "store_true",
+                      help = "print more information")
+  parser.add_argument("-q", "--quiet", action = "store_true",
+                      help = "print less information")
+
+  parser.add_argument("--threads", action = "store", type = int,
+                      help = "the number of threads to render with")
+  parser.add_argument("--quality", action = "store", type = str,
+                      help = "the scene quality")
+  parser.add_argument("--adc-bailout", action = "store", type = str,
+                      help = "the ADC bailout (default: 1/255)")
+
+  parser.add_argument("-o", "--output", action = "store", type = str,
+                      help = "the output image file")
+  parser.add_argument("input", action = "store", type = str,
+                      help = "the input scene description file")
+
+  # Debugging/testing options
+  parser.add_argument("--strict", action = "store_true",
+                      help = argparse.SUPPRESS)
+
+  args = parser.parse_args()
+
+  # Calculate subregion
+  calculate_subregion(args)
+
+  # Default output is basename(input).png
+  if args.output is None:
+    noext = os.path.splitext(os.path.basename(args.input))[0]
+    args.output = noext + ".png"
+
+  # Handle the --strict option
+  die_on_warnings(args.strict)
+
+  # Sandbox dictionary for the scene
+  sandbox = { }
+  sandbox.update(__import__("dimension").__dict__)
+  sandbox.update(__import__("math").__dict__)
+
+  # Defaults/available variables
+  sandbox.update({
+    "image_width"      : args.width,
+    "image_height"     : args.height,
+    "objects"          : [],
+    "lights"           : [],
+    "camera"           : PerspectiveCamera(),
+    "default_texture"  : Texture(finish = Ambient(0.1) + Diffuse(0.7)),
+    "default_interior" : Interior(),
+    "background"       : Black,
+    "recursion_limit"  : None,
+  })
+
+  # Execute the input script
+  if not args.quiet:
+    print("Parsing scene ...")
+
+  # Run with the script's dirname as the working directory
+  workdir = os.path.dirname(os.path.abspath(args.input))
+
+  parse_timer = Timer()
+  with open(args.input) as fh, working_directory(workdir):
+    exec(compile(fh.read(), args.input, "exec"), sandbox)
+  parse_timer.stop()
+
+  # Make the canvas
+  canvas = Canvas(width = args.region_width, height = args.region_height)
+  canvas.optimize_PNG()
+
+  # Make the scene object
+  scene = Scene(canvas   = canvas,
+                objects  = sandbox["objects"],
+                lights   = sandbox["lights"],
+                camera   = sandbox["camera"])
+  scene.region_x         = args.region_x
+  scene.region_y         = args.region_y
+  scene.outer_width      = args.width
+  scene.outer_height     = args.height
+  scene.default_texture  = sandbox["default_texture"]
+  scene.default_interior = sandbox["default_interior"]
+  scene.background       = sandbox["background"]
+  if sandbox["recursion_limit"] is not None:
+    scene.recursion_limit = sandbox["recursion_limit"]
+  if args.threads is not None:
+    scene.nthreads = args.threads
+  if args.quality is not None:
+    scene.quality = args.quality
+  if args.adc_bailout is not None:
+    pattern = r"^(.*)/(.*)$"
+    match = re.match(pattern, args.adc_bailout)
+    if match is not None:
+      args.adc_bailout = float(match.group(1))/float(match.group(2))
+    scene.adc_bailout = float(args.adc_bailout)
+
+  # Ray-trace the scene
+  future = scene.ray_trace_async()
+  if not args.quiet:
+    if scene.nthreads == 1:
+      render_message = "Rendering scene"
+    else:
+      render_message = "Rendering scene (using %d threads)" % scene.nthreads
+    progress_bar(render_message, future)
+  future.join()
+
+  # Write the output file
+  export_timer = Timer()
+  future = canvas.write_PNG_async(args.output)
+  if not args.quiet:
+    progress_bar("Writing %s" % args.output, future)
+  future.join()
+  export_timer.stop()
+
+  # Print execution times
+  if args.verbose:
+    print()
+    print("Parsing time:   ", parse_timer)
+    print("Bounding time:  ", scene.bounding_timer)
+    print("Rendering time: ", scene.render_timer)
+    print("Exporting time: ", export_timer)
+
+class DimensionArgumentParser(argparse.ArgumentParser):
+  """
+  Specialized parser to print --version output to stdout rather than stderr.
+  """
+  def exit(self, status = 0, message = None):
+    if message:
+      file = sys.stdout if status == 0 else sys.stderr
+      file.write(message)
+    sys.exit(status)
+
+def calculate_subregion(args):
+  if args.region is None:
+    args.region_x = 0
+    args.region_y = 0
+    args.region_width = args.width
+    args.region_height = args.height
+  else:
+    pattern = r"^\s*\(\s*(\d*)\s*,\s*(\d*)\s*\)\s*->\s*\(\s*(\d*)\s*,\s*(\d*)\s*\)\s*$"
+    match = re.match(pattern, args.region)
+    if match is None:
+      raise RuntimeError("range specified in invalid format.")
+    args.region_x = int(match.group(1))
+    args.region_y = int(match.group(2))
+    region_xmax = int(match.group(3))
+    region_ymax = int(match.group(4))
+    args.region_width = region_xmax - args.region_x
+    args.region_height = region_ymax - args.region_y
+    if args.region_width <= 0 or args.region_height <= 0:
+      raise RuntimeError("region is degenerate.")
+    if region_xmax >= args.width or region_ymax > args.height:
+      raise RuntimeError("region exceeds bounds of image.")
+
+@contextmanager
+def working_directory(newwd):
+  """Change the working directory within a with statement."""
+  oldwd = os.getcwd()
+  try:
+    os.chdir(newwd)
+    yield
+  finally:
+    os.chdir(oldwd)
+
+def progress_bar(str, future):
+  """Display a progress bar while a Future completes."""
+  try:
+    print(str, end = " ")
+    sys.stdout.flush()
+
+    term_width = terminal_width()
+    width = term_width - (len(str) + 1)%term_width
+    for i in range(width):
+      future.wait((i + 1)/width)
+      print(".", end = "")
+      sys.stdout.flush()
+
+    print()
+    sys.stdout.flush()
+  except KeyboardInterrupt:
+    print()
+    sys.stdout.flush()
+
+    future.cancel()
+    try:
+      future.join()
+    except RuntimeError:
+      # Swallow the failure exception
+      pass
+    raise

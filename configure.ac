@@ -213,6 +213,7 @@ dnl Generate Makefiles
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile
                  dimension/Makefile
+                 dimension/client.py
                  dimension/tests/Makefile
                  libdimension/Makefile
                  libdimension/Doxyfile
@@ -221,5 +222,4 @@ AC_CONFIG_FILES([Makefile
                  libdimension/tests/Makefile
                  libdimension-python/Makefile
                  libdimension-python/tests/Makefile])
-AC_CONFIG_FILES([dimension/dimension], [chmod +x dimension/dimension])
 AC_OUTPUT

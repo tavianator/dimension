@@ -25,22 +25,22 @@ INCLUDES = -I$(top_srcdir)/libdimension
 AM_CFLAGS = $(Python_CFLAGS)
 AM_LDFLAGS = $(Python_LDFLAGS)
 
-dimension.c: dimension.pyx dimension.pxd
-	cython --line-directives dimension.pyx
+wrapper.c: wrapper.pyx wrapper.pxd
+	cython --line-directives wrapper.pyx
 
-pyexec_LTLIBRARIES = dimension.la
-dimension_la_SOURCES = dimension.c                                             \
-                       platform.c                                              \
-                       platform.h
-dimension_la_LDFLAGS = -avoid-version -module
-dimension_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
+pkgpyexec_LTLIBRARIES = wrapper.la
+wrapper_la_SOURCES = wrapper.c                                                 \
+                     platform.c                                                \
+                     platform.h
+wrapper_la_LDFLAGS = -avoid-version -module
+wrapper_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
-EXTRA_DIST = dimension.pyx                                                     \
-             dimension.pxd
+EXTRA_DIST = wrapper.pyx                                                       \
+             wrapper.pxd
 
 doc:
 	mkdir -p doc
-	PYTHONPATH=$(top_builddir)/libdimension-python/.libs pydoc -w dimension
+	PYTHONPATH=$(top_builddir) pydoc -w dimension
 	mv dimension.html doc/
 clean-doc:
 	rm -rf doc

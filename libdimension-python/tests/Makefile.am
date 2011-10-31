@@ -22,11 +22,8 @@ TESTS = geometry.py                                                            \
         canvas.py                                                              \
         demo.py
 TEST_EXTENSIONS = .py
-TESTS_ENVIRONMENT = PYTHONPATH=$(top_builddir)/libdimension-python/.libs       \
+TESTS_ENVIRONMENT = PYTHONPATH=$(abs_top_builddir)                             \
                     top_srcdir=$(top_srcdir)
-
-.py:
-	cp $(srcdir)/$@ .
 
 EXTRA_DIST = $(TESTS)
 

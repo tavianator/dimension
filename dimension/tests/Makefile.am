@@ -20,9 +20,9 @@
 TESTS = demo.dmnsn                                                             \
         complex.dmnsn
 TEST_EXTENSIONS = .dmnsn
-DMNSN_LOG_COMPILER = $(top_builddir)/dimension/dimension
+DMNSN_LOG_COMPILER = $(top_srcdir)/dimension/dimension
 AM_DMNSN_LOG_FLAGS = --strict
-TESTS_ENVIRONMENT = PYTHONPATH=$(top_builddir)/libdimension-python/.libs
+TESTS_ENVIRONMENT = PYTHONPATH=$(abs_top_builddir)
 
 EXTRA_DIST = $(TESTS)
 
