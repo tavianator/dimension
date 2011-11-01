@@ -26,7 +26,11 @@ AM_CFLAGS = $(Python_CFLAGS)
 AM_LDFLAGS = $(Python_LDFLAGS)
 
 wrapper.c: wrapper.pyx wrapper.pxd
+if DEBUG
 	cython --line-directives wrapper.pyx
+else
+	cython wrapper.pyx
+endif
 
 pkgpyexec_LTLIBRARIES = wrapper.la
 wrapper_la_SOURCES = wrapper.c                                                 \

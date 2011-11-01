@@ -49,7 +49,7 @@ AC_ARG_ENABLE([png],
 if test "$enable_png" != "no"; then
   PKG_CHECK_MODULES([libpng], [libpng], [enable_png=yes],
                     [test "$enable_png" = "yes" && AC_MSG_ERROR([libpng not found])
-                     enable_png-no])
+                     enable_png=no])
   AC_SUBST(libpng_CFLAGS)
   AC_SUBST(libpng_LIBS)
 fi
@@ -75,6 +75,17 @@ AC_ARG_ENABLE([profile],
               [],
               [enable_profile=no])
 AM_CONDITIONAL([PROFILE], [test "$enable_profile" = "yes"])
+
+dnl Debug/release builds
+AC_ARG_ENABLE([debug],
+              [AS_HELP_STRING([--enable-debug],
+                              [Perform potentially expensive sanity checks while running [default=no]])],
+              [],
+              [enable_debug=no])
+if test "$enable_debug" = "no"; then
+  AC_DEFINE([NDEBUG], [1])
+fi
+AM_CONDITIONAL([DEBUG], [test "$enable_debug" = "yes"])
 
 dnl Python headers
 PKG_CHECK_MODULES([Python], [python3 >= 3.2],
