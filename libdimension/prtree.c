@@ -628,9 +628,8 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
 
   /* Search the bounded objects */
   dmnsn_flat_prnode *node = dmnsn_array_first(tree->bounded);
-  while ((size_t)(node - (dmnsn_flat_prnode *)dmnsn_array_first(tree->bounded))
-         < dmnsn_array_size(tree->bounded))
-  {
+  dmnsn_flat_prnode *last = dmnsn_array_last(tree->bounded);
+  while (node <= last) {
     if (dmnsn_ray_box_intersection(optline, node->bounding_box, t)) {
       if (node->object && node->object != cached) {
         if (dmnsn_closer_intersection(node->object, ray, intersection, &t)) {
@@ -663,9 +662,8 @@ dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point)
 
   /* Search the bounded objects */
   dmnsn_flat_prnode *node = dmnsn_array_first(tree->bounded);
-  while ((size_t)(node - (dmnsn_flat_prnode *)dmnsn_array_first(tree->bounded))
-         < dmnsn_array_size(tree->bounded))
-  {
+  dmnsn_flat_prnode *last = dmnsn_array_last(tree->bounded);
+  while (node <= last) {
     if (dmnsn_bounding_box_contains(node->bounding_box, point)) {
       if (node->object && dmnsn_object_inside(node->object, point)) {
         return true;
