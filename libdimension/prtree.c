@@ -581,6 +581,22 @@ dmnsn_get_intersection_cache(size_t id)
   return dmnsn_array_at(caches, id);
 }
 
+/** Test for a closer object intersection than we've found so far. */
+static inline bool
+dmnsn_closer_intersection(dmnsn_object *object, dmnsn_line ray,
+                          dmnsn_intersection *intersection, double *t)
+{
+  dmnsn_intersection local_intersection;
+  if (dmnsn_object_intersection(object, ray, &local_intersection)) {
+    if (local_intersection.t < *t) {
+      *intersection = local_intersection;
+      *t = local_intersection.t;
+      return true;
+    }
+  }
+  return false;
+}
+
 DMNSN_HOT bool
 dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
                           dmnsn_intersection *intersection, bool reset)
@@ -589,13 +605,7 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
 
   /* Search the unbounded objects */
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, tree->unbounded) {
-    dmnsn_intersection local_intersection;
-    if (dmnsn_object_intersection(*object, ray, &local_intersection)) {
-      if (local_intersection.t < t) {
-        *intersection = local_intersection;
-        t = local_intersection.t;
-      }
-    }
+    dmnsn_closer_intersection(*object, ray, intersection, &t);
   }
 
   /* Precalculate 1.0/ray.n.{x,y,z} to save time in intersection tests */
@@ -611,13 +621,8 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
     cached = cache->objects[cache->i];
   }
   if (cached && dmnsn_ray_box_intersection(optline, cached->bounding_box, t)) {
-    dmnsn_intersection local_intersection;
-    if (dmnsn_object_intersection(cached, ray, &local_intersection)) {
-      if (local_intersection.t < t) {
-        *intersection = local_intersection;
-        t = local_intersection.t;
-        found = cached;
-      }
+    if (dmnsn_closer_intersection(cached, ray, intersection, &t)) {
+      found = cached;
     }
   }
 
@@ -628,16 +633,10 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
   {
     if (dmnsn_ray_box_intersection(optline, node->bounding_box, t)) {
       if (node->object && node->object != cached) {
-        dmnsn_intersection local_intersection;
-        if (dmnsn_object_intersection(node->object, ray, &local_intersection)) {
-          if (local_intersection.t < t) {
-            *intersection = local_intersection;
-            t = local_intersection.t;
-            found = node->object;
-          }
+        if (dmnsn_closer_intersection(node->object, ray, intersection, &t)) {
+          found = node->object;
         }
       }
-
       ++node;
     } else {
       node += node->skip;
@@ -646,7 +645,8 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
 
   /* Update the cache */
   if (cache->i < DMNSN_PRTREE_CACHE_SIZE) {
-    cache->objects[cache->i++] = found;
+    cache->objects[cache->i] = found;
+    ++cache->i;
   }
 
   return !isinf(t);
@@ -670,7 +670,6 @@ dmnsn_prtree_inside(const dmnsn_prtree *tree, dmnsn_vector point)
       if (node->object && dmnsn_object_inside(node->object, point)) {
         return true;
       }
-
       ++node;
     } else {
       node += node->skip;
