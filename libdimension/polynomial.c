@@ -144,27 +144,27 @@ dmnsn_root_bounds_recursive(double poly[], size_t degree, double *c, double *k,
 {
   size_t s = dmnsn_descartes_bound(poly, degree);
   if (s >= 2) {
+    /* Get the left child */
+    dmnsn_polynomial_scale(poly, degree, 1.0/2.0);
     *c *= 2.0;
     *k /= 2.0;
     double currc = *c, currk = *k;
 
-    /* Get the left child */
-    dmnsn_polynomial_scale(poly, degree, 1.0/2.0);
-
+    /* Test the left child */
     size_t n = dmnsn_root_bounds_recursive(poly, degree, c, k, bounds, nbounds);
-    if (n == nbounds) {
+    if (nbounds == n) {
       return n;
     }
+    bounds += n;
+    nbounds -= n;
 
     /* Get the right child from the last tested polynomial */
     dmnsn_polynomial_translate(poly, degree);
     dmnsn_polynomial_scale(poly, degree, currk/(*k));
-
     *c = currc + 1.0;
     *k = currk;
 
-    bounds += n;
-    nbounds -= n;
+    /* Test the right child */
     n += dmnsn_root_bounds_recursive(poly, degree, c, k, bounds, nbounds);
     return n;
   } else if (s == 1) {
@@ -204,6 +204,9 @@ dmnsn_root_bounds(const double poly[], size_t degree, double bounds[][2],
   return n;
 }
 
+/** Maximum number of iterations in dmnsn_bisect_root() before bailout. */
+#define DMNSN_BISECT_ITERATIONS 64
+
 /** Use the false position method to find a root in a range that contains
     exactly one root. */
 static inline double
@@ -215,10 +218,19 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
   double mid, evmid;
   int lastsign = 0;
 
-  do {
+  for (size_t i = 0; i < DMNSN_BISECT_ITERATIONS; ++i) {
     mid = (min*evmax - max*evmin)/(evmax - evmin);
     evmid = dmnsn_polynomial_evaluate(poly, degree, mid);
     int sign = dmnsn_sign(evmid);
+
+    if ((fabs(evmid) < fabs(mid)*dmnsn_epsilon
+         /* This condition improves stability when one of the bounds is
+            close to a different root than we are trying to find */
+         && fabs(evmid) <= evinitial)
+        || max - min < fabs(mid)*dmnsn_epsilon)
+    {
+      break;
+    }
 
     if (mid < min) {
       /* This can happen due to numerical instability in the root bounding
@@ -249,11 +261,7 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
     }
 
     lastsign = sign;
-  } while ((fabs(evmid) >= fabs(mid)*dmnsn_epsilon
-            /* This condition improves stability when one of the bounds is
-               close to a different root than we are trying to find */
-            || fabs(evmid) > evinitial)
-           && max - min >= fabs(mid)*dmnsn_epsilon);
+  }
 
   return mid;
 }
