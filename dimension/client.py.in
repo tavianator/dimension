@@ -157,28 +157,27 @@ def main():
     scene.adc_bailout = float(args.adc_bailout)
 
   # Ray-trace the scene
-  future = scene.ray_trace_async()
-  bar = None
-  if not args.quiet:
-    if scene.nthreads == 1:
-      render_message = "Rendering scene"
-    else:
-      render_message = "Rendering scene (using %d threads)" % scene.nthreads
-    bar = progress_bar_async(render_message, future)
-  if args.preview:
-    if have_preview:
-      preview.show_preview(canvas, future)
-    else:
-      print("Couldn't display preview window", file = sys.stderr)
-  bar.join()
-  future.join()
+  with scene.ray_trace_async() as future:
+    bar = None
+    if not args.quiet:
+      if scene.nthreads == 1:
+        render_message = "Rendering scene"
+      else:
+        render_message = "Rendering scene (using %d threads)" % scene.nthreads
+      bar = progress_bar_async(render_message, future)
+    if args.preview:
+      if have_preview:
+        preview.show_preview(canvas, future)
+      else:
+        print("Couldn't display preview window", file = sys.stderr)
+    if bar is not None:
+      bar.join()
 
   # Write the output file
   export_timer = Timer()
-  future = canvas.write_PNG_async(args.output)
-  if not args.quiet:
-    progress_bar("Writing %s" % args.output, future)
-  future.join()
+  with canvas.write_PNG_async(args.output) as future:
+    if not args.quiet:
+      progress_bar("Writing %s" % args.output, future)
   export_timer.stop()
 
   # Print execution times
@@ -233,30 +232,18 @@ def working_directory(newwd):
 
 def progress_bar(str, future):
   """Display a progress bar while a Future completes."""
-  try:
-    print(str, end = " ")
+  print(str, end = " ")
+  sys.stdout.flush()
+
+  term_width = terminal_width()
+  width = term_width - (len(str) + 1)%term_width
+  for i in range(width):
+    future.wait((i + 1)/width)
+    print(".", end = "")
     sys.stdout.flush()
 
-    term_width = terminal_width()
-    width = term_width - (len(str) + 1)%term_width
-    for i in range(width):
-      future.wait((i + 1)/width)
-      print(".", end = "")
-      sys.stdout.flush()
-
-    print()
-    sys.stdout.flush()
-  except KeyboardInterrupt:
-    print()
-    sys.stdout.flush()
-
-    future.cancel()
-    try:
-      future.join()
-    except RuntimeError:
-      # Swallow the failure exception
-      pass
-    raise
+  print()
+  sys.stdout.flush()
 
 def progress_bar_async(str, future):
   thread = threading.Thread(target = progress_bar, args = (str, future))

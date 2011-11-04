@@ -91,6 +91,14 @@ cdef class Future:
     with nogil:
       dmnsn_future_wait(self._future, progress)
 
+  # Let Futures be used as context managers
+  def __enter__(self):
+    return self
+  def __exit__(self, exc_type, exc_value, traceback):
+    if self._future != NULL:
+      self.join()
+    return False
+
   def _assert_unfinished(self):
     if self._future == NULL:
       raise RuntimeError("background task finished.")
