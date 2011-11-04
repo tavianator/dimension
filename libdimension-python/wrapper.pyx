@@ -67,8 +67,11 @@ cdef class Future:
 
   def join(self):
     self._assert_unfinished()
+    cdef int retcode
     try:
-      if dmnsn_future_join(self._future) != 0:
+      with nogil:
+        retcode = dmnsn_future_join(self._future)
+      if retcode != 0:
         raise RuntimeError("background task failed.")
       if self._finalizer is not None:
         self._finalizer()
@@ -85,7 +88,8 @@ cdef class Future:
 
   def wait(self, progress):
     self._assert_unfinished()
-    dmnsn_future_wait(self._future, progress)
+    with nogil:
+      dmnsn_future_wait(self._future, progress)
 
   def _assert_unfinished(self):
     if self._future == NULL:

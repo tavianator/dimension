@@ -70,10 +70,10 @@ cdef extern from "../libdimension/dimension.h":
 
   ctypedef struct dmnsn_future
 
-  int dmnsn_future_join(dmnsn_future *future)
+  int dmnsn_future_join(dmnsn_future *future) nogil
   void dmnsn_future_cancel(dmnsn_future *future)
   double dmnsn_future_progress(dmnsn_future *future)
-  void dmnsn_future_wait(dmnsn_future *future, double progress)
+  void dmnsn_future_wait(dmnsn_future *future, double progress) nogil
 
   ##########
   # Timers #
