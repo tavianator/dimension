@@ -28,9 +28,11 @@ EXTRA_DIST = autogen.sh
 # Set up ./dimension as a python package for tests
 $(abs_builddir)/dimension/__init__.py:
 	ln -sf "$(abs_top_srcdir)/dimension/__init__.py" dimension/__init__.py
+$(abs_builddir)/dimension/preview.py:
+	ln -sf "$(abs_top_srcdir)/dimension/preview.py" dimension/preview.py
 $(abs_builddir)/dimension/wrapper.so:
 	ln -sf ../libdimension-python/.libs/wrapper.so dimension/wrapper.so
-all-local: $(abs_builddir)/dimension/__init__.py $(abs_builddir)/dimension/wrapper.so
+all-local: $(abs_builddir)/dimension/__init__.py $(abs_builddir)/dimension/preview.py $(abs_builddir)/dimension/wrapper.so
 
 bench:
 	cd libdimension && $(MAKE) $(AM_MAKEFLAGS) bench

@@ -23,8 +23,15 @@ import argparse
 import re
 import os
 import sys
+import threading
 from contextlib import contextmanager
 from dimension import *
+
+have_preview = True
+try:
+  from dimension import preview
+except ImportError:
+  have_preview = False
 
 def main():
   """Invoke the client from the command line."""
@@ -67,6 +74,9 @@ def main():
                       help = "the output image file")
   parser.add_argument("input", action = "store", type = str,
                       help = "the input scene description file")
+
+  parser.add_argument("-p", "--preview", action = "store_true",
+                      help = "display a preview while the image renders")
 
   # Debugging/testing options
   parser.add_argument("--strict", action = "store_true",
@@ -118,6 +128,8 @@ def main():
   # Make the canvas
   canvas = Canvas(width = args.region_width, height = args.region_height)
   canvas.optimize_PNG()
+  if args.preview:
+    canvas.optimize_GL()
 
   # Make the scene object
   scene = Scene(canvas   = canvas,
@@ -146,12 +158,19 @@ def main():
 
   # Ray-trace the scene
   future = scene.ray_trace_async()
+  bar = None
   if not args.quiet:
     if scene.nthreads == 1:
       render_message = "Rendering scene"
     else:
       render_message = "Rendering scene (using %d threads)" % scene.nthreads
-    progress_bar(render_message, future)
+    bar = progress_bar_async(render_message, future)
+  if args.preview:
+    if have_preview:
+      preview.show_preview(canvas, future)
+    else:
+      print("Couldn't display preview window", file = sys.stderr)
+  bar.join()
   future.join()
 
   # Write the output file
@@ -238,3 +257,8 @@ def progress_bar(str, future):
       # Swallow the failure exception
       pass
     raise
+
+def progress_bar_async(str, future):
+  thread = threading.Thread(target = progress_bar, args = (str, future))
+  thread.start()
+  return thread

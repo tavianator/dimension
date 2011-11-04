@@ -26,7 +26,8 @@ dist_bin_SCRIPTS = dimension
 # since it's not really installed, so disable the --help and --version checks
 AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = dimension
 
-pkgpython_PYTHON = __init__.py
+pkgpython_PYTHON = __init__.py                                                 \
+                   preview.py
 nodist_pkgpython_PYTHON = client.py
 
 clean-local:
