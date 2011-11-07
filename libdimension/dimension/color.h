@@ -71,16 +71,6 @@ dmnsn_new_color5(double R, double G, double B, double trans, double filter)
   return ret;
 }
 
-/** Is this color black? */
-DMNSN_INLINE bool
-dmnsn_color_is_black(dmnsn_color color)
-{
-  return fabs(color.R)        < dmnsn_epsilon
-         && fabs(color.G)     < dmnsn_epsilon
-         && fabs(color.B)     < dmnsn_epsilon
-         && fabs(color.trans) < dmnsn_epsilon;
-}
-
 /** Saturate the color components to [0.0, 1.0]. */
 DMNSN_INLINE dmnsn_color
 dmnsn_color_saturate(dmnsn_color color)

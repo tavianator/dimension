@@ -229,8 +229,9 @@ dmnsn_trace_pigment(dmnsn_rtstate *state)
 }
 
 /** Get the color of a light ray at an intersection point. */
-static dmnsn_color
-dmnsn_trace_light_ray(dmnsn_rtstate *state, const dmnsn_light *light)
+static bool
+dmnsn_trace_light_ray(dmnsn_rtstate *state, const dmnsn_light *light,
+                      dmnsn_color *color)
 {
   /** @todo: Start at the light source */
   dmnsn_line shadow_ray = dmnsn_new_line(
@@ -244,21 +245,23 @@ dmnsn_trace_light_ray(dmnsn_rtstate *state, const dmnsn_light *light)
   /* Check if we're casting a shadow on ourself */
   if (dmnsn_vector_dot(shadow_ray.n, state->intersection->normal)
       * dmnsn_vector_dot(state->viewer, state->intersection->normal) < 0.0)
-    return dmnsn_black;
+  {
+    return false;
+  }
 
-  dmnsn_color color = light->illumination_fn(light, state->r);
+  *color = light->illumination_fn(light, state->r);
 
   /* Test for shadow ray intersections */
   unsigned int reclevel = state->reclevel;
   while (reclevel-- > 0
-         && dmnsn_color_intensity(color) >= state->scene->adc_bailout)
+         && dmnsn_color_intensity(*color) >= state->scene->adc_bailout)
   {
     dmnsn_intersection shadow_caster;
     bool shadow_was_cast = dmnsn_prtree_intersection(state->prtree, shadow_ray,
                                                      &shadow_caster, false);
 
     if (!shadow_was_cast || !light->shadow_fn(light, shadow_caster.t)) {
-      return color;
+      return true;
     }
 
     /* Handle transparency */
@@ -273,14 +276,14 @@ dmnsn_trace_light_ray(dmnsn_rtstate *state, const dmnsn_light *light)
           shadow_state.texture->finish.reflection;
         if ((state->scene->quality & DMNSN_RENDER_REFLECTION) && reflection) {
           dmnsn_color reflected = reflection->reflection_fn(
-            reflection, color, shadow_state.pigment, shadow_state.reflected,
+            reflection, *color, shadow_state.pigment, shadow_state.reflected,
             shadow_state.intersection->normal
           );
-          color = dmnsn_color_sub(color, reflected);
+          *color = dmnsn_color_sub(*color, reflected);
         }
 
         /* Filter the light */
-        color = dmnsn_filter_light(color, shadow_state.pigment);
+        *color = dmnsn_filter_light(*color, shadow_state.pigment);
         shadow_ray.x0 = dmnsn_line_point(shadow_ray, shadow_caster.t);
         shadow_ray.n  = light->direction_fn(light, shadow_ray.x0);
         shadow_ray = dmnsn_line_add_epsilon(shadow_ray);
@@ -291,7 +294,7 @@ dmnsn_trace_light_ray(dmnsn_rtstate *state, const dmnsn_light *light)
     break;
   }
 
-  return dmnsn_black;
+  return false;
 }
 
 /** Handle light, shadow, and shading. */
@@ -309,8 +312,8 @@ dmnsn_trace_lighting(dmnsn_rtstate *state)
 
   /* Iterate over each light */
   DMNSN_ARRAY_FOREACH (dmnsn_light **, light, state->scene->lights) {
-    dmnsn_color light_color = dmnsn_trace_light_ray(state, *light);
-    if (!dmnsn_color_is_black(light_color)) {
+    dmnsn_color light_color;
+    if (dmnsn_trace_light_ray(state, *light, &light_color)) {
       if (state->scene->quality & DMNSN_RENDER_FINISH) {
         /* Reflect the light */
         const dmnsn_reflection *reflection = state->texture->finish.reflection;

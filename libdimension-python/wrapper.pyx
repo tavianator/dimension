@@ -458,10 +458,6 @@ cdef class Color:
     def __get__(self):
       return self._sRGB.filter
 
-  def __nonzero__(self):
-    """Return whether a color is not black."""
-    return not dmnsn_color_is_black(self._c)
-
   def __add__(lhs, rhs):
     return _sRGBColor(dmnsn_color_add(Color(lhs)._sRGB, Color(rhs)._sRGB))
   def __mul__(lhs, rhs):

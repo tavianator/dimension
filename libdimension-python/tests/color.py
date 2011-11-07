@@ -48,8 +48,5 @@ assert Orange  == Color(1, 0.5, 0), Orange
 assert Yellow  == Color(1, 1, 0), Yellow
 assert Cyan    == Color(0, 1, 1), Cyan
 
-assert White, bool(White)
-assert not Black, not Black
-
 assert Red + Blue == Magenta, Red + Blue
 assert 0.5*White == Color(0.5, 0.5, 0.5), 0.5*White

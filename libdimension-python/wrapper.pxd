@@ -162,8 +162,6 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
   dmnsn_color dmnsn_color_mul(double n, dmnsn_color color)
 
-  bint dmnsn_color_is_black(dmnsn_color color)
-
   dmnsn_color dmnsn_black
   dmnsn_color dmnsn_white
   dmnsn_color dmnsn_clear
