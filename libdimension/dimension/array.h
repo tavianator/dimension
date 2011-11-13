@@ -308,14 +308,3 @@ dmnsn_array_sort(dmnsn_array *array, dmnsn_array_comparator_fn *comparator)
   for (type i = dmnsn_array_first(array);                                      \
        (size_t)(i - (type)dmnsn_array_first(array)) < dmnsn_array_size(array); \
        ++i)
-
-/**
- * Iterate over an array, in reverse order.
- * @param     type   The (pointer) type to use as an iterator.
- * @param     i      The name of the iterator within the loop body.
- * @param[in] array  The array to loop over.
- */
-#define DMNSN_ARRAY_FOREACH_REVERSE(type, i, array)     \
-  for (type i = dmnsn_array_last(array);                \
-       i - (type)dmnsn_array_first(array) >= 0;         \
-       --i)
