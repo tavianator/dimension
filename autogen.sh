@@ -2,6 +2,6 @@
 
 aclocal                          &&
 autoconf                         &&
-libtoolize --force --copy        &&
+libtoolize -q --force --copy     &&
 automake --add-missing --copy    &&
 echo You may now run ./configure
