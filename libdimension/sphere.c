@@ -23,7 +23,7 @@
  * Spheres.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 
 /** Sphere intersection callback. */
 static bool
@@ -41,7 +41,8 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line l,
     return false;
   } else {
     double t = x[0];
-    if (n == 2)
+    /* Optimize for the case where we're outside the sphere */
+    if (dmnsn_likely(n == 2))
       t = dmnsn_min(t, x[1]);
 
     intersection->t      = t;

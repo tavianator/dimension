@@ -612,11 +612,11 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
 
   /* Search the intersection cache */
   dmnsn_intersection_cache *cache = dmnsn_get_intersection_cache(tree->id);
-  if (reset) {
+  if (dmnsn_unlikely(reset)) {
     cache->i = 0;
   }
   dmnsn_object *cached = NULL, *found = NULL;
-  if (cache->i < DMNSN_PRTREE_CACHE_SIZE) {
+  if (dmnsn_likely(cache->i < DMNSN_PRTREE_CACHE_SIZE)) {
     cached = cache->objects[cache->i];
   }
   if (cached && dmnsn_ray_box_intersection(optline, cached->bounding_box, t)) {
@@ -642,7 +642,7 @@ dmnsn_prtree_intersection(const dmnsn_prtree *tree, dmnsn_line ray,
   }
 
   /* Update the cache */
-  if (cache->i < DMNSN_PRTREE_CACHE_SIZE) {
+  if (dmnsn_likely(cache->i < DMNSN_PRTREE_CACHE_SIZE)) {
     cache->objects[cache->i] = found;
     ++cache->i;
   }

@@ -56,7 +56,7 @@ dmnsn_eliminate_zero_roots(double **poly, size_t *degree)
 {
   size_t i;
   for (i = 0; i <= *degree; ++i) {
-    if (fabs((*poly)[i]) >= dmnsn_epsilon) {
+    if (dmnsn_likely(fabs((*poly)[i]) >= dmnsn_epsilon)) {
       break;
     }
   }
