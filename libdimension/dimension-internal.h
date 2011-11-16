@@ -30,7 +30,7 @@
 #define _GNU_SOURCE
 #include "dimension.h"
 #include "refcount-internal.h"
-#include "compiler.h"
+#include "compiler-internal.h"
 #include "profile.h"
 #include "platform.h"
 #include "future-impl.h"

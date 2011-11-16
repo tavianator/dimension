@@ -121,8 +121,7 @@ dmnsn_get_coordinate(const dmnsn_prnode * const *node, int comparator)
     return -(*node)->bounding_box.max.z;
 
   default:
-    dmnsn_assert(false, "Invalid comparator.");
-    return 0.0; /* Shut up compiler */
+    dmnsn_unreachable("Invalid comparator.");
   }
 }
 

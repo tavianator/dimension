@@ -39,8 +39,11 @@
  * Report an error.
  * @param[in] str       A string to print explaining the error.
  */
-#define dmnsn_error(str)                                        \
-  dmnsn_report_error(true, DMNSN_FUNC, __FILE__, __LINE__, str)
+#define dmnsn_error(str)                                                \
+  do {                                                                  \
+    dmnsn_report_error(true, DMNSN_FUNC, __FILE__, __LINE__, str);      \
+    DMNSN_UNREACHABLE();                                                \
+  } while (0)
 
 /**
  * @def dmnsn_assert
@@ -54,9 +57,20 @@
   #define dmnsn_assert(expr, str)                 \
     do {                                          \
       if (!(expr)) {                              \
-        dmnsn_error((str));  \
+        dmnsn_error((str));                       \
       }                                           \
     } while (0)
+#endif
+
+/**
+ * @def dmnsn_unreachable
+ * Express that a line of code is unreachable.
+ * @param[in] str  A string to print if the line is reached.
+ */
+#ifdef NDEBUG
+  #define dmnsn_unreachable(str) DMNSN_UNREACHABLE()
+#else
+  #define dmnsn_unreachable(str) dmnsn_error((str))
 #endif
 
 /**

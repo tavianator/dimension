@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2010 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -23,29 +23,30 @@
  * Compiler abstractions.
  */
 
-#include <stdbool.h>
-
-#ifdef DMNSN_PROFILE
-  #define dmnsn_likely(test)                                      \
-    dmnsn_expect(!!(test), true, DMNSN_FUNC, __FILE__, __LINE__)
-  #define dmnsn_unlikely(test)                                    \
-    dmnsn_expect(!!(test), false, DMNSN_FUNC, __FILE__, __LINE__)
-#elif defined(__GNUC__)
-  #define dmnsn_likely(test)   __builtin_expect(!!(test), true)
-  #define dmnsn_unlikely(test) __builtin_expect(!!(test), false)
-#else
-  #define dmnsn_likely(test)   (!!(test))
-  #define dmnsn_unlikely(test) (!!(test))
+/**
+ * @def DMNSN_INLINE
+ * A portable inline specifier. Expands to the correct method of declaring
+ * inline functions for the version of C you are using.
+ */
+#ifndef DMNSN_INLINE
+  #ifdef __cplusplus
+    /* C++ inline semantics */
+    #define DMNSN_INLINE inline
+  #elif __STDC_VERSION__ >= 199901L
+    /* C99 inline semantics */
+    #define DMNSN_INLINE inline
+  #elif defined(__GNUC__)
+    /* GCC inline semantics */
+    #define DMNSN_INLINE __extension__ extern __inline__
+  #else
+    /* Unknown C - mark functions static and hope the compiler is smart enough
+       to inline them */
+    #define DMNSN_INLINE static
+  #endif
 #endif
 
 #ifdef __GNUC__
-  #define DMNSN_HOT             __attribute__((hot))
-  #define DMNSN_INTERNAL        __attribute__((visibility("hidden")))
-  #define DMNSN_DESTRUCTOR      __attribute__((destructor(102)))
-  #define DMNSN_LATE_DESTRUCTOR __attribute__((destructor(101)))
+  #define DMNSN_UNREACHABLE() __builtin_unreachable();
 #else
-  #define DMNSN_HOT
-  #define DMNSN_INTERNAL
-  #define DMNSN_DESTRUCTOR
-  #define DMNSN_LATE_DESTRUCTOR
+  #define DMNSN_UNREACHABLE()
 #endif

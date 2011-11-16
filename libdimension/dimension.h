@@ -74,7 +74,7 @@ typedef void dmnsn_callback_fn(void *ptr);
 typedef void dmnsn_free_fn(void *ptr);
 
 /* Include all the libdimension headers */
-#include <dimension/inline.h>
+#include <dimension/compiler.h>
 #include <dimension/error.h>
 #include <dimension/malloc.h>
 #include <dimension/refcount.h>

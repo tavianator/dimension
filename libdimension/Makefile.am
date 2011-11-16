@@ -32,6 +32,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/cameras.h                                   \
                          dimension/canvas.h                                    \
                          dimension/color.h                                     \
+                         dimension/compiler.h                                  \
                          dimension/csg.h                                       \
                          dimension/dictionary.h                                \
                          dimension/error.h                                     \
@@ -40,7 +41,6 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/future.h                                    \
                          dimension/geometry.h                                  \
                          dimension/gl.h                                        \
-                         dimension/inline.h                                    \
                          dimension/interior.h                                  \
                          dimension/light.h                                     \
                          dimension/lights.h                                    \
@@ -69,7 +69,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           canvas_pigment.c                                     \
                           checker.c                                            \
                           color.c                                              \
-                          compiler.h                                           \
+                          compiler-internal.h                                  \
                           cone.c                                               \
                           cube.c                                               \
                           csg.c                                                \
