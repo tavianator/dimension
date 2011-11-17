@@ -229,39 +229,6 @@ dmnsn_infinite_bounding_box(void)
   return box;
 }
 
-/* Vector element access */
-
-/** Constants for indexing a vector like an array. */
-enum {
-  DMNSN_X, /**< The x component. */
-  DMNSN_Y, /**< The y component. */
-  DMNSN_Z  /**< The z component. */
-};
-
-/**
- * Index a vector like an array.
- * @param[in] n     The vector to index.
- * @param[in] elem  Which element to access; one of \ref DMNSN_X, \ref DMNSN_Y,
- *                  or \ref DMNSN_Z.
- * @return The requested element.
- */
-DMNSN_INLINE double
-dmnsn_vector_element(dmnsn_vector n, int elem)
-{
-  switch (elem) {
-  case DMNSN_X:
-    return n.x;
-  case DMNSN_Y:
-    return n.y;
-  case DMNSN_Z:
-    return n.z;
-
-  default:
-    dmnsn_assert(false, "Wrong vector element requested.");
-    return 0.0;
-  }
-}
-
 /* Vector and matrix arithmetic */
 
 /** Negate a vector. */
