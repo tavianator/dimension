@@ -106,6 +106,11 @@ main(void)
   });
   printf("dmnsn_prtree_intersection(): %ld\n", sandglass.grains);
 
+  sandglass_bench_fine(&sandglass, {
+    dmnsn_prtree_intersection(tree, ray, &intersection, false);
+  });
+  printf("dmnsn_prtree_intersection(nocache): %ld\n", sandglass.grains);
+
   /* dmnsn_prtree_inside() */
   sandglass_bench_fine(&sandglass, {
     dmnsn_prtree_inside(tree, dmnsn_zero);
