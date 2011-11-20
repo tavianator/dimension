@@ -22,7 +22,7 @@
  * @file
  * Dynamic memory.  dmnsn_malloc() and friends behave like their
  * non-dmnsn_-prefixed counterparts, but never return NULL.  If allocation
- * fails, they instead call dmnsn_error(DMNSN_SEVERITY_HIGH).
+ * fails, they instead call dmnsn_error().
  */
 
 #include <stddef.h> /* For size_t */
