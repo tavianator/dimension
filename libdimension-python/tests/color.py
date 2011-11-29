@@ -50,3 +50,4 @@ assert Cyan    == Color(0, 1, 1), Cyan
 
 assert Red + Blue == Magenta, Red + Blue
 assert 0.5*White == Color(0.5, 0.5, 0.5), 0.5*White
+assert White/2 == Color(0.5, 0.5, 0.5), White/2

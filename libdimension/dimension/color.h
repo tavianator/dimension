@@ -85,10 +85,15 @@ dmnsn_color_saturate(dmnsn_color color)
 
 /* Perceptual color manipulation */
 
-/** Convert from sRGB space. */
-dmnsn_color dmnsn_color_from_sRGB(dmnsn_color color);
+/** Apply sRGB gamma */
+double dmnsn_sRGB_gamma(double Clinear);
 /** Convert to sRGB space. */
 dmnsn_color dmnsn_color_to_sRGB(dmnsn_color color);
+/** Remove sRGB gamma */
+double dmnsn_sRGB_inverse_gamma(double CsRGB);
+/** Convert from sRGB space. */
+dmnsn_color dmnsn_color_from_sRGB(dmnsn_color color);
+
 /** Greyscale color intensity. */
 double dmnsn_color_intensity(dmnsn_color color);
 /** Add two colors together. */

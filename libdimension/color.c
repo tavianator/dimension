@@ -97,8 +97,49 @@ const dmnsn_color dmnsn_cyan = {
   .trans  = 0.0,
 };
 
-/** Inverse function of sRGB's `C' function, for the reverse conversion. */
-static double
+/* sRGB's `C' function. */
+static inline double
+dmnsn_sRGB_C(double Clinear)
+{
+  /*
+   * If C represents R, G, and B, then the sRGB values are now found as follows:
+   *
+   *         { 12.92*Clinear,                Clinear <= 0.0031308
+   * Csrgb = {                1/2.4
+   *         { (1.055)*Clinear      - 0.055, Clinear >  0.0031308
+   */
+  if (Clinear == 1.0) {
+    return 1.0; /* Map 1.0 to 1.0 instead of 0.9999999999999999 */
+  } else if (Clinear > 0.0031308) {
+    return 1.055*pow(Clinear, 1.0/2.4) - 0.055;
+  } else {
+    return 12.92*Clinear;
+  }
+}
+
+/* Export dmnsn_sRGB_C */
+double
+dmnsn_sRGB_gamma(double Clinear)
+{
+  return dmnsn_sRGB_C(Clinear);
+}
+
+/* Convert to sRGB space */
+dmnsn_color
+dmnsn_color_to_sRGB(dmnsn_color color)
+{
+  dmnsn_color ret = {
+    .R = dmnsn_sRGB_C(color.R),
+    .G = dmnsn_sRGB_C(color.G),
+    .B = dmnsn_sRGB_C(color.B),
+    .trans  = color.trans,
+    .filter = color.filter,
+  };
+  return ret;
+}
+
+/* Inverse function of sRGB's `C' function, for the reverse conversion. */
+double
 dmnsn_sRGB_C_inv(double CsRGB)
 {
   /*
@@ -118,6 +159,13 @@ dmnsn_sRGB_C_inv(double CsRGB)
   }
 }
 
+/* Export dmnsn_sRGB_C_inv */
+double
+dmnsn_sRGB_inverse_gamma(double CsRGB)
+{
+  return dmnsn_sRGB_C_inv(CsRGB);
+}
+
 /* Convert from sRGB space */
 dmnsn_color
 dmnsn_color_from_sRGB(dmnsn_color color)
@@ -126,40 +174,6 @@ dmnsn_color_from_sRGB(dmnsn_color color)
     .R = dmnsn_sRGB_C_inv(color.R),
     .G = dmnsn_sRGB_C_inv(color.G),
     .B = dmnsn_sRGB_C_inv(color.B),
-    .trans  = color.trans,
-    .filter = color.filter,
-  };
-  return ret;
-}
-
-/** sRGB's `C' function. */
-static double
-dmnsn_sRGB_C(double Clinear)
-{
-  /*
-   * If C represents R, G, and B, then the sRGB values are now found as follows:
-   *
-   *         { 12.92*Clinear,                Clinear <= 0.0031308
-   * Csrgb = {                1/2.4
-   *         { (1.055)*Clinear      - 0.055, Clinear >  0.0031308
-   */
-  if (Clinear == 1.0) {
-    return 1.0; /* Map 1.0 to 1.0 instead of 0.9999999999999999 */
-  } else if (Clinear <= 0.0031308) {
-    return 12.92*Clinear;
-  } else {
-    return 1.055*pow(Clinear, 1.0/2.4) - 0.055;
-  }
-}
-
-/* Convert to sRGB space */
-dmnsn_color
-dmnsn_color_to_sRGB(dmnsn_color color)
-{
-  dmnsn_color ret = {
-    .R = dmnsn_sRGB_C(color.R),
-    .G = dmnsn_sRGB_C(color.G),
-    .B = dmnsn_sRGB_C(color.B),
     .trans  = color.trans,
     .filter = color.filter,
   };

@@ -31,11 +31,7 @@ dmnsn_test_scene_set_defaults(dmnsn_scene *scene)
   default_finish->ambient = dmnsn_new_basic_ambient(
     dmnsn_color_from_sRGB(dmnsn_color_mul(0.1, dmnsn_white))
   );
-  default_finish->diffuse = dmnsn_new_lambertian(
-    dmnsn_color_intensity(
-      dmnsn_color_from_sRGB(dmnsn_color_mul(0.7, dmnsn_white))
-    )
-  );
+  default_finish->diffuse = dmnsn_new_lambertian(dmnsn_sRGB_inverse_gamma(0.7));
 }
 
 static void
@@ -130,9 +126,10 @@ dmnsn_test_scene_add_hollow_cube(dmnsn_scene *scene)
   cube->texture = dmnsn_new_texture();
   cube->texture->pigment = dmnsn_new_solid_pigment(cube_color);
 
-  dmnsn_color reflect = dmnsn_color_mul(0.5, dmnsn_white);
-  cube->texture->finish.reflection
-    = dmnsn_new_basic_reflection(dmnsn_black, reflect, 1.0);
+  dmnsn_color reflect =
+    dmnsn_color_from_sRGB(dmnsn_color_mul(0.5, dmnsn_white));
+  cube->texture->finish.reflection =
+    dmnsn_new_basic_reflection(dmnsn_black, reflect, 1.0);
 
   cube->interior = dmnsn_new_interior();
   cube->interior->ior = 1.1;
@@ -140,7 +137,8 @@ dmnsn_test_scene_add_hollow_cube(dmnsn_scene *scene)
   dmnsn_object *sphere = dmnsn_new_sphere();
   sphere->texture = dmnsn_new_texture();
   sphere->texture->pigment = dmnsn_new_solid_pigment(dmnsn_green);
-  sphere->texture->finish.specular = dmnsn_new_phong(0.2, 40.0);
+  sphere->texture->finish.specular =
+    dmnsn_new_phong(dmnsn_sRGB_inverse_gamma(0.2), 40.0);
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.25, 1.25, 1.25));
 
   dmnsn_object *hollow_cube = dmnsn_new_csg_difference(cube, sphere);

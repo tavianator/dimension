@@ -465,6 +465,8 @@ cdef class Color:
       return _sRGBColor(dmnsn_color_mul(rhs, (<Color>lhs)._sRGB))
     else:
       return _sRGBColor(dmnsn_color_mul(lhs, (<Color?>rhs)._sRGB))
+  def __truediv__(Color lhs not None, double rhs):
+    return _sRGBColor(dmnsn_color_mul(1/rhs, lhs._sRGB))
 
   def __richcmp__(lhs, rhs, int op):
     cdef clhs = Color(lhs)
@@ -831,9 +833,9 @@ cdef class Diffuse(Finish):
     Keyword arguments:
     diffuse -- the intensity of the diffuse reflection
     """
-    cdef dmnsn_color gray = dmnsn_color_mul(diffuse, dmnsn_white)
-    diffuse = dmnsn_color_intensity(dmnsn_color_from_sRGB(gray))
-    self._finish.diffuse = dmnsn_new_lambertian(diffuse)
+    self._finish.diffuse = dmnsn_new_lambertian(
+      dmnsn_sRGB_inverse_gamma(diffuse)
+    )
 
 cdef class Phong(Finish):
   """Phong specular highlight."""
@@ -841,7 +843,10 @@ cdef class Phong(Finish):
     """
     Create a Phong highlight.
     """
-    self._finish.specular = dmnsn_new_phong(strength, size)
+    self._finish.specular = dmnsn_new_phong(
+      dmnsn_sRGB_inverse_gamma(strength),
+      size
+    )
 
 cdef class Reflection(Finish):
   """Reflective finish."""
@@ -857,10 +862,8 @@ cdef class Reflection(Finish):
     if max is None:
       max = min
 
-    # Use sRGB value because Reflection(0.5) should really mean "reflect half
-    # the light"
-    self._finish.reflection = dmnsn_new_basic_reflection(Color(min)._sRGB,
-                                                         Color(max)._sRGB,
+    self._finish.reflection = dmnsn_new_basic_reflection(Color(min)._c,
+                                                         Color(max)._c,
                                                          falloff)
 
 ############
@@ -1317,9 +1320,7 @@ cdef class PointLight(Light):
     location -- the origin of the light rays
     color    -- the color and intensity of the light
     """
-    # Take the sRGB component because "color = 0.5*White" should really mean
-    # a half-intensity white light
-    self._light = dmnsn_new_point_light(Vector(location)._v, Color(color)._sRGB)
+    self._light = dmnsn_new_point_light(Vector(location)._v, Color(color)._c)
     Light.__init__(self)
 
 ###########

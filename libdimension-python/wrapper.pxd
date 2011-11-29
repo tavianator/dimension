@@ -155,8 +155,10 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_color dmnsn_new_color5(double R, double G, double B,
                                double trans, double filter)
 
-  dmnsn_color dmnsn_color_from_sRGB(dmnsn_color color)
+  double dmnsn_sRGB_gamma(double Clinear)
   dmnsn_color dmnsn_color_to_sRGB(dmnsn_color color)
+  double dmnsn_sRGB_inverse_gamma(double CsRGB)
+  dmnsn_color dmnsn_color_from_sRGB(dmnsn_color color)
 
   double dmnsn_color_intensity(dmnsn_color color)
   dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
