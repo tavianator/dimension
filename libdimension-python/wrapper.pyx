@@ -458,6 +458,11 @@ cdef class Color:
     def __get__(self):
       return self._sRGB.filter
 
+  def intensity(self):
+    return dmnsn_color_intensity(self._c)
+  def gray(self):
+    return _Color(dmnsn_color_mul(self.intensity(), dmnsn_white))
+
   def __add__(lhs, rhs):
     return _sRGBColor(dmnsn_color_add(Color(lhs)._sRGB, Color(rhs)._sRGB))
   def __mul__(lhs, rhs):
