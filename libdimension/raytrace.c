@@ -315,6 +315,16 @@ dmnsn_trace_lighting(dmnsn_rtstate *state)
     dmnsn_color light_color;
     if (dmnsn_trace_light_ray(state, *light, &light_color)) {
       if (state->scene->quality & DMNSN_RENDER_FINISH) {
+        /* Get this light's specular contribution to the object */
+        dmnsn_color specular = dmnsn_black;
+        if (finish->specular) {
+          specular = finish->specular->specular_fn(
+            finish->specular, light_color, state->pigment, state->light,
+            state->intersection->normal, state->viewer
+          );
+          light_color = dmnsn_color_sub(light_color, specular);
+        }
+
         /* Reflect the light */
         const dmnsn_reflection *reflection = state->texture->finish.reflection;
         if ((state->scene->quality & DMNSN_RENDER_REFLECTION) && reflection) {
@@ -325,20 +335,12 @@ dmnsn_trace_lighting(dmnsn_rtstate *state)
           light_color = dmnsn_color_sub(light_color, reflected);
         }
 
-        /* Get this light's color contribution to the object */
+        /* Get this light's diffuse contribution to the object */
         dmnsn_color diffuse = dmnsn_black;
         if (finish->diffuse) {
           diffuse = finish->diffuse->diffuse_fn(
             finish->diffuse, light_color, state->pigment, state->light,
             state->intersection->normal
-          );
-        }
-
-        dmnsn_color specular = dmnsn_black;
-        if (finish->specular) {
-          specular = finish->specular->specular_fn(
-            finish->specular, light_color, state->pigment, state->light,
-            state->intersection->normal, state->viewer
           );
         }
 
