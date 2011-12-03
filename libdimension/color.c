@@ -184,8 +184,7 @@ dmnsn_color_from_sRGB(dmnsn_color color)
 double
 dmnsn_color_intensity(dmnsn_color color)
 {
-  return 0.2126198631048975*color.R + 0.7151387878413206*color.G
-         + 0.0721499433963131*color.B;
+  return 0.2126*color.R + 0.7152*color.G + 0.0722*color.B;
 }
 
 /* Add two colors */
