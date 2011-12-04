@@ -107,7 +107,8 @@ def main():
     "objects"          : [],
     "lights"           : [],
     "camera"           : PerspectiveCamera(),
-    "default_texture"  : Texture(finish = Ambient(0.1) + Diffuse(0.7)),
+    "default_texture"  : Texture(finish = Ambient(sRGB(0.1))
+                                          + Diffuse(sRGB(0.7))),
     "default_interior" : Interior(),
     "background"       : Black,
     "recursion_limit"  : None,

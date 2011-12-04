@@ -33,7 +33,7 @@ background = PigmentMap(
   pattern = Gradient(Y),
   map     = {
     0:    image_map,
-    0.35: Color(0, 0.1, 0.2, trans = 0.1, filter = 0.0),
+    0.35: sRGB(0, 0.1, 0.2, trans = 0.1, filter = 0.0),
   },
 )
 
@@ -50,8 +50,8 @@ hollow_cube = Difference(
       (-1, -1, -1), (1, 1, 1),
 
       texture = Texture(
-        pigment = Color(0, 0, 1, trans = 0.75, filter = 1/3),
-        finish  = Reflection(min = 0, max = 0.5),
+        pigment = sRGB(0, 0, 1, trans = 0.75, filter = 1/3),
+        finish  = Reflection(min = 0, max = sRGB(0.5)),
       ),
       interior = Interior(
         ior = 1.1,

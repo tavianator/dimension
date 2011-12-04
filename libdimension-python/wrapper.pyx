@@ -396,20 +396,13 @@ cdef class _Transformable:
 # Colors #
 ##########
 
-cdef class Color:
-  """
-  An sRGB color.
-
-  Note that 0.5*White == Color(0.5, 0.5, 0.5), which is not technically a half-
-  intensity white, due to sRGB gamma.  Dimension handles the gamma correctly
-  when rendering, though.
-  """
+cdef class _BaseColor:
   cdef dmnsn_color _c
-  cdef dmnsn_color _sRGB
+  cdef dmnsn_color _clin
 
   def __init__(self, *args, **kwargs):
     """
-    Create a Color.
+    Create a color.
 
     Keyword arguments:
     red    -- The red component
@@ -422,56 +415,72 @@ cdef class Color:
     tuple or other sequence (red, green, blue[, trans[, filter]]).
     """
     if len(args) == 1:
-      if isinstance(args[0], Color):
-        self._sRGB = (<Color>args[0])._sRGB
+      if isinstance(args[0], _BaseColor):
+        self._clin = (<_BaseColor>args[0])._clin
+        self._unlinearize()
+        return
       elif hasattr(args[0], "__iter__"):
         self._real_init(*args[0])
       else:
-        self._sRGB = dmnsn_color_mul(args[0], dmnsn_white)
+        self._c = dmnsn_color_mul(args[0], dmnsn_white)
     else:
       self._real_init(*args, **kwargs)
 
-    self._c = dmnsn_color_from_sRGB(self._sRGB)
+    self._linearize()
 
   def _real_init(self, double red, double green, double blue,
                  double trans = 0.0, double filter = 0.0):
-    self._sRGB = dmnsn_new_color5(red, green, blue, trans, filter)
+    self._c = dmnsn_new_color5(red, green, blue, trans, filter)
 
   property red:
     """The red component."""
     def __get__(self):
-      return self._sRGB.R
+      return self._c.R
   property green:
     """The green component."""
     def __get__(self):
-      return self._sRGB.G
+      return self._c.G
   property blue:
     """The blue component."""
     def __get__(self):
-      return self._sRGB.B
+      return self._c.B
   property trans:
     """The transparency of the color."""
     def __get__(self):
-      return self._sRGB.trans
+      return self._c.trans
   property filter:
     """How filtered the transparency is."""
     def __get__(self):
-      return self._sRGB.filter
+      return self._c.filter
 
   def intensity(self):
     return dmnsn_color_intensity(self._c)
   def gray(self):
-    return _Color(dmnsn_color_mul(self.intensity(), dmnsn_white))
+    return _Color(dmnsn_color_mul(self.intensity(), dmnsn_white), type(self))
 
   def __add__(lhs, rhs):
-    return _sRGBColor(dmnsn_color_add(Color(lhs)._sRGB, Color(rhs)._sRGB))
-  def __mul__(lhs, rhs):
-    if isinstance(lhs, Color):
-      return _sRGBColor(dmnsn_color_mul(rhs, (<Color>lhs)._sRGB))
+    if isinstance(lhs, _BaseColor):
+      if isinstance(rhs, _BaseColor):
+        if type(lhs) is not type(rhs):
+          return NotImplemented
+      else:
+        rhs = type(lhs)(rhs)
+    elif isinstance(rhs, _BaseColor):
+      lhs = type(rhs)(lhs)
     else:
-      return _sRGBColor(dmnsn_color_mul(lhs, (<Color?>rhs)._sRGB))
-  def __truediv__(Color lhs not None, double rhs):
-    return _sRGBColor(dmnsn_color_mul(1/rhs, lhs._sRGB))
+      return NotImplemented
+
+    return _Color(dmnsn_color_add((<_BaseColor>lhs)._c, (<_BaseColor>rhs)._c),
+                  type(lhs))
+
+  def __mul__(lhs, rhs):
+    if isinstance(lhs, _BaseColor):
+      return _Color(dmnsn_color_mul(rhs, (<_BaseColor>lhs)._c), type(lhs))
+    else:
+      return _Color(dmnsn_color_mul(lhs, (<_BaseColor?>rhs)._c), type(rhs))
+
+  def __truediv__(_BaseColor lhs not None, double rhs):
+    return _Color(dmnsn_color_mul(1/rhs, lhs._c), type(lhs))
 
   def __richcmp__(lhs, rhs, int op):
     cdef clhs = Color(lhs)
@@ -493,41 +502,63 @@ cdef class Color:
       return NotImplemented
 
   def __repr__(self):
-    return "dimension.Color(%r, %r, %r, %r, %r)" % \
-           (self.red, self.green, self.blue, self.trans, self.filter)
-
+    return "dimension.%s(%r, %r, %r, %r, %r)" % \
+             (type(self).__name__, self.red, self.green, self.blue, self.trans,
+              self.filter)
   def __str__(self):
     if self.trans >= dmnsn_epsilon:
-      return "<red = %s, green = %s, blue = %s, trans = %s, filter = %s>" % \
-             (self.red, self.green, self.blue, self.trans, self.filter)
+      return "%s<%s, %s, %s, trans = %s, filter = %s>" % \
+             (type(self).__name__,
+              self.red, self.green, self.blue, self.trans, self.filter)
     else:
-      return "<red = %s, green = %s, blue = %s>" % \
-             (self.red, self.green, self.blue)
+      return "%s<%s, %s, %s>" % \
+             (type(self).__name__, self.red, self.green, self.blue)
 
-cdef Color _sRGBColor(dmnsn_color sRGB):
-  """Wrap a color object around a dmnsn_color already in sRGB."""
-  cdef Color self = Color.__new__(Color)
-  self._sRGB = sRGB
-  self._c    = dmnsn_color_from_sRGB(sRGB)
+cdef class Color(_BaseColor):
+  """
+  An object or light color.
+
+  These colors are in a linear RGB space.  For colors in the sRGB space, which
+  is used by the web and computer displays, see the sRGB class.
+  """
+
+  def _linearize(self):
+    self._clin = self._c
+  def _unlinearize(self):
+    self._c = self._clin
+
+cdef class sRGB(_BaseColor):
+  """
+  An sRGB color.
+
+  Color operations with these colors occur in sRGB space, which is used by the
+  web and computer displays.  However, it is not linear, so (for example) two
+  lights with intensity sRGB(0.5) is not the same as one light with intensity
+  sRGB(1).
+  """
+
+  def _linearize(self):
+    self._clin = dmnsn_color_from_sRGB(self._c)
+  def _unlinearize(self):
+    self._c = dmnsn_color_to_sRGB(self._clin)
+
+cdef _BaseColor _Color(dmnsn_color c, type t):
+  """Wrap a _BaseColor subclass around a dmnsn_color."""
+  cdef _BaseColor self = t.__new__(t)
+  self._c = c
+  self._linearize()
   return self
 
-cdef Color _Color(dmnsn_color c):
-  """Wrap a Color object around a dmnsn_color."""
-  cdef Color self = Color.__new__(Color)
-  self._c    = c
-  self._sRGB = dmnsn_color_to_sRGB(c)
-  return self
-
-Black   = _Color(dmnsn_black)
-White   = _Color(dmnsn_white)
-Clear   = _Color(dmnsn_clear)
-Red     = _Color(dmnsn_red)
-Green   = _Color(dmnsn_green)
-Blue    = _Color(dmnsn_blue)
-Magenta = _Color(dmnsn_magenta)
-Orange  = _Color(dmnsn_orange)
-Yellow  = _Color(dmnsn_yellow)
-Cyan    = _Color(dmnsn_cyan)
+Black   = _Color(dmnsn_black, Color)
+White   = _Color(dmnsn_white, Color)
+Clear   = _Color(dmnsn_clear, Color)
+Red     = _Color(dmnsn_red, Color)
+Green   = _Color(dmnsn_green, Color)
+Blue    = _Color(dmnsn_blue, Color)
+Magenta = _Color(dmnsn_magenta, Color)
+Orange  = _Color(dmnsn_orange, Color)
+Yellow  = _Color(dmnsn_yellow, Color)
+Cyan    = _Color(dmnsn_cyan, Color)
 
 ############
 # Canvases #
@@ -629,7 +660,7 @@ cdef class _CanvasProxy:
     return self._canvas.height
   def __getitem__(self, int y):
     self._bounds_check(y)
-    return _Color(dmnsn_canvas_get_pixel(self._canvas, self._x, y))
+    return _Color(dmnsn_canvas_get_pixel(self._canvas, self._x, y), Color)
   def __setitem__(self, int y, color):
     self._bounds_check(y)
     dmnsn_canvas_set_pixel(self._canvas, self._x, y, Color(color)._c)
@@ -831,27 +862,26 @@ cdef class Ambient(Finish):
 
 cdef class Diffuse(Finish):
   """Lambertian diffuse reflection."""
-  def __init__(self, double diffuse):
+  def __init__(self, diffuse):
     """
     Create a Diffuse finish.
 
     Keyword arguments:
     diffuse -- the intensity of the diffuse reflection
     """
-    self._finish.diffuse = dmnsn_new_lambertian(
-      dmnsn_sRGB_inverse_gamma(diffuse)
-    )
+    self._finish.diffuse = dmnsn_new_lambertian(Color(diffuse).intensity())
 
 cdef class Phong(Finish):
   """Phong specular highlight."""
-  def __init__(self, double strength, double size = 40.0):
+  def __init__(self, strength, double size = 40.0):
     """
     Create a Phong highlight.
+
+    Keyword arguments:
+    strength -- the strength of the Phong highlight
+    size -- the "shininess" of the material
     """
-    self._finish.specular = dmnsn_new_phong(
-      dmnsn_sRGB_inverse_gamma(strength),
-      size
-    )
+    self._finish.specular = dmnsn_new_phong(Color(strength).intensity(), size)
 
 cdef class Reflection(Finish):
   """Reflective finish."""

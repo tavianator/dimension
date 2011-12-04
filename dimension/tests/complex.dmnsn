@@ -20,10 +20,10 @@
 camera = PerspectiveCamera(location = (3, 6, -11),
                            look_at  = 0)
 
-background = 0.5*Color(0.73, 0.90, 0.97)
+background = 0.5*sRGB(0.73, 0.90, 0.97)
 
 def make_light(x, y, z):
-  return PointLight(location = (x, y, z), color = 1/4*White)
+  return PointLight(location = (x, y, z), color = White/4)
 
 for x in [-3, -1, 1, 3]:
   for y in [0, 5]:
@@ -34,8 +34,8 @@ objects.append(
     normal = Y, distance = -4,
 
     texture = Texture(
-      pigment = Color(0.73, 0.90, 0.97),
-      finish = Ambient(0.5),
+      pigment = sRGB(0.73, 0.90, 0.97),
+      finish = Ambient(sRGB(0.5)),
     )
   )
 )
@@ -53,8 +53,10 @@ def make_sphere(x, y, z, size):
     radius = 2/size,
 
     texture = Texture(
-      pigment = Color(x/size, y/size, z/size),
-      finish  = Ambient(0.25) + Diffuse(0.8) + Reflection(0.0, 0.25)
+      pigment = sRGB(x/size, y/size, z/size),
+      finish  = Ambient(sRGB(0.25))
+                + Diffuse(sRGB(0.8))
+                + Reflection(0, sRGB(0.5))
     )
   )
 

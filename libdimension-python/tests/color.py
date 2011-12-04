@@ -26,8 +26,7 @@ die_on_warnings(True)
 
 c = Color(0, 0.5, 1, trans = 0.5, filter = 0.35)
 assert repr(c) == "dimension.Color(0.0, 0.5, 1.0, 0.5, 0.35)", repr(c)
-assert str(c) == "<red = 0.0, green = 0.5, blue = 1.0, \
-trans = 0.5, filter = 0.35>", str(c)
+assert str(c) == "Color<0.0, 0.5, 1.0, trans = 0.5, filter = 0.35>", str(c)
 assert c.red    == 0,    c.red
 assert c.green  == 0.5,  c.green
 assert c.blue   == 1,    c.blue
@@ -35,7 +34,7 @@ assert c.trans  == 0.5,  c.filter
 assert c.filter == 0.35, c.trans
 
 c = Color(1, 0.5, 0)
-assert str(c) == "<red = 1.0, green = 0.5, blue = 0.0>", str(c)
+assert str(c) == "Color<1.0, 0.5, 0.0>", str(c)
 
 assert Black   == Color(0, 0, 0), Black
 assert White   == Color(1, 1, 1), White
@@ -44,7 +43,7 @@ assert Red     == Color(1, 0, 0), Red
 assert Green   == Color(0, 1, 0), Green
 assert Blue    == Color(0, 0, 1), Blue
 assert Magenta == Color(1, 0, 1), Magenta
-assert Orange  == Color(1, 0.5, 0), Orange
+assert Orange  == sRGB(1, 0.5, 0), Orange
 assert Yellow  == Color(1, 1, 0), Yellow
 assert Cyan    == Color(0, 1, 1), Cyan
 

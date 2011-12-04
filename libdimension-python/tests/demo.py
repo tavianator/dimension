@@ -49,7 +49,8 @@ scene = Scene(canvas  = canvas,
               objects = objects,
               lights  = lights,
               camera  = camera)
-scene.default_texture = Texture(finish = Ambient(0.1) + Diffuse(0.7))
+scene.default_texture = Texture(finish = Ambient(sRGB(0.1))
+                                         + Diffuse(sRGB(0.7)))
 scene.background      = background
 scene.adc_bailout     = 1/255
 scene.recursion_limit = 5
