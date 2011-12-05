@@ -36,7 +36,7 @@ Doxyfile
 # Files and folders created by compilation
 .deps/
 *.[oa]
-libdimension-python/wrapper.c
+libdimension-python/dimension.c
 dimension/client.py
 dimension/wrapper.so
 __pycache__

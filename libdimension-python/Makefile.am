@@ -25,22 +25,24 @@ INCLUDES = -I$(top_srcdir)/libdimension
 AM_CFLAGS = $(Python_CFLAGS)
 AM_LDFLAGS = $(Python_LDFLAGS)
 
-wrapper.c: wrapper.pyx wrapper.pxd
+dimension.c: dimension.pyx dimension.pxd
 if DEBUG
-	cython --line-directives wrapper.pyx
+	cython --line-directives dimension.pyx
 else
-	cython wrapper.pyx
+	cython dimension.pyx
 endif
+	sed -i 's/initdimension/initwrapper/g' dimension.c
+	sed -i 's/PyInit_dimension/PyInit_wrapper/g' dimension.c
 
 pkgpyexec_LTLIBRARIES = wrapper.la
-wrapper_la_SOURCES = wrapper.c                                                 \
+wrapper_la_SOURCES = dimension.c                                               \
                      platform.c                                                \
                      platform.h
 wrapper_la_LDFLAGS = -avoid-version -module
 wrapper_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
-EXTRA_DIST = wrapper.pyx                                                       \
-             wrapper.pxd
+EXTRA_DIST = dimension.pyx                                                     \
+             dimension.pxd
 
 doc:
 	mkdir -p doc
