@@ -18,10 +18,10 @@
 ###########################################################################
 
 TESTS = demo.dmnsn                                                             \
-        complex.dmnsn
+        cube.dmnsn
 TEST_EXTENSIONS = .dmnsn
 DMNSN_LOG_COMPILER = $(top_srcdir)/dimension/dimension
-AM_DMNSN_LOG_FLAGS = --strict
+AM_DMNSN_LOG_FLAGS = --strict -v
 TESTS_ENVIRONMENT = PYTHONPATH=$(abs_top_builddir)
 
 EXTRA_DIST = $(TESTS)

@@ -56,7 +56,7 @@ def make_sphere(x, y, z, size):
       pigment = sRGB(x/size, y/size, z/size),
       finish  = Ambient(sRGB(0.25))
                 + Diffuse(sRGB(0.8))
-                + Reflection(0, sRGB(0.5))
+                + Reflection(0, 0.25)
     )
   )
 
