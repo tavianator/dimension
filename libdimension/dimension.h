@@ -105,7 +105,7 @@ typedef void dmnsn_free_fn(void *ptr);
 #include <dimension/camera.h>
 #include <dimension/cameras.h>
 #include <dimension/scene.h>
-#include <dimension/raytrace.h>
+#include <dimension/ray_trace.h>
 
 #ifdef __cplusplus
 }
