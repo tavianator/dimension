@@ -42,7 +42,7 @@ struct dmnsn_pattern {
 
   void *ptr; /**< Generic pointer. */
 
-  dmnsn_refcount refcount; /**< @internal Reference count. */
+  DMNSN_REFCOUNT; /**< Reference count. */
 };
 
 /**

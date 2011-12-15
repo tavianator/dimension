@@ -23,10 +23,11 @@
  * Generic reference count implementation.
  */
 
-/**
- * Reference counter.
- */
-typedef unsigned int dmnsn_refcount;
+/** @internal The name of the reference count field in all structs. */
+#define DMNSN_REFCOUNT_NAME refcount
+
+/** @internal Declare a reference count field in a struct. */
+#define DMNSN_REFCOUNT unsigned int DMNSN_REFCOUNT_NAME
 
 /**
  * Increment a reference count.
@@ -37,6 +38,6 @@ typedef unsigned int dmnsn_refcount;
     /* Suppress "address will always evaluate to true" warning */       \
     void *testptr = (object);                                           \
     if (testptr) {                                                      \
-      ++(object)->refcount;                                             \
+      ++(object)->DMNSN_REFCOUNT_NAME;                                  \
     }                                                                   \
   } while (0)

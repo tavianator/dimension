@@ -89,7 +89,7 @@ struct dmnsn_object {
 
   void *ptr; /**< Generic pointer for object info. */
 
-  dmnsn_refcount refcount; /**< @internal Reference count. */
+  DMNSN_REFCOUNT; /**< Reference count. */
   bool initialized; /**< @internal Whether the object is initialized yet. */
 };
 

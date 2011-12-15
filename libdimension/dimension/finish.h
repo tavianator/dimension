@@ -38,8 +38,8 @@ typedef dmnsn_color dmnsn_ambient_fn(const dmnsn_ambient *ambient,
 
 /** Ambient finish component. */
 struct dmnsn_ambient {
-  dmnsn_color ambient;     /**< Ambient light. */
-  dmnsn_refcount refcount; /**< @internal Reference count. */
+  dmnsn_color ambient; /**< Ambient light. */
+  DMNSN_REFCOUNT;      /**< Reference count. */
 };
 
 /** Allocate a dummy ambient component. */
@@ -69,7 +69,7 @@ struct dmnsn_diffuse {
   dmnsn_diffuse_fn *diffuse_fn; /**< Diffuse callback. */
   dmnsn_free_fn    *free_fn;    /**< Destructor callback. */
   void             *ptr;        /**< Generic data pointer. */
-  dmnsn_refcount   refcount;    /**< @internal Reference count. */
+  DMNSN_REFCOUNT;               /**< Reference count. */
 };
 
 /** Allocate a dummy diffuse component. */
@@ -101,7 +101,7 @@ struct dmnsn_specular {
   dmnsn_specular_fn *specular_fn; /**< Specular callback. */
   dmnsn_free_fn     *free_fn;     /**< Destructor callback. */
   void              *ptr;         /**< Generic data pointer. */
-  dmnsn_refcount    refcount;     /**< @internal Reference count. */
+  DMNSN_REFCOUNT;                 /**< Reference count. */
 };
 
 /** Allocate a dummy specular component. */
@@ -131,7 +131,7 @@ struct dmnsn_reflection {
   dmnsn_reflection_fn *reflection_fn; /**< Reflection callback. */
   dmnsn_free_fn       *free_fn;       /**< Destructor callback. */
   void                *ptr;           /**< Generic data pointer. */
-  dmnsn_refcount      refcount;       /**< @internal Reference count. */
+  DMNSN_REFCOUNT;                     /**< Reference count. */
 };
 
 /** Allocate a dummy reflection component. */

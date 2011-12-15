@@ -29,4 +29,5 @@
  * @return Whether the object is now garbage.
  */
 #define DMNSN_DECREF(object)                                            \
-  ((object) && ((object)->refcount == 0 || --(object)->refcount == 0))
+  ((object) && ((object)->DMNSN_REFCOUNT_NAME == 0                      \
+                || --(object)->DMNSN_REFCOUNT_NAME == 0))

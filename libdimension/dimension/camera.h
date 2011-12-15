@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -44,9 +44,9 @@ struct dmnsn_camera {
 
   dmnsn_matrix trans; /**< Transformation matrix. */
 
-  void *ptr; /**< @internal Generic pointer for camera info. */
+  void *ptr; /**< Generic pointer for camera info. */
 
-  dmnsn_refcount refcount; /**< @internal reference count. */
+  DMNSN_REFCOUNT; /**< Reference count. */
 };
 
 /**

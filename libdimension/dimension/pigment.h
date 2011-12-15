@@ -56,7 +56,7 @@ struct dmnsn_pigment {
   /** Generic pointer. */
   void *ptr;
 
-  dmnsn_refcount refcount; /** @internal Reference count. */
+  DMNSN_REFCOUNT; /** Reference count. */
   bool initialized; /** @internal Whether the pigment is initialized. */
 };
 

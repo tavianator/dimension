@@ -65,8 +65,7 @@ struct dmnsn_light {
   /** Generic pointer for light info. */
   void *ptr;
 
-  /** @internal Reference count. */
-  dmnsn_refcount refcount;
+  DMNSN_REFCOUNT; /**< Reference count. */
 };
 
 /**
