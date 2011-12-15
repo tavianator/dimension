@@ -28,7 +28,7 @@
 
 /* Create a solid color */
 dmnsn_pigment *
-dmnsn_new_solid_pigment(dmnsn_color color)
+dmnsn_new_solid_pigment(dmnsn_tcolor color)
 {
   dmnsn_pigment *pigment = dmnsn_new_pigment();
   pigment->quick_color = color;

@@ -85,6 +85,7 @@ typedef void dmnsn_free_fn(void *ptr);
 #include <dimension/geometry.h>
 #include <dimension/polynomial.h>
 #include <dimension/color.h>
+#include <dimension/tcolor.h>
 #include <dimension/canvas.h>
 #include <dimension/gl.h>
 #include <dimension/png.h>

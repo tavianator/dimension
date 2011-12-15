@@ -50,14 +50,13 @@ dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas,
                           dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
 {
   uint16_t *pixel = (uint16_t *)optimizer.ptr + 4*(y*canvas->width + x);
-  dmnsn_color color;
-  color = dmnsn_canvas_get_pixel(canvas, x, y);
-  color = dmnsn_remove_filter(color);
-  color = dmnsn_color_to_sRGB(color);
-  color = dmnsn_color_saturate(color);
+  dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(canvas, x, y);
+  tcolor = dmnsn_tcolor_remove_filter(tcolor);
+  tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
+  tcolor = dmnsn_tcolor_saturate(tcolor);
 
-  pixel[0] = lround(color.R*UINT16_MAX);
-  pixel[1] = lround(color.G*UINT16_MAX);
-  pixel[2] = lround(color.B*UINT16_MAX);
-  pixel[3] = lround(color.trans*UINT16_MAX);
+  pixel[0] = lround(tcolor.c.R*UINT16_MAX);
+  pixel[1] = lround(tcolor.c.G*UINT16_MAX);
+  pixel[2] = lround(tcolor.c.B*UINT16_MAX);
+  pixel[3] = lround(tcolor.T*UINT16_MAX);
 }

@@ -56,13 +56,6 @@ typedef struct dmnsn_pigment_map_payload {
   dmnsn_pigment_map_flags flags;
 } dmnsn_pigment_map_payload;
 
-void
-dmnsn_pigment_map_add_color(dmnsn_map *map, double n, dmnsn_color color)
-{
-  dmnsn_pigment *pigment = dmnsn_new_solid_pigment(color);
-  dmnsn_map_add_entry(map, n, &pigment);
-}
-
 /** Free a pigment_map payload. */
 static void
 dmnsn_delete_pigment_map_payload(void *ptr)
@@ -74,7 +67,7 @@ dmnsn_delete_pigment_map_payload(void *ptr)
 }
 
 /** pigment_map pigment callback. */
-static dmnsn_color
+static dmnsn_tcolor
 dmnsn_pigment_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
   const dmnsn_pigment_map_payload *payload = pigment->ptr;
@@ -82,16 +75,16 @@ dmnsn_pigment_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
   dmnsn_pigment *pigment1, *pigment2;
   dmnsn_map_evaluate(payload->map, dmnsn_pattern_value(payload->pattern, v),
                      &n, &pigment1, &pigment2);
-  dmnsn_color color1 = dmnsn_pigment_evaluate(pigment1, v);
-  dmnsn_color color2 = dmnsn_pigment_evaluate(pigment2, v);
+  dmnsn_tcolor color1 = dmnsn_pigment_evaluate(pigment1, v);
+  dmnsn_tcolor color2 = dmnsn_pigment_evaluate(pigment2, v);
 
   if (payload->flags == DMNSN_PIGMENT_MAP_SRGB) {
-    color1 = dmnsn_color_to_sRGB(color1);
-    color2 = dmnsn_color_to_sRGB(color2);
+    color1.c = dmnsn_color_to_sRGB(color1.c);
+    color2.c = dmnsn_color_to_sRGB(color2.c);
   }
-  dmnsn_color ret = dmnsn_color_gradient(color1, color2, n);
+  dmnsn_tcolor ret = dmnsn_tcolor_gradient(color1, color2, n);
   if (payload->flags == DMNSN_PIGMENT_MAP_SRGB) {
-    ret = dmnsn_color_from_sRGB(ret);
+    ret.c = dmnsn_color_from_sRGB(ret.c);
   }
 
   return ret;

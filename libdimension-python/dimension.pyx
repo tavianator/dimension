@@ -408,13 +408,11 @@ cdef class _BaseColor:
     red    -- The red component
     green  -- The green component
     blue   -- The blue component
-    trans  -- The transparency of the color, 0.0 meaning opaque (default 0.0)
-    filter -- How filtered the transparency is (default 0.0)
 
     Alternatively, you can pass another Color, a gray intensity like 0.5, or a
-    tuple or other sequence (red, green, blue[, trans[, filter]]).
+    tuple or other sequence (red, green, blue).
     """
-    if len(args) == 1:
+    if len(args) == 1 and len(kwargs) == 0:
       if isinstance(args[0], _BaseColor):
         self._clin = (<_BaseColor>args[0])._clin
         self._unlinearize()
@@ -428,9 +426,8 @@ cdef class _BaseColor:
 
     self._linearize()
 
-  def _real_init(self, double red, double green, double blue,
-                 double trans = 0.0, double filter = 0.0):
-    self._c = dmnsn_new_color5(red, green, blue, trans, filter)
+  def _real_init(self, double red, double green, double blue):
+    self._c = dmnsn_new_color(red, green, blue)
 
   property red:
     """The red component."""
@@ -444,14 +441,6 @@ cdef class _BaseColor:
     """The blue component."""
     def __get__(self):
       return self._c.B
-  property trans:
-    """The transparency of the color."""
-    def __get__(self):
-      return self._c.trans
-  property filter:
-    """How filtered the transparency is."""
-    def __get__(self):
-      return self._c.filter
 
   def intensity(self):
     return dmnsn_color_intensity(self._c)
@@ -489,10 +478,7 @@ cdef class _BaseColor:
     cdef double rdiff = clhs.red    - crhs.red
     cdef double gdiff = clhs.green  - crhs.green
     cdef double bdiff = clhs.blue   - crhs.blue
-    cdef double tdiff = clhs.trans  - crhs.trans
-    cdef double fdiff = clhs.filter - crhs.filter
-    cdef double sum = rdiff*rdiff + gdiff*gdiff + bdiff*bdiff \
-                      + tdiff*tdiff + fdiff*fdiff
+    cdef double sum = rdiff*rdiff + gdiff*gdiff + bdiff*bdiff
     equal = sqrt(sum) < dmnsn_epsilon
     if op == 2:   # ==
       return equal
@@ -502,17 +488,11 @@ cdef class _BaseColor:
       return NotImplemented
 
   def __repr__(self):
-    return "dimension.%s(%r, %r, %r, %r, %r)" % \
-             (type(self).__name__, self.red, self.green, self.blue, self.trans,
-              self.filter)
+    return "dimension.%s(%r, %r, %r)" % \
+           (type(self).__name__, self.red, self.green, self.blue)
   def __str__(self):
-    if self.trans >= dmnsn_epsilon:
-      return "%s<%s, %s, %s, trans = %s, filter = %s>" % \
-             (type(self).__name__,
-              self.red, self.green, self.blue, self.trans, self.filter)
-    else:
-      return "%s<%s, %s, %s>" % \
-             (type(self).__name__, self.red, self.green, self.blue)
+    return "%s<%s, %s, %s>" % \
+           (type(self).__name__, self.red, self.green, self.blue)
 
 cdef class Color(_BaseColor):
   """
@@ -551,7 +531,6 @@ cdef _BaseColor _Color(dmnsn_color c, type t):
 
 Black   = _Color(dmnsn_black, Color)
 White   = _Color(dmnsn_white, Color)
-Clear   = _Color(dmnsn_clear, Color)
 Red     = _Color(dmnsn_red, Color)
 Green   = _Color(dmnsn_green, Color)
 Blue    = _Color(dmnsn_blue, Color)
@@ -559,6 +538,65 @@ Magenta = _Color(dmnsn_magenta, Color)
 Orange  = _Color(dmnsn_orange, Color)
 Yellow  = _Color(dmnsn_yellow, Color)
 Cyan    = _Color(dmnsn_cyan, Color)
+
+cdef class TColor:
+  """
+  A transparent color.
+
+  This type is used for representing pigments and pixels, as it carries color as
+  well as transparency information.
+  """
+  cdef dmnsn_tcolor _tc
+
+  def __init__(self, *args, **kwargs):
+    """
+    Create a transparent color.
+
+    Keyword arguments:
+    color  -- The Color() (or sRGB()) component
+    trans  -- The transparency component
+    filter -- The proportion of the transparency that is filtered
+
+    Alternatively, you can pass another TColor.
+    """
+    if len(args) == 1 and len(kwargs) == 0:
+      if isinstance(args[0], TColor):
+        self._tc = (<TColor>args[0])._tc
+      else:
+        self._real_init(*args, **kwargs)
+    else:
+      self._real_init(*args, **kwargs)
+
+  def _real_init(self, color, double trans = 0, double filter = 0):
+    self._tc = dmnsn_new_tcolor(Color(color)._clin, trans, filter)
+
+  property color:
+    """The color component."""
+    def __get__(self):
+      return _Color(self._tc.c, Color)
+  property trans:
+    """The transparency component."""
+    def __get__(self):
+      return self._tc.T
+  property filter:
+    """The filter proportion."""
+    def __get__(self):
+      return self._tc.F
+
+  def __repr__(self):
+    return "dimension.TColor(%r, %r, %r)" % \
+           (self.color, self.trans, self.filter)
+  def __str__(self):
+    return "TColor<%s, %s, %s>" % \
+           (self.color, self.trans, self.filter)
+
+cdef TColor _TColor(dmnsn_tcolor tc):
+  """Wrap a TColor around a dmnsn_tcolor."""
+  cdef TColor self = TColor.__new__(TColor)
+  self._tc = tc
+  return self
+
+Clear = _TColor(dmnsn_clear)
 
 ############
 # Canvases #
@@ -612,7 +650,7 @@ cdef class Canvas:
 
   def clear(self, c):
     """Clear a canvas with a solid color."""
-    dmnsn_canvas_clear(self._canvas, Color(c)._c)
+    dmnsn_canvas_clear(self._canvas, TColor(c)._tc)
 
   def write_PNG(self, path):
     """Export the canvas as a PNG file."""
@@ -660,10 +698,10 @@ cdef class _CanvasProxy:
     return self._canvas.height
   def __getitem__(self, int y):
     self._bounds_check(y)
-    return _Color(dmnsn_canvas_get_pixel(self._canvas, self._x, y), Color)
+    return _TColor(dmnsn_canvas_get_pixel(self._canvas, self._x, y))
   def __setitem__(self, int y, color):
     self._bounds_check(y)
-    dmnsn_canvas_set_pixel(self._canvas, self._x, y, Color(color)._c)
+    dmnsn_canvas_set_pixel(self._canvas, self._x, y, TColor(color)._tc)
 
   def _bounds_check(self, int y):
     if y < 0 or y >= self._canvas.height:
@@ -734,9 +772,9 @@ cdef class Pigment(_Transformable):
           self._pigment = (<Pigment>quick_color)._pigment
           DMNSN_INCREF(self._pigment)
         else:
-          self._pigment = dmnsn_new_solid_pigment(Color(quick_color)._c)
+          self._pigment = dmnsn_new_solid_pigment(TColor(quick_color)._tc)
       else:
-        self._pigment.quick_color = Color(quick_color)._c
+        self._pigment.quick_color = TColor(quick_color)._tc
 
   def __dealloc__(self):
     dmnsn_delete_pigment(self._pigment)
@@ -858,7 +896,7 @@ cdef class Ambient(Finish):
     Keyword arguments:
     color -- the color and intensity of the ambient light
     """
-    self._finish.ambient = dmnsn_new_basic_ambient(Color(color)._c)
+    self._finish.ambient = dmnsn_new_ambient(Color(color)._c)
 
 cdef class Diffuse(Finish):
   """Lambertian diffuse reflection."""

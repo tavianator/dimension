@@ -26,11 +26,10 @@
 #include "dimension-internal.h"
 
 dmnsn_ambient *
-dmnsn_new_ambient(void)
+dmnsn_new_ambient(dmnsn_color ambient_light)
 {
   dmnsn_ambient *ambient = dmnsn_malloc(sizeof(dmnsn_ambient));
-  ambient->free_fn  = NULL;
-  ambient->ptr      = NULL;
+  ambient->ambient = ambient_light;
   ambient->refcount = 1;
   return ambient;
 }
@@ -39,9 +38,6 @@ void
 dmnsn_delete_ambient(dmnsn_ambient *ambient)
 {
   if (DMNSN_DECREF(ambient)) {
-    if (ambient->free_fn) {
-      ambient->free_fn(ambient->ptr);
-    }
     dmnsn_free(ambient);
   }
 }

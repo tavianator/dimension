@@ -28,7 +28,7 @@
  * @param[in] color  The color of the pigment.
  * @return A pigment with the color \p color everywhere.
  */
-dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color);
+dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_tcolor color);
 
 /**
  * An image map.  The image (regardless of its real dimensions) is projected
@@ -51,15 +51,6 @@ typedef enum dmnsn_pigment_map_flags {
  * @return An empty pigment map.
  */
 dmnsn_map *dmnsn_new_pigment_map(void);
-
-/**
- * Add a raw color to a pigment map.
- * Shorthand for creating a solid pigment and adding it manually.
- * @param[in,out] map    The pigment map to add to.
- * @param[in]     n      The index of the entry.
- * @param[in]     color  The value of the entry.
- */
-void dmnsn_pigment_map_add_color(dmnsn_map *map, double n, dmnsn_color color);
 
 /**
  * A pigment-mapped pigment.

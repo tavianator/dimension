@@ -24,13 +24,6 @@
  */
 
 /**
- * Ambient finish.
- * @param[in] ambient  The color of the ambient light.
- * @return An ambient finish component.
- */
-dmnsn_ambient *dmnsn_new_basic_ambient(dmnsn_color ambient);
-
-/**
  * Regular diffuse finish.
  * @param[in] diffuse  The diffuse reflection coefficient.
  * @return A diffuse finish component.

@@ -31,9 +31,9 @@ except OSError:
 
 background = PigmentMap(
   pattern = Gradient(Y),
-  map     = {
+  map = {
     0:    image_map,
-    0.35: sRGB(0, 0.1, 0.2, trans = 0.1, filter = 0.0),
+    0.35: TColor(sRGB(0, 0.1, 0.2), trans = 0.1)
   },
 )
 
@@ -50,7 +50,7 @@ hollow_cube = Difference(
       (-1, -1, -1), (1, 1, 1),
 
       texture = Texture(
-        pigment = sRGB(0, 0, 1, trans = 0.75, filter = 1/3),
+        pigment = TColor(Blue, trans = 0.75, filter = 1/3),
         finish  = Reflection(min = 0, max = sRGB(0.5)),
       ),
       interior = Interior(
@@ -63,7 +63,7 @@ hollow_cube = Difference(
       center = 0, radius = 1.25,
       texture = Texture(
         pigment = Green,
-        finish  = Phong(strength = 0.2, size = 40),
+        finish  = Phong(strength = sRGB(0.2), size = 40),
       ),
     )
   ],

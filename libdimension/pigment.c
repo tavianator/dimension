@@ -34,7 +34,7 @@ dmnsn_new_pigment(void)
   pigment->initialize_fn = NULL;
   pigment->free_fn       = NULL;
   pigment->trans         = dmnsn_identity_matrix();
-  pigment->quick_color   = dmnsn_black;
+  pigment->quick_color   = DMNSN_TCOLOR(dmnsn_black);
   pigment->refcount      = 1;
   pigment->initialized   = false;
   return pigment;
@@ -67,7 +67,7 @@ dmnsn_pigment_initialize(dmnsn_pigment *pigment)
 }
 
 /* Evaluate a pigment */
-dmnsn_color
+dmnsn_tcolor
 dmnsn_pigment_evaluate(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
   if (pigment->pigment_fn) {

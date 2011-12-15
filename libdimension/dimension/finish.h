@@ -38,14 +38,12 @@ typedef dmnsn_color dmnsn_ambient_fn(const dmnsn_ambient *ambient,
 
 /** Ambient finish component. */
 struct dmnsn_ambient {
-  dmnsn_ambient_fn *ambient_fn; /**< Ambient callback. */
-  dmnsn_free_fn    *free_fn;    /**< Destructor callback. */
-  void             *ptr;        /**< Generic data pointer. */
-  dmnsn_refcount   refcount;    /**< @internal Reference count. */
+  dmnsn_color ambient;     /**< Ambient light. */
+  dmnsn_refcount refcount; /**< @internal Reference count. */
 };
 
 /** Allocate a dummy ambient component. */
-dmnsn_ambient *dmnsn_new_ambient(void);
+dmnsn_ambient *dmnsn_new_ambient(dmnsn_color ambient);
 /** Delete an ambient component. */
 void dmnsn_delete_ambient(dmnsn_ambient *ambient);
 

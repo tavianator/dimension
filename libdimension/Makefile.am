@@ -63,12 +63,10 @@ nobase_include_HEADERS = dimension.h                                           \
 lib_LTLIBRARIES = libdimension.la
 
 libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
-                          ambient.c                                            \
                           camera.c                                             \
                           canvas.c                                             \
                           canvas_pigment.c                                     \
                           checker.c                                            \
-                          color.c                                              \
                           compiler-internal.h                                  \
                           cone.c                                               \
                           cube.c                                               \

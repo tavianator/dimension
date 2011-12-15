@@ -43,8 +43,7 @@ cdef extern from "../libdimension/dimension.h":
   # Arrays #
   ##########
 
-  ctypedef struct dmnsn_array:
-    pass
+  ctypedef struct dmnsn_array
 
   dmnsn_array *dmnsn_new_array(size_t objsize)
   void dmnsn_delete_array(dmnsn_array *array)
@@ -148,12 +147,8 @@ cdef extern from "../libdimension/dimension.h":
     double R
     double G
     double B
-    double trans
-    double filter
 
   dmnsn_color dmnsn_new_color(double R, double G, double B)
-  dmnsn_color dmnsn_new_color5(double R, double G, double B,
-                               double trans, double filter)
 
   double dmnsn_sRGB_gamma(double Clinear)
   dmnsn_color dmnsn_color_to_sRGB(dmnsn_color color)
@@ -162,11 +157,11 @@ cdef extern from "../libdimension/dimension.h":
 
   double dmnsn_color_intensity(dmnsn_color color)
   dmnsn_color dmnsn_color_add(dmnsn_color color1, dmnsn_color color2)
+  dmnsn_color dmnsn_color_sub(dmnsn_color color1, dmnsn_color color2)
   dmnsn_color dmnsn_color_mul(double n, dmnsn_color color)
 
   dmnsn_color dmnsn_black
   dmnsn_color dmnsn_white
-  dmnsn_color dmnsn_clear
   dmnsn_color dmnsn_red
   dmnsn_color dmnsn_green
   dmnsn_color dmnsn_blue
@@ -174,6 +169,18 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_color dmnsn_orange
   dmnsn_color dmnsn_yellow
   dmnsn_color dmnsn_cyan
+
+  ctypedef struct dmnsn_tcolor:
+    dmnsn_color c
+    double T
+    double F
+
+  dmnsn_tcolor dmnsn_new_tcolor(dmnsn_color c, double T, double F)
+  dmnsn_tcolor DMNSN_TCOLOR(dmnsn_color c)
+  dmnsn_tcolor dmnsn_new_tcolor5(double R, double G, double B,
+                                 double T, double F)
+
+  dmnsn_tcolor dmnsn_clear
 
   ############
   # Canvases #
@@ -186,11 +193,11 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_canvas *dmnsn_new_canvas(size_t width, size_t height)
   void dmnsn_delete_canvas(dmnsn_canvas *canvas)
 
-  dmnsn_color dmnsn_canvas_get_pixel(dmnsn_canvas *canvas, size_t x, size_t y)
+  dmnsn_tcolor dmnsn_canvas_get_pixel(dmnsn_canvas *canvas, size_t x, size_t y)
   void dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
-                              dmnsn_color color)
+                              dmnsn_tcolor tcolor)
 
-  void dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_color color)
+  void dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_tcolor tcolor)
 
   int dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
   int dmnsn_png_write_canvas(dmnsn_canvas *canvas, FILE *file)
@@ -234,7 +241,7 @@ cdef extern from "../libdimension/dimension.h":
 
   ctypedef struct dmnsn_pigment:
     dmnsn_matrix trans
-    dmnsn_color quick_color
+    dmnsn_tcolor quick_color
 
   ctypedef enum dmnsn_pigment_map_flags:
     DMNSN_PIGMENT_MAP_REGULAR
@@ -242,7 +249,7 @@ cdef extern from "../libdimension/dimension.h":
 
   void dmnsn_delete_pigment(dmnsn_pigment *pigment)
 
-  dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_color color)
+  dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_tcolor tcolor)
   dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas)
   dmnsn_pigment *dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern,
                                                dmnsn_map *map,
@@ -270,7 +277,7 @@ cdef extern from "../libdimension/dimension.h":
 
   void dmnsn_finish_cascade(dmnsn_finish *default_finish, dmnsn_finish *finish)
 
-  dmnsn_ambient *dmnsn_new_basic_ambient(dmnsn_color ambient)
+  dmnsn_ambient *dmnsn_new_ambient(dmnsn_color ambient)
   dmnsn_diffuse *dmnsn_new_lambertian(double diffuse)
   dmnsn_specular *dmnsn_new_phong(double specular, double exp)
   dmnsn_reflection *dmnsn_new_basic_reflection(dmnsn_color min, dmnsn_color max,
@@ -332,7 +339,8 @@ cdef extern from "../libdimension/dimension.h":
   # Lights #
   ##########
 
-  ctypedef struct dmnsn_light
+  ctypedef struct dmnsn_light:
+    dmnsn_vector x0
 
   dmnsn_light *dmnsn_new_light()
   void dmnsn_delete_light(dmnsn_light *light)

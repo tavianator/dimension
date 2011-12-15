@@ -201,16 +201,16 @@ dmnsn_png_write_canvas_thread(void *ptr)
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
       /* Invert the rows.  PNG coordinates are fourth quadrant. */
-      dmnsn_color color = dmnsn_canvas_get_pixel(payload->canvas,
-                                                 x, height - y - 1);
-      color = dmnsn_remove_filter(color);
-      color = dmnsn_color_to_sRGB(color);
-      color = dmnsn_color_saturate(color);
+      dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(payload->canvas,
+                                                   x, height - y - 1);
+      tcolor = dmnsn_tcolor_remove_filter(tcolor);
+      tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
+      tcolor = dmnsn_tcolor_saturate(tcolor);
 
-      row[4*x]     = lround(color.R*UINT16_MAX);
-      row[4*x + 1] = lround(color.G*UINT16_MAX);
-      row[4*x + 2] = lround(color.B*UINT16_MAX);
-      row[4*x + 3] = lround(color.trans*UINT16_MAX);
+      row[4*x]     = lround(tcolor.c.R*UINT16_MAX);
+      row[4*x + 1] = lround(tcolor.c.G*UINT16_MAX);
+      row[4*x + 2] = lround(tcolor.c.B*UINT16_MAX);
+      row[4*x + 3] = lround(tcolor.T*UINT16_MAX);
     }
 
     /* Write the row */
@@ -350,41 +350,41 @@ dmnsn_png_read_canvas_thread(void *ptr)
      of an alpha channel. */
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
-      dmnsn_color color;
-      color.filter = 0.0;
+      dmnsn_tcolor tcolor;
+      tcolor.F = 0.0;
 
       if (color_type & PNG_COLOR_MASK_ALPHA) {
         if (bit_depth == 16) {
           png_bytep png_pixel = image + 8*(y*width + x);
-          color.R = (double)((png_pixel[0] << 8) + png_pixel[1])/UINT16_MAX;
-          color.G = (double)((png_pixel[2] << 8) + png_pixel[3])/UINT16_MAX;
-          color.B = (double)((png_pixel[4] << 8) + png_pixel[5])/UINT16_MAX;
-          color.trans = (double)((png_pixel[6] << 8) + png_pixel[7])/UINT16_MAX;
+          tcolor.c.R = (double)((png_pixel[0] << 8) + png_pixel[1])/UINT16_MAX;
+          tcolor.c.G = (double)((png_pixel[2] << 8) + png_pixel[3])/UINT16_MAX;
+          tcolor.c.B = (double)((png_pixel[4] << 8) + png_pixel[5])/UINT16_MAX;
+          tcolor.T   = (double)((png_pixel[6] << 8) + png_pixel[7])/UINT16_MAX;
         } else {
           png_bytep png_pixel = image + 4*(y*width + x);
-          color.R = (double)png_pixel[0]/UINT8_MAX;
-          color.G = (double)png_pixel[1]/UINT8_MAX;
-          color.B = (double)png_pixel[2]/UINT8_MAX;
-          color.trans = (double)png_pixel[3]/UINT8_MAX;
+          tcolor.c.R = (double)png_pixel[0]/UINT8_MAX;
+          tcolor.c.G = (double)png_pixel[1]/UINT8_MAX;
+          tcolor.c.B = (double)png_pixel[2]/UINT8_MAX;
+          tcolor.T   = (double)png_pixel[3]/UINT8_MAX;
         }
       } else {
-        color.trans = 0.0;
+        tcolor.T = 0.0;
 
         if (bit_depth == 16) {
           png_bytep png_pixel = image + 6*(y*width + x);
-          color.R = (double)((png_pixel[0] << 8) + png_pixel[1])/UINT16_MAX;
-          color.G = (double)((png_pixel[2] << 8) + png_pixel[3])/UINT16_MAX;
-          color.B = (double)((png_pixel[4] << 8) + png_pixel[5])/UINT16_MAX;
+          tcolor.c.R = (double)((png_pixel[0] << 8) + png_pixel[1])/UINT16_MAX;
+          tcolor.c.G = (double)((png_pixel[2] << 8) + png_pixel[3])/UINT16_MAX;
+          tcolor.c.B = (double)((png_pixel[4] << 8) + png_pixel[5])/UINT16_MAX;
         } else {
           png_bytep png_pixel = image + 3*(y*width + x);
-          color.R = (double)png_pixel[0]/UINT8_MAX;
-          color.G = (double)png_pixel[1]/UINT8_MAX;
-          color.B = (double)png_pixel[2]/UINT8_MAX;
+          tcolor.c.R = (double)png_pixel[0]/UINT8_MAX;
+          tcolor.c.G = (double)png_pixel[1]/UINT8_MAX;
+          tcolor.c.B = (double)png_pixel[2]/UINT8_MAX;
         }
       }
 
-      color = dmnsn_color_from_sRGB(color);
-      dmnsn_canvas_set_pixel(*payload->canvas, x, height - y - 1, color);
+      tcolor.c = dmnsn_color_from_sRGB(tcolor.c);
+      dmnsn_canvas_set_pixel(*payload->canvas, x, height - y - 1, tcolor);
     }
 
     dmnsn_future_increment(payload->future);

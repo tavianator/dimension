@@ -32,8 +32,8 @@ typedef struct dmnsn_pigment dmnsn_pigment;
  * @param[in] v        The point to color.
  * @return The color of the pigment at \p v.
  */
-typedef dmnsn_color dmnsn_pigment_fn(const dmnsn_pigment *pigment,
-                                     dmnsn_vector v);
+typedef dmnsn_tcolor dmnsn_pigment_fn(const dmnsn_pigment *pigment,
+                                      dmnsn_vector v);
 
 /**
  * Pigment initializer callback.
@@ -51,7 +51,7 @@ struct dmnsn_pigment {
   dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
 
   /** Quick color -- used for low-quality renders. */
-  dmnsn_color quick_color;
+  dmnsn_tcolor quick_color;
 
   /** Generic pointer. */
   void *ptr;
@@ -86,5 +86,5 @@ void dmnsn_pigment_initialize(dmnsn_pigment *pigment);
  * @param[in] v        The point to color.
  * @return The color at \p v.
  */
-dmnsn_color dmnsn_pigment_evaluate(const dmnsn_pigment *pigment,
-                                   dmnsn_vector v);
+dmnsn_tcolor dmnsn_pigment_evaluate(const dmnsn_pigment *pigment,
+                                    dmnsn_vector v);

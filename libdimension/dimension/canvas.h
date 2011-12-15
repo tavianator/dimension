@@ -26,7 +26,7 @@
 #include <stddef.h>
 
 /** A canvas, or image. */
-typedef struct {
+typedef struct dmnsn_canvas {
   size_t width;  /**< Canvas width. */
   size_t height; /**< Canvas height. */
 
@@ -38,7 +38,7 @@ typedef struct {
    * Stored in first-quadrant representation (origin is bottom-left).  The pixel
    * at (a,b) is accessible as pixels[b*width + a].
    */
-  dmnsn_color *pixels;
+  dmnsn_tcolor *pixels;
 
   dmnsn_refcount refcount; /**< @internal Reference count. */
 } dmnsn_canvas;
@@ -94,9 +94,9 @@ void dmnsn_canvas_optimize(dmnsn_canvas *canvas,
  * @param[in] canvas  The canvas to access.
  * @param[in] x       The x coordinate.
  * @param[in] y       The y coordinate.
- * @return The color of the canvas at (\p x, \p y).
+ * @return The color of the pixel at (\p x, \p y).
  */
-DMNSN_INLINE dmnsn_color
+DMNSN_INLINE dmnsn_tcolor
 dmnsn_canvas_get_pixel(const dmnsn_canvas *canvas, size_t x, size_t y)
 {
   dmnsn_assert(x < canvas->width && y < canvas->height,
@@ -105,18 +105,18 @@ dmnsn_canvas_get_pixel(const dmnsn_canvas *canvas, size_t x, size_t y)
 }
 
 /**
- * Set the color of a pixel.
+ * Set the value of a pixel.
  * @param[in,out] canvas  The canvas to modify.
  * @param[in]     x       The x coordinate of the pixel.
  * @param[in]     y       The y coordinate of the pixel.
- * @param[in]     color   The color to set the pixel at (\p x, \p y) to.
+ * @param[in]     tcolor  The value to set the pixel at (\p x, \p y) to.
  */
 void dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
-                            dmnsn_color color);
+                            dmnsn_tcolor tcolor);
 
 /**
  * Clear a canvas uniformly with a given color.
  * @param[in,out] canvas  The canvas to erase.
- * @param[in]     color   The color to paint it with.
+ * @param[in]     tcolor  The color to paint it with.
  */
-void dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_color color);
+void dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_tcolor tcolor);

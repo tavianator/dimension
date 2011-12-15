@@ -26,16 +26,14 @@
 #include "dimension.h"
 
 /** Canvas pigment color callback. */
-static dmnsn_color
+static dmnsn_tcolor
 dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
   dmnsn_canvas *canvas = pigment->ptr;
 
   size_t x = llround((fmod(v.x, 1.0) + 1.0)*(canvas->width  - 1));
   size_t y = llround((fmod(v.y, 1.0) + 1.0)*(canvas->height - 1));
-  dmnsn_color c = dmnsn_canvas_get_pixel(canvas,
-                                         x%canvas->width, y%canvas->height);
-  return c;
+  return dmnsn_canvas_get_pixel(canvas, x%canvas->width, y%canvas->height);
 }
 
 /** Canvas pigment destructor. */

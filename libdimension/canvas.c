@@ -35,7 +35,7 @@ dmnsn_new_canvas(size_t width, size_t height)
   canvas->width      = width;
   canvas->height     = height;
   canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
-  canvas->pixels     = dmnsn_malloc(sizeof(dmnsn_color)*width*height);
+  canvas->pixels     = dmnsn_malloc(sizeof(dmnsn_tcolor)*width*height);
   canvas->refcount   = 1;
 
   return canvas;
@@ -67,16 +67,16 @@ dmnsn_canvas_optimize(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer)
   dmnsn_array_push(canvas->optimizers, &optimizer);
 }
 
-/* Set the color of a pixel */
+/* Set the value of a pixel */
 void
 dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
-                       dmnsn_color color)
+                       dmnsn_tcolor tcolor)
 {
   dmnsn_assert(x < canvas->width && y < canvas->height,
                "Canvas access out of bounds.");
 
   /* Set the pixel */
-  canvas->pixels[y*canvas->width + x] = color;
+  canvas->pixels[y*canvas->width + x] = tcolor;
 
   /* Call the optimizers */
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
@@ -86,11 +86,11 @@ dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
 
 /* Fill a canvas with a solid color */
 void
-dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_color color)
+dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_tcolor tcolor)
 {
   for (size_t x = 0; x < canvas->width; ++x) {
     for (size_t y = 0; y < canvas->height; ++y) {
-      dmnsn_canvas_set_pixel(canvas, x, y, color);
+      dmnsn_canvas_set_pixel(canvas, x, y, tcolor);
     }
   }
 }

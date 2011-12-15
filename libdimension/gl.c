@@ -40,10 +40,6 @@ dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 int
 dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 {
-  GLushort *pixels; /* Array of 16-bit ints in RGBA order */
-  GLushort *pixel;
-  dmnsn_color color;
-
   size_t width = canvas->width;
   size_t height = canvas->height;
 
@@ -56,21 +52,21 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   }
 
   /* We couldn't, so transform the canvas to RGB now */
-  pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
+  GLushort *pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
 
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
-      pixel = pixels + 4*(y*width + x);
+      GLushort *pixel = pixels + 4*(y*width + x);
 
-      color = dmnsn_canvas_get_pixel(canvas, x, y);
-      color = dmnsn_remove_filter(color);
-      color = dmnsn_color_to_sRGB(color);
-      color = dmnsn_color_saturate(color);
+      dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(canvas, x, y);
+      tcolor = dmnsn_tcolor_remove_filter(tcolor);
+      tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
+      tcolor = dmnsn_tcolor_saturate(tcolor);
 
-      pixel[0] = lround(color.R*UINT16_MAX);
-      pixel[1] = lround(color.G*UINT16_MAX);
-      pixel[2] = lround(color.B*UINT16_MAX);
-      pixel[3] = lround(color.trans*UINT16_MAX);
+      pixel[0] = lround(tcolor.c.R*UINT16_MAX);
+      pixel[1] = lround(tcolor.c.G*UINT16_MAX);
+      pixel[2] = lround(tcolor.c.B*UINT16_MAX);
+      pixel[3] = lround(tcolor.T*UINT16_MAX);
     }
   }
 
@@ -102,13 +98,15 @@ dmnsn_gl_read_canvas(size_t x0, size_t y0,
     for (size_t x = 0; x < width; ++x) {
       GLushort *pixel = pixels + 4*(y*width + x);
 
-      dmnsn_color color = dmnsn_new_color5((double)pixel[0]/UINT16_MAX,
-                                           (double)pixel[1]/UINT16_MAX,
-                                           (double)pixel[2]/UINT16_MAX,
-                                           (double)pixel[3]/UINT16_MAX,
-                                           0.0);
-      color = dmnsn_color_from_sRGB(color);
-      dmnsn_canvas_set_pixel(canvas, x, y, color);
+      dmnsn_tcolor tcolor = dmnsn_new_tcolor5(
+        (double)pixel[0]/UINT16_MAX,
+        (double)pixel[1]/UINT16_MAX,
+        (double)pixel[2]/UINT16_MAX,
+        (double)pixel[3]/UINT16_MAX,
+        0.0
+      );
+      tcolor.c = dmnsn_color_from_sRGB(tcolor.c);
+      dmnsn_canvas_set_pixel(canvas, x, y, tcolor);
     }
   }
 
