@@ -17,8 +17,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-camera = PerspectiveCamera(location = (3, 6, -11),
-                           look_at  = 0)
+camera = PerspectiveCamera(
+  location = (3, 6, -11),
+  look_at  = 0,
+)
 
 background = 0.5*sRGB(0.73, 0.90, 0.97)
 
@@ -40,30 +42,32 @@ objects.append(
   )
 )
 
-def make_sphere(x, y, z, size):
-  size -= 1
+class ShinySphere(Sphere):
+  def __init__(self, x, y, z, size):
+    size -= 1
 
-  dx = sin(2*pi*x/size)
-  dy = sin(2*pi*y/size)
-  dz = sin(2*pi*z/size)
-  return Sphere(
-    center = 5*Vector(x, y, z)/size
-             + Vector(dy + dz, dx + dz, dx + dy)/4
-             - Vector(2.5, 2.5, 2.5),
-    radius = 2/size,
+    dx = sin(2*pi*x/size)
+    dy = sin(2*pi*y/size)
+    dz = sin(2*pi*z/size)
+    Sphere.__init__(
+      self,
+      center = 5*Vector(x, y, z)/size
+               + Vector(dy + dz, dx + dz, dx + dy)/4
+               - Vector(2.5, 2.5, 2.5),
+      radius = 2/size,
 
-    texture = Texture(
-      pigment = sRGB(x/size, y/size, z/size),
-      finish  = Ambient(sRGB(0.25))
-                + Diffuse(sRGB(0.8))
-                + Reflection(0, 0.25)
+      texture = Texture(
+        pigment = sRGB(x/size, y/size, z/size),
+        finish  = Ambient(sRGB(0.25))
+                  + Diffuse(sRGB(0.8))
+                  + Reflection(0, 0.25)
+      )
     )
-  )
 
 size = 10
 for x in range(size):
   for y in range(size):
     for z in range(size):
-      objects.append(make_sphere(x, y, z, size))
+      objects.append(ShinySphere(x, y, z, size))
 
 recursion_limit = 2*size
