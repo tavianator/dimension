@@ -1273,8 +1273,8 @@ cdef class Union(Object):
 
     Additionally, Union() accepts any arguments that Object() accepts.
     """
-    if len(objects) < 2:
-      raise TypeError("expected a list of two or more Objects")
+    if len(objects) < 1:
+      raise TypeError("expected a list of one or more Objects")
 
     cdef dmnsn_array *array = dmnsn_new_array(sizeof(dmnsn_object *))
     cdef dmnsn_object *o
@@ -1302,8 +1302,8 @@ cdef class Intersection(Object):
 
     Additionally, Intersection() accepts any arguments that Object() accepts.
     """
-    if len(objects) < 2:
-      raise TypeError("expected a list of two or more Objects")
+    if len(objects) < 1:
+      raise TypeError("expected a list of one or more Objects")
 
     cdef dmnsn_object *o
 
@@ -1329,8 +1329,8 @@ cdef class Difference(Object):
 
     Additionally, Difference() accepts any arguments that Object() accepts.
     """
-    if len(objects) < 2:
-      raise TypeError("expected a list of two or more Objects")
+    if len(objects) < 1:
+      raise TypeError("expected a list of one or more Objects")
 
     cdef dmnsn_object *o
 
@@ -1356,8 +1356,8 @@ cdef class Merge(Object):
 
     Additionally, Merge() accepts any arguments that Object() accepts.
     """
-    if len(objects) < 2:
-      raise TypeError("expected a list of two or more Objects")
+    if len(objects) < 1:
+      raise TypeError("expected a list of one or more Objects")
 
     cdef dmnsn_object *o
 
