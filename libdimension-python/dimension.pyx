@@ -1124,16 +1124,25 @@ cdef class Object(_Transformable):
 
 cdef class Triangle(Object):
   """A triangle."""
-  def __init__(self, a, b, c, *args, **kwargs):
+  def __init__(self, a, b, c, a_normal = None, b_normal = None, c_normal = None,
+               *args, **kwargs):
     """
     Create a Triangle.
 
     Keyword arguments:
-    a, b, c -- the corners of the triangle
+    a, b, c                      -- the corners of the triangle
+    a_normal, b_normal, c_normal -- the optional normal vectors at those corners
 
     Additionally, Triangle() accepts any arguments that Object() accepts.
     """
-    self._object = dmnsn_new_triangle(Vector(a)._v, Vector(b)._v, Vector(c)._v)
+    if a_normal is None and b_normal is None and c_normal is None:
+      a_normal = cross(b - a, c - a)
+      b_normal = a_normal
+      c_normal = a_normal
+    self._object = dmnsn_new_triangle(Vector(a)._v, Vector(b)._v, Vector(c)._v,
+                                      Vector(a_normal)._v,
+                                      Vector(b_normal)._v,
+                                      Vector(c_normal)._v)
     Object.__init__(self, *args, **kwargs)
 
 cdef class Plane(Object):

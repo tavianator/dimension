@@ -26,14 +26,28 @@
 #include <stdbool.h>
 
 /**
- * A triangle.
+ * A triangle, with normals interpolated between the points.
+ * @param[in] a   The first corner of the triangle.
+ * @param[in] b   The second corner of the triangle.
+ * @param[in] c   The third corner of the triangle.
+ * @param[in] na  The normal at \p a.
+ * @param[in] nb  The normal at \p b.
+ * @param[in] nc  The normal at \p c.
+ */
+dmnsn_object *dmnsn_new_triangle(
+  dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
+  dmnsn_vector na, dmnsn_vector nb, dmnsn_vector nc
+);
+
+/**
+ * A flat triangle, without normal interpolation.
  * @param[in] a  The first corner of the triangle.
  * @param[in] b  The second corner of the triangle.
  * @param[in] c  The third corner of the triangle.
  */
-dmnsn_object *dmnsn_new_triangle(dmnsn_vector a,
-                                 dmnsn_vector b,
-                                 dmnsn_vector c);
+dmnsn_object *dmnsn_new_flat_triangle(
+  dmnsn_vector a, dmnsn_vector b, dmnsn_vector c
+);
 
 /**
  * A plane.

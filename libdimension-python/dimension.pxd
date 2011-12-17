@@ -321,9 +321,15 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_object *dmnsn_new_object()
   void dmnsn_delete_object(dmnsn_object *object)
 
+  dmnsn_object *dmnsn_new_flat_triangle(dmnsn_vector a,
+                                        dmnsn_vector b,
+                                        dmnsn_vector c)
   dmnsn_object *dmnsn_new_triangle(dmnsn_vector a,
                                    dmnsn_vector b,
-                                   dmnsn_vector c)
+                                   dmnsn_vector c,
+                                   dmnsn_vector na,
+                                   dmnsn_vector nb,
+                                   dmnsn_vector nc)
   dmnsn_object *dmnsn_new_plane(dmnsn_vector normal)
   dmnsn_object *dmnsn_new_sphere()
   dmnsn_object *dmnsn_new_cube()

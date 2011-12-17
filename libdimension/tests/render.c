@@ -240,7 +240,7 @@ dmnsn_test_scene_add_triangle_strip(dmnsn_scene *scene)
   strip_textures[2]->pigment =
     dmnsn_new_solid_pigment(DMNSN_TCOLOR(dmnsn_yellow));
   for (unsigned int i = 0; i < 128; ++i) {
-    dmnsn_object *triangle = dmnsn_new_triangle(a, b, c);
+    dmnsn_object *triangle = dmnsn_new_flat_triangle(a, b, c);
     triangle->texture = strip_textures[i%3];
     DMNSN_INCREF(triangle->texture);
     dmnsn_array_push(strip_array, &triangle);
