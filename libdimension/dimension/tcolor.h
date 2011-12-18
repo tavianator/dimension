@@ -30,6 +30,11 @@ typedef struct dmnsn_tcolor {
   double F;      /**< Proportion of filtered transparency. */
 } dmnsn_tcolor;
 
+/** A standard format string for colors. */
+#define DMNSN_TCOLOR_FORMAT "TColor<%g, %g, %g, %g, %g>"
+/** The appropriate arguements to printf() a color. */
+#define DMNSN_TCOLOR_PRINTF(tc) (tc).c.R, (tc).c.G, (tc).c.B, (tc).T, (tc).F
+
 /** Create a tcolor. */
 DMNSN_INLINE dmnsn_tcolor
 dmnsn_new_tcolor(dmnsn_color c, double T, double F)
