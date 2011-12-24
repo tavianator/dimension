@@ -33,8 +33,8 @@ dmnsn_new_texture(void)
   texture->pigment     = NULL;
   texture->finish      = dmnsn_new_finish();
   texture->trans       = dmnsn_identity_matrix();
-  texture->refcount    = 1;
   texture->initialized = false;
+  DMNSN_REFCOUNT_INIT(texture);
   return texture;
 }
 

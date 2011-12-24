@@ -36,7 +36,7 @@ dmnsn_new_light(void)
   light->shadow_fn       = NULL;
   light->free_fn         = NULL;
   light->ptr             = NULL;
-  light->refcount        = 1;
+  DMNSN_REFCOUNT_INIT(light);
   return light;
 }
 

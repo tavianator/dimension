@@ -24,10 +24,10 @@
  */
 
 /** @internal The name of the reference count field in all structs. */
-#define DMNSN_REFCOUNT_NAME refcount
+#define DMNSN_REFCOUNT_FIELD refcount
 
 /** @internal Declare a reference count field in a struct. */
-#define DMNSN_REFCOUNT unsigned int DMNSN_REFCOUNT_NAME
+#define DMNSN_REFCOUNT unsigned int DMNSN_REFCOUNT_FIELD
 
 /**
  * Increment a reference count.
@@ -38,6 +38,6 @@
     /* Suppress "address will always evaluate to true" warning */       \
     void *testptr = (object);                                           \
     if (testptr) {                                                      \
-      ++(object)->DMNSN_REFCOUNT_NAME;                                  \
+      ++(object)->DMNSN_REFCOUNT_FIELD;                                  \
     }                                                                   \
   } while (0)

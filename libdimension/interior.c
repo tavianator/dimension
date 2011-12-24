@@ -31,9 +31,9 @@ dmnsn_interior *
 dmnsn_new_interior(void)
 {
   dmnsn_interior *interior = dmnsn_malloc(sizeof(dmnsn_interior));
-  interior->ior       = 1.0;
-  interior->free_fn   = NULL;
-  interior->refcount  = 1;
+  interior->ior     = 1.0;
+  interior->free_fn = NULL;
+  DMNSN_REFCOUNT_INIT(interior);
   return interior;
 }
 

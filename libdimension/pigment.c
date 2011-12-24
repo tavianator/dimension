@@ -35,8 +35,8 @@ dmnsn_new_pigment(void)
   pigment->free_fn       = NULL;
   pigment->trans         = dmnsn_identity_matrix();
   pigment->quick_color   = DMNSN_TCOLOR(dmnsn_black);
-  pigment->refcount      = 1;
   pigment->initialized   = false;
+  DMNSN_REFCOUNT_INIT(pigment);
   return pigment;
 }
 

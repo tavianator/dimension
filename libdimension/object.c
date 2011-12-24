@@ -41,8 +41,8 @@ dmnsn_new_object(void)
   object->inside_fn       = NULL;
   object->initialize_fn   = NULL;
   object->free_fn         = NULL;
-  object->refcount        = 1;
   object->initialized     = false;
+  DMNSN_REFCOUNT_INIT(object);
   return object;
 }
 

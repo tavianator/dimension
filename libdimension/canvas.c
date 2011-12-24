@@ -31,13 +31,11 @@ dmnsn_canvas *
 dmnsn_new_canvas(size_t width, size_t height)
 {
   dmnsn_canvas *canvas = dmnsn_malloc(sizeof(dmnsn_canvas));
-
   canvas->width      = width;
   canvas->height     = height;
   canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
   canvas->pixels     = dmnsn_malloc(sizeof(dmnsn_tcolor)*width*height);
-  canvas->refcount   = 1;
-
+  DMNSN_REFCOUNT_INIT(canvas);
   return canvas;
 }
 

@@ -30,7 +30,7 @@ dmnsn_new_ambient(dmnsn_color ambient_light)
 {
   dmnsn_ambient *ambient = dmnsn_malloc(sizeof(dmnsn_ambient));
   ambient->ambient = ambient_light;
-  ambient->refcount = 1;
+  DMNSN_REFCOUNT_INIT(ambient);
   return ambient;
 }
 
@@ -46,9 +46,9 @@ dmnsn_diffuse *
 dmnsn_new_diffuse(void)
 {
   dmnsn_diffuse *diffuse = dmnsn_malloc(sizeof(dmnsn_diffuse));
-  diffuse->free_fn  = NULL;
-  diffuse->ptr      = NULL;
-  diffuse->refcount = 1;
+  diffuse->free_fn = NULL;
+  diffuse->ptr     = NULL;
+  DMNSN_REFCOUNT_INIT(diffuse);
   return diffuse;
 }
 
@@ -67,9 +67,9 @@ dmnsn_specular *
 dmnsn_new_specular(void)
 {
   dmnsn_specular *specular = dmnsn_malloc(sizeof(dmnsn_specular));
-  specular->free_fn  = NULL;
-  specular->ptr      = NULL;
-  specular->refcount = 1;
+  specular->free_fn = NULL;
+  specular->ptr     = NULL;
+  DMNSN_REFCOUNT_INIT(specular);
   return specular;
 }
 
@@ -88,9 +88,9 @@ dmnsn_reflection *
 dmnsn_new_reflection(void)
 {
   dmnsn_reflection *reflection = dmnsn_malloc(sizeof(dmnsn_reflection));
-  reflection->free_fn  = NULL;
-  reflection->ptr      = NULL;
-  reflection->refcount = 1;
+  reflection->free_fn = NULL;
+  reflection->ptr     = NULL;
+  DMNSN_REFCOUNT_INIT(reflection);
   return reflection;
 }
 

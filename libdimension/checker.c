@@ -23,7 +23,7 @@
  * Checker pattern.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 
 /** Checker pattern callback. */
 static double
@@ -54,7 +54,7 @@ dmnsn_checker_pattern_fn(const dmnsn_pattern *checker, dmnsn_vector v)
 /** The singleton instance. */
 static dmnsn_pattern dmnsn_checker_instance = {
   .pattern_fn = dmnsn_checker_pattern_fn,
-  .refcount = 1,
+  DMNSN_REFCOUNT_INITIALIZER,
 };
 
 dmnsn_pattern *

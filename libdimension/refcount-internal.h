@@ -24,10 +24,21 @@
  */
 
 /**
+ * Initialize a reference count.
+ * @param[in,out] object  The reference-counted object.
+ */
+#define DMNSN_REFCOUNT_INIT(object) (void)((object)->DMNSN_REFCOUNT_FIELD = 1)
+
+/**
+ * Initialize a reference count in a statically-allocated object.
+ */
+#define DMNSN_REFCOUNT_INITIALIZER .DMNSN_REFCOUNT_FIELD = 1
+
+/**
  * Decrement a reference count.
  * @param[in,out] object  The reference-counted object to release.
  * @return Whether the object is now garbage.
  */
 #define DMNSN_DECREF(object)                                            \
-  ((object) && ((object)->DMNSN_REFCOUNT_NAME == 0                      \
-                || --(object)->DMNSN_REFCOUNT_NAME == 0))
+  ((object) && ((object)->DMNSN_REFCOUNT_FIELD == 0                      \
+                || --(object)->DMNSN_REFCOUNT_FIELD == 0))

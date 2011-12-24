@@ -30,8 +30,8 @@ dmnsn_pattern *
 dmnsn_new_pattern(void)
 {
   dmnsn_pattern *pattern = dmnsn_malloc(sizeof(dmnsn_pattern));
-  pattern->free_fn  = NULL;
-  pattern->refcount = 1;
+  pattern->free_fn = NULL;
+  DMNSN_REFCOUNT_INIT(pattern);
   return pattern;
 }
 

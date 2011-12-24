@@ -31,9 +31,9 @@ dmnsn_camera *
 dmnsn_new_camera(void)
 {
   dmnsn_camera *camera = dmnsn_malloc(sizeof(dmnsn_camera));
-  camera->free_fn  = NULL;
-  camera->trans    = dmnsn_identity_matrix();
-  camera->refcount = 1;
+  camera->free_fn = NULL;
+  camera->trans   = dmnsn_identity_matrix();
+  DMNSN_REFCOUNT_INIT(camera);
   return camera;
 }
 

@@ -23,7 +23,7 @@
  * Leopard pattern.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 #include <math.h>
 
 /** Leopard pattern callback. */
@@ -37,7 +37,7 @@ dmnsn_leopard_pattern_fn(const dmnsn_pattern *leopard, dmnsn_vector v)
 /** The singleton instance. */
 static dmnsn_pattern dmnsn_leopard_instance = {
   .pattern_fn = dmnsn_leopard_pattern_fn,
-  .refcount = 1,
+  DMNSN_REFCOUNT_INITIALIZER,
 };
 
 dmnsn_pattern *
