@@ -106,6 +106,19 @@ dnl Platform feature tests
 m4_include(ax_pthread.m4)
 AX_PTHREAD([], [AC_MSG_ERROR([pthread support not detected])])
 
+AC_MSG_CHECKING([for sys_errlist])
+AC_LINK_IFELSE([
+  AC_LANG_PROGRAM(
+    [ #include <stdio.h>
+      #include <errno.h> ],
+    [ const char *errstr = sys_errlist@<:@sys_nerr - 1@:>@; ]
+  )],
+  [AC_DEFINE([DMNSN_SYS_ERRLIST], [1])
+   AC_MSG_RESULT([yes])],
+  [AC_DEFINE([DMNSN_SYS_ERRLIST], [0])
+   AC_MSG_RESULT([no])]
+)
+
 AC_MSG_CHECKING([for sched_getaffinity()])
 AC_LINK_IFELSE([
   AC_LANG_PROGRAM(

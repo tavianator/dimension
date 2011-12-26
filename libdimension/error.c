@@ -25,8 +25,9 @@
 
 #include "dimension-internal.h"
 #include <pthread.h>
-#include <stdio.h>     /* For fprintf() */
-#include <stdlib.h>    /* For exit() */
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 
 /** Report internal errors in this file. */
 #define DMNSN_LOCAL_ERROR(str)                          \
@@ -55,9 +56,11 @@ dmnsn_local_unlock_mutex_impl(pthread_mutex_t *mutex)
 }
 
 /** Lock a mutex, bailing out without dmnsn_error() on error. */
-#define dmnsn_local_lock_mutex(mutex) dmnsn_local_lock_mutex_impl((mutex)); {
+#define dmnsn_local_lock_mutex(mutex)           \
+  dmnsn_local_lock_mutex_impl((mutex)); {
 /** Unlock a mutex, bailing out without dmnsn_error() on error. */
-#define dmnsn_local_unlock_mutex(mutex) dmnsn_local_unlock_mutex_impl((mutex)); }
+#define dmnsn_local_unlock_mutex(mutex)         \
+  dmnsn_local_unlock_mutex_impl((mutex)); }
 
 /** The default fatal error handler. */
 static void dmnsn_default_fatal_error_fn(void);
@@ -69,7 +72,7 @@ static pthread_mutex_t dmnsn_fatal_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /** The current resilience. */
 static bool dmnsn_always_die = false;
-/** Mutex which protexts \c dmnsn_always_die. */
+/** Mutex which protects \c dmnsn_always_die. */
 static pthread_mutex_t dmnsn_always_die_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* Called by dmnsn_error macro (don't call directly) */
@@ -77,6 +80,8 @@ void
 dmnsn_report_error(bool die, const char *func, const char *file,
                    unsigned int line, const char *str)
 {
+  int err = errno;
+
   bool always_die;
   dmnsn_local_lock_mutex(&dmnsn_always_die_mutex);
     always_die = dmnsn_always_die;
@@ -84,6 +89,15 @@ dmnsn_report_error(bool die, const char *func, const char *file,
 
   fprintf(stderr, "Dimension %s: %s, %s:%u: %s\n",
           die ? "ERROR" : "WARNING", func, file, line, str);
+  if (err != 0) {
+    fprintf(stderr, "Last error: %d", err);
+#if DMNSN_SYS_ERRLIST
+    if (err >= 0 && err < sys_nerr) {
+      fprintf(stderr, " (%s)", sys_errlist[err]);
+    }
+#endif
+    fprintf(stderr, "\n");
+  }
 
   if (die || always_die) {
     /* Prevent infinite recursion if the fatal error function itself calls
