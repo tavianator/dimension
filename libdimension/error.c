@@ -80,6 +80,7 @@ void
 dmnsn_report_error(bool die, const char *func, const char *file,
                    unsigned int line, const char *str)
 {
+  /* Save the value of errno */
   int err = errno;
 
   bool always_die;
@@ -87,8 +88,11 @@ dmnsn_report_error(bool die, const char *func, const char *file,
     always_die = dmnsn_always_die;
   dmnsn_local_unlock_mutex(&dmnsn_always_die_mutex);
 
+  /* Print the diagnostic string */
   fprintf(stderr, "Dimension %s: %s, %s:%u: %s\n",
           die ? "ERROR" : "WARNING", func, file, line, str);
+
+  /* Print the value of errno */
   if (err != 0) {
     fprintf(stderr, "Last error: %d", err);
 #if DMNSN_SYS_ERRLIST
@@ -99,13 +103,17 @@ dmnsn_report_error(bool die, const char *func, const char *file,
     fprintf(stderr, "\n");
   }
 
+  /* Print a stack trace to standard error */
+  dmnsn_backtrace(stderr);
+
+  /* Call the fatal error handler if needed */
   if (die || always_die) {
-    /* Prevent infinite recursion if the fatal error function itself calls
-       dmnsn_error() */
     static __thread bool thread_exiting = false;
 
     if (thread_exiting) {
       if (die) {
+        /* Prevent infinite recursion if the fatal error function itself calls
+           dmnsn_error() (not dmnsn_warning()) */
         DMNSN_LOCAL_ERROR("Error raised while in error handler, aborting.");
       }
     } else {
@@ -147,9 +155,6 @@ dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal)
 static void
 dmnsn_default_fatal_error_fn(void)
 {
-  /* Print a stack trace to standard error */
-  dmnsn_backtrace(stderr);
-
   if (dmnsn_is_main_thread()) {
     exit(EXIT_FAILURE);
   } else {

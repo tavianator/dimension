@@ -30,14 +30,14 @@
 
 /**
  * Report a warning.
- * @param[in] str       A string to print explaining the warning.
+ * @param[in] str  A string to print explaining the warning.
  */
 #define dmnsn_warning(str)                                              \
   dmnsn_report_error(false, DMNSN_FUNC, __FILE__, __LINE__, str)
 
 /**
  * Report an error.
- * @param[in] str       A string to print explaining the error.
+ * @param[in] str  A string to print explaining the error.
  */
 #define dmnsn_error(str)                                                \
   do {                                                                  \
