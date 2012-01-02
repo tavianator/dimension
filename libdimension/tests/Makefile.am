@@ -23,6 +23,7 @@ check_LTLIBRARIES = libdimension-tests.la
 check_PROGRAMS    = warning.test                                               \
                     warning-as-error.test                                      \
                     error.test                                                 \
+                    custom-error-fn.test                                       \
                     polynomial.test                                            \
                     prtree.test                                                \
                     png.test                                                   \
@@ -61,6 +62,9 @@ warning_as_error_test_LDADD   = libdimension-tests.la
 
 error_test_SOURCES = error.c
 error_test_LDADD   = libdimension-tests.la
+
+custom_error_fn_test_SOURCES = custom-error-fn.c
+custom_error_fn_test_LDADD   = libdimension-tests.la
 
 polynomial_test_SOURCES = polynomial.c
 polynomial_test_LDADD   = libdimension-tests.la
