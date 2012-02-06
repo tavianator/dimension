@@ -134,6 +134,10 @@ dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
       intersection->object = object;
     }
 
+    dmnsn_assert(!isnan(intersection->t), "Intersection point is NaN.");
+    dmnsn_assert(!dmnsn_vector_isnan(intersection->normal),
+                 "Intersection normal is NaN.");
+
     return true;
   } else {
     return false;

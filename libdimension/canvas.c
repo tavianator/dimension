@@ -72,6 +72,7 @@ dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
 {
   dmnsn_assert(x < canvas->width && y < canvas->height,
                "Canvas access out of bounds.");
+  dmnsn_assert(!dmnsn_tcolor_isnan(tcolor), "Pixel has NaN component.");
 
   /* Set the pixel */
   canvas->pixels[y*canvas->width + x] = tcolor;

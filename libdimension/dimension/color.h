@@ -164,6 +164,13 @@ dmnsn_color_saturate(dmnsn_color color)
   return color;
 }
 
+/** Return whether a color contains any NaN components. */
+DMNSN_INLINE bool
+dmnsn_color_isnan(dmnsn_color color)
+{
+  return isnan(color.R) || isnan(color.G) || isnan(color.B);
+}
+
 /* Standard colors */
 
 /** Black. */

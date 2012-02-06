@@ -99,6 +99,13 @@ dmnsn_tcolor_saturate(dmnsn_tcolor tcolor)
   return tcolor;
 }
 
+/** Return whether a tcolor contains any NaN components. */
+DMNSN_INLINE bool
+dmnsn_tcolor_isnan(dmnsn_tcolor tcolor)
+{
+  return dmnsn_color_isnan(tcolor.c) || isnan(tcolor.T) || isnan(tcolor.F);
+}
+
 /* Standard tcolors */
 
 /** Clear. */

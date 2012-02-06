@@ -445,3 +445,39 @@ dmnsn_bounding_box_is_infinite(dmnsn_bounding_box box)
 {
   return box.min.x == -INFINITY;
 }
+
+/** Return whether a vector contains any NaN components. */
+DMNSN_INLINE bool
+dmnsn_vector_isnan(dmnsn_vector v)
+{
+  return isnan(v.x) || isnan(v.y) || isnan(v.z);
+}
+
+/** Return whether a matrix contains any NaN components. */
+DMNSN_INLINE bool
+dmnsn_matrix_isnan(dmnsn_matrix m)
+{
+  size_t i, j;
+  for (i = 0; i < 3; ++i) {
+    for (j = 0; j < 4; ++j) {
+      if (isnan(m.n[i][j])) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** Return whether a line contains any NaN entries. */
+DMNSN_INLINE bool
+dmnsn_line_isnan(dmnsn_line l)
+{
+  return dmnsn_vector_isnan(l.x0) || dmnsn_vector_isnan(l.n);
+}
+
+/** Return whether a bounding box has any NaN components. */
+DMNSN_INLINE bool
+dmnsn_bounding_box_isnan(dmnsn_bounding_box box)
+{
+  return dmnsn_vector_isnan(box.min) || dmnsn_vector_isnan(box.max);
+}
