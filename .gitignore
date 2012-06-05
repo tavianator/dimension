@@ -11,6 +11,7 @@
 /m4
 /missing
 /py-compile
+/test-driver
 Makefile
 Makefile.in
 
@@ -21,6 +22,7 @@ Makefile.in
 /*/tests/*.test
 /*/tests/*.png
 /*/tests/*.log
+/*/tests/*.trs
 
 # Files created by `make bench'
 /*/bench/*.bench
