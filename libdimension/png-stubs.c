@@ -40,7 +40,7 @@ dmnsn_png_write_canvas(const dmnsn_canvas *canvas, FILE *file)
   return -1;
 }
 
-dmnsn_progress *
+dmnsn_future *
 dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
 {
   errno = ENOSYS;
@@ -54,7 +54,7 @@ dmnsn_png_read_canvas(FILE *file)
   return NULL;
 }
 
-dmnsn_progress *
+dmnsn_future *
 dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
 {
   errno = ENOSYS;
