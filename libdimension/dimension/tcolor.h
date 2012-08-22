@@ -109,4 +109,4 @@ dmnsn_tcolor_isnan(dmnsn_tcolor tcolor)
 /* Standard tcolors */
 
 /** Clear. */
-#define dmnsn_clear dmnsn_new_tcolor5(0.0, 0.0, 0.0, 0.0, 0.0)
+#define dmnsn_clear dmnsn_new_tcolor5(0.0, 0.0, 0.0, 1.0, 0.0)
