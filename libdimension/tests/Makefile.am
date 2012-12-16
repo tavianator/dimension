@@ -17,7 +17,8 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-INCLUDES = -I$(top_srcdir)/libdimension
+AM_CFLAGS = -I$(top_srcdir)/libdimension
+AM_CXXFLAGS = $(AM_CFLAGS)
 
 check_LTLIBRARIES = libdimension-tests.la
 check_PROGRAMS    = warning.test                                               \

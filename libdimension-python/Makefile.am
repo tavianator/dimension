@@ -20,9 +20,7 @@
 SUBDIRS = .                                                                    \
           tests
 
-INCLUDES = -I$(top_srcdir)/libdimension
-
-AM_CFLAGS = $(Python_CFLAGS)
+AM_CFLAGS = $(Python_CFLAGS) -I$(top_srcdir)/libdimension
 AM_LDFLAGS = $(Python_LDFLAGS)
 
 dimension.c: dimension.pyx dimension.pxd

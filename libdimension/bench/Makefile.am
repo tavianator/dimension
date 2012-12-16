@@ -17,14 +17,12 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-INCLUDES = -I$(top_srcdir)/libdimension
-
 EXTRA_PROGRAMS = array.bench                                                   \
                  geometry.bench                                                \
                  polynomial.bench                                              \
                  prtree.bench
 
-AM_CFLAGS  = $(libsandglass_CFLAGS) -fno-inline
+AM_CFLAGS  = $(libsandglass_CFLAGS) -fno-inline -I$(top_srcdir)/libdimension
 AM_LDFLAGS = $(libsandglass_LIBS) $(top_builddir)/libdimension/libdimension.la
 
 array_bench_SOURCES = array.c
