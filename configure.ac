@@ -1,4 +1,4 @@
-dnl Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>
+dnl Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>
 dnl
 dnl This file is part of The Dimension Build Suite.
 dnl
@@ -100,6 +100,10 @@ PKG_CHECK_MODULES([libsandglass], [libsandglass >= 0.2],
                   [AC_MSG_WARN([libsandglass not found - benchmarking suite will not work])])
 AC_SUBST(libsandglass_CFLAGS)
 AC_SUBST(libsandglass_LIBS)
+
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.4],
+                  [],
+                  [AC_MSG_WARN([check not found - test suite will not work])])
 
 dnl Platform feature tests
 
