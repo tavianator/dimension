@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2012 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -26,27 +26,5 @@
  * from B-trees.
  */
 
-#include <stdbool.h>
-
-/** A priority R-tree; the spatial subdivision method used for intersection
-    queries against the scene graph. */
-typedef struct dmnsn_prtree {
-  dmnsn_bounding_box bounding_box; /**< The bounding box for the whole scene. */
-  dmnsn_array *unbounded;          /**< The unbounded objects. */
-  dmnsn_array *bounded;            /**< A PR-tree of the bounded objects. */
-  size_t id;                       /**< A unique ID for the PR-tree. */
-} dmnsn_prtree;
-
 /** Create a PR-tree. */
-DMNSN_INTERNAL dmnsn_prtree *dmnsn_new_prtree(const dmnsn_array *objects);
-/** Delete a PR-tree. */
-DMNSN_INTERNAL void dmnsn_delete_prtree(dmnsn_prtree *tree);
-
-/** Find the closest ray-object intersection in the tree. */
-DMNSN_INTERNAL bool dmnsn_prtree_intersection(const dmnsn_prtree *tree,
-                                              dmnsn_line ray,
-                                              dmnsn_intersection *intersection,
-                                              bool reset);
-/** Determine whether a point is inside any object in the tree. */
-DMNSN_INTERNAL bool dmnsn_prtree_inside(const dmnsn_prtree *tree,
-                                        dmnsn_vector point);
+DMNSN_INTERNAL dmnsn_bvh_node *dmnsn_new_prtree(const dmnsn_array *objects);

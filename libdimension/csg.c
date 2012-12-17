@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2012 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -36,16 +36,16 @@ dmnsn_csg_union_intersection_fn(const dmnsn_object *csg,
                                 dmnsn_line line,
                                 dmnsn_intersection *intersection)
 {
-  dmnsn_prtree *prtree = csg->ptr;
-  return dmnsn_prtree_intersection(prtree, line, intersection, true);
+  dmnsn_bvh *bvh = csg->ptr;
+  return dmnsn_bvh_intersection(bvh, line, intersection, true);
 }
 
 /** CSG union inside callback. */
 static bool
 dmnsn_csg_union_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
-  dmnsn_prtree *prtree = csg->ptr;
-  return dmnsn_prtree_inside(prtree, point);
+  dmnsn_bvh *bvh = csg->ptr;
+  return dmnsn_bvh_inside(bvh, point);
 }
 
 /** CSG union initialization callback. */
@@ -54,16 +54,16 @@ dmnsn_csg_union_initialize_fn(dmnsn_object *csg)
 {
   csg->trans = dmnsn_identity_matrix();
 
-  dmnsn_prtree *prtree = dmnsn_new_prtree(csg->children);
-  csg->ptr = prtree;
-  csg->bounding_box = prtree->bounding_box;
+  dmnsn_bvh *bvh = dmnsn_new_bvh(csg->children, DMNSN_BVH_PRTREE);
+  csg->ptr = bvh;
+  csg->bounding_box = dmnsn_bvh_bounding_box(bvh);
 }
 
 /** CSG union destruction callback. */
 static void
 dmnsn_csg_union_free_fn(void *ptr)
 {
-  dmnsn_delete_prtree(ptr);
+  dmnsn_delete_bvh(ptr);
 }
 
 /* Bulk-load a union */

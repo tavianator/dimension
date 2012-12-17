@@ -1,5 +1,5 @@
 ###########################################################################
-## Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     ##
+## Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>     ##
 ##                                                                       ##
 ## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
@@ -63,6 +63,8 @@ nobase_include_HEADERS = dimension.h                                           \
 lib_LTLIBRARIES = libdimension.la
 
 libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
+                          bvh.c                                                \
+                          bvh.h                                                \
                           camera.c                                             \
                           canvas.c                                             \
                           canvas_pigment.c                                     \

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Benchmark Suite.                   *
  *                                                                       *
@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+#include "../bvh.c"
 #include "../prtree.c"
 #include "../threads.c"
 #include "../future.c"
@@ -88,13 +89,13 @@ main(void)
     dmnsn_array_push(objects, &object);
   }
 
-  dmnsn_prtree *tree;
+  dmnsn_bvh *bvh;
   sandglass_bench_noprecache(&sandglass, {
-    tree = dmnsn_new_prtree(objects);
+    bvh = dmnsn_new_bvh(objects, DMNSN_BVH_PRTREE);
   });
-  printf("dmnsn_new_prtree(): %ld\n", sandglass.grains);
+  printf("dmnsn_new_bvh(DMNSN_BVH_PRTREE): %ld\n", sandglass.grains);
 
-  /* dmnsn_prtree_intersection() */
+  /* dmnsn_bvh_intersection() */
   dmnsn_line ray = dmnsn_new_line(
     dmnsn_new_vector( 1.0,  1.0, -2.0),
     dmnsn_new_vector(-0.5, -0.5,  1.0)
@@ -102,23 +103,23 @@ main(void)
   dmnsn_intersection intersection;
 
   sandglass_bench_fine(&sandglass, {
-    dmnsn_prtree_intersection(tree, ray, &intersection, true);
+    dmnsn_bvh_intersection(bvh, ray, &intersection, true);
   });
-  printf("dmnsn_prtree_intersection(): %ld\n", sandglass.grains);
+  printf("dmnsn_bvh_intersection(): %ld\n", sandglass.grains);
 
   sandglass_bench_fine(&sandglass, {
-    dmnsn_prtree_intersection(tree, ray, &intersection, false);
+    dmnsn_bvh_intersection(bvh, ray, &intersection, false);
   });
-  printf("dmnsn_prtree_intersection(nocache): %ld\n", sandglass.grains);
+  printf("dmnsn_bvh_intersection(nocache): %ld\n", sandglass.grains);
 
-  /* dmnsn_prtree_inside() */
+  /* dmnsn_bvh_inside() */
   sandglass_bench_fine(&sandglass, {
-    dmnsn_prtree_inside(tree, dmnsn_zero);
+    dmnsn_bvh_inside(bvh, dmnsn_zero);
   });
-  printf("dmnsn_prtree_inside(): %ld\n", sandglass.grains);
+  printf("dmnsn_bvh_inside(): %ld\n", sandglass.grains);
 
   /* Cleanup */
-  dmnsn_delete_prtree(tree);
+  dmnsn_delete_bvh(bvh);
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
     dmnsn_delete_object(*object);
   }

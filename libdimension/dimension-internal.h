@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -35,6 +35,7 @@
 #include "platform.h"
 #include "future-impl.h"
 #include "threads.h"
+#include "bvh.h"
 #include "prtree.h"
 #include "rgba16.h"
 

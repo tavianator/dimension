@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2012 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -21,6 +21,7 @@
  * Basic tests of PR-trees
  */
 
+#include "../bvh.c"
 #include "../prtree.c"
 #include "../threads.c"
 #include "../future.c"
@@ -73,7 +74,7 @@ main(void)
     dmnsn_array_push(objects, &object);
   }
 
-  dmnsn_prtree *prtree = dmnsn_new_prtree(objects);
+  dmnsn_bvh *bvh = dmnsn_new_bvh(objects, DMNSN_BVH_PRTREE);
 
   dmnsn_intersection intersection;
   dmnsn_line ray = dmnsn_new_line(
@@ -81,7 +82,7 @@ main(void)
     dmnsn_new_vector(0.0, 0.0, 1.0)
   );
 
-  if (!dmnsn_prtree_intersection(prtree, ray, &intersection, true)) {
+  if (!dmnsn_bvh_intersection(bvh, ray, &intersection, true)) {
     fprintf(stderr, "--- Didn't find intersection! ---\n");
     return EXIT_FAILURE;
   }
@@ -93,7 +94,7 @@ main(void)
     return EXIT_FAILURE;
   }
 
-  dmnsn_delete_prtree(prtree);
+  dmnsn_delete_bvh(bvh);
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
     dmnsn_delete_object(*object);
   }

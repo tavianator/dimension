@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2012 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -34,7 +34,7 @@
 typedef struct {
   dmnsn_future *future;
   dmnsn_scene *scene;
-  dmnsn_prtree *prtree;
+  dmnsn_bvh *bvh;
 } dmnsn_ray_trace_payload;
 
 /* Ray-trace a scene */
@@ -81,7 +81,7 @@ dmnsn_ray_trace_scene_thread(void *ptr)
 
   /* Time the bounding tree construction */
   dmnsn_timer_start(&payload->scene->bounding_timer);
-    payload->prtree = dmnsn_new_prtree(payload->scene->objects);
+    payload->bvh = dmnsn_new_bvh(payload->scene->objects, DMNSN_BVH_PRTREE);
   dmnsn_timer_stop(&payload->scene->bounding_timer);
 
   /* Set up the future object */
@@ -93,7 +93,7 @@ dmnsn_ray_trace_scene_thread(void *ptr)
                                          payload, payload->scene->nthreads);
   dmnsn_timer_stop(&payload->scene->render_timer);
 
-  dmnsn_delete_prtree(payload->prtree);
+  dmnsn_delete_bvh(payload->bvh);
   dmnsn_free(payload);
 
   return ret;
@@ -111,7 +111,7 @@ typedef struct dmnsn_rtstate {
   const dmnsn_intersection *intersection;
   const dmnsn_texture *texture;
   const dmnsn_interior *interior;
-  const dmnsn_prtree *prtree;
+  const dmnsn_bvh *bvh;
   unsigned int reclevel;
 
   dmnsn_vector r;
@@ -146,12 +146,12 @@ dmnsn_ray_trace_scene_concurrent(void *ptr, unsigned int thread,
   const dmnsn_ray_trace_payload *payload = ptr;
   dmnsn_future *future = payload->future;
   dmnsn_scene *scene = payload->scene;
-  dmnsn_prtree *prtree = payload->prtree;
+  dmnsn_bvh *bvh = payload->bvh;
 
   dmnsn_rtstate state = {
     .parent = NULL,
     .scene  = scene,
-    .prtree = prtree,
+    .bvh = bvh,
   };
 
   /* Iterate through each pixel */
@@ -230,8 +230,8 @@ dmnsn_ray_shoot(dmnsn_rtstate *state, dmnsn_line ray)
 
   dmnsn_intersection intersection;
   bool reset = state->reclevel == state->scene->reclimit - 1;
-  dmnsn_prtree_intersection(state->prtree, ray, &intersection, reset);
-  if (dmnsn_prtree_intersection(state->prtree, ray, &intersection, reset)) {
+  dmnsn_bvh_intersection(state->bvh, ray, &intersection, reset);
+  if (dmnsn_bvh_intersection(state->bvh, ray, &intersection, reset)) {
     /* Found an intersection */
     dmnsn_rtstate_initialize(state, &intersection);
 
@@ -360,8 +360,8 @@ dmnsn_trace_light_ray(dmnsn_rtstate *state, const dmnsn_light *light)
 
   /* Test for shadow ray intersections */
   dmnsn_intersection shadow_caster;
-  bool in_shadow = dmnsn_prtree_intersection(state->prtree, shadow_ray,
-                                             &shadow_caster, false);
+  bool in_shadow = dmnsn_bvh_intersection(state->bvh, shadow_ray,
+                                          &shadow_caster, false);
   if (!in_shadow || !light->shadow_fn(light, shadow_caster.t)) {
     return true;
   }
