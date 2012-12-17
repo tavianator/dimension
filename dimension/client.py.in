@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #########################################################################
-# Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          #
+# Copyright (C) 2011-2012 Tavian Barnes <tavianator@tavianator.com>     #
 #                                                                       #
 # This file is part of Dimension.                                       #
 #                                                                       #
@@ -172,7 +172,7 @@ def main():
       else:
         print("Couldn't display preview window", file = sys.stderr)
     if bar is not None:
-      bar.join()
+      join_progress_bar(bar)
 
   # Write the output file
   export_timer = Timer()
@@ -249,4 +249,15 @@ def progress_bar(str, future):
 def progress_bar_async(str, future):
   thread = threading.Thread(target = progress_bar, args = (str, future))
   thread.start()
-  return thread
+  return (thread, future)
+
+def join_progress_bar(bar):
+  """Handle joining a progress bar thread in a way responsive to ^C."""
+  thread = bar[0]
+  future = bar[1]
+  try:
+    thread.join()
+  except:
+    future.cancel()
+    thread.join()
+    raise

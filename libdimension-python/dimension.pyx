@@ -1,5 +1,5 @@
 #########################################################################
-# Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          #
+# Copyright (C) 2011-2012 Tavian Barnes <tavianator@tavianator.com>     #
 #                                                                       #
 # This file is part of The Dimension Python Module.                     #
 #                                                                       #
@@ -96,6 +96,8 @@ cdef class Future:
     return self
   def __exit__(self, exc_type, exc_value, traceback):
     if self._future != NULL:
+      if exc_value is not None:
+        self.cancel()
       self.join()
     return False
 

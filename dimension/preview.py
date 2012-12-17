@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #########################################################################
-# Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          #
+# Copyright (C) 2011-2012 Tavian Barnes <tavianator@tavianator.com>     #
 #                                                                       #
 # This file is part of Dimension.                                       #
 #                                                                       #
@@ -23,12 +23,18 @@ from PyQt4 import QtCore, QtGui, QtOpenGL
 
 class Preview(QtOpenGL.QGLWidget):
   """Surface that the scene is rendered to."""
-  def __init__(self, parent, canvas):
+  def __init__(self, parent, canvas, future):
     QtOpenGL.QGLWidget.__init__(self, parent)
     self.canvas = canvas
+    self.future = future
 
   def paintGL(self):
-    self.canvas.draw_GL()
+    try:
+      self.canvas.draw_GL()
+    except:
+      self.future.cancel()
+      self.parent().close()
+      raise
 
 class PreviewWindow(QtGui.QMainWindow):
   """Main window for a rendering preview."""
@@ -39,7 +45,7 @@ class PreviewWindow(QtGui.QMainWindow):
 
     self.setMinimumSize(canvas.width, canvas.height)
     self.setMaximumSize(canvas.width, canvas.height)
-    self.widget = Preview(self, canvas)
+    self.widget = Preview(self, canvas, future)
     self.setCentralWidget(self.widget)
 
     self.render_timer = QtCore.QTimer(self)
