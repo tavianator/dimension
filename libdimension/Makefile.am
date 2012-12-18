@@ -57,6 +57,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/ray_trace.h                                 \
                          dimension/refcount.h                                  \
                          dimension/scene.h                                     \
+                         dimension/tcolor.h                                    \
                          dimension/texture.h                                   \
                          dimension/timer.h
 
