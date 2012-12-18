@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -21,11 +21,53 @@
 #define TESTS_H
 
 #include "dimension.h"
+#include <check.h>
 
 #ifdef __cplusplus
 /* We've been included from a C++ file; mark everything here as extern "C" */
 extern "C" {
 #endif
+
+/** @internal Map to known test cases from their names. */
+extern dmnsn_dictionary* dmnsn_test_cases;
+
+/** @internal Default test fixture. */
+void dmnsn_test_setup(void);
+/** @internal Default test fixture. */
+void dmnsn_test_teardown(void);
+
+/**
+ * Mark the beginning of a test.
+ * @param[in] tcase  The name of the test case for this test.
+ * @param[in] test   The name of the test itself.
+ */
+#define DMNSN_TEST(tcase, test)                                         \
+  static void dmnsn_test_##test(int _i);                                \
+                                                                        \
+  __attribute__((constructor))                                          \
+  static void dmnsn_add_test_##test(void)                               \
+  {                                                                     \
+    if (dmnsn_test_cases == NULL) {                                     \
+      dmnsn_test_cases = dmnsn_new_dictionary(sizeof(TCase *));         \
+    }                                                                   \
+                                                                        \
+    TCase *tc;                                                          \
+    TCase **tcp = dmnsn_dictionary_at(dmnsn_test_cases, tcase);         \
+    if (tcp == NULL) {                                                  \
+      tc = tcase_create(tcase);                                         \
+      tcase_add_checked_fixture(tc, dmnsn_test_setup, dmnsn_test_teardown); \
+      dmnsn_dictionary_insert(dmnsn_test_cases, tcase, &tc);            \
+    } else {                                                            \
+      tc = *tcp;                                                        \
+    }                                                                   \
+                                                                        \
+    tcase_add_test(tc, dmnsn_test_##test);                              \
+  }                                                                     \
+                                                                        \
+  START_TEST(dmnsn_test_##test)
+
+/** Mark the end of a test. */
+#define DMNSN_END_TEST END_TEST
 
 /*
  * Test canvas

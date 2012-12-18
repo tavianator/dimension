@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2012 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -19,39 +19,69 @@
 
 /**
  * @file
- * Basic tests of the polynomial root-finder.
+ * Shared entry point for tests based on the Check unit-testing framework.
  */
 
 #include "tests.h"
 
-/* poly[] = 2*(x + 1)*(x - 1.2345)*(x - 2.3456)*(x - 5)*(x - 100) */
-const double poly[6] = {
-  [5] =  2.0,
-  [4] = -215.1602,
-  [3] =  1540.4520864,
-  [2] = -2430.5727856,
-  [1] = -1292.541872,
-  [0] =  2895.6432,
-};
+dmnsn_dictionary *dmnsn_test_cases = NULL;
 
-DMNSN_TEST("polynomial", finds_positive_roots)
+void
+dmnsn_test_setup(void)
 {
-  double x[5];
-  size_t n = dmnsn_polynomial_solve(poly, 5, x);
-  ck_assert_int_eq(n, 4);
+  /* Treat warnings as errors for tests */
+  dmnsn_die_on_warnings(true);
 }
-DMNSN_END_TEST
 
-DMNSN_TEST("polynomial", accurate_roots)
+void
+dmnsn_test_teardown(void)
 {
-  double x[5];
-  size_t n = dmnsn_polynomial_solve(poly, 5, x);
+  dmnsn_delete_dictionary(dmnsn_test_cases);
+}
 
-  for (size_t i = 0; i < n; ++i) {
-    double evmin = dmnsn_polynomial_evaluate(poly, 5, x[i] - dmnsn_epsilon);
-    double ev    = dmnsn_polynomial_evaluate(poly, 5, x[i]);
-    double evmax = dmnsn_polynomial_evaluate(poly, 5, x[i] + dmnsn_epsilon);
-    ck_assert(fabs(ev) < fabs(evmin) && fabs(ev) < fabs(evmax));
+static Suite *dmnsn_suite;
+
+void
+dmnsn_add_test_cases(void *ptr)
+{
+  TCase **tcp = ptr;
+  suite_add_tcase(dmnsn_suite, *tcp);
+}
+
+Suite *
+dmnsn_test_suite()
+{
+  dmnsn_suite = suite_create("Dimension");
+
+  if (dmnsn_test_cases != NULL) {
+    dmnsn_dictionary_apply(dmnsn_test_cases, dmnsn_add_test_cases);
+  }
+
+  return dmnsn_suite;
+}
+
+int
+main()
+{
+  /* Treat warnings as errors for tests */
+  dmnsn_die_on_warnings(true);
+
+  /* Create the test suite */
+  Suite *suite = dmnsn_test_suite();
+  SRunner *sr = srunner_create(suite);
+
+  /* Run the tests */
+  srunner_run_all(sr, CK_VERBOSE);
+  int nfailed = srunner_ntests_failed(sr);
+
+  /* Clean up */
+  srunner_free(sr);
+  dmnsn_delete_dictionary(dmnsn_test_cases);
+
+  /* Return the right result code */
+  if (nfailed == 0) {
+    return EXIT_SUCCESS;
+  } else {
+    return EXIT_FAILURE;
   }
 }
-DMNSN_END_TEST

@@ -1,5 +1,5 @@
 ###########################################################################
-## Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     ##
+## Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>     ##
 ##                                                                       ##
 ## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
@@ -20,7 +20,8 @@
 AM_CFLAGS = -I$(top_srcdir)/libdimension
 AM_CXXFLAGS = $(AM_CFLAGS)
 
-check_LTLIBRARIES = libdimension-tests.la
+check_LTLIBRARIES = libdimension-tests.la                                      \
+                    libdimension-unit-test.la
 check_PROGRAMS    = warning.test                                               \
                     warning-as-error.test                                      \
                     error.test                                                 \
@@ -48,6 +49,10 @@ libdimension_tests_la_SOURCES = test_canvas.c                                  \
                                 tests.h
 libdimension_tests_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
+libdimension_unit_test_la_SOURCES = unit-test.c
+libdimension_unit_test_la_CFLAGS  = $(CHECK_CFLAGS) $(AM_CFLAGS)
+libdimension_unit_test_la_LIBADD  = $(CHECK_LIBS) libdimension-tests.la
+
 if GLX
 libdimension_tests_la_SOURCES += display.c
 libdimension_tests_la_LIBADD += -lX11 -lGL
@@ -68,7 +73,7 @@ custom_error_fn_test_SOURCES = custom-error-fn.c
 custom_error_fn_test_LDADD   = libdimension-tests.la
 
 polynomial_test_SOURCES = polynomial.c
-polynomial_test_LDADD   = libdimension-tests.la
+polynomial_test_LDADD   = libdimension-unit-test.la
 
 prtree_test_SOURCES = prtree.c
 prtree_test_LDADD   = libdimension-tests.la
