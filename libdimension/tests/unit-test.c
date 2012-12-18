@@ -54,6 +54,14 @@ dmnsn_test_setup(void)
 void
 dmnsn_test_teardown(void)
 {
+}
+
+__attribute__((destructor))
+static void
+dmnsn_test_cleanup(void)
+{
+  /* Can't go in dmnsn_test_teardown(), because it should run even if the test
+     fails. */
   dmnsn_delete_dictionary(dmnsn_test_cases);
 }
 
@@ -94,7 +102,6 @@ main()
 
   /* Clean up */
   srunner_free(sr);
-  dmnsn_delete_dictionary(dmnsn_test_cases);
 
   /* Return the right result code */
   if (nfailed == 0) {
