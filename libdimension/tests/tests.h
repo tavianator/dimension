@@ -31,43 +31,81 @@ extern "C" {
 /** @internal Map to known test cases from their names. */
 extern dmnsn_dictionary* dmnsn_test_cases;
 
+/** @internal Get the test case with the given name, possibly creating it. */
+TCase *dmnsn_get_test_case(const char* name);
+
 /** @internal Default test fixture. */
 void dmnsn_test_setup(void);
 /** @internal Default test fixture. */
 void dmnsn_test_teardown(void);
 
 /**
- * Mark the beginning of a test.
+ * Defines a test.
  * @param[in] tcase  The name of the test case for this test.
  * @param[in] test   The name of the test itself.
  */
-#define DMNSN_TEST(tcase, test)                                         \
-  static void dmnsn_test_##test(int _i);                                \
+#define DMNSN_TEST(tcase, test)                 \
+  DMNSN_TEST_IMPL(#tcase, tcase##_test_##test)
+
+#define DMNSN_TEST_IMPL(tcase, test)            \
+  DMNSN_TEST_IMPL2(tcase,                       \
+                   dmnsn_##test,                \
+                   dmnsn_##test##_impl,         \
+                   dmnsn_add_##test)
+
+#define DMNSN_TEST_IMPL2(tcase, test, test_impl, add_test)      \
+  static void test(int _i);                                     \
+  static void test_impl(int _i);                                \
+                                                                \
+  __attribute__((constructor))                                  \
+  static void                                                   \
+  add_test(void)                                                \
+  {                                                             \
+    TCase *tc = dmnsn_get_test_case(tcase);                     \
+    tcase_add_test(tc, test);                                   \
+  }                                                             \
+                                                                \
+  START_TEST(test)                                              \
+  {                                                             \
+    test_impl(_i);                                              \
+  }                                                             \
+  END_TEST                                                      \
+                                                                \
+  static void                                                   \
+  test_impl(int _i)
+
+/**
+ * Defines the setup method for a test case.
+ * @param[in] tcase  The name of the test case.
+ */
+#define DMNSN_TEST_SETUP(tcase)                                 \
+  DMNSN_TEST_FIXTURE(#tcase, tcase##_test_fixture_setup, true)
+
+/**
+ * Defines the teardown method for a test case.
+ * @param[in] tcase  The name of the test case.
+ */
+#define DMNSN_TEST_TEARDOWN(tcase)                                      \
+  DMNSN_TEST_FIXTURE(#tcase, tcase##_test_fixture_teardown, false)
+
+#define DMNSN_TEST_FIXTURE(tcase, fixture, is_setup)                     \
+  DMNSN_TEST_FIXTURE2(tcase, dmnsn_##fixture, dmnsn_add_##fixture, is_setup)
+
+#define DMNSN_TEST_FIXTURE2(tcase, fixture, add_fixture, is_setup)      \
+  static void fixture(void);                                            \
                                                                         \
   __attribute__((constructor))                                          \
-  static void dmnsn_add_test_##test(void)                               \
+  static void                                                           \
+  add_fixture(void)                                                     \
   {                                                                     \
-    if (dmnsn_test_cases == NULL) {                                     \
-      dmnsn_test_cases = dmnsn_new_dictionary(sizeof(TCase *));         \
-    }                                                                   \
-                                                                        \
-    TCase *tc;                                                          \
-    TCase **tcp = dmnsn_dictionary_at(dmnsn_test_cases, tcase);         \
-    if (tcp == NULL) {                                                  \
-      tc = tcase_create(tcase);                                         \
-      tcase_add_checked_fixture(tc, dmnsn_test_setup, dmnsn_test_teardown); \
-      dmnsn_dictionary_insert(dmnsn_test_cases, tcase, &tc);            \
-    } else {                                                            \
-      tc = *tcp;                                                        \
-    }                                                                   \
-                                                                        \
-    tcase_add_test(tc, dmnsn_test_##test);                              \
+    TCase *tc = dmnsn_get_test_case(tcase);                             \
+    tcase_add_checked_fixture(tc,                                       \
+                              is_setup ? fixture : NULL,                \
+                              !is_setup ? fixture : NULL);              \
   }                                                                     \
                                                                         \
-  START_TEST(dmnsn_test_##test)
-
-/** Mark the end of a test. */
-#define DMNSN_END_TEST END_TEST
+  static void                                                           \
+  fixture(void)
 
 /*
  * Test canvas

@@ -25,7 +25,7 @@
 #include "tests.h"
 
 /* poly[] = 2*(x + 1)*(x - 1.2345)*(x - 2.3456)*(x - 5)*(x - 100) */
-const double poly[6] = {
+static const double poly[6] = {
   [5] =  2.0,
   [4] = -215.1602,
   [3] =  1540.4520864,
@@ -34,24 +34,35 @@ const double poly[6] = {
   [0] =  2895.6432,
 };
 
-DMNSN_TEST("polynomial", finds_positive_roots)
+static double roots[5];
+static size_t nroots;
+
+#define DMNSN_CLOSE_ENOUGH 1.0e-6
+
+DMNSN_TEST_SETUP(polynomial)
 {
-  double x[5];
-  size_t n = dmnsn_polynomial_solve(poly, 5, x);
-  ck_assert_int_eq(n, 4);
+  nroots = dmnsn_polynomial_solve(poly, 5, roots);
 }
-DMNSN_END_TEST
 
-DMNSN_TEST("polynomial", accurate_roots)
+DMNSN_TEST(polynomial, finds_positive_roots)
 {
-  double x[5];
-  size_t n = dmnsn_polynomial_solve(poly, 5, x);
+  ck_assert_int_eq(nroots, 4);
+}
 
-  for (size_t i = 0; i < n; ++i) {
-    double evmin = dmnsn_polynomial_evaluate(poly, 5, x[i] - dmnsn_epsilon);
-    double ev    = dmnsn_polynomial_evaluate(poly, 5, x[i]);
-    double evmax = dmnsn_polynomial_evaluate(poly, 5, x[i] + dmnsn_epsilon);
+DMNSN_TEST(polynomial, local_min_roots)
+{
+  for (size_t i = 0; i < nroots; ++i) {
+    double evmin = dmnsn_polynomial_evaluate(poly, 5, roots[i] - dmnsn_epsilon);
+    double ev    = dmnsn_polynomial_evaluate(poly, 5, roots[i]);
+    double evmax = dmnsn_polynomial_evaluate(poly, 5, roots[i] + dmnsn_epsilon);
     ck_assert(fabs(ev) < fabs(evmin) && fabs(ev) < fabs(evmax));
   }
 }
-DMNSN_END_TEST
+
+DMNSN_TEST(polynomial, accurate_roots)
+{
+  for (size_t i = 0; i < nroots; ++i) {
+    double ev = dmnsn_polynomial_evaluate(poly, 5, roots[i]);
+    ck_assert(fabs(ev) < DMNSN_CLOSE_ENOUGH);
+  }
+}

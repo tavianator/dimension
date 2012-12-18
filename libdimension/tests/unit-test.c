@@ -26,6 +26,24 @@
 
 dmnsn_dictionary *dmnsn_test_cases = NULL;
 
+TCase *
+dmnsn_get_test_case(const char* name)
+{
+  if (!dmnsn_test_cases) {
+    dmnsn_test_cases = dmnsn_new_dictionary(sizeof(TCase *));
+  }
+
+  TCase **tcp = dmnsn_dictionary_at(dmnsn_test_cases, name);
+  if (tcp) {
+    return *tcp;
+  }
+
+  TCase *tc = tcase_create(name);
+  tcase_add_checked_fixture(tc, dmnsn_test_setup, dmnsn_test_teardown);
+  dmnsn_dictionary_insert(dmnsn_test_cases, name, &tc);
+  return tc;
+}
+
 void
 dmnsn_test_setup(void)
 {
@@ -53,7 +71,7 @@ dmnsn_test_suite()
 {
   dmnsn_suite = suite_create("Dimension");
 
-  if (dmnsn_test_cases != NULL) {
+  if (dmnsn_test_cases) {
     dmnsn_dictionary_apply(dmnsn_test_cases, dmnsn_add_test_cases);
   }
 
