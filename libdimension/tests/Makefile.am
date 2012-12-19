@@ -26,6 +26,7 @@ check_PROGRAMS    = warning.test                                               \
                     warning-as-error.test                                      \
                     error.test                                                 \
                     custom-error-fn.test                                       \
+                    dictionary.test                                            \
                     polynomial.test                                            \
                     prtree.test                                                \
                     png.test                                                   \
@@ -71,6 +72,9 @@ error_test_LDADD   = libdimension-tests.la
 
 custom_error_fn_test_SOURCES = custom-error-fn.c
 custom_error_fn_test_LDADD   = libdimension-tests.la
+
+dictionary_test_SOURCES = dictionary.c
+dictionary_test_LDADD   = libdimension-unit-test.la
 
 polynomial_test_SOURCES = polynomial.c
 polynomial_test_LDADD   = libdimension-unit-test.la

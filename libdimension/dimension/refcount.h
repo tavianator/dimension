@@ -38,6 +38,6 @@
     /* Suppress "address will always evaluate to true" warning */       \
     void *testptr = (object);                                           \
     if (testptr) {                                                      \
-      ++(object)->DMNSN_REFCOUNT_FIELD;                                  \
+      ++(object)->DMNSN_REFCOUNT_FIELD;                                 \
     }                                                                   \
   } while (0)
