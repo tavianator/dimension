@@ -62,20 +62,39 @@ DMNSN_TEST(dictionary, insert_and_get)
   ck_assert_int_eq(*value_at, value_in);
 }
 
+DMNSN_TEST(dictionary, insert_multiple)
+{
+  const int value1 = 123, value2 = 456, value3 = 789;
+  int value_out;
+
+  dmnsn_dictionary_insert(dict, "key1", &value1);
+  dmnsn_dictionary_insert(dict, "key2", &value2);
+  dmnsn_dictionary_insert(dict, "asdf", &value3);
+
+  ck_assert(dmnsn_dictionary_get(dict, "key1", &value_out));
+  ck_assert_int_eq(value_out, value1);
+
+  ck_assert(dmnsn_dictionary_get(dict, "key2", &value_out));
+  ck_assert_int_eq(value_out, value2);
+
+  ck_assert(dmnsn_dictionary_get(dict, "asdf", &value_out));
+  ck_assert_int_eq(value_out, value3);
+}
+
 DMNSN_TEST(dictionary, insert_overwrites)
 {
   const int value1 = 123, value2 = 456;
-  int value;
+  int value_out;
 
   /* Insert and read back value1 */
   dmnsn_dictionary_insert(dict, "key", &value1);
-  ck_assert(dmnsn_dictionary_get(dict, "key", &value));
-  ck_assert_int_eq(value, value1);
+  ck_assert(dmnsn_dictionary_get(dict, "key", &value_out));
+  ck_assert_int_eq(value_out, value1);
 
   /* Insert and read back value2 */
   dmnsn_dictionary_insert(dict, "key", &value2);
-  ck_assert(dmnsn_dictionary_get(dict, "key", &value));
-  ck_assert_int_eq(value, value2);
+  ck_assert(dmnsn_dictionary_get(dict, "key", &value_out));
+  ck_assert_int_eq(value_out, value2);
 }
 
 DMNSN_TEST(dictionary, remove)
@@ -90,4 +109,24 @@ DMNSN_TEST(dictionary, remove)
 
   int *value_at = dmnsn_dictionary_at(dict, "key");
   ck_assert(value_at == NULL);
+}
+
+static int sum = 0;
+
+static void
+dmnsn_dictionary_test_apply_callback(void *ptr)
+{
+  sum += *(int *)ptr;
+}
+
+DMNSN_TEST(dictionary, apply)
+{
+  const int value1 = 123, value2 = 456, value3 = 789;
+
+  dmnsn_dictionary_insert(dict, "key1", &value1);
+  dmnsn_dictionary_insert(dict, "key2", &value2);
+  dmnsn_dictionary_insert(dict, "asdf", &value3);
+
+  dmnsn_dictionary_apply(dict, dmnsn_dictionary_test_apply_callback);
+  ck_assert_int_eq(sum, value1 + value2 + value3);
 }
