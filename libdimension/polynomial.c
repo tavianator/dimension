@@ -214,6 +214,12 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
 {
   double evmin = dmnsn_polynomial_evaluate(poly, degree, min);
   double evmax = dmnsn_polynomial_evaluate(poly, degree, max);
+
+  /* Handle equal bounds, and equal values at the bounds. */
+  if (dmnsn_unlikely(fabs(evmax - evmin) < dmnsn_epsilon)) {
+    return (min + max)/2.0;
+  }
+
   double evinitial = dmnsn_min(fabs(evmin), fabs(evmax));
   double mid, evmid;
   int lastsign = 0;
@@ -425,7 +431,7 @@ dmnsn_polynomial_print(FILE *file, const double poly[], size_t degree)
     if (i < degree) {
       fprintf(file, (poly[i] >= 0.0) ? " + " : " - ");
     }
-    fprintf(file, "%.15g", fabs(poly[i]));
+    fprintf(file, "%.17g", fabs(poly[i]));
     if (i >= 2) {
       fprintf(file, "*x^%zu", i);
     } else if (i == 1) {

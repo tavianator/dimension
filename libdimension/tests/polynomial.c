@@ -23,6 +23,7 @@
  */
 
 #include "tests.h"
+#include "../polynomial.c"
 
 /* poly[] = 2*(x + 1)*(x - 1.2345)*(x - 2.3456)*(x - 5)*(x - 100) */
 static const double poly[6] = {
@@ -65,4 +66,27 @@ DMNSN_TEST(polynomial, accurate_roots)
     double ev = dmnsn_polynomial_evaluate(poly, 5, roots[i]);
     ck_assert(fabs(ev) < DMNSN_CLOSE_ENOUGH);
   }
+}
+
+/* repeated_root[] = (x - 1)^6 */
+static const double repeated_root[7] = {
+  [6] =  1.0,
+  [5] = -6.0,
+  [4] =  15.0,
+  [3] = -20.0,
+  [2] =  15.0,
+  [1] = -6.0,
+  [0] =  1.0,
+};
+
+DMNSN_TEST(stability, equal_bounds)
+{
+  double root = dmnsn_bisect_root(repeated_root, 6, 1.0, 1.0);
+  ck_assert_msg(root == 1.0, "root == %.17g", root);
+}
+
+DMNSN_TEST(stability, equal_values_at_bounds)
+{
+  double root = dmnsn_bisect_root(repeated_root, 6, 0.9, 1.1);
+  ck_assert_msg(fabs(root - 1.0) < dmnsn_epsilon, "root == %.17g", root);
 }
