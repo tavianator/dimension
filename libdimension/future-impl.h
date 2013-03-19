@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2013 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -42,12 +42,11 @@ struct dmnsn_future {
   /** The worker thread. */
   pthread_t thread;
 
-  /** Read-write synchronization. */
-  pthread_rwlock_t *rwlock;
+  /** Mutex to guard progress and total. */
+  pthread_mutex_t *mutex;
 
   /** Condition variable for waiting for a particular amount of progress. */
   pthread_cond_t  *cond;
-  pthread_mutex_t *mutex;
 
   /** Minimum waited-on value. */
   double *min_wait;
