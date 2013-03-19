@@ -1,5 +1,5 @@
 ###########################################################################
-## Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     ##
+## Copyright (C) 2009-2013 Tavian Barnes <tavianator@tavianator.com>     ##
 ##                                                                       ##
 ## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
@@ -20,6 +20,7 @@
 EXTRA_PROGRAMS = array.bench                                                   \
                  geometry.bench                                                \
                  polynomial.bench                                              \
+                 future.bench                                                  \
                  prtree.bench
 
 AM_CFLAGS  = $(libsandglass_CFLAGS) -fno-inline -I$(top_srcdir)/libdimension
@@ -28,6 +29,7 @@ AM_LDFLAGS = $(libsandglass_LIBS) $(top_builddir)/libdimension/libdimension.la
 array_bench_SOURCES = array.c
 geometry_bench_SOURCES = geometry.c
 polynomial_bench_SOURCES = polynomial.c
+future_bench_SOURCES = future.c
 prtree_bench_SOURCES = prtree.c
 prtree_bench_CFLAGS = $(AM_CFLAGS) -finline
 
@@ -35,6 +37,7 @@ bench: $(EXTRA_PROGRAMS)
 	./array.bench
 	./geometry.bench
 	./polynomial.bench
+	./future.bench
 	./prtree.bench
 
 clean-local:
