@@ -43,11 +43,11 @@ struct dmnsn_future {
   pthread_t thread;
 
   /** Mutex to guard progress and total. */
-  pthread_mutex_t *mutex;
+  pthread_mutex_t mutex;
 
   /** Condition variable for waiting for a particular amount of progress. */
-  pthread_cond_t  *cond;
+  pthread_cond_t cond;
 
   /** Minimum waited-on value. */
-  double *min_wait;
+  double min_wait;
 };

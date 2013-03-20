@@ -26,6 +26,13 @@
 #include "dimension-internal.h"
 #include <pthread.h>
 
+/**
+ * Since C doesn't support anything like C++'s mutable, we fake it by casting
+ * away the constness.  This is okay since all valid dmnsn_futures live on the
+ * heap, so cannot be const.
+ */
+#define MUTATE(future) ((dmnsn_future *)future)
+
 /* Allocate a new dmnsn_future* */
 dmnsn_future *
 dmnsn_new_future(void)
@@ -34,14 +41,10 @@ dmnsn_new_future(void)
   future->progress = 0;
   future->total    = 1;
 
-  future->mutex = dmnsn_malloc(sizeof(pthread_mutex_t));
-  dmnsn_initialize_mutex(future->mutex);
+  dmnsn_initialize_mutex(&future->mutex);
+  dmnsn_initialize_cond(&future->cond);
 
-  future->cond = dmnsn_malloc(sizeof(pthread_cond_t));
-  dmnsn_initialize_cond(future->cond);
-
-  future->min_wait = dmnsn_malloc(sizeof(double));
-  *future->min_wait = 1.0;
+  future->min_wait = 1.0;
 
   return future;
 }
@@ -62,15 +65,8 @@ dmnsn_future_join(dmnsn_future *future)
     }
 
     /* Free the future object */
-
-    dmnsn_free(future->min_wait);
-
-    dmnsn_destroy_cond(future->cond);
-    dmnsn_free(future->cond);
-
-    dmnsn_destroy_mutex(future->mutex);
-    dmnsn_free(future->mutex);
-
+    dmnsn_destroy_cond(&future->cond);
+    dmnsn_destroy_mutex(&future->mutex);
     dmnsn_free(future);
   }
 
@@ -99,11 +95,12 @@ dmnsn_future_progress_unlocked(const dmnsn_future *future)
 double
 dmnsn_future_progress(const dmnsn_future *future)
 {
+  dmnsn_future *mfuture = MUTATE(future);
   double progress;
 
-  dmnsn_lock_mutex(future->mutex);
-    progress = dmnsn_future_progress_unlocked(future);
-  dmnsn_unlock_mutex(future->mutex);
+  dmnsn_lock_mutex(&mfuture->mutex);
+    progress = dmnsn_future_progress_unlocked(mfuture);
+  dmnsn_unlock_mutex(&mfuture->mutex);
 
   return progress;
 }
@@ -112,24 +109,26 @@ dmnsn_future_progress(const dmnsn_future *future)
 void
 dmnsn_future_wait(const dmnsn_future *future, double progress)
 {
-  dmnsn_lock_mutex(future->mutex);
-    while (dmnsn_future_progress_unlocked(future) < progress) {
-      /* Set the minimum waited-on value */
-      if (progress < *future->min_wait)
-        *future->min_wait = progress;
+  dmnsn_future *mfuture = MUTATE(future);
 
-      dmnsn_cond_wait(future->cond, future->mutex);
+  dmnsn_lock_mutex(&mfuture->mutex);
+    while (dmnsn_future_progress_unlocked(mfuture) < progress) {
+      /* Set the minimum waited-on value */
+      if (progress < mfuture->min_wait)
+        mfuture->min_wait = progress;
+
+      dmnsn_cond_wait(&mfuture->cond, &mfuture->mutex);
     }
-  dmnsn_unlock_mutex(future->mutex);
+  dmnsn_unlock_mutex(&mfuture->mutex);
 }
 
 /* Set the total number of loop iterations */
 void
 dmnsn_future_set_total(dmnsn_future *future, size_t total)
 {
-  dmnsn_lock_mutex(future->mutex);
+  dmnsn_lock_mutex(&future->mutex);
     future->total = total;
-  dmnsn_unlock_mutex(future->mutex);
+  dmnsn_unlock_mutex(&future->mutex);
 }
 
 /* Increment the number of completed loop iterations */
@@ -141,22 +140,22 @@ dmnsn_future_increment(dmnsn_future *future)
      on cancellation */
   pthread_testcancel();
 
-  dmnsn_lock_mutex(future->mutex);
+  dmnsn_lock_mutex(&future->mutex);
     ++future->progress;
 
-    if (dmnsn_future_progress_unlocked(future) >= *future->min_wait) {
-      *future->min_wait = 1.0;
-      dmnsn_cond_broadcast(future->cond);
+    if (dmnsn_future_progress_unlocked(future) >= future->min_wait) {
+      future->min_wait = 1.0;
+      dmnsn_cond_broadcast(&future->cond);
     }
-  dmnsn_unlock_mutex(future->mutex);
+  dmnsn_unlock_mutex(&future->mutex);
 }
 
 /* Immediately set to 100% completion */
 void
 dmnsn_future_done(dmnsn_future *future)
 {
-  dmnsn_lock_mutex(future->mutex);
+  dmnsn_lock_mutex(&future->mutex);
     future->progress = future->total;
-    dmnsn_cond_broadcast(future->cond);
-  dmnsn_unlock_mutex(future->mutex);
+    dmnsn_cond_broadcast(&future->cond);
+  dmnsn_unlock_mutex(&future->mutex);
 }
