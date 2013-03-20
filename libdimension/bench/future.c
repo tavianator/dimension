@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2013 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2013 Tavian Barnes <tavianator@tavianator.com>          *
  *                                                                       *
  * This file is part of The Dimension Benchmark Suite.                   *
  *                                                                       *
@@ -38,11 +38,22 @@ dmnsn_bench_future(void *ptr, unsigned int thread, unsigned int nthreads)
 static int
 dmnsn_bench_thread(void *ptr)
 {
-  size_t nthreads = 2*dmnsn_ncpus();
-
   dmnsn_future *future = (dmnsn_future *)ptr;
+  size_t nthreads = 2*dmnsn_ncpus();
   dmnsn_future_set_total(future, nthreads*ITERATIONS);
 
+  sandglass_t sandglass;
+  if (sandglass_init_monotonic(&sandglass, SANDGLASS_CPUTIME) != 0) {
+    perror("sandglass_create()");
+    return EXIT_FAILURE;
+  }
+
+  /* Benchmark the increment operation. */
+  sandglass_bench_fine(&sandglass, dmnsn_future_increment(future));
+  printf("dmnsn_future_increment(): %ld\n", sandglass.grains);
+  future->progress = 0;
+
+  /* Now run a bunch of increments concurrently. */
   return dmnsn_execute_concurrently(&dmnsn_bench_future, future, nthreads);
 }
 
