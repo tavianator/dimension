@@ -51,7 +51,11 @@ dmnsn_bench_thread(void *ptr)
   /* Benchmark the increment operation. */
   sandglass_bench_fine(&sandglass, dmnsn_future_increment(future));
   printf("dmnsn_future_increment(): %ld\n", sandglass.grains);
-  future->progress = 0;
+
+  /* Reset the progress. */
+  dmnsn_lock_mutex(&future->mutex);
+    future->progress = 0;
+  dmnsn_unlock_mutex(&future->mutex);
 
   /* Now run a bunch of increments concurrently. */
   return dmnsn_execute_concurrently(&dmnsn_bench_future, future, nthreads);
