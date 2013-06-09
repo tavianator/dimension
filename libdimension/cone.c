@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2013 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -67,9 +67,7 @@ dmnsn_cone_intersection_fn(const dmnsn_object *cone, dmnsn_line l,
 
     if (t >= 0.0 && p.y >= -1.0 && p.y <= 1.0) {
       double r = ((r2 - r1)*p.y + r1 + r2)/2.0;
-      dmnsn_vector norm = dmnsn_vector_normalized(
-        dmnsn_new_vector(p.x, -r*(r2 - r1)/2.0, p.z)
-      );
+      dmnsn_vector norm = dmnsn_new_vector(p.x, -r*(r2 - r1)/2.0, p.z);
       intersection->t      = t;
       intersection->normal = norm;
       return true;

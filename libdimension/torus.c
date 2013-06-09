@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2013 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -122,7 +122,7 @@ dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line l,
     payload->major,
     dmnsn_vector_normalized(dmnsn_new_vector(p.x, 0.0, p.z))
   );
-  dmnsn_vector normal = dmnsn_vector_normalized(dmnsn_vector_sub(p, center));
+  dmnsn_vector normal = dmnsn_vector_sub(p, center);
 
   intersection->t      = t;
   intersection->normal = normal;
