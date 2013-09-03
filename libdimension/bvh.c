@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2012 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2012-2013 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -41,9 +41,9 @@ dmnsn_new_stupid_bvh(const dmnsn_array *objects)
 
 /* Implementation of opaque dmnsn_bvh type. */
 struct dmnsn_bvh {
-  dmnsn_array *unbounded;          /**< The unbounded objects. */
-  dmnsn_array *bounded;            /**< The BVH of the bounded objects. */
-  size_t id;                       /**< A unique ID for this BVH. */
+  dmnsn_array *unbounded;           /**< The unbounded objects. */
+  dmnsn_array *bounded;             /**< The BVH of the bounded objects. */
+  pthread_key_t intersection_cache; /**< The thread-local intersection cache. */
 };
 
 /** A flat BVH node for storing in an array for fast pre-order traversal. */
@@ -129,9 +129,6 @@ dmnsn_flatten_bvh(dmnsn_bvh_node *root)
   return flat;
 }
 
-static size_t dmnsn_bvh_seq = 0;
-static pthread_mutex_t dmnsn_bvh_seq_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 dmnsn_bvh *dmnsn_new_bvh(const dmnsn_array *objects, dmnsn_bvh_kind kind)
 {
   dmnsn_bvh *bvh = dmnsn_malloc(sizeof(dmnsn_bvh));
@@ -157,9 +154,7 @@ dmnsn_bvh *dmnsn_new_bvh(const dmnsn_array *objects, dmnsn_bvh_kind kind)
   dmnsn_delete_bvh_node(root);
   dmnsn_delete_array(bounded);
 
-  dmnsn_lock_mutex(&dmnsn_bvh_seq_mutex);
-    bvh->id = dmnsn_bvh_seq++;
-  dmnsn_unlock_mutex(&dmnsn_bvh_seq_mutex);
+  dmnsn_key_create(&bvh->intersection_cache, dmnsn_free);
 
   return bvh;
 }
@@ -168,6 +163,8 @@ void
 dmnsn_delete_bvh(dmnsn_bvh *bvh)
 {
   if (bvh) {
+    dmnsn_free(pthread_getspecific(bvh->intersection_cache));
+    dmnsn_key_delete(bvh->intersection_cache);
     dmnsn_delete_array(bvh->bounded);
     dmnsn_delete_array(bvh->unbounded);
     dmnsn_free(bvh);
@@ -235,60 +232,22 @@ typedef struct dmnsn_intersection_cache {
   dmnsn_object *objects[DMNSN_INTERSECTION_CACHE_SIZE];
 } dmnsn_intersection_cache;
 
-/** The thread-specific intersection cache. */
-static pthread_key_t dmnsn_intersection_caches;
-/** Initialize the thread-specific pointer exactly once. */
-static pthread_once_t dmnsn_intersection_caches_once = PTHREAD_ONCE_INIT;
-
-static void
-dmnsn_delete_intersection_caches(void *caches)
-{
-  dmnsn_delete_array(caches);
-}
-
-static void
-dmnsn_initialize_intersection_caches(void)
-{
-  dmnsn_key_create(&dmnsn_intersection_caches,
-                   dmnsn_delete_intersection_caches);
-}
-
-static dmnsn_array *
-dmnsn_get_intersection_caches(void)
-{
-  dmnsn_once(&dmnsn_intersection_caches_once,
-             dmnsn_initialize_intersection_caches);
-  return pthread_getspecific(dmnsn_intersection_caches);
-}
-
-/** Needed because pthreads doesn't destroy data from the main thread unless
-    it exits with pthread_exit(). */
-DMNSN_DESTRUCTOR static void
-dmnsn_delete_main_intersection_caches(void)
-{
-  dmnsn_delete_intersection_caches(dmnsn_get_intersection_caches());
-  dmnsn_key_delete(dmnsn_intersection_caches);
-}
-
 static dmnsn_intersection_cache *
-dmnsn_get_intersection_cache(size_t id)
+dmnsn_get_intersection_cache(const dmnsn_bvh *bvh)
 {
-  dmnsn_array *caches = dmnsn_get_intersection_caches();
-  if (!caches) {
-    caches = dmnsn_new_array(sizeof(dmnsn_intersection_cache));
-    dmnsn_setspecific(dmnsn_intersection_caches, caches);
-  }
+  dmnsn_intersection_cache *cache
+    = pthread_getspecific(bvh->intersection_cache);
 
-  while (dmnsn_array_size(caches) <= id) {
-    dmnsn_array_resize(caches, dmnsn_array_size(caches) + 1);
-    dmnsn_intersection_cache *cache = dmnsn_array_last(caches);
+  if (!cache) {
+    cache = dmnsn_malloc(sizeof(dmnsn_intersection_cache));
     cache->i = 0;
     for (size_t i = 0; i < DMNSN_INTERSECTION_CACHE_SIZE; ++i) {
       cache->objects[i] = NULL;
     }
+    dmnsn_setspecific(bvh->intersection_cache, cache);
   }
 
-  return dmnsn_array_at(caches, id);
+  return cache;
 }
 
 /** Test for a closer object intersection than we've found so far. */
@@ -322,7 +281,7 @@ dmnsn_bvh_intersection(const dmnsn_bvh *bvh, dmnsn_line ray,
   dmnsn_optimized_line optline = dmnsn_optimize_line(ray);
 
   /* Search the intersection cache */
-  dmnsn_intersection_cache *cache = dmnsn_get_intersection_cache(bvh->id);
+  dmnsn_intersection_cache *cache = dmnsn_get_intersection_cache(bvh);
   if (dmnsn_unlikely(reset)) {
     cache->i = 0;
   }
