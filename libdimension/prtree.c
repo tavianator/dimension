@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2012 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2013 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -57,78 +57,54 @@ enum {
   DMNSN_ZMAX
 };
 
-/** Get a coordinate of the bounding box of a node. */
-static inline double
-dmnsn_get_coordinate(const dmnsn_bvh_node * const *node, int comparator)
-{
-  switch (comparator) {
-  case DMNSN_XMIN:
-    return (*node)->bounding_box.min.x;
-  case DMNSN_YMIN:
-    return (*node)->bounding_box.min.y;
-  case DMNSN_ZMIN:
-    return (*node)->bounding_box.min.z;
-
-  case DMNSN_XMAX:
-    return -(*node)->bounding_box.max.x;
-  case DMNSN_YMAX:
-    return -(*node)->bounding_box.max.y;
-  case DMNSN_ZMAX:
-    return -(*node)->bounding_box.max.z;
-
-  default:
-    dmnsn_unreachable("Invalid comparator.");
-  }
-}
-
 /* List sorting comparators */
 
 static int
 dmnsn_xmin_comp(const void *l, const void *r)
 {
-  double lval = dmnsn_get_coordinate(l, DMNSN_XMIN);
-  double rval = dmnsn_get_coordinate(r, DMNSN_XMIN);
+  double lval = (*(const dmnsn_bvh_node **)l)->bounding_box.min.x;
+  double rval = (*(const dmnsn_bvh_node **)r)->bounding_box.min.x;
   return (lval > rval) - (lval < rval);
 }
 
 static int
 dmnsn_ymin_comp(const void *l, const void *r)
 {
-  double lval = dmnsn_get_coordinate(l, DMNSN_YMIN);
-  double rval = dmnsn_get_coordinate(r, DMNSN_YMIN);
+  double lval = (*(const dmnsn_bvh_node **)l)->bounding_box.min.y;
+  double rval = (*(const dmnsn_bvh_node **)r)->bounding_box.min.y;
   return (lval > rval) - (lval < rval);
 }
 
 static int
 dmnsn_zmin_comp(const void *l, const void *r)
 {
-  double lval = dmnsn_get_coordinate(l, DMNSN_ZMIN);
-  double rval = dmnsn_get_coordinate(r, DMNSN_ZMIN);
+  double lval = (*(const dmnsn_bvh_node **)l)->bounding_box.min.z;
+  double rval = (*(const dmnsn_bvh_node **)r)->bounding_box.min.z;
   return (lval > rval) - (lval < rval);
 }
 
 static int
 dmnsn_xmax_comp(const void *l, const void *r)
 {
-  double lval = dmnsn_get_coordinate(l, DMNSN_XMAX);
-  double rval = dmnsn_get_coordinate(r, DMNSN_XMAX);
-  return (lval > rval) - (lval < rval);
+  double lval = (*(const dmnsn_bvh_node **)l)->bounding_box.max.x;
+  double rval = (*(const dmnsn_bvh_node **)r)->bounding_box.max.x;
+  return (lval < rval) - (lval > rval);
 }
 
 static int
 dmnsn_ymax_comp(const void *l, const void *r)
 {
-  double lval = dmnsn_get_coordinate(l, DMNSN_YMAX);
-  double rval = dmnsn_get_coordinate(r, DMNSN_YMAX);
-  return (lval > rval) - (lval < rval);
+  double lval = (*(const dmnsn_bvh_node **)l)->bounding_box.max.y;
+  double rval = (*(const dmnsn_bvh_node **)r)->bounding_box.max.y;
+  return (lval < rval) - (lval > rval);
 }
 
 static int
 dmnsn_zmax_comp(const void *l, const void *r)
 {
-  double lval = dmnsn_get_coordinate(l, DMNSN_ZMAX);
-  double rval = dmnsn_get_coordinate(r, DMNSN_ZMAX);
-  return (lval > rval) - (lval < rval);
+  double lval = (*(const dmnsn_bvh_node **)l)->bounding_box.max.z;
+  double rval = (*(const dmnsn_bvh_node **)r)->bounding_box.max.z;
+  return (lval < rval) - (lval > rval);
 }
 
 /** All comparators. */
@@ -138,19 +114,20 @@ static dmnsn_array_comparator_fn *const dmnsn_comparators[DMNSN_PSEUDO_B] = {
   [DMNSN_ZMIN] = dmnsn_zmin_comp,
   [DMNSN_XMAX] = dmnsn_xmax_comp,
   [DMNSN_YMAX] = dmnsn_ymax_comp,
-  [DMNSN_ZMAX] = dmnsn_zmax_comp
+  [DMNSN_ZMAX] = dmnsn_zmax_comp,
 };
 
 /** Add the priority leaves for this level. */
 static void
-dmnsn_add_priority_leaves(dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B],
+dmnsn_add_priority_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
+                          size_t nleaves,
                           dmnsn_array *new_leaves)
 {
   for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
     dmnsn_bvh_node *leaf = NULL;
-    dmnsn_bvh_node **leaves = dmnsn_array_first(sorted_leaves[i]);
-    for (size_t j = 0, size = dmnsn_array_size(sorted_leaves[i]);
-         j < size && (!leaf || leaf->nchildren < DMNSN_PRTREE_B);
+    dmnsn_bvh_node **leaves = sorted_leaves[i];
+    for (size_t j = 0;
+         j < nleaves && (!leaf || leaf->nchildren < DMNSN_PRTREE_B);
          ++j)
     {
       /* Skip all the previously found extreme nodes */
@@ -173,80 +150,112 @@ dmnsn_add_priority_leaves(dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B],
   }
 }
 
-/** Split the sorted lists into the left and right subtrees. */
-static bool
-dmnsn_split_sorted_leaves(dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B],
-                          dmnsn_array *right_sorted_leaves[DMNSN_PSEUDO_B],
-                          size_t i)
+static void
+dmnsn_split_sorted_leaves_easy(dmnsn_bvh_node **leaves,
+                               size_t *nleaves,
+                               size_t *nright_leaves)
 {
   /* Get rid of the extreme nodes */
-  dmnsn_bvh_node **leaves = dmnsn_array_first(sorted_leaves[i]);
-  size_t j, skip;
-  for (j = 0, skip = 0; j < dmnsn_array_size(sorted_leaves[i]); ++j) {
-    if (leaves[j]->data == DMNSN_PRTREE_LEAF) {
+  size_t i, skip, size = *nleaves;
+  for (i = 0, skip = 0; i < size; ++i) {
+    if (leaves[i]->data == DMNSN_PRTREE_LEAF) {
       ++skip;
     } else {
-      leaves[j - skip] = leaves[j];
+      leaves[i - skip] = leaves[i];
     }
   }
-  dmnsn_array_resize(sorted_leaves[i], j - skip);
 
-  if (dmnsn_array_size(sorted_leaves[i]) == 0) {
-    return false;
+  size -= skip;
+
+  /* Split the leaves and mark the left and right child nodes */
+  size_t left_size = (size + 1)/2;
+  for (i = 0; i < left_size; ++i) {
+    leaves[i]->data = DMNSN_PRTREE_LEFT;
+  }
+  for (i = left_size; i < size; ++i) {
+    leaves[i]->data = DMNSN_PRTREE_RIGHT;
   }
 
-  /* Split the appropriate list and mark the left and right child nodes */
-  right_sorted_leaves[i] = dmnsn_array_split(sorted_leaves[i]);
-  DMNSN_ARRAY_FOREACH (dmnsn_bvh_node **, node, sorted_leaves[i]) {
-    (*node)->data = DMNSN_PRTREE_LEFT;
+  *nleaves = left_size;
+  *nright_leaves = size - left_size;
+}
+
+static void
+dmnsn_split_sorted_leaves_hard(dmnsn_bvh_node **leaves,
+                               dmnsn_bvh_node **buffer,
+                               size_t nleaves)
+{
+  size_t i, j, skip;
+  for (i = 0, j = 0, skip = 0; i < nleaves; ++i) {
+    if (leaves[i]->data == DMNSN_PRTREE_LEFT) {
+      leaves[i - skip] = leaves[i];
+    } else {
+      if (leaves[i]->data == DMNSN_PRTREE_RIGHT) {
+        buffer[j] = leaves[i];
+        ++j;
+      }
+      ++skip;
+    }
   }
-  DMNSN_ARRAY_FOREACH (dmnsn_bvh_node **, node, right_sorted_leaves[i]) {
-    (*node)->data = DMNSN_PRTREE_RIGHT;
+
+  size_t left_size = i - skip;
+  for (i = 0; i < j; ++i) {
+    leaves[left_size + i] = buffer[i];
   }
+}
+
+/** Split the sorted lists into the left and right subtrees. */
+static void
+dmnsn_split_sorted_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
+                          size_t *nleaves,
+                          dmnsn_bvh_node **right_sorted_leaves[DMNSN_PSEUDO_B],
+                          size_t *nright_leaves,
+                          dmnsn_bvh_node **buffer,
+                          size_t i)
+{
+  size_t original_size = *nleaves;
+
+  /* Split the ith list */
+  dmnsn_split_sorted_leaves_easy(sorted_leaves[i], nleaves, nright_leaves);
 
   /* Split the rest of the lists */
   for (size_t j = 0; j < DMNSN_PSEUDO_B; ++j) {
-    if (j != i) {
-      right_sorted_leaves[j] = dmnsn_new_array(sizeof(dmnsn_bvh_node *));
-
-      dmnsn_bvh_node **leaves = dmnsn_array_first(sorted_leaves[j]);
-      size_t k, skip;
-      for (k = 0, skip = 0; k < dmnsn_array_size(sorted_leaves[j]); ++k) {
-        if (leaves[k]->data == DMNSN_PRTREE_LEAF) {
-          ++skip;
-        } else if (leaves[k]->data == DMNSN_PRTREE_RIGHT) {
-          dmnsn_array_push(right_sorted_leaves[j], &leaves[k]);
-          ++skip;
-        } else {
-          leaves[k - skip] = leaves[k];
-        }
-      }
-      dmnsn_array_resize(sorted_leaves[j], k - skip);
+    right_sorted_leaves[j] = sorted_leaves[j] + *nleaves;
+    if (j == i) {
+      continue;
     }
-  }
 
-  return true;
+    dmnsn_split_sorted_leaves_hard(sorted_leaves[j], buffer, original_size);
+  }
 }
 
 /** Recursively constructs an implicit pseudo-PR-tree and collects the priority
     leaves. */
 static void
-dmnsn_priority_leaves_recursive(dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B],
+dmnsn_priority_leaves_recursive(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
+                                size_t nleaves,
+                                dmnsn_bvh_node **buffer,
                                 dmnsn_array *new_leaves,
                                 int comparator)
 {
-  dmnsn_add_priority_leaves(sorted_leaves, new_leaves);
+  dmnsn_add_priority_leaves(sorted_leaves, nleaves, new_leaves);
 
-  dmnsn_array *right_sorted_leaves[DMNSN_PSEUDO_B];
-  if (dmnsn_split_sorted_leaves(sorted_leaves, right_sorted_leaves, comparator))
-  {
-    dmnsn_priority_leaves_recursive(right_sorted_leaves, new_leaves,
+  dmnsn_bvh_node **right_sorted_leaves[DMNSN_PSEUDO_B];
+  size_t right_nleaves;
+
+  dmnsn_split_sorted_leaves(sorted_leaves, &nleaves,
+                            right_sorted_leaves, &right_nleaves,
+                            buffer, comparator);
+
+  if (nleaves > 0) {
+    dmnsn_priority_leaves_recursive(sorted_leaves, nleaves,
+                                    buffer, new_leaves,
                                     (comparator + 1)%DMNSN_PSEUDO_B);
-    for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
-      dmnsn_delete_array(right_sorted_leaves[i]);
-    }
+  }
 
-    dmnsn_priority_leaves_recursive(sorted_leaves, new_leaves,
+  if (right_nleaves > 0) {
+    dmnsn_priority_leaves_recursive(right_sorted_leaves, right_nleaves,
+                                    buffer, new_leaves,
                                     (comparator + 1)%DMNSN_PSEUDO_B);
   }
 }
@@ -255,17 +264,26 @@ dmnsn_priority_leaves_recursive(dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B],
 static dmnsn_array *
 dmnsn_priority_leaves(const dmnsn_array *leaves)
 {
-  dmnsn_array *sorted_leaves[DMNSN_PSEUDO_B];
+  dmnsn_bvh_node **leaves_arr = dmnsn_array_first(leaves);
+  dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B];
+  size_t nleaves = dmnsn_array_size(leaves);
+  size_t leaves_size = nleaves*sizeof(dmnsn_bvh_node *);
+
   for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
-    sorted_leaves[i] = dmnsn_array_copy(leaves);
-    dmnsn_array_sort(sorted_leaves[i], dmnsn_comparators[i]);
+    sorted_leaves[i] = dmnsn_malloc(leaves_size);
+    memcpy(sorted_leaves[i], leaves_arr, leaves_size);
+    qsort(sorted_leaves[i], nleaves, sizeof(dmnsn_bvh_node *),
+          dmnsn_comparators[i]);
   }
 
   dmnsn_array *new_leaves = dmnsn_new_array(sizeof(dmnsn_bvh_node *));
-  dmnsn_priority_leaves_recursive(sorted_leaves, new_leaves, 0);
+  dmnsn_bvh_node **buffer = dmnsn_malloc(leaves_size/2);
+  dmnsn_priority_leaves_recursive(sorted_leaves, nleaves, buffer, new_leaves,
+                                  0);
+  dmnsn_free(buffer);
 
   for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
-    dmnsn_delete_array(sorted_leaves[i]);
+    dmnsn_free(sorted_leaves[i]);
   }
 
   return new_leaves;
