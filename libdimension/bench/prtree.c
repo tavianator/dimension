@@ -21,6 +21,7 @@
 #include "../prtree.c"
 #include "../threads.c"
 #include "../future.c"
+#include "../platform.c"
 #include <sandglass.h>
 #include <stdlib.h>
 

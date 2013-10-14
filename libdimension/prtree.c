@@ -260,28 +260,69 @@ dmnsn_priority_leaves_recursive(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
   }
 }
 
+/** Sort each dimension in parallel with more than this many leaves. */
+#define DMNSN_PARALLEL_SORT_THRESHOLD 1024
+
+typedef struct {
+  dmnsn_bvh_node **leaves_arr;
+  dmnsn_bvh_node ***sorted_leaves;
+  size_t nleaves;
+} dmnsn_sort_leaves_payload;
+
+static dmnsn_bvh_node **
+dmnsn_sort_leaf_array(dmnsn_bvh_node **leaves, size_t nleaves, int comparator)
+{
+  size_t leaves_size = nleaves*sizeof(dmnsn_bvh_node *);
+  dmnsn_bvh_node **sorted_leaves = dmnsn_malloc(leaves_size);
+  memcpy(sorted_leaves, leaves, leaves_size);
+  qsort(sorted_leaves, nleaves, sizeof(dmnsn_bvh_node *),
+        dmnsn_comparators[comparator]);
+  return sorted_leaves;
+}
+
+static int
+dmnsn_sort_leaves(void *ptr, unsigned int thread, unsigned int nthreads)
+{
+  dmnsn_sort_leaves_payload *payload = ptr;
+
+  for (unsigned int i = thread; i < DMNSN_PSEUDO_B; i += nthreads) {
+    payload->sorted_leaves[i] =
+      dmnsn_sort_leaf_array(payload->leaves_arr, payload->nleaves, i);
+  }
+
+  return 0;
+}
+
 /** Constructs an implicit pseudo-PR-tree and returns the priority leaves. */
 static dmnsn_array *
-dmnsn_priority_leaves(const dmnsn_array *leaves)
+dmnsn_priority_leaves(const dmnsn_array *leaves, unsigned int nthreads)
 {
   dmnsn_bvh_node **leaves_arr = dmnsn_array_first(leaves);
   dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B];
   size_t nleaves = dmnsn_array_size(leaves);
-  size_t leaves_size = nleaves*sizeof(dmnsn_bvh_node *);
 
-  for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
-    sorted_leaves[i] = dmnsn_malloc(leaves_size);
-    memcpy(sorted_leaves[i], leaves_arr, leaves_size);
-    qsort(sorted_leaves[i], nleaves, sizeof(dmnsn_bvh_node *),
-          dmnsn_comparators[i]);
+  if (nleaves >= DMNSN_PARALLEL_SORT_THRESHOLD && nthreads > 1) {
+    dmnsn_sort_leaves_payload payload = {
+      .leaves_arr = leaves_arr,
+      .sorted_leaves = sorted_leaves,
+      .nleaves = nleaves,
+    };
+    dmnsn_execute_concurrently(dmnsn_sort_leaves, &payload, nthreads);
+  } else {
+    for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
+      sorted_leaves[i] = dmnsn_sort_leaf_array(leaves_arr, nleaves, i);
+    }
   }
 
+  size_t buffer_size = nleaves/2;
+  dmnsn_bvh_node **buffer = dmnsn_malloc(buffer_size*sizeof(dmnsn_bvh_node *));
+
   dmnsn_array *new_leaves = dmnsn_new_array(sizeof(dmnsn_bvh_node *));
-  dmnsn_bvh_node **buffer = dmnsn_malloc(leaves_size/2);
+
   dmnsn_priority_leaves_recursive(sorted_leaves, nleaves, buffer, new_leaves,
                                   0);
-  dmnsn_free(buffer);
 
+  dmnsn_free(buffer);
   for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
     dmnsn_free(sorted_leaves[i]);
   }
@@ -304,8 +345,10 @@ dmnsn_new_prtree(const dmnsn_array *objects)
     dmnsn_array_push(leaves, &node);
   }
 
+  unsigned int ncpus = dmnsn_ncpus();
+  unsigned int nthreads = ncpus < DMNSN_PSEUDO_B ? ncpus : DMNSN_PSEUDO_B;
   while (dmnsn_array_size(leaves) > 1) {
-    dmnsn_array *new_leaves = dmnsn_priority_leaves(leaves);
+    dmnsn_array *new_leaves = dmnsn_priority_leaves(leaves, nthreads);
     dmnsn_delete_array(leaves);
     leaves = new_leaves;
   }

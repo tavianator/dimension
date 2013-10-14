@@ -25,6 +25,7 @@
 #include "../prtree.c"
 #include "../threads.c"
 #include "../future.c"
+#include "../platform.c"
 #include <stdio.h>
 #include <stdlib.h>
 
