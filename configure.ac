@@ -1,4 +1,4 @@
-dnl Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>
+dnl Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>
 dnl
 dnl This file is part of The Dimension Build Suite.
 dnl
@@ -109,6 +109,20 @@ dnl Platform feature tests
 
 m4_include(ax_pthread.m4)
 AX_PTHREAD([], [AC_MSG_ERROR([pthread support not detected])])
+
+AC_MSG_CHECKING([for strerror_r])
+AC_RUN_IFELSE([
+  AC_LANG_PROGRAM(
+    [ #include <string.h>
+      #include <errno.h> ],
+    [ char buf@<:@256@:>@;
+      return strerror_r(ENOMEM, buf, 256); ]
+  )],
+  [AC_DEFINE([DMNSN_STRERROR_R], [1])
+   AC_MSG_RESULT([yes])],
+  [AC_DEFINE([DMNSN_STRERROR_R], [0])
+   AC_MSG_RESULT([no])]
+)
 
 AC_MSG_CHECKING([for sys_errlist])
 AC_LINK_IFELSE([

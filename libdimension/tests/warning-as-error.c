@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@gmail.com>          *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@gmail.com>          *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -21,11 +21,13 @@
 
 #include "dimension.h"
 #include <stdlib.h>
+#include <errno.h>
 
 int
 main(void)
 {
   dmnsn_die_on_warnings(true);
+  errno = ENOMEM;
   dmnsn_warning("This warning is expected.");
   return EXIT_SUCCESS;
 }

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2012 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -21,11 +21,11 @@
  * Basic tests of PR-trees
  */
 
-#include "../bvh.c"
-#include "../prtree.c"
+#include "../platform.c"
 #include "../threads.c"
 #include "../future.c"
-#include "../platform.c"
+#include "../bvh.c"
+#include "../prtree.c"
 #include <stdio.h>
 #include <stdlib.h>
 

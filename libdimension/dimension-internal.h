@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -27,7 +27,6 @@
 #ifndef DIMENSION_INTERNAL_H
 #define DIMENSION_INTERNAL_H
 
-#define _GNU_SOURCE
 #include "dimension.h"
 #include "refcount-internal.h"
 #include "compiler-internal.h"

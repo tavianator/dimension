@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -23,7 +23,9 @@
  * Platform abstractions.
  */
 
+#define _GNU_SOURCE
 #include "dimension-internal.h"
+
 #if HAVE_UNISTD_H
   #include <unistd.h>
 #endif

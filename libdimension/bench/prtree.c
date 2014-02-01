@@ -17,11 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include "../bvh.c"
-#include "../prtree.c"
+#include "../platform.c"
 #include "../threads.c"
 #include "../future.c"
-#include "../platform.c"
+#include "../bvh.c"
+#include "../prtree.c"
 #include <sandglass.h>
 #include <stdlib.h>
 

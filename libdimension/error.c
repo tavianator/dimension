@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -25,6 +25,7 @@
 
 #include "dimension-internal.h"
 #include <pthread.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -95,7 +96,12 @@ dmnsn_report_error(bool die, const char *func, const char *file,
   /* Print the value of errno */
   if (err != 0) {
     fprintf(stderr, "Last error: %d", err);
-#if DMNSN_SYS_ERRLIST
+#if DMNSN_STRERROR_R
+    char errbuf[256];
+    if (strerror_r(err, errbuf, 256) == 0) {
+      fprintf(stderr, " (%s)", errbuf);
+    }
+#elif DMNSN_SYS_ERRLIST
     if (err >= 0 && err < sys_nerr) {
       fprintf(stderr, " (%s)", sys_errlist[err]);
     }

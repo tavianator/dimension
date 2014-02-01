@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -21,10 +21,12 @@
 
 #include "dimension.h"
 #include <stdlib.h>
+#include <errno.h>
 
 int
 main(void)
 {
+  errno = ENOMEM;
   dmnsn_error("This error is expected.");
   return EXIT_SUCCESS;
 }
