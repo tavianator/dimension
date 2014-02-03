@@ -358,9 +358,9 @@ dmnsn_solve_cubic(double poly[4], double x[3])
     x[0] = -bdiv3;
   } else {
     /* Two real roots; one duplicate */
-    double t1 = 3.0*q/p, t2 = -t1/2.0;
-    x[0] = dmnsn_max(t1, t2);
-    x[1] = dmnsn_min(t1, t2);
+    double t1 = -(3.0*q)/(2.0*p), t2 = -2.0*t1;
+    x[0] = dmnsn_max(t1, t2) - bdiv3;
+    x[1] = dmnsn_min(t1, t2) - bdiv3;
     if (x[1] >= dmnsn_epsilon)
       return 2;
   }
