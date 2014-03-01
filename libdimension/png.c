@@ -181,8 +181,8 @@ dmnsn_png_write_canvas_thread(void *ptr)
     if (i->optimizer_fn == dmnsn_rgba16_optimizer_fn) {
       for (size_t y = 0; y < height; ++y) {
         /* Invert the rows.  PNG coordinates are fourth quadrant. */
-        uint16_t *row = (uint16_t *)i->ptr + 4*(height - y - 1)*width;
-        png_write_row(png_ptr, (png_bytep)row);
+        uint16_t *row_opt = (uint16_t *)i->ptr + 4*(height - y - 1)*width;
+        png_write_row(png_ptr, (png_bytep)row_opt);
         dmnsn_future_increment(payload->future);
       }
 

@@ -39,6 +39,9 @@ wrapper_la_SOURCES = dimension.c                                               \
 wrapper_la_LDFLAGS = -avoid-version -module
 wrapper_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
+dimension.$(OBJEXT): CFLAGS += -Wno-shadow -Wno-sign-compare
+dimension.lo: CFLAGS += -Wno-shadow -Wno-sign-compare
+
 EXTRA_DIST = dimension.pyx                                                     \
              dimension.pxd
 

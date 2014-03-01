@@ -125,12 +125,12 @@ dmnsn_expect(bool result, bool expected, const char *func, const char *file,
       ++branch->predicted;
     }
   } else {
-    dmnsn_branch branch = {
+    dmnsn_branch new_branch = {
       .location  = dmnsn_strdup(key),
       .predicted = (result == expected) ? 1 : 0,
       .branches  = 1
     };
-    dmnsn_dictionary_insert(thread_profile, key, &branch);
+    dmnsn_dictionary_insert(thread_profile, key, &new_branch);
   }
 
   return result;

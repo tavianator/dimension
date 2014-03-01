@@ -75,7 +75,7 @@ dmnsn_add_test_cases(void *ptr)
 }
 
 Suite *
-dmnsn_test_suite()
+dmnsn_test_suite(void)
 {
   dmnsn_suite = suite_create("Dimension");
 
@@ -87,7 +87,7 @@ dmnsn_test_suite()
 }
 
 int
-main()
+main(void)
 {
   /* Treat warnings as errors for tests */
   dmnsn_die_on_warnings(true);
