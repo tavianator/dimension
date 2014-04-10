@@ -84,9 +84,9 @@ dmnsn_sRGB_inverse_gamma(double CsRGB)
    * If C represents R, G, and B, then the Clinear values are now found as
    * follows:
    *
-   *           { Csrgb/12.92,                  Csrgb <= 0.04045
-   * Clinear = {                        1/2.4
-   *           { ((Csrgb + 0.055)/1.055)     , Csrgb >  0.04045
+   *           { Csrgb/12.92,                Csrgb <= 0.04045
+   * Clinear = {                        2.4
+   *           { ((Csrgb + 0.055)/1.055)   , Csrgb >  0.04045
    */
   if (CsRGB == 1.0) {
     return 1.0; /* Map 1.0 to 1.0 instead of 0.9999999999999999 */
