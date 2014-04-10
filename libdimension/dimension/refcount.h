@@ -33,11 +33,4 @@
  * Increment a reference count.
  * @param[in,out] object  The reference-counted object to acquire.
  */
-#define DMNSN_INCREF(object)                                            \
-  do {                                                                  \
-    /* Suppress "address will always evaluate to true" warning */       \
-    void *testptr = (object);                                           \
-    if (testptr) {                                                      \
-      ++(object)->DMNSN_REFCOUNT_FIELD;                                 \
-    }                                                                   \
-  } while (0)
+#define DMNSN_INCREF(object) (++(object)->DMNSN_REFCOUNT_FIELD)

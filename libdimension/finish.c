@@ -140,25 +140,24 @@ dmnsn_finish_incref(dmnsn_finish *finish)
   if (finish->reflection) {
     DMNSN_INCREF(finish->reflection);
   }
-
 }
 
 void
 dmnsn_finish_cascade(const dmnsn_finish *default_finish, dmnsn_finish *finish)
 {
-  if (!finish->ambient) {
+  if (!finish->ambient && default_finish->ambient) {
     finish->ambient = default_finish->ambient;
     DMNSN_INCREF(finish->ambient);
   }
-  if (!finish->diffuse) {
+  if (!finish->diffuse && default_finish->diffuse) {
     finish->diffuse = default_finish->diffuse;
     DMNSN_INCREF(finish->diffuse);
   }
-  if (!finish->specular) {
+  if (!finish->specular && default_finish->specular) {
     finish->specular = default_finish->specular;
     DMNSN_INCREF(finish->specular);
   }
-  if (!finish->reflection) {
+  if (!finish->reflection && default_finish->reflection) {
     finish->reflection = default_finish->reflection;
     DMNSN_INCREF(finish->reflection);
   }
