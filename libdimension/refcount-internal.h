@@ -40,5 +40,5 @@
  * @return Whether the object is now garbage.
  */
 #define DMNSN_DECREF(object)                                            \
-  ((object) && ((object)->DMNSN_REFCOUNT_FIELD == 0                      \
+  ((object) && ((object)->DMNSN_REFCOUNT_FIELD == 0                     \
                 || --(object)->DMNSN_REFCOUNT_FIELD == 0))
