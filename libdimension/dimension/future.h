@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -57,3 +57,16 @@ double dmnsn_future_progress(const dmnsn_future *future);
  * @param[in] progress  The progress value to wait for.
  */
 void dmnsn_future_wait(const dmnsn_future *future, double progress);
+
+/**
+ * Pause all threads working on the given future.  Once this function returns,
+ * it is safe to examine the intermediate state of the asynchronous computation.
+ * @param[in,out] future  The background task to pause.
+ */
+void dmnsn_future_pause(dmnsn_future *future);
+
+/**
+ * Resume a previously paused future object.
+ * @param[in,out] future  The background task to resume.
+ */
+void dmnsn_future_resume(dmnsn_future *future);

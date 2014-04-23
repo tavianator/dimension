@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -367,12 +367,15 @@ main(void)
   /* Display the scene as it's rendered */
   if (display) {
     while (dmnsn_future_progress(future) < 1.0) {
-      if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
-        dmnsn_delete_display(display);
-        dmnsn_delete_scene(scene);
-        fprintf(stderr, "--- Drawing to OpenGL failed! ---\n");
-        return EXIT_FAILURE;
-      }
+      dmnsn_future_pause(future);
+        if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
+          dmnsn_delete_display(display);
+          dmnsn_delete_scene(scene);
+          fprintf(stderr, "--- Drawing to OpenGL failed! ---\n");
+          return EXIT_FAILURE;
+        }
+      dmnsn_future_resume(future);
+
       dmnsn_display_flush(display);
     }
   }

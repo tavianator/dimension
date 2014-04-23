@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -73,11 +73,12 @@ dmnsn_new_thread(dmnsn_future *future, dmnsn_thread_fn *thread_fn, void *arg)
 
 /** Payload for threads executed by dmnsn_execute_concurrently(). */
 typedef struct dmnsn_ccthread_payload {
+  dmnsn_future *future;
   dmnsn_ccthread_fn *ccthread_fn;
   void *arg;
   unsigned int thread, nthreads;
   int ret;
-  bool started;
+  bool running;
 } dmnsn_ccthread_payload;
 
 static void *
@@ -86,10 +87,14 @@ dmnsn_concurrent_thread(void *ptr)
   dmnsn_ccthread_payload *payload = ptr;
   payload->ret = payload->ccthread_fn(payload->arg, payload->thread,
                                       payload->nthreads);
+  if (payload->future) {
+    dmnsn_future_thread_done(payload->future);
+  }
   return NULL;
 }
 
 typedef struct dmnsn_ccthread_cleanup_payload {
+  dmnsn_future *future;
   pthread_t *threads;
   dmnsn_ccthread_payload *payloads;
   unsigned int nthreads;
@@ -101,38 +106,48 @@ dmnsn_ccthread_cleanup(void *ptr)
   dmnsn_ccthread_cleanup_payload *payload = ptr;
 
   for (unsigned int i = 0; i < payload->nthreads; ++i) {
-    if (payload->payloads[i].started) {
+    if (payload->payloads[i].running) {
       pthread_cancel(payload->threads[i]);
     }
   }
 
   for (unsigned int i = 0; i < payload->nthreads; ++i) {
-    if (payload->payloads[i].started) {
+    if (payload->payloads[i].running) {
       dmnsn_join_thread(payload->threads[i], NULL);
     }
+  }
+
+  if (payload->future) {
+    dmnsn_future_set_nthreads(payload->future, 1);
   }
 }
 
 int
-dmnsn_execute_concurrently(dmnsn_ccthread_fn *ccthread_fn,
+dmnsn_execute_concurrently(dmnsn_future *future, dmnsn_ccthread_fn *ccthread_fn,
                            void *arg, unsigned int nthreads)
 {
   dmnsn_assert(nthreads > 0, "Attempt to execute using 0 concurrent threads.");
 
+  if (future) {
+    dmnsn_future_set_nthreads(future, nthreads);
+  }
+
   pthread_t threads[nthreads];
   dmnsn_ccthread_payload payloads[nthreads];
   for (unsigned int i = 0; i < nthreads; ++i) {
-    payloads[i].started = false;
+    payloads[i].running = false;
   }
 
   int ret = 0;
   dmnsn_ccthread_cleanup_payload cleanup_payload = {
+    .future = future,
     .threads = threads,
     .payloads = payloads,
     .nthreads = nthreads,
   };
   pthread_cleanup_push(dmnsn_ccthread_cleanup, &cleanup_payload);
     for (unsigned int i = 0; i < nthreads; ++i) {
+      payloads[i].future      = future;
       payloads[i].ccthread_fn = ccthread_fn;
       payloads[i].arg         = arg;
       payloads[i].thread      = i;
@@ -143,17 +158,21 @@ dmnsn_execute_concurrently(dmnsn_ccthread_fn *ccthread_fn,
       {
         dmnsn_error("Couldn't start worker thread.");
       }
-      payloads[i].started = true;
+      payloads[i].running = true;
     }
 
     for (unsigned int i = 0; i < nthreads; ++i) {
       dmnsn_join_thread(threads[i], NULL);
-      payloads[i].started = false;
+      payloads[i].running = false;
       if (payloads[i].ret != 0) {
         ret = payloads[i].ret;
       }
     }
   pthread_cleanup_pop(false);
+
+  if (future) {
+    dmnsn_future_set_nthreads(future, 1);
+  }
 
   return ret;
 }
@@ -177,7 +196,7 @@ dmnsn_lock_mutex_impl(pthread_mutex_t *mutex)
 }
 
 void
-dmnsn_unlock_mutex_impl(pthread_mutex_t *mutex)
+dmnsn_unlock_mutex_impl(void *mutex)
 {
   if (pthread_mutex_unlock(mutex) != 0) {
     dmnsn_error("Couldn't unlock mutex.");

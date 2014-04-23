@@ -1,5 +1,5 @@
 #########################################################################
-# Copyright (C) 2011-2012 Tavian Barnes <tavianator@tavianator.com>     #
+# Copyright (C) 2011-2014 Tavian Barnes <tavianator@tavianator.com>     #
 #                                                                       #
 # This file is part of The Dimension Python Module.                     #
 #                                                                       #
@@ -90,6 +90,12 @@ cdef class Future:
     self._assert_unfinished()
     with nogil:
       dmnsn_future_wait(self._future, progress)
+
+  def pause(self):
+    with nogil:
+      dmnsn_future_pause(self._future)
+  def resume(self):
+    dmnsn_future_resume(self._future)
 
   # Let Futures be used as context managers
   def __enter__(self):

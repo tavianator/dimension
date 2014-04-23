@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2012 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -89,7 +89,8 @@ dmnsn_ray_trace_scene_thread(void *ptr)
 
   /* Time the render itself */
   dmnsn_timer_start(&payload->scene->render_timer);
-    int ret = dmnsn_execute_concurrently(dmnsn_ray_trace_scene_concurrent,
+    int ret = dmnsn_execute_concurrently(payload->future,
+                                         dmnsn_ray_trace_scene_concurrent,
                                          payload, payload->scene->nthreads);
   dmnsn_timer_stop(&payload->scene->render_timer);
 

@@ -1,5 +1,5 @@
 #########################################################################
-# Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          #
+# Copyright (C) 2011-2014 Tavian Barnes <tavianator@tavianator.com>     #
 #                                                                       #
 # This file is part of The Dimension Python Module.                     #
 #                                                                       #
@@ -73,6 +73,8 @@ cdef extern from "../libdimension/dimension.h":
   void dmnsn_future_cancel(dmnsn_future *future)
   double dmnsn_future_progress(dmnsn_future *future)
   void dmnsn_future_wait(dmnsn_future *future, double progress) nogil
+  void dmnsn_future_pause(dmnsn_future *future) nogil
+  void dmnsn_future_resume(dmnsn_future *future)
 
   ##########
   # Timers #

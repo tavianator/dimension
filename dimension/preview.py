@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #########################################################################
-# Copyright (C) 2011-2012 Tavian Barnes <tavianator@tavianator.com>     #
+# Copyright (C) 2011-2014 Tavian Barnes <tavianator@tavianator.com>     #
 #                                                                       #
 # This file is part of Dimension.                                       #
 #                                                                       #
@@ -30,11 +30,14 @@ class Preview(QtOpenGL.QGLWidget):
 
   def paintGL(self):
     try:
+      self.future.pause()
       self.canvas.draw_GL()
     except:
       self.future.cancel()
       self.parent().close()
       raise
+    finally:
+      self.future.resume()
 
 class PreviewWindow(QtGui.QMainWindow):
   """Main window for a rendering preview."""

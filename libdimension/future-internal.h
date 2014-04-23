@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2013 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -34,6 +34,11 @@ DMNSN_INTERNAL void dmnsn_future_set_total(dmnsn_future *future, size_t total);
 DMNSN_INTERNAL void dmnsn_future_increment(dmnsn_future *future);
 /** Instantly complete the background teask. */
 DMNSN_INTERNAL void dmnsn_future_done(dmnsn_future *future);
+/** Set the number of worker threads. */
+DMNSN_INTERNAL void dmnsn_future_set_nthreads(dmnsn_future *future,
+                                              unsigned int nthreads);
+/** Notify completion of a worker thread. */
+DMNSN_INTERNAL void dmnsn_future_thread_done(dmnsn_future *future);
 
 struct dmnsn_future {
   size_t progress; /**< Completed loop iterations. */
@@ -50,4 +55,17 @@ struct dmnsn_future {
 
   /** Minimum waited-on value. */
   double min_wait;
+
+  /** Number of threads working on the future's background task. */
+  unsigned int nthreads;
+  /** Number of threads not yet paused. */
+  unsigned int nrunning;
+  /** Count of threads holding the future paused. */
+  unsigned int npaused;
+  /** Condition variable for waiting for nrunning == 0. */
+  pthread_cond_t none_running_cond;
+  /** Condition variable for waiting for nrunning == nthreads. */
+  pthread_cond_t all_running_cond;
+  /** Condition variable for waiting for npaused == 0. */
+  pthread_cond_t resume_cond;
 };

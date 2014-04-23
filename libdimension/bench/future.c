@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2013 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2013-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Benchmark Suite.                   *
  *                                                                       *
@@ -58,7 +58,8 @@ dmnsn_bench_thread(void *ptr)
   dmnsn_unlock_mutex(&future->mutex);
 
   /* Now run a bunch of increments concurrently. */
-  return dmnsn_execute_concurrently(&dmnsn_bench_future, future, nthreads);
+  return dmnsn_execute_concurrently(future, &dmnsn_bench_future, future,
+                                    nthreads);
 }
 
 int

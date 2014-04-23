@@ -53,12 +53,15 @@ typedef int dmnsn_ccthread_fn(void *ptr, unsigned int thread,
 
 /**
  * Run \p nthreads threads in parallel.
+ * @param[in,out] future       The future object to associate with the threads,
+ *                             possibly NULL.
  * @param[in]     ccthread_fn  The routine to run in each concurrent thread.
  * @param[in,out] arg          The pointer to pass to the thread callbacks.
  * @param[in]     nthreads     The number of concurrent threads to run.
  * @return 0 if all threads were successful, and an error code otherwise.
  */
-DMNSN_INTERNAL int dmnsn_execute_concurrently(dmnsn_ccthread_fn *ccthread_fn,
+DMNSN_INTERNAL int dmnsn_execute_concurrently(dmnsn_future *future,
+                                              dmnsn_ccthread_fn *ccthread_fn,
                                               void *arg, unsigned int nthreads);
 
 /**
@@ -70,21 +73,21 @@ DMNSN_INTERNAL void dmnsn_initialize_mutex(pthread_mutex_t *mutex);
 /** dmnsn_lock_mutex() implementation. */
 DMNSN_INTERNAL void dmnsn_lock_mutex_impl(pthread_mutex_t *mutex);
 /** dmnsn_unlock_mutex() implementation. */
-DMNSN_INTERNAL void dmnsn_unlock_mutex_impl(pthread_mutex_t *mutex);
+DMNSN_INTERNAL void dmnsn_unlock_mutex_impl(void *mutex);
 
 /**
  * Lock a mutex, bailing out on failure.
  * Contains a {, so must be used in the same block as dmnsn_unlock_mutex().
  * @param[in,out] mutex  The mutex to lock.
  */
-#define dmnsn_lock_mutex(mutex) dmnsn_lock_mutex_impl((mutex)); {
+#define dmnsn_lock_mutex(mutex) do { dmnsn_lock_mutex_impl((mutex))
 
 /**
  * Unlock a mutex, bailing out on failure.
  * Contains a }, so must be used in the same block as dmnsn_lock_mutex().
  * @param[in,out] mutex  The mutex to unlock.
  */
-#define dmnsn_unlock_mutex(mutex) dmnsn_unlock_mutex_impl((mutex)); }
+#define dmnsn_unlock_mutex(mutex) dmnsn_unlock_mutex_impl((mutex)); } while (0)
 
 /**
  * Destroy a mutex, warning on failure.
@@ -110,14 +113,14 @@ DMNSN_INTERNAL void dmnsn_unlock_rwlock_impl(pthread_rwlock_t *rwlock);
  * Contains a {, so must be used in the same block as dmnsn_unlock_rwlock().
  * @param[in,out] rwlock  The read-write lock to lock.
  */
-#define dmnsn_read_lock(rwlock) dmnsn_read_lock_impl((rwlock)); {
+#define dmnsn_read_lock(rwlock) do { dmnsn_read_lock_impl((rwlock))
 
 /**
  * Write-lock a read-write lock, bailing out on failure.
  * Contains a {, so must be used in the same block as dmnsn_unlock_rwlock().
  * @param[in,out] rwlock  The read-write lock to lock.
  */
-#define dmnsn_write_lock(rwlock) dmnsn_write_lock_impl((rwlock)); {
+#define dmnsn_write_lock(rwlock) do { dmnsn_write_lock_impl((rwlock))
 
 /**
  * Unlock a read-write lock, bailing out on failure.
@@ -125,7 +128,8 @@ DMNSN_INTERNAL void dmnsn_unlock_rwlock_impl(pthread_rwlock_t *rwlock);
  * dmnsn_write_lock().
  * @param[in,out] rwlock  The read-write lock to lock.
  */
-#define dmnsn_unlock_rwlock(rwlock) dmnsn_unlock_rwlock_impl((rwlock)); }
+#define dmnsn_unlock_rwlock(rwlock)                     \
+  dmnsn_unlock_rwlock_impl((rwlock)); } while (0)
 
 /**
  * Destroy a read-write lock, warning on failure.
@@ -146,6 +150,18 @@ DMNSN_INTERNAL void dmnsn_initialize_cond(pthread_cond_t *cond);
  */
 DMNSN_INTERNAL void dmnsn_cond_wait(pthread_cond_t *cond,
                                     pthread_mutex_t *mutex);
+/**
+ * Wait on a condition variable, bailing out on error, and unlock the mutex if
+ * cancelled.
+ * @param[in] cond   The condition variable to wait on.
+ * @param[in] mutex  The associated mutex.
+ */
+#define dmnsn_cond_wait_safely(cond, mutex)                     \
+  do {                                                          \
+    pthread_cleanup_push(dmnsn_unlock_mutex_impl, (mutex));     \
+    dmnsn_cond_wait((cond), (mutex));                           \
+    pthread_cleanup_pop(false);                                 \
+  } while (0)
 
 /**
  * Signal a condition variable, bailing out on error.

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2013 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -307,7 +307,7 @@ dmnsn_priority_leaves(const dmnsn_array *leaves, unsigned int nthreads)
       .sorted_leaves = sorted_leaves,
       .nleaves = nleaves,
     };
-    dmnsn_execute_concurrently(dmnsn_sort_leaves, &payload, nthreads);
+    dmnsn_execute_concurrently(NULL, dmnsn_sort_leaves, &payload, nthreads);
   } else {
     for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
       sorted_leaves[i] = dmnsn_sort_leaf_array(leaves_arr, nleaves, i);
