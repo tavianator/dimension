@@ -46,7 +46,7 @@
 #endif
 
 #ifdef __GNUC__
-  #define DMNSN_UNREACHABLE() __builtin_unreachable();
+  #define DMNSN_UNREACHABLE() __builtin_unreachable()
 #else
-  #define DMNSN_UNREACHABLE()
+  #define DMNSN_UNREACHABLE() ((void)0)
 #endif
