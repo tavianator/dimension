@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -80,7 +80,7 @@ DMNSN_INTERNAL void dmnsn_unlock_mutex_impl(pthread_mutex_t *mutex);
 #define dmnsn_lock_mutex(mutex) dmnsn_lock_mutex_impl((mutex)); {
 
 /**
- * Lock a mutex, bailing out on failure.
+ * Unlock a mutex, bailing out on failure.
  * Contains a }, so must be used in the same block as dmnsn_lock_mutex().
  * @param[in,out] mutex  The mutex to unlock.
  */
@@ -106,21 +106,21 @@ DMNSN_INTERNAL void dmnsn_write_lock_impl(pthread_rwlock_t *rwlock);
 DMNSN_INTERNAL void dmnsn_unlock_rwlock_impl(pthread_rwlock_t *rwlock);
 
 /**
- * Lock a read-write lock, bailing out on failure.
+ * Read-lock a read-write lock, bailing out on failure.
  * Contains a {, so must be used in the same block as dmnsn_unlock_rwlock().
  * @param[in,out] rwlock  The read-write lock to lock.
  */
 #define dmnsn_read_lock(rwlock) dmnsn_read_lock_impl((rwlock)); {
 
 /**
- * Lock a read-write lock, bailing out on failure.
+ * Write-lock a read-write lock, bailing out on failure.
  * Contains a {, so must be used in the same block as dmnsn_unlock_rwlock().
  * @param[in,out] rwlock  The read-write lock to lock.
  */
 #define dmnsn_write_lock(rwlock) dmnsn_write_lock_impl((rwlock)); {
 
 /**
- * Lock a read-write lock, bailing out on failure.
+ * Unlock a read-write lock, bailing out on failure.
  * Contains a }, so must be used in the same block as dmnsn_read_lock() or
  * dmnsn_write_lock().
  * @param[in,out] rwlock  The read-write lock to lock.
