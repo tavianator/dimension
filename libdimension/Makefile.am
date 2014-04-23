@@ -1,5 +1,5 @@
 ###########################################################################
-## Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>     ##
+## Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     ##
 ##                                                                       ##
 ## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
@@ -79,7 +79,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           error.c                                              \
                           finish.c                                             \
                           future.c                                             \
-                          future-impl.h                                        \
+                          future-internal.h                                    \
                           geometry.c                                           \
                           gradient.c                                           \
                           inline.c                                             \

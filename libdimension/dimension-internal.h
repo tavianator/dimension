@@ -32,7 +32,7 @@
 #include "compiler-internal.h"
 #include "profile.h"
 #include "platform.h"
-#include "future-impl.h"
+#include "future-internal.h"
 #include "threads.h"
 #include "bvh.h"
 #include "prtree.h"
