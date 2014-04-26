@@ -63,6 +63,8 @@ dmnsn_future_join(dmnsn_future *future)
   int retval = -1;
 
   if (future) {
+    dmnsn_assert(future->npaused == 0, "Attempt to join future while paused");
+
     /* Get the thread's return value */
     dmnsn_join_thread(future->thread, &ptr);
     if (ptr && ptr != PTHREAD_CANCELED) {
