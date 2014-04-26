@@ -25,8 +25,28 @@
 
 #define ITERATIONS 100000
 
+static void
+dmnsn_bench_future_increment(void)
+{
+  dmnsn_future *future = dmnsn_new_future();
+  dmnsn_future_set_total(future, ITERATIONS);
+
+  sandglass_t sandglass;
+  if (sandglass_init_monotonic(&sandglass, SANDGLASS_CPUTIME) != 0) {
+    perror("sandglass_create()");
+    exit(EXIT_FAILURE);
+  }
+
+  /* Benchmark the increment operation. */
+  sandglass_bench_fine(&sandglass, dmnsn_future_increment(future));
+  printf("dmnsn_future_increment(): %ld\n", sandglass.grains);
+
+  dmnsn_delete_future(future);
+}
+
 static int
-dmnsn_bench_future(void *ptr, unsigned int thread, unsigned int nthreads)
+dmnsn_bench_future_ccthread(void *ptr, unsigned int thread,
+                            unsigned int nthreads)
 {
   dmnsn_future *future = (dmnsn_future *)ptr;
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -36,42 +56,29 @@ dmnsn_bench_future(void *ptr, unsigned int thread, unsigned int nthreads)
 }
 
 static int
-dmnsn_bench_thread(void *ptr)
+dmnsn_bench_future_thread(void *ptr)
 {
   dmnsn_future *future = (dmnsn_future *)ptr;
   size_t nthreads = 2*dmnsn_ncpus();
   dmnsn_future_set_total(future, nthreads*ITERATIONS);
 
-  sandglass_t sandglass;
-  if (sandglass_init_monotonic(&sandglass, SANDGLASS_CPUTIME) != 0) {
-    perror("sandglass_create()");
-    return EXIT_FAILURE;
-  }
-
-  /* Benchmark the increment operation. */
-  sandglass_bench_fine(&sandglass, dmnsn_future_increment(future));
-  printf("dmnsn_future_increment(): %ld\n", sandglass.grains);
-
-  /* Reset the progress. */
-  dmnsn_lock_mutex(&future->mutex);
-    future->progress = 0;
-  dmnsn_unlock_mutex(&future->mutex);
-
   /* Now run a bunch of increments concurrently. */
-  return dmnsn_execute_concurrently(future, &dmnsn_bench_future, future,
-                                    nthreads);
+  return dmnsn_execute_concurrently(future, dmnsn_bench_future_ccthread,
+                                    future, nthreads);
 }
 
-int
-main(void)
+static void
+dmnsn_bench_future_concurrent(void)
 {
-  dmnsn_timer timer1, timer2;
+  printf("\nNo pausing:\n");
+
   dmnsn_future *future = dmnsn_new_future();
 
+  dmnsn_timer timer1, timer2;
   dmnsn_timer_start(&timer1);
-  dmnsn_timer_start(&timer2);
+  timer2 = timer1;
 
-  dmnsn_new_thread(future, &dmnsn_bench_thread, future);
+  dmnsn_new_thread(future, dmnsn_bench_future_thread, future);
 
   dmnsn_future_wait(future, 0.5);
   dmnsn_timer_stop(&timer1);
@@ -80,4 +87,42 @@ main(void)
   dmnsn_future_join(future);
   dmnsn_timer_stop(&timer2);
   printf("100%%: " DMNSN_TIMER_FORMAT "\n", DMNSN_TIMER_PRINTF(timer2));
+}
+
+static void
+dmnsn_bench_future_pausing(void)
+{
+  printf("\nWith pausing:\n");
+
+  dmnsn_future *future = dmnsn_new_future();
+  bool hit_fifty = false;
+
+  dmnsn_timer timer1, timer2;
+  dmnsn_timer_start(&timer1);
+  timer2 = timer1;
+
+  dmnsn_new_thread(future, dmnsn_bench_future_thread, future);
+
+  while (!dmnsn_future_is_done(future)) {
+    dmnsn_future_pause(future);
+      if (dmnsn_future_progress(future) >= 0.5 && !hit_fifty) {
+        dmnsn_timer_stop(&timer1);
+        printf(" 50%%: " DMNSN_TIMER_FORMAT "\n", DMNSN_TIMER_PRINTF(timer1));
+        hit_fifty = true;
+      }
+    dmnsn_future_resume(future);
+  }
+
+  dmnsn_future_join(future);
+  dmnsn_timer_stop(&timer2);
+  printf("100%%: " DMNSN_TIMER_FORMAT "\n", DMNSN_TIMER_PRINTF(timer2));
+}
+
+int
+main(void)
+{
+  dmnsn_bench_future_increment();
+  dmnsn_bench_future_concurrent();
+  dmnsn_bench_future_pausing();
+  return EXIT_SUCCESS;
 }

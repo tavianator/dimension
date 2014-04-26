@@ -55,6 +55,19 @@ dmnsn_new_future(void)
   return future;
 }
 
+static void
+dmnsn_delete_future(dmnsn_future *future)
+{
+  if (future) {
+    dmnsn_destroy_cond(&future->resume_cond);
+    dmnsn_destroy_cond(&future->all_running_cond);
+    dmnsn_destroy_cond(&future->none_running_cond);
+    dmnsn_destroy_cond(&future->cond);
+    dmnsn_destroy_mutex(&future->mutex);
+    dmnsn_free(future);
+  }
+}
+
 /* Join the worker thread and delete `future'. */
 int
 dmnsn_future_join(dmnsn_future *future)
@@ -73,12 +86,7 @@ dmnsn_future_join(dmnsn_future *future)
     }
 
     /* Free the future object */
-    dmnsn_destroy_cond(&future->resume_cond);
-    dmnsn_destroy_cond(&future->all_running_cond);
-    dmnsn_destroy_cond(&future->none_running_cond);
-    dmnsn_destroy_cond(&future->cond);
-    dmnsn_destroy_mutex(&future->mutex);
-    dmnsn_free(future);
+    dmnsn_delete_future(future);
   }
 
   return retval;
