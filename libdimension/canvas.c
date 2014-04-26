@@ -60,9 +60,10 @@ dmnsn_delete_canvas(dmnsn_canvas *canvas)
 
 /* Set a canvas optimizer */
 void
-dmnsn_canvas_optimize(dmnsn_canvas *canvas, dmnsn_canvas_optimizer optimizer)
+dmnsn_canvas_optimize(dmnsn_canvas *canvas,
+                      const dmnsn_canvas_optimizer *optimizer)
 {
-  dmnsn_array_push(canvas->optimizers, &optimizer);
+  dmnsn_array_push(canvas->optimizers, optimizer);
 }
 
 /* Set the value of a pixel */
@@ -79,7 +80,7 @@ dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
 
   /* Call the optimizers */
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    i->optimizer_fn(canvas, *i, x, y);
+    i->optimizer_fn(canvas, i->ptr, x, y);
   }
 }
 

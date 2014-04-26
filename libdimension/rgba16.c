@@ -41,15 +41,15 @@ dmnsn_rgba16_optimize_canvas(dmnsn_canvas *canvas)
   optimizer.free_fn = dmnsn_free;
   optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(uint16_t));
 
-  dmnsn_canvas_optimize(canvas, optimizer);
+  dmnsn_canvas_optimize(canvas, &optimizer);
 }
 
-/* PNG optimizer callback */
+/* RGBA16 optimizer callback */
 void
-dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas,
-                          dmnsn_canvas_optimizer optimizer, size_t x, size_t y)
+dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas, void *ptr,
+                          size_t x, size_t y)
 {
-  uint16_t *pixel = (uint16_t *)optimizer.ptr + 4*(y*canvas->width + x);
+  uint16_t *pixel = (uint16_t *)ptr + 4*(y*canvas->width + x);
   dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(canvas, x, y);
   tcolor = dmnsn_tcolor_remove_filter(tcolor);
   tcolor.c = dmnsn_color_to_sRGB(tcolor.c);

@@ -43,27 +43,23 @@ typedef struct dmnsn_canvas {
   DMNSN_REFCOUNT; /**< Reference count. */
 } dmnsn_canvas;
 
-/* Forward-declare dmnsn_canvas_optimizer */
-typedef struct dmnsn_canvas_optimizer dmnsn_canvas_optimizer;
-
 /**
  * Canvas optimizer callback type.
- * @param[in] canvas     The canvas that was just updated.
- * @param[in] optimizer  The canvas optimizer itself.
- * @param[in] x          The x-coordinate that was just updated.
- * @param[in] y          The y-coordinate that was just updated.
+ * @param[in] canvas  The canvas that was just updated.
+ * @param[in] ptr     The canvas optimizer's data pointer.
+ * @param[in] x       The x-coordinate that was just updated.
+ * @param[in] y       The y-coordinate that was just updated.
  */
-typedef void dmnsn_canvas_optimizer_fn(const dmnsn_canvas *canvas,
-                                       dmnsn_canvas_optimizer optimizer,
+typedef void dmnsn_canvas_optimizer_fn(const dmnsn_canvas *canvas, void *ptr,
                                        size_t x, size_t y);
 
 /** Canvas optimizer. */
-struct dmnsn_canvas_optimizer {
+typedef struct dmnsn_canvas_optimizer {
   dmnsn_canvas_optimizer_fn *optimizer_fn; /**< Optimizer callback. */
   dmnsn_free_fn             *free_fn;      /**< Destructor callback. */
 
   void *ptr; /**< Generic pointer. */
-};
+} dmnsn_canvas_optimizer;
 
 /**
  * Allocate a new canvas.
@@ -85,7 +81,7 @@ void dmnsn_delete_canvas(dmnsn_canvas *canvas);
  * @param[in]     optimizer The optimizer to use.
  */
 void dmnsn_canvas_optimize(dmnsn_canvas *canvas,
-                           dmnsn_canvas_optimizer optimizer);
+                           const dmnsn_canvas_optimizer *optimizer);
 
 /* Pixel accessors */
 

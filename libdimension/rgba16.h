@@ -20,13 +20,12 @@
 
 /**
  * @file
- * 16-bit RGBA canvas optimizer interface, shared between PNG and GL optimizers.
+ * 16-bit RGBA canvas optimizer interface, used by image optimizers.
  */
 
 /** Apply the rgba16 optimizer to a canvas. */
 void dmnsn_rgba16_optimize_canvas(dmnsn_canvas *canvas);
 
 /** RGBA16 optimizer callback. */
-void dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas,
-                               dmnsn_canvas_optimizer optimizer,
+void dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas, void *ptr,
                                size_t x, size_t y);
