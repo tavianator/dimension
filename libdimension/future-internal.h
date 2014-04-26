@@ -33,12 +33,12 @@ DMNSN_INTERNAL void dmnsn_future_set_total(dmnsn_future *future, size_t total);
 /** Increment the progress of a background task. */
 DMNSN_INTERNAL void dmnsn_future_increment(dmnsn_future *future);
 /** Instantly complete the background teask. */
-DMNSN_INTERNAL void dmnsn_future_done(dmnsn_future *future);
+DMNSN_INTERNAL void dmnsn_future_finish(dmnsn_future *future);
 /** Set the number of worker threads. */
 DMNSN_INTERNAL void dmnsn_future_set_nthreads(dmnsn_future *future,
                                               unsigned int nthreads);
 /** Notify completion of a worker thread. */
-DMNSN_INTERNAL void dmnsn_future_thread_done(dmnsn_future *future);
+DMNSN_INTERNAL void dmnsn_future_finish_thread(dmnsn_future *future);
 
 struct dmnsn_future {
   size_t progress; /**< Completed loop iterations. */

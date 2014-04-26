@@ -51,6 +51,13 @@ void dmnsn_future_cancel(dmnsn_future *future);
 double dmnsn_future_progress(const dmnsn_future *future);
 
 /**
+ * Find out if a background task is finished.
+ * @param[in] future  The background task to examine.
+ * @return true if the task is done, false otherwise.
+ */
+bool dmnsn_future_is_done(const dmnsn_future *future);
+
+/**
  * Wait for a certain amount of progress.  Always use this rather than
  * spinlocking.
  * @param[in] future    The background task to monitor.

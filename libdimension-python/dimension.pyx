@@ -85,6 +85,9 @@ cdef class Future:
   def progress(self):
     self._assert_unfinished()
     return dmnsn_future_progress(self._future)
+  def is_done(self):
+    self._assert_unfinished()
+    return dmnsn_future_is_done(self._future)
 
   def wait(self, double progress):
     self._assert_unfinished()

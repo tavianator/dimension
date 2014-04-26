@@ -114,6 +114,20 @@ dmnsn_future_progress(const dmnsn_future *future)
   return progress;
 }
 
+/* Find out whether the task is complete. */
+bool
+dmnsn_future_is_done(const dmnsn_future *future)
+{
+  dmnsn_future *mfuture = MUTATE(future);
+  bool result;
+
+  dmnsn_lock_mutex(&mfuture->mutex);
+    result = future->progress == future->total;
+  dmnsn_unlock_mutex(&mfuture->mutex);
+
+  return result;
+}
+
 /* Wait until dmnsn_future_progress(future) >= progress */
 void
 dmnsn_future_wait(const dmnsn_future *future, double progress)
@@ -217,7 +231,7 @@ dmnsn_future_increment(dmnsn_future *future)
 
 /* Immediately set to 100% completion */
 void
-dmnsn_future_done(dmnsn_future *future)
+dmnsn_future_finish(dmnsn_future *future)
 {
   dmnsn_lock_mutex(&future->mutex);
     future->progress = future->total;
@@ -241,15 +255,15 @@ dmnsn_future_set_nthreads(dmnsn_future *future, unsigned int nthreads)
 
 /* Notify completion of a worker thread */
 void
-dmnsn_future_thread_done(dmnsn_future *future)
+dmnsn_future_finish_thread(dmnsn_future *future)
 {
   dmnsn_lock_mutex(&future->mutex);
     dmnsn_assert(future->nthreads > 0,
-                 "dmnsn_future_thread_done() called with no threads");
+                 "dmnsn_future_finish_thread() called with no threads");
     --future->nthreads;
 
     dmnsn_assert(future->nrunning > 0,
-                 "dmnsn_future_thread_done() called with no running threads");
+                 "dmnsn_future_finish_thread() called with no running threads");
     if (--future->nrunning == 0) {
       dmnsn_cond_broadcast(&future->none_running_cond);
     }

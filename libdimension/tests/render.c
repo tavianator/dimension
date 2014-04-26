@@ -366,7 +366,7 @@ main(void)
 
   /* Display the scene as it's rendered */
   if (display) {
-    while (dmnsn_future_progress(future) < 1.0) {
+    while (!dmnsn_future_is_done(future)) {
       dmnsn_future_pause(future);
         if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
           dmnsn_delete_display(display);

@@ -41,7 +41,7 @@ dmnsn_thread_cleanup(void *arg)
   dmnsn_future *future = payload->future;
   dmnsn_free(payload);
 
-  dmnsn_future_done(future);
+  dmnsn_future_finish(future);
 }
 
 /** pthread callback -- call the real thread callback. */
@@ -88,7 +88,7 @@ dmnsn_concurrent_thread(void *ptr)
   payload->ret = payload->ccthread_fn(payload->arg, payload->thread,
                                       payload->nthreads);
   if (payload->future) {
-    dmnsn_future_thread_done(payload->future);
+    dmnsn_future_finish_thread(payload->future);
   }
   return NULL;
 }

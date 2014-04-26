@@ -58,7 +58,7 @@ class PreviewWindow(QtGui.QMainWindow):
   @QtCore.pyqtSlot()
   def update_preview(self):
     self.widget.updateGL()
-    if self.future.progress() == 1:
+    if self.future.is_done():
       self.render_timer.stop()
       self.close_timer = QtCore.QTimer(self)
       self.close_timer.singleShot(1000, self.close)
