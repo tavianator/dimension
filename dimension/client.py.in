@@ -27,12 +27,6 @@ import threading
 from contextlib import contextmanager
 from dimension import *
 
-have_preview = True
-try:
-  from dimension import preview
-except ImportError:
-  have_preview = False
-
 def main():
   """Invoke the client from the command line."""
 
@@ -167,10 +161,8 @@ def main():
         render_message = "Rendering scene (using %d threads)" % scene.nthreads
       bar = progress_bar_async(render_message, future)
     if args.preview:
-      if have_preview:
-        preview.show_preview(canvas, future)
-      else:
-        print("Couldn't display preview window", file = sys.stderr)
+      from dimension import preview
+      preview.show_preview(canvas, future)
     if bar is not None:
       join_progress_bar(bar)
 
