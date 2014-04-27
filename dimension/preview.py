@@ -53,7 +53,7 @@ class PreviewWindow(QtGui.QMainWindow):
 
     self.render_timer = QtCore.QTimer(self)
     self.render_timer.timeout.connect(self.update_preview)
-    self.render_timer.start(0)
+    self.render_timer.start(20)
 
   @QtCore.pyqtSlot()
   def update_preview(self):

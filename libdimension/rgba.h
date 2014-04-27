@@ -20,43 +20,19 @@
 
 /**
  * @file
- * 16-bit RGBA canvas optimizer.
+ * RGBA canvas optimizer interface, used by image optimizers.
  */
 
-#include "dimension-internal.h"
-#include <stdint.h>
+/** Apply the RGBA8 optimizer to a canvas. */
+DMNSN_INTERNAL void dmnsn_rgba8_optimize_canvas(dmnsn_canvas *canvas);
+/** Apply the RGBA16 optimizer to a canvas. */
+DMNSN_INTERNAL void dmnsn_rgba16_optimize_canvas(dmnsn_canvas *canvas);
 
-void
-dmnsn_rgba16_optimize_canvas(dmnsn_canvas *canvas)
-{
-  /* Check if we've already optimized this canvas */
-  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    if (i->optimizer_fn == dmnsn_rgba16_optimizer_fn) {
-      return;
-    }
-  }
-
-  dmnsn_canvas_optimizer optimizer;
-  optimizer.optimizer_fn = dmnsn_rgba16_optimizer_fn;
-  optimizer.free_fn = dmnsn_free;
-  optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(uint16_t));
-
-  dmnsn_canvas_optimize(canvas, &optimizer);
-}
-
-/* RGBA16 optimizer callback */
-void
-dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas, void *ptr,
-                          size_t x, size_t y)
-{
-  uint16_t *pixel = (uint16_t *)ptr + 4*(y*canvas->width + x);
-  dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(canvas, x, y);
-  tcolor = dmnsn_tcolor_remove_filter(tcolor);
-  tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
-  tcolor = dmnsn_tcolor_saturate(tcolor);
-
-  pixel[0] = lround(tcolor.c.R*UINT16_MAX);
-  pixel[1] = lround(tcolor.c.G*UINT16_MAX);
-  pixel[2] = lround(tcolor.c.B*UINT16_MAX);
-  pixel[3] = lround(tcolor.T*UINT16_MAX);
-}
+/** RGBA8 optimizer callback. */
+DMNSN_INTERNAL void dmnsn_rgba8_optimizer_fn(const dmnsn_canvas *canvas,
+                                             void *ptr,
+                                             size_t x, size_t y);
+/** RGBA16 optimizer callback. */
+DMNSN_INTERNAL void dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas,
+                                              void *ptr,
+                                              size_t x, size_t y);

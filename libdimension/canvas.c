@@ -66,6 +66,20 @@ dmnsn_canvas_optimize(dmnsn_canvas *canvas,
   dmnsn_array_push(canvas->optimizers, optimizer);
 }
 
+/* Find an optimizer if it's already installed */
+dmnsn_canvas_optimizer *
+dmnsn_canvas_find_optimizer(const dmnsn_canvas *canvas,
+                           dmnsn_canvas_optimizer_fn *optimizer_fn)
+{
+  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
+    if (i->optimizer_fn == optimizer_fn) {
+      return i;
+    }
+  }
+
+  return NULL;
+}
+
 /* Set the value of a pixel */
 void
 dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,

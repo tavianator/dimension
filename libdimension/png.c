@@ -175,23 +175,21 @@ dmnsn_png_write_canvas_thread(void *ptr)
   }
 
   /* Check if we can optimize this */
-  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i,
-                       payload->canvas->optimizers)
-  {
-    if (i->optimizer_fn == dmnsn_rgba16_optimizer_fn) {
-      for (size_t y = 0; y < height; ++y) {
-        /* Invert the rows.  PNG coordinates are fourth quadrant. */
-        uint16_t *row_opt = (uint16_t *)i->ptr + 4*(height - y - 1)*width;
-        png_write_row(png_ptr, (png_bytep)row_opt);
-        dmnsn_future_increment(payload->future);
-      }
-
-      /* Finish the PNG file */
-      png_write_end(png_ptr, info_ptr);
-      png_destroy_write_struct(&png_ptr, &info_ptr);
-      dmnsn_free(payload);
-      return 0;
+  dmnsn_canvas_optimizer *optimizer =
+    dmnsn_canvas_find_optimizer(payload->canvas, dmnsn_rgba16_optimizer_fn);
+  if (optimizer) {
+    for (size_t y = 0; y < height; ++y) {
+      /* Invert the rows.  PNG coordinates are fourth quadrant. */
+      uint16_t *row_opt = (uint16_t *)optimizer->ptr + 4*(height - y - 1)*width;
+      png_write_row(png_ptr, (png_bytep)row_opt);
+      dmnsn_future_increment(payload->future);
     }
+
+    /* Finish the PNG file */
+    png_write_end(png_ptr, info_ptr);
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+    dmnsn_free(payload);
+    return 0;
   }
 
   /* Allocate the temporary row of RGBA values */

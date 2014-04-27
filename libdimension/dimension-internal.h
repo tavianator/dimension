@@ -36,6 +36,6 @@
 #include "threads.h"
 #include "bvh.h"
 #include "prtree.h"
-#include "rgba16.h"
+#include "rgba.h"
 
 #endif /* DIMENSION_INTERNAL_H */

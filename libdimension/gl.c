@@ -32,7 +32,7 @@
 int
 dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 {
-  dmnsn_rgba16_optimize_canvas(canvas);
+  dmnsn_rgba8_optimize_canvas(canvas);
   return 0;
 }
 
@@ -44,33 +44,33 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   size_t height = canvas->height;
 
   /* Check if we can optimize this */
-  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    if (i->optimizer_fn == dmnsn_rgba16_optimizer_fn) {
-      glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT, i->ptr);
-      return glGetError() == GL_NO_ERROR ? 0 : 1;
-    }
+  dmnsn_canvas_optimizer *optimizer =
+    dmnsn_canvas_find_optimizer(canvas, dmnsn_rgba8_optimizer_fn);
+  if (optimizer) {
+    glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, optimizer->ptr);
+    return glGetError() == GL_NO_ERROR ? 0 : 1;
   }
 
   /* We couldn't, so transform the canvas to RGB now */
-  GLushort *pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
+  GLubyte *pixels = dmnsn_malloc(4*width*height*sizeof(GLubyte));
 
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
-      GLushort *pixel = pixels + 4*(y*width + x);
+      GLubyte *pixel = pixels + 4*(y*width + x);
 
       dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(canvas, x, y);
       tcolor = dmnsn_tcolor_remove_filter(tcolor);
       tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
       tcolor = dmnsn_tcolor_saturate(tcolor);
 
-      pixel[0] = lround(tcolor.c.R*UINT16_MAX);
-      pixel[1] = lround(tcolor.c.G*UINT16_MAX);
-      pixel[2] = lround(tcolor.c.B*UINT16_MAX);
-      pixel[3] = lround(tcolor.T*UINT16_MAX);
+      pixel[0] = lround(tcolor.c.R*UINT8_MAX);
+      pixel[1] = lround(tcolor.c.G*UINT8_MAX);
+      pixel[2] = lround(tcolor.c.B*UINT8_MAX);
+      pixel[3] = lround(tcolor.T*UINT8_MAX);
     }
   }
 
-  glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT, pixels);
+  glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   dmnsn_free(pixels);
   return glGetError() == GL_NO_ERROR ? 0 : 1;

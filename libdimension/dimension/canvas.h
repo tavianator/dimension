@@ -83,6 +83,17 @@ void dmnsn_delete_canvas(dmnsn_canvas *canvas);
 void dmnsn_canvas_optimize(dmnsn_canvas *canvas,
                            const dmnsn_canvas_optimizer *optimizer);
 
+/**
+ * Find a canvas optimizer by its callback.
+ * @param[in] canvas        The canvas to check.
+ * @param[in] optimizer_fn  The callback to search for for.
+ * @return A pointer to the canvas optimizer with the callback \p optimizer_fn,
+ *         or NULL if none is found.
+ */
+dmnsn_canvas_optimizer *
+dmnsn_canvas_find_optimizer(const dmnsn_canvas *canvas,
+                            dmnsn_canvas_optimizer_fn *optimizer_fn);
+
 /* Pixel accessors */
 
 /**
