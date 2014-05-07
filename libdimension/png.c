@@ -98,7 +98,7 @@ dmnsn_future *
 dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
 {
   dmnsn_future *future = dmnsn_new_future();
-  dmnsn_png_read_payload *payload = DMNSN_MALLOC(dmnsn_png_write_payload);
+  dmnsn_png_read_payload *payload = DMNSN_MALLOC(dmnsn_png_read_payload);
 
   payload->future  = future;
   payload->canvas  = canvas;
