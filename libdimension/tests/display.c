@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -52,7 +52,7 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
   XSetWindowAttributes swa;
   dmnsn_display *display;
 
-  display = dmnsn_malloc(sizeof(dmnsn_display));
+  display = DMNSN_MALLOC(dmnsn_display);
 
   display->dpy  = NULL;
   display->win  = 0;

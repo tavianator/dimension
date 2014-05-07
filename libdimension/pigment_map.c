@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -104,8 +104,7 @@ dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern, dmnsn_map *map,
 {
   dmnsn_pigment *pigment = dmnsn_new_pigment();
 
-  dmnsn_pigment_map_payload *payload
-    = dmnsn_malloc(sizeof(dmnsn_pigment_map_payload));
+  dmnsn_pigment_map_payload *payload = DMNSN_MALLOC(dmnsn_pigment_map_payload);
   payload->pattern = pattern;
   payload->map     = map;
   payload->flags   = flags;

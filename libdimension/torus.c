@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2013 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -152,7 +152,7 @@ dmnsn_new_torus(double major, double minor)
                                              minor,
                                              major + minor);
 
-  dmnsn_torus_payload *payload = dmnsn_malloc(sizeof(dmnsn_torus_payload));
+  dmnsn_torus_payload *payload = DMNSN_MALLOC(dmnsn_torus_payload);
   payload->major = major;
   payload->minor = minor;
   torus->ptr     = payload;

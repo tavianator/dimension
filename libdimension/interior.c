@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -30,7 +30,7 @@
 dmnsn_interior *
 dmnsn_new_interior(void)
 {
-  dmnsn_interior *interior = dmnsn_malloc(sizeof(dmnsn_interior));
+  dmnsn_interior *interior = DMNSN_MALLOC(dmnsn_interior);
   interior->ior     = 1.0;
   interior->free_fn = NULL;
   DMNSN_REFCOUNT_INIT(interior);

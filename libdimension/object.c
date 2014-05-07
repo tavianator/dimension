@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -30,7 +30,7 @@
 dmnsn_object *
 dmnsn_new_object(void)
 {
-  dmnsn_object *object = dmnsn_malloc(sizeof(dmnsn_object));
+  dmnsn_object *object = DMNSN_MALLOC(dmnsn_object);
   object->texture         = NULL;
   object->interior        = NULL;
   object->trans           = dmnsn_identity_matrix();

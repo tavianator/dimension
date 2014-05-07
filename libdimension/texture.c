@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -29,7 +29,7 @@
 dmnsn_texture *
 dmnsn_new_texture(void)
 {
-  dmnsn_texture *texture = dmnsn_malloc(sizeof(dmnsn_texture));
+  dmnsn_texture *texture = DMNSN_MALLOC(dmnsn_texture);
   texture->pigment     = NULL;
   texture->finish      = dmnsn_new_finish();
   texture->trans       = dmnsn_identity_matrix();

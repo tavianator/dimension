@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -30,7 +30,7 @@
 dmnsn_scene *
 dmnsn_new_scene(void)
 {
-  dmnsn_scene *scene = dmnsn_malloc(sizeof(dmnsn_scene));
+  dmnsn_scene *scene = DMNSN_MALLOC(dmnsn_scene);
 
   scene->background       = NULL;
   scene->default_texture  = dmnsn_new_texture();

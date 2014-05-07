@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -43,7 +43,7 @@ dmnsn_new_lambertian(double diffuse)
 {
   dmnsn_diffuse *lambertian = dmnsn_new_diffuse();
 
-  double *param = dmnsn_malloc(sizeof(double));
+  double *param = DMNSN_MALLOC(double);
   *param = diffuse;
 
   lambertian->diffuse_fn = dmnsn_lambertian_diffuse_fn;

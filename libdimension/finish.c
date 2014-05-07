@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -28,7 +28,7 @@
 dmnsn_ambient *
 dmnsn_new_ambient(dmnsn_color ambient_light)
 {
-  dmnsn_ambient *ambient = dmnsn_malloc(sizeof(dmnsn_ambient));
+  dmnsn_ambient *ambient = DMNSN_MALLOC(dmnsn_ambient);
   ambient->ambient = ambient_light;
   DMNSN_REFCOUNT_INIT(ambient);
   return ambient;
@@ -45,7 +45,7 @@ dmnsn_delete_ambient(dmnsn_ambient *ambient)
 dmnsn_diffuse *
 dmnsn_new_diffuse(void)
 {
-  dmnsn_diffuse *diffuse = dmnsn_malloc(sizeof(dmnsn_diffuse));
+  dmnsn_diffuse *diffuse = DMNSN_MALLOC(dmnsn_diffuse);
   diffuse->free_fn = NULL;
   diffuse->ptr     = NULL;
   DMNSN_REFCOUNT_INIT(diffuse);
@@ -66,7 +66,7 @@ dmnsn_delete_diffuse(dmnsn_diffuse *diffuse)
 dmnsn_specular *
 dmnsn_new_specular(void)
 {
-  dmnsn_specular *specular = dmnsn_malloc(sizeof(dmnsn_specular));
+  dmnsn_specular *specular = DMNSN_MALLOC(dmnsn_specular);
   specular->free_fn = NULL;
   specular->ptr     = NULL;
   DMNSN_REFCOUNT_INIT(specular);
@@ -87,7 +87,7 @@ dmnsn_delete_specular(dmnsn_specular *specular)
 dmnsn_reflection *
 dmnsn_new_reflection(void)
 {
-  dmnsn_reflection *reflection = dmnsn_malloc(sizeof(dmnsn_reflection));
+  dmnsn_reflection *reflection = DMNSN_MALLOC(dmnsn_reflection);
   reflection->free_fn = NULL;
   reflection->ptr     = NULL;
   DMNSN_REFCOUNT_INIT(reflection);

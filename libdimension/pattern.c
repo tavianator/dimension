@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -29,7 +29,7 @@
 dmnsn_pattern *
 dmnsn_new_pattern(void)
 {
-  dmnsn_pattern *pattern = dmnsn_malloc(sizeof(dmnsn_pattern));
+  dmnsn_pattern *pattern = DMNSN_MALLOC(dmnsn_pattern);
   pattern->free_fn = NULL;
   DMNSN_REFCOUNT_INIT(pattern);
   return pattern;

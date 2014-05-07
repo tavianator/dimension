@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2012 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2012-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -32,7 +32,7 @@ typedef struct dmnsn_foo {
 static dmnsn_foo *
 dmnsn_new_foo(void)
 {
-  dmnsn_foo *foo = dmnsn_malloc(sizeof(dmnsn_foo));
+  dmnsn_foo *foo = DMNSN_MALLOC(dmnsn_foo);
   DMNSN_REFCOUNT_INIT(foo);
   return foo;
 }

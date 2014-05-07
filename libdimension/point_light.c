@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -60,8 +60,7 @@ dmnsn_new_point_light(dmnsn_vector x0, dmnsn_color color)
 {
   dmnsn_light *light = dmnsn_new_light();
 
-  dmnsn_point_light_payload *payload
-    = dmnsn_malloc(sizeof(dmnsn_point_light_payload));
+  dmnsn_point_light_payload *payload = DMNSN_MALLOC(dmnsn_point_light_payload);
   payload->origin = x0;
   payload->color  = color;
   light->ptr = payload;

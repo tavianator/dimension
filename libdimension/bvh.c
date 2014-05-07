@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2012-2013 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2012-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -131,7 +131,7 @@ dmnsn_flatten_bvh(dmnsn_bvh_node *root)
 
 dmnsn_bvh *dmnsn_new_bvh(const dmnsn_array *objects, dmnsn_bvh_kind kind)
 {
-  dmnsn_bvh *bvh = dmnsn_malloc(sizeof(dmnsn_bvh));
+  dmnsn_bvh *bvh = DMNSN_MALLOC(dmnsn_bvh);
 
   dmnsn_array *bounded = dmnsn_split_objects(objects);
   bvh->unbounded = dmnsn_split_unbounded(bounded);
@@ -239,7 +239,7 @@ dmnsn_get_intersection_cache(const dmnsn_bvh *bvh)
     = pthread_getspecific(bvh->intersection_cache);
 
   if (!cache) {
-    cache = dmnsn_malloc(sizeof(dmnsn_intersection_cache));
+    cache = DMNSN_MALLOC(dmnsn_intersection_cache);
     cache->i = 0;
     for (size_t i = 0; i < DMNSN_INTERSECTION_CACHE_SIZE; ++i) {
       cache->objects[i] = NULL;
@@ -374,7 +374,7 @@ dmnsn_new_bvh_node(size_t max_children)
 dmnsn_bvh_node *
 dmnsn_new_bvh_leaf_node(dmnsn_object *object)
 {
-  dmnsn_bvh_node *node = dmnsn_malloc(sizeof(dmnsn_bvh_node));
+  dmnsn_bvh_node *node = DMNSN_MALLOC(dmnsn_bvh_node);
   node->bounding_box = object->bounding_box;
   node->object = object;
   node->nchildren = 0;

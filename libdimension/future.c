@@ -37,7 +37,7 @@
 dmnsn_future *
 dmnsn_new_future(void)
 {
-  dmnsn_future *future = dmnsn_malloc(sizeof(dmnsn_future));
+  dmnsn_future *future = DMNSN_MALLOC(dmnsn_future);
   future->progress = 0;
   future->total    = 1;
 

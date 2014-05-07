@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -72,8 +72,7 @@ dmnsn_new_triangle(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
   nb = dmnsn_vector_normalized(nb);
   nc = dmnsn_vector_normalized(nc);
 
-  dmnsn_triangle_payload *payload =
-    dmnsn_malloc(sizeof(dmnsn_triangle_payload));
+  dmnsn_triangle_payload *payload = DMNSN_MALLOC(dmnsn_triangle_payload);
   payload->a      = a;
   payload->na     = na;
   payload->ab     = dmnsn_vector_sub(b, a);

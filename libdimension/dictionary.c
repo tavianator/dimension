@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -35,7 +35,7 @@ struct dmnsn_dictionary {
 dmnsn_dictionary *
 dmnsn_new_dictionary(size_t obj_size)
 {
-  dmnsn_dictionary *dict = dmnsn_malloc(sizeof(dmnsn_dictionary));
+  dmnsn_dictionary *dict = DMNSN_MALLOC(dmnsn_dictionary);
   dict->obj_size = obj_size;
   dict->prefix   = dmnsn_strdup("");
   dict->value    = NULL;

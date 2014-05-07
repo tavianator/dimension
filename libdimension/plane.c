@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -41,7 +41,7 @@ dmnsn_new_plane(dmnsn_vector normal)
 {
   dmnsn_object *plane = dmnsn_new_object();
 
-  dmnsn_vector *param = dmnsn_malloc(sizeof(dmnsn_vector));
+  dmnsn_vector *param = DMNSN_MALLOC(dmnsn_vector);
   *param = normal;
 
   plane->intersection_fn  = dmnsn_plane_intersection_fn;

@@ -52,7 +52,7 @@ dmnsn_thread(void *arg)
   int *ret;
 
   pthread_cleanup_push(dmnsn_thread_cleanup, payload);
-    ret  = dmnsn_malloc(sizeof(int));
+    ret  = DMNSN_MALLOC(int);
     *ret = payload->thread_fn(payload->arg);
   pthread_cleanup_pop(true);
   return ret;
@@ -61,7 +61,7 @@ dmnsn_thread(void *arg)
 void
 dmnsn_new_thread(dmnsn_future *future, dmnsn_thread_fn *thread_fn, void *arg)
 {
-  dmnsn_thread_payload *payload = dmnsn_malloc(sizeof(dmnsn_thread_payload));
+  dmnsn_thread_payload *payload = DMNSN_MALLOC(dmnsn_thread_payload);
   payload->thread_fn = thread_fn;
   payload->arg       = arg;
   payload->future    = future;

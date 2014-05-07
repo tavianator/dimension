@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -53,8 +53,7 @@ dmnsn_new_basic_reflection(dmnsn_color min, dmnsn_color max, double falloff)
 {
   dmnsn_reflection *reflection = dmnsn_new_reflection();
 
-  dmnsn_reflection_params *params
-    = dmnsn_malloc(sizeof(dmnsn_reflection_params));
+  dmnsn_reflection_params *params = DMNSN_MALLOC(dmnsn_reflection_params);
   params->min     = min;
   params->max     = max;
   params->falloff = falloff;

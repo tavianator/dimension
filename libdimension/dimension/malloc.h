@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -34,6 +34,14 @@
  * @return The allocated memory area.
  */
 void *dmnsn_malloc(size_t size);
+
+/**
+ * Allocate some memory.  Always use dmnsn_free() to free this memory, never
+ * free().
+ * @param[in] type  The type of the memory block to allocate.
+ * @return The allocated memory area.
+ */
+#define DMNSN_MALLOC(type) ((type *)dmnsn_malloc(sizeof(type)))
 
 /**
  * Expand or shrink an allocation created by dmnsn_malloc().

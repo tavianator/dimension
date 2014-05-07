@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2013 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -124,7 +124,7 @@ dmnsn_new_cone_cap(double r)
   cap->bounding_box.min = dmnsn_new_vector(-r, 0.0, -r);
   cap->bounding_box.max = dmnsn_new_vector(+r, 0.0, +r);
 
-  double *payload = dmnsn_malloc(sizeof(double));
+  double *payload = DMNSN_MALLOC(double);
   *payload = r;
   cap->ptr     = payload;
   cap->free_fn = dmnsn_free;
@@ -143,7 +143,7 @@ dmnsn_new_cone(double r1, double r2, bool open)
   cone->bounding_box.min = dmnsn_new_vector(-rmax, -1.0, -rmax);
   cone->bounding_box.max = dmnsn_new_vector(rmax, 1.0, rmax);
 
-  dmnsn_cone_payload *payload = dmnsn_malloc(sizeof(dmnsn_cone_payload));
+  dmnsn_cone_payload *payload = DMNSN_MALLOC(dmnsn_cone_payload);
   payload->r1 = r1;
   payload->r2 = r2;
   cone->ptr     = payload;

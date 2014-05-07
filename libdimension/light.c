@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -30,7 +30,7 @@
 dmnsn_light *
 dmnsn_new_light(void)
 {
-  dmnsn_light *light = dmnsn_malloc(sizeof(dmnsn_light));
+  dmnsn_light *light = DMNSN_MALLOC(dmnsn_light);
   light->direction_fn    = NULL;
   light->illumination_fn = NULL;
   light->shadow_fn       = NULL;

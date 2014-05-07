@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -30,7 +30,7 @@
 dmnsn_canvas *
 dmnsn_new_canvas(size_t width, size_t height)
 {
-  dmnsn_canvas *canvas = dmnsn_malloc(sizeof(dmnsn_canvas));
+  dmnsn_canvas *canvas = DMNSN_MALLOC(dmnsn_canvas);
   canvas->width      = width;
   canvas->height     = height;
   canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));

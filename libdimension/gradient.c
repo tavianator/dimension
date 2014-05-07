@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -41,7 +41,7 @@ dmnsn_new_gradient_pattern(dmnsn_vector orientation)
 {
   dmnsn_pattern *gradient = dmnsn_new_pattern();
 
-  dmnsn_vector *payload = dmnsn_malloc(sizeof(dmnsn_vector));
+  dmnsn_vector *payload = DMNSN_MALLOC(dmnsn_vector);
   *payload = dmnsn_vector_normalized(orientation);
 
   gradient->pattern_fn = dmnsn_gradient_pattern_fn;

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -29,7 +29,7 @@
 dmnsn_pigment *
 dmnsn_new_pigment(void)
 {
-  dmnsn_pigment *pigment = dmnsn_malloc(sizeof(dmnsn_pigment));
+  dmnsn_pigment *pigment = DMNSN_MALLOC(dmnsn_pigment);
   pigment->pigment_fn    = NULL;
   pigment->initialize_fn = NULL;
   pigment->free_fn       = NULL;

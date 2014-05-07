@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -30,7 +30,7 @@
 dmnsn_camera *
 dmnsn_new_camera(void)
 {
-  dmnsn_camera *camera = dmnsn_malloc(sizeof(dmnsn_camera));
+  dmnsn_camera *camera = DMNSN_MALLOC(dmnsn_camera);
   camera->free_fn = NULL;
   camera->trans   = dmnsn_identity_matrix();
   DMNSN_REFCOUNT_INIT(camera);

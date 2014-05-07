@@ -56,8 +56,7 @@ dmnsn_ray_trace_async(dmnsn_scene *scene)
 {
   dmnsn_future *future = dmnsn_new_future();
 
-  dmnsn_ray_trace_payload *payload =
-    dmnsn_malloc(sizeof(dmnsn_ray_trace_payload));
+  dmnsn_ray_trace_payload *payload = DMNSN_MALLOC(dmnsn_ray_trace_payload);
   payload->future = future;
   payload->scene  = scene;
 

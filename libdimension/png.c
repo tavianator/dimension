@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -72,8 +72,7 @@ dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
 {
   dmnsn_future *future = dmnsn_new_future();
 
-  dmnsn_png_write_payload *payload
-    = dmnsn_malloc(sizeof(dmnsn_png_write_payload));
+  dmnsn_png_write_payload *payload = DMNSN_MALLOC(dmnsn_png_write_payload);
   payload->future = future;
   payload->canvas = canvas;
   payload->file   = file;
@@ -99,8 +98,7 @@ dmnsn_future *
 dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
 {
   dmnsn_future *future = dmnsn_new_future();
-  dmnsn_png_read_payload *payload
-    = dmnsn_malloc(sizeof(dmnsn_png_write_payload));
+  dmnsn_png_read_payload *payload = DMNSN_MALLOC(dmnsn_png_write_payload);
 
   payload->future  = future;
   payload->canvas  = canvas;

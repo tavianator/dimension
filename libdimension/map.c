@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -34,7 +34,7 @@ typedef struct dmnsn_map_entry {
 dmnsn_map *
 dmnsn_new_map(size_t size)
 {
-  dmnsn_map *map = dmnsn_malloc(sizeof(dmnsn_map));
+  dmnsn_map *map = DMNSN_MALLOC(dmnsn_map);
   map->free_fn = NULL;
   map->obj_size = size;
   map->array = dmnsn_new_array(sizeof(dmnsn_map_entry) + size);
