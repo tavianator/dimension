@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2012 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -30,59 +30,68 @@
  * Unions
  */
 
+typedef struct {
+  dmnsn_object object;
+  dmnsn_bvh *bvh;
+} dmnsn_csg_union;
+
 /** CSG union intersection callback. */
 static bool
-dmnsn_csg_union_intersection_fn(const dmnsn_object *csg,
+dmnsn_csg_union_intersection_fn(const dmnsn_object *object,
                                 dmnsn_line line,
                                 dmnsn_intersection *intersection)
 {
-  dmnsn_bvh *bvh = csg->ptr;
+  dmnsn_bvh *bvh = ((const dmnsn_csg_union *)object)->bvh;
   return dmnsn_bvh_intersection(bvh, line, intersection, true);
 }
 
 /** CSG union inside callback. */
 static bool
-dmnsn_csg_union_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
+dmnsn_csg_union_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
-  dmnsn_bvh *bvh = csg->ptr;
+  dmnsn_bvh *bvh = ((const dmnsn_csg_union *)object)->bvh;
   return dmnsn_bvh_inside(bvh, point);
 }
 
 /** CSG union initialization callback. */
 static void
-dmnsn_csg_union_initialize_fn(dmnsn_object *csg)
+dmnsn_csg_union_initialize_fn(dmnsn_object *object)
 {
-  csg->trans = dmnsn_identity_matrix();
+  dmnsn_csg_union *csg = (dmnsn_csg_union *)object;
+  csg->object.trans = dmnsn_identity_matrix();
 
-  dmnsn_bvh *bvh = dmnsn_new_bvh(csg->children, DMNSN_BVH_PRTREE);
-  csg->ptr = bvh;
-  csg->bounding_box = dmnsn_bvh_bounding_box(bvh);
+  dmnsn_bvh *bvh = dmnsn_new_bvh(csg->object.children, DMNSN_BVH_PRTREE);
+  csg->bvh = bvh;
+  csg->object.bounding_box = dmnsn_bvh_bounding_box(bvh);
 }
 
 /** CSG union destruction callback. */
 static void
-dmnsn_csg_union_free_fn(void *ptr)
+dmnsn_csg_union_free_fn(dmnsn_object *object)
 {
-  dmnsn_delete_bvh(ptr);
+  dmnsn_csg_union *csg = (dmnsn_csg_union *)object;
+  dmnsn_delete_bvh(csg->bvh);
+  dmnsn_free(csg);
 }
 
 /* Bulk-load a union */
 dmnsn_object *
 dmnsn_new_csg_union(const dmnsn_array *objects)
 {
-  dmnsn_object *csg = dmnsn_new_object();
+  dmnsn_csg_union *csg = DMNSN_MALLOC(dmnsn_csg_union);
+  dmnsn_init_object(&csg->object);
 
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
-    dmnsn_array_push(csg->children, object);
+    dmnsn_array_push(csg->object.children, object);
   }
-  csg->split_children  = true;
-  csg->ptr             = NULL;
-  csg->intersection_fn = dmnsn_csg_union_intersection_fn;
-  csg->inside_fn       = dmnsn_csg_union_inside_fn;
-  csg->initialize_fn   = dmnsn_csg_union_initialize_fn;
-  csg->free_fn         = dmnsn_csg_union_free_fn;
+  csg->object.split_children  = true;
+  csg->object.intersection_fn = dmnsn_csg_union_intersection_fn;
+  csg->object.inside_fn       = dmnsn_csg_union_inside_fn;
+  csg->object.initialize_fn   = dmnsn_csg_union_initialize_fn;
+  csg->object.free_fn         = dmnsn_csg_union_free_fn;
+  csg->bvh = NULL;
 
-  return csg;
+  return &csg->object;
 }
 
 /**

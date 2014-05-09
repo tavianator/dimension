@@ -25,16 +25,17 @@
 
 #include "dimension.h"
 
-/** Torus payload type. */
-typedef struct dmnsn_torus_payload {
+/** Torus type. */
+typedef struct {
+  dmnsn_object object;
   double major, minor;
-} dmnsn_torus_payload;
+} dmnsn_torus;
 
 /** Bound the torus in a cylindrical shell. */
 static inline bool
-dmnsn_torus_bound_intersection(const dmnsn_torus_payload *payload, dmnsn_line l)
+dmnsn_torus_bound_intersection(const dmnsn_torus *torus, dmnsn_line l)
 {
-  double R = payload->major, r = payload->minor;
+  double R = torus->major, r = torus->minor;
   double rmax = R + r, rmin = R - r;
   double rmax2 = rmax*rmax, rmin2 = rmin*rmin;
 
@@ -77,15 +78,16 @@ dmnsn_torus_bound_intersection(const dmnsn_torus_payload *payload, dmnsn_line l)
 
 /** Torus intersection callback. */
 static bool
-dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line l,
+dmnsn_torus_intersection_fn(const dmnsn_object *object, dmnsn_line l,
                             dmnsn_intersection *intersection)
 {
-  const dmnsn_torus_payload *payload = torus->ptr;
-  double R = payload->major, r = payload->minor;
+  const dmnsn_torus *torus = (const dmnsn_torus *)object;
+  double R = torus->major, r = torus->minor;
   double R2 = R*R, r2 = r*r;
 
-  if (!dmnsn_torus_bound_intersection(payload, l))
+  if (!dmnsn_torus_bound_intersection(torus, l)) {
     return false;
+  }
 
   /* This bit of algebra here is correct */
   dmnsn_vector x0mod = dmnsn_new_vector(l.x0.x, -l.x0.y, l.x0.z);
@@ -119,7 +121,7 @@ dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line l,
 
   dmnsn_vector p = dmnsn_line_point(l, t);
   dmnsn_vector center = dmnsn_vector_mul(
-    payload->major,
+    R,
     dmnsn_vector_normalized(dmnsn_new_vector(p.x, 0.0, p.z))
   );
   dmnsn_vector normal = dmnsn_vector_sub(p, center);
@@ -131,31 +133,28 @@ dmnsn_torus_intersection_fn(const dmnsn_object *torus, dmnsn_line l,
 
 /** Torus inside callback. */
 static bool
-dmnsn_torus_inside_fn(const dmnsn_object *torus, dmnsn_vector point)
+dmnsn_torus_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
-  const dmnsn_torus_payload *payload = torus->ptr;
-  double dmajor = payload->major - sqrt(point.x*point.x + point.z*point.z);
-  return dmajor*dmajor + point.y*point.y < payload->minor*payload->minor;
+  const dmnsn_torus *torus = (const dmnsn_torus *)object;
+  double dmajor = torus->major - sqrt(point.x*point.x + point.z*point.z);
+  return dmajor*dmajor + point.y*point.y < torus->minor*torus->minor;
 }
 
 /* Allocate a new torus */
 dmnsn_object *
 dmnsn_new_torus(double major, double minor)
 {
-  dmnsn_object *torus = dmnsn_new_object();
-  torus->intersection_fn  = dmnsn_torus_intersection_fn;
-  torus->inside_fn        = dmnsn_torus_inside_fn;
-  torus->bounding_box.min = dmnsn_new_vector(-(major + minor),
-                                             -minor,
-                                             -(major + minor));
-  torus->bounding_box.max = dmnsn_new_vector(major + minor,
-                                             minor,
-                                             major + minor);
-
-  dmnsn_torus_payload *payload = DMNSN_MALLOC(dmnsn_torus_payload);
-  payload->major = major;
-  payload->minor = minor;
-  torus->ptr     = payload;
-  torus->free_fn = dmnsn_free;
-  return torus;
+  dmnsn_torus *torus = DMNSN_MALLOC(dmnsn_torus);
+  dmnsn_init_object(&torus->object);
+  torus->object.intersection_fn  = dmnsn_torus_intersection_fn;
+  torus->object.inside_fn = dmnsn_torus_inside_fn;
+  torus->object.bounding_box.min = dmnsn_new_vector(
+    -(major + minor), -minor, -(major + minor)
+  );
+  torus->object.bounding_box.max = dmnsn_new_vector(
+    major + minor, minor, major + minor
+  );
+  torus->major = major;
+  torus->minor = minor;
+  return &torus->object;
 }

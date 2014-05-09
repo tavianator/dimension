@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -67,6 +67,12 @@ typedef bool dmnsn_object_intersection_fn(const dmnsn_object *object,
 typedef bool dmnsn_object_inside_fn(const dmnsn_object *object,
                                     dmnsn_vector point);
 
+/**
+ * Object destruction callback.
+ * @param[in] object  The object to delete.
+ */
+typedef void dmnsn_object_free_fn(dmnsn_object *object);
+
 /** An object. */
 struct dmnsn_object {
   dmnsn_texture  *texture;  /**< Surface properties. */
@@ -85,9 +91,7 @@ struct dmnsn_object {
   dmnsn_object_initialize_fn   *initialize_fn; /**< Initialization callback. */
   dmnsn_object_intersection_fn *intersection_fn; /**< Intersection callback. */
   dmnsn_object_inside_fn       *inside_fn; /**< Inside callback. */
-  dmnsn_free_fn                *free_fn; /**< Destruction callback. */
-
-  void *ptr; /**< Generic pointer for object info. */
+  dmnsn_object_free_fn         *free_fn; /**< Destruction callback. */
 
   DMNSN_REFCOUNT; /**< Reference count. */
   bool initialized; /**< @internal Whether the object is initialized yet. */
@@ -98,6 +102,12 @@ struct dmnsn_object {
  * @return The allocated object.
  */
 dmnsn_object *dmnsn_new_object(void);
+
+/**
+ * Initialize a dmnsn_object field.
+ * @param[in,out] object  The object to initialize.
+ */
+void dmnsn_init_object(dmnsn_object *object);
 
 /**
  * Free an object

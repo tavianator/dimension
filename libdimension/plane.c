@@ -27,6 +27,12 @@
 #include <math.h>
 #include <stdlib.h>
 
+/** Plane type. */
+typedef struct {
+  dmnsn_object object;
+  dmnsn_vector normal;
+} dmnsn_plane;
+
 /* Plane object callbacks */
 
 static bool dmnsn_plane_intersection_fn(const dmnsn_object *plane,
@@ -39,32 +45,30 @@ static bool dmnsn_plane_inside_fn(const dmnsn_object *plane,
 dmnsn_object *
 dmnsn_new_plane(dmnsn_vector normal)
 {
-  dmnsn_object *plane = dmnsn_new_object();
+  dmnsn_plane *plane = DMNSN_MALLOC(dmnsn_plane);
+  dmnsn_init_object(&plane->object);
 
-  dmnsn_vector *param = DMNSN_MALLOC(dmnsn_vector);
-  *param = normal;
-
-  plane->intersection_fn  = dmnsn_plane_intersection_fn;
-  plane->inside_fn        = dmnsn_plane_inside_fn;
-  plane->free_fn          = dmnsn_free;
-  plane->bounding_box     = dmnsn_infinite_bounding_box();
-  plane->ptr              = param;
-  return plane;
+  plane->object.intersection_fn = dmnsn_plane_intersection_fn;
+  plane->object.inside_fn = dmnsn_plane_inside_fn;
+  plane->object.bounding_box = dmnsn_infinite_bounding_box();
+  plane->normal = normal;
+  return &plane->object;
 }
 
 /* Returns the closest intersection of `line' with `plane' */
 static bool
-dmnsn_plane_intersection_fn(const dmnsn_object *plane, dmnsn_line line,
+dmnsn_plane_intersection_fn(const dmnsn_object *object, dmnsn_line line,
                             dmnsn_intersection *intersection)
 {
-  dmnsn_vector *normal = plane->ptr;
+  const dmnsn_plane *plane = (const dmnsn_plane *)object;
+  dmnsn_vector normal = plane->normal;
 
-  double den = dmnsn_vector_dot(line.n, *normal);
+  double den = dmnsn_vector_dot(line.n, normal);
   if (den != 0.0) {
-    double t = -dmnsn_vector_dot(line.x0, *normal)/den;
+    double t = -dmnsn_vector_dot(line.x0, normal)/den;
     if (t >= 0.0) {
       intersection->t      = t;
-      intersection->normal = *normal;
+      intersection->normal = normal;
       return true;
     }
   }
@@ -73,8 +77,8 @@ dmnsn_plane_intersection_fn(const dmnsn_object *plane, dmnsn_line line,
 
 /* Return whether a point is inside a plane */
 static bool
-dmnsn_plane_inside_fn(const dmnsn_object *plane, dmnsn_vector point)
+dmnsn_plane_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
-  dmnsn_vector *normal = plane->ptr;
-  return dmnsn_vector_dot(point, *normal) < 0.0;
+  const dmnsn_plane *plane = (const dmnsn_plane *)object;
+  return dmnsn_vector_dot(point, plane->normal) < 0.0;
 }

@@ -26,11 +26,25 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
+static void
+dmnsn_default_object_free_fn(dmnsn_object *object)
+{
+  dmnsn_free(object);
+}
+
 /* Allocate a dummy object */
 dmnsn_object *
 dmnsn_new_object(void)
 {
   dmnsn_object *object = DMNSN_MALLOC(dmnsn_object);
+  dmnsn_init_object(object);
+  return object;
+}
+
+/* Initialize a dmnsn_object field */
+void
+dmnsn_init_object(dmnsn_object *object)
+{
   object->texture         = NULL;
   object->interior        = NULL;
   object->trans           = dmnsn_identity_matrix();
@@ -40,13 +54,12 @@ dmnsn_new_object(void)
   object->intersection_fn = NULL;
   object->inside_fn       = NULL;
   object->initialize_fn   = NULL;
-  object->free_fn         = NULL;
+  object->free_fn         = dmnsn_default_object_free_fn;
   object->initialized     = false;
   DMNSN_REFCOUNT_INIT(object);
-  return object;
 }
 
-/* Free a dummy object */
+/* Free a dmnsn_object */
 void
 dmnsn_delete_object(dmnsn_object *object)
 {
@@ -57,10 +70,7 @@ dmnsn_delete_object(dmnsn_object *object)
     dmnsn_delete_array(object->children);
     dmnsn_delete_interior(object->interior);
     dmnsn_delete_texture(object->texture);
-    if (object->free_fn) {
-      object->free_fn(object->ptr);
-    }
-    dmnsn_free(object);
+    object->free_fn(object);
   }
 }
 
