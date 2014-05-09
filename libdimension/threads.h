@@ -150,6 +150,7 @@ DMNSN_INTERNAL void dmnsn_initialize_cond(pthread_cond_t *cond);
  */
 DMNSN_INTERNAL void dmnsn_cond_wait(pthread_cond_t *cond,
                                     pthread_mutex_t *mutex);
+
 /**
  * Wait on a condition variable, bailing out on error, and unlock the mutex if
  * cancelled.
