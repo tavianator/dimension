@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -363,7 +363,7 @@ dmnsn_transform_point(dmnsn_matrix T, dmnsn_vector v)
 DMNSN_INLINE dmnsn_vector
 dmnsn_transform_direction(dmnsn_matrix T, dmnsn_vector v)
 {
-  /* 9 multiplications, 9 additions */
+  /* 9 multiplications, 6 additions */
   dmnsn_vector r;
   r.x = T.n[0][0]*v.x + T.n[0][1]*v.y + T.n[0][2]*v.z;
   r.y = T.n[1][0]*v.x + T.n[1][1]*v.y + T.n[1][2]*v.z;
