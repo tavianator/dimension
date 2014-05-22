@@ -159,6 +159,17 @@ dmnsn_new_matrix(double a0, double a1, double a2, double a3,
   return m;
 }
 
+/** Construct a new transformation matrix from column vectors. */
+DMNSN_INLINE dmnsn_matrix
+dmnsn_new_matrix4(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
+                  dmnsn_vector d)
+{
+  dmnsn_matrix m = { { { a.x, b.x, c.x, d.x },
+                       { a.y, b.y, c.y, d.y },
+                       { a.z, b.z, c.z, d.z } } };
+  return m;
+}
+
 /** Return the identity matrix. */
 dmnsn_matrix dmnsn_identity_matrix(void);
 
