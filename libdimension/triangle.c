@@ -26,7 +26,7 @@
 #include "dimension.h"
 
 typedef struct dmnsn_triangle_payload {
-  dmnsn_vector a, ab, ac, na, nab, nac, normal;
+  dmnsn_vector na, nab, nac;
 } dmnsn_triangle_payload;
 
 /** Triangle intersection callback. */
@@ -36,11 +36,10 @@ dmnsn_triangle_intersection_fn(const dmnsn_object *triangle, dmnsn_line l,
 {
   const dmnsn_triangle_payload *payload = triangle->ptr;
 
-  double den = -dmnsn_vector_dot(l.n, payload->normal);
-  dmnsn_vector ax0 = dmnsn_vector_sub(l.x0, payload->a);
-  double t = dmnsn_vector_dot(ax0, payload->normal)/den;
-  double u = -dmnsn_vector_dot(l.n, dmnsn_vector_cross(ax0, payload->ac))/den;
-  double v = -dmnsn_vector_dot(l.n, dmnsn_vector_cross(payload->ab, ax0))/den;
+  /* See the change of basis in dmnsn_new_triangle() */
+  double t = -l.x0.z/l.n.z;
+  double u = l.x0.x + t*l.n.x;
+  double v = l.x0.y + t*l.n.y;
   if (t >= 0.0 && u >= 0.0 && v >= 0.0 && u + v <= 1.0) {
     intersection->t      = t;
     intersection->normal = dmnsn_vector_add(
@@ -73,21 +72,29 @@ dmnsn_new_triangle(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
   nc = dmnsn_vector_normalized(nc);
 
   dmnsn_triangle_payload *payload = DMNSN_MALLOC(dmnsn_triangle_payload);
-  payload->a      = a;
-  payload->na     = na;
-  payload->ab     = dmnsn_vector_sub(b, a);
-  payload->nab    = dmnsn_vector_sub(nb, na);
-  payload->ac     = dmnsn_vector_sub(c, a);
-  payload->nac    = dmnsn_vector_sub(nc, na);
-  payload->normal = dmnsn_vector_cross(payload->ab, payload->ac);
+  payload->na  = na;
+  payload->nab = dmnsn_vector_sub(nb, na);
+  payload->nac = dmnsn_vector_sub(nc, na);
 
   dmnsn_object *triangle     = dmnsn_new_object();
   triangle->ptr              = payload;
   triangle->intersection_fn  = dmnsn_triangle_intersection_fn;
   triangle->inside_fn        = dmnsn_triangle_inside_fn;
   triangle->free_fn          = dmnsn_free;
-  triangle->bounding_box.min = dmnsn_vector_min(dmnsn_vector_min(a, b), c);
-  triangle->bounding_box.max = dmnsn_vector_max(dmnsn_vector_max(a, b), c);
+  triangle->bounding_box.min = dmnsn_zero;
+  triangle->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 0.0);
+
+  /*
+   * Make a change-of-basis matrix
+   *
+   * The new vector space has corners at <0, 1, 0>, <0, 0, 1>, and 0,
+   * corresponding to the basis (ab, ac, ab X ac).
+   */
+  dmnsn_vector ab = dmnsn_vector_sub(b, a);
+  dmnsn_vector ac = dmnsn_vector_sub(c, a);
+  dmnsn_vector normal = dmnsn_vector_cross(ab, ac);
+  triangle->intrinsic_trans = dmnsn_new_matrix4(ab, ac, normal, a);
+
   return triangle;
 }
 
