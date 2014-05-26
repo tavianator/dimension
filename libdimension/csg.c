@@ -41,16 +41,16 @@ dmnsn_csg_union_intersection_fn(const dmnsn_object *object,
                                 dmnsn_line line,
                                 dmnsn_intersection *intersection)
 {
-  dmnsn_bvh *bvh = ((const dmnsn_csg_union *)object)->bvh;
-  return dmnsn_bvh_intersection(bvh, line, intersection, true);
+  const dmnsn_csg_union *csg = (const dmnsn_csg_union *)object;
+  return dmnsn_bvh_intersection(csg->bvh, line, intersection, true);
 }
 
 /** CSG union inside callback. */
 static bool
 dmnsn_csg_union_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
-  dmnsn_bvh *bvh = ((const dmnsn_csg_union *)object)->bvh;
-  return dmnsn_bvh_inside(bvh, point);
+  const dmnsn_csg_union *csg = (const dmnsn_csg_union *)object;
+  return dmnsn_bvh_inside(csg->bvh, point);
 }
 
 /** CSG union initialization callback. */
@@ -79,19 +79,21 @@ dmnsn_object *
 dmnsn_new_csg_union(const dmnsn_array *objects)
 {
   dmnsn_csg_union *csg = DMNSN_MALLOC(dmnsn_csg_union);
-  dmnsn_init_object(&csg->object);
-
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
-    dmnsn_array_push(csg->object.children, object);
-  }
-  csg->object.split_children  = true;
-  csg->object.intersection_fn = dmnsn_csg_union_intersection_fn;
-  csg->object.inside_fn       = dmnsn_csg_union_inside_fn;
-  csg->object.initialize_fn   = dmnsn_csg_union_initialize_fn;
-  csg->object.free_fn         = dmnsn_csg_union_free_fn;
   csg->bvh = NULL;
 
-  return &csg->object;
+  dmnsn_object *object = &csg->object;
+  dmnsn_init_object(object);
+
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, child, objects) {
+    dmnsn_array_push(object->children, child);
+  }
+  object->split_children  = true;
+  object->intersection_fn = dmnsn_csg_union_intersection_fn;
+  object->inside_fn       = dmnsn_csg_union_inside_fn;
+  object->initialize_fn   = dmnsn_csg_union_initialize_fn;
+  object->free_fn         = dmnsn_csg_union_free_fn;
+
+  return object;
 }
 
 /**

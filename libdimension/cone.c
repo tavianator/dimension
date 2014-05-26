@@ -127,13 +127,15 @@ dmnsn_object *
 dmnsn_new_cone_cap(double r)
 {
   dmnsn_cone_cap *cap = DMNSN_MALLOC(dmnsn_cone_cap);
-  dmnsn_init_object(&cap->object);
-  cap->object.intersection_fn  = dmnsn_cone_cap_intersection_fn;
-  cap->object.inside_fn = dmnsn_cone_cap_inside_fn;
-  cap->object.bounding_box.min = dmnsn_new_vector(-r, 0.0, -r);
-  cap->object.bounding_box.max = dmnsn_new_vector(+r, 0.0, +r);
   cap->r = r;
-  return &cap->object;
+
+  dmnsn_object *object = &cap->object;
+  dmnsn_init_object(object);
+  object->intersection_fn  = dmnsn_cone_cap_intersection_fn;
+  object->inside_fn = dmnsn_cone_cap_inside_fn;
+  object->bounding_box.min = dmnsn_new_vector(-r, 0.0, -r);
+  object->bounding_box.max = dmnsn_new_vector(+r, 0.0, +r);
+  return object;
 }
 
 /* Allocate a new cone object */
@@ -141,26 +143,29 @@ dmnsn_object *
 dmnsn_new_cone(double r1, double r2, bool open)
 {
   dmnsn_cone *cone = DMNSN_MALLOC(dmnsn_cone);
-  dmnsn_init_object(&cone->object);
-  cone->object.intersection_fn  = dmnsn_cone_intersection_fn;
-  cone->object.inside_fn = dmnsn_cone_inside_fn;
-  double rmax = dmnsn_max(r1, r2);
-  cone->object.bounding_box.min = dmnsn_new_vector(-rmax, -1.0, -rmax);
-  cone->object.bounding_box.max = dmnsn_new_vector(rmax, 1.0, rmax);
   cone->r1 = r1;
   cone->r2 = r2;
 
+  dmnsn_object *object = &cone->object;
+  dmnsn_init_object(object);
+  object->intersection_fn  = dmnsn_cone_intersection_fn;
+  object->inside_fn = dmnsn_cone_inside_fn;
+
+  double rmax = dmnsn_max(r1, r2);
+  object->bounding_box.min = dmnsn_new_vector(-rmax, -1.0, -rmax);
+  object->bounding_box.max = dmnsn_new_vector(rmax, 1.0, rmax);
+
   if (open) {
-    return &cone->object;
+    return object;
   }
 
   /* Implement closed cones as a union with the caps */
   dmnsn_object *cap1 = dmnsn_new_cone_cap(r1);
   dmnsn_object *cap2 = dmnsn_new_cone_cap(r2);
-  cap1->intrinsic_trans  = dmnsn_translation_matrix(
+  cap1->intrinsic_trans = dmnsn_translation_matrix(
     dmnsn_new_vector(0.0, -1.0, 0.0)
   );
-  cap2->intrinsic_trans  = dmnsn_translation_matrix(
+  cap2->intrinsic_trans = dmnsn_translation_matrix(
     dmnsn_new_vector(0.0, +1.0, 0.0)
   );
   /* Flip the normal around for the top cap */

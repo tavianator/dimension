@@ -78,11 +78,12 @@ dmnsn_new_triangle(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
   triangle->nab = dmnsn_vector_sub(nb, na);
   triangle->nac = dmnsn_vector_sub(nc, na);
 
-  dmnsn_init_object(&triangle->object);
-  triangle->object.intersection_fn  = dmnsn_triangle_intersection_fn;
-  triangle->object.inside_fn = dmnsn_triangle_inside_fn;
-  triangle->object.bounding_box.min = dmnsn_zero;
-  triangle->object.bounding_box.max = dmnsn_new_vector(1.0, 1.0, 0.0);
+  dmnsn_object *object = &triangle->object;
+  dmnsn_init_object(object);
+  object->intersection_fn  = dmnsn_triangle_intersection_fn;
+  object->inside_fn = dmnsn_triangle_inside_fn;
+  object->bounding_box.min = dmnsn_zero;
+  object->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 0.0);
 
   /*
    * Make a change-of-basis matrix
@@ -93,9 +94,9 @@ dmnsn_new_triangle(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
   dmnsn_vector ab = dmnsn_vector_sub(b, a);
   dmnsn_vector ac = dmnsn_vector_sub(c, a);
   dmnsn_vector normal = dmnsn_vector_cross(ab, ac);
-  triangle->object.intrinsic_trans = dmnsn_new_matrix4(ab, ac, normal, a);
+  object->intrinsic_trans = dmnsn_new_matrix4(ab, ac, normal, a);
 
-  return &triangle->object;
+  return object;
 }
 
 /* Allocate a new flat triangle */

@@ -83,7 +83,7 @@ dmnsn_torus_intersection_fn(const dmnsn_object *object, dmnsn_line l,
 {
   const dmnsn_torus *torus = (const dmnsn_torus *)object;
   double R = torus->major, r = torus->minor;
-  double R2 = R*R, r2 = r*r;
+  double RR = R*R, rr = r*r;
 
   if (!dmnsn_torus_bound_intersection(torus, l)) {
     return false;
@@ -102,9 +102,9 @@ dmnsn_torus_intersection_fn(const dmnsn_object *object, dmnsn_line l,
   double poly[5];
   poly[4] = nn*nn;
   poly[3] = 4*nn*nx0;
-  poly[2] = 2.0*(nn*(x0x0 - r2) + 2.0*nx0*nx0 - R2*nnmod);
-  poly[1] = 4.0*(nx0*(x0x0 - r2) - R2*nx0mod);
-  poly[0] = x0x0*x0x0 + R2*(R2 - 2.0*x0x0mod) - r2*(2.0*(R2 + x0x0) - r2);
+  poly[2] = 2.0*(nn*(x0x0 - rr) + 2.0*nx0*nx0 - RR*nnmod);
+  poly[1] = 4.0*(nx0*(x0x0 - rr) - RR*nx0mod);
+  poly[0] = x0x0*x0x0 + RR*(RR - 2.0*x0x0mod) - rr*(2.0*(RR + x0x0) - rr);
 
   double x[4];
   size_t n = dmnsn_polynomial_solve(poly, 4, x);
@@ -116,8 +116,9 @@ dmnsn_torus_intersection_fn(const dmnsn_object *object, dmnsn_line l,
     t = dmnsn_min(t, x[i]);
   }
 
-  if (t < 0.0)
+  if (t < 0.0) {
     return false;
+  }
 
   dmnsn_vector p = dmnsn_line_point(l, t);
   dmnsn_vector center = dmnsn_vector_mul(
@@ -145,16 +146,17 @@ dmnsn_object *
 dmnsn_new_torus(double major, double minor)
 {
   dmnsn_torus *torus = DMNSN_MALLOC(dmnsn_torus);
-  dmnsn_init_object(&torus->object);
-  torus->object.intersection_fn  = dmnsn_torus_intersection_fn;
-  torus->object.inside_fn = dmnsn_torus_inside_fn;
-  torus->object.bounding_box.min = dmnsn_new_vector(
-    -(major + minor), -minor, -(major + minor)
-  );
-  torus->object.bounding_box.max = dmnsn_new_vector(
-    major + minor, minor, major + minor
-  );
   torus->major = major;
   torus->minor = minor;
-  return &torus->object;
+
+  dmnsn_object *object = &torus->object;
+  dmnsn_init_object(object);
+  object->intersection_fn  = dmnsn_torus_intersection_fn;
+  object->inside_fn = dmnsn_torus_inside_fn;
+
+  double extent = major + minor;
+  object->bounding_box.min = dmnsn_new_vector(-extent, -minor, -extent);
+  object->bounding_box.max = dmnsn_new_vector(extent, minor, extent);
+
+  return object;
 }

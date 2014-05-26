@@ -46,13 +46,14 @@ dmnsn_object *
 dmnsn_new_plane(dmnsn_vector normal)
 {
   dmnsn_plane *plane = DMNSN_MALLOC(dmnsn_plane);
-  dmnsn_init_object(&plane->object);
-
-  plane->object.intersection_fn = dmnsn_plane_intersection_fn;
-  plane->object.inside_fn = dmnsn_plane_inside_fn;
-  plane->object.bounding_box = dmnsn_infinite_bounding_box();
   plane->normal = normal;
-  return &plane->object;
+
+  dmnsn_object *object = &plane->object;
+  dmnsn_init_object(object);
+  object->intersection_fn = dmnsn_plane_intersection_fn;
+  object->inside_fn = dmnsn_plane_inside_fn;
+  object->bounding_box = dmnsn_infinite_bounding_box();
+  return object;
 }
 
 /* Returns the closest intersection of `line' with `plane' */

@@ -69,7 +69,7 @@ typedef bool dmnsn_object_inside_fn(const dmnsn_object *object,
 
 /**
  * Object destruction callback.
- * @param[in] object  The object to delete.
+ * @param[in,out] object  The object to delete.
  */
 typedef void dmnsn_object_free_fn(dmnsn_object *object);
 
