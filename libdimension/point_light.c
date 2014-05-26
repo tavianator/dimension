@@ -26,26 +26,27 @@
 #include "dimension.h"
 #include <stdlib.h>
 
-/** Point light payload type. */
-typedef struct dmnsn_point_light_payload {
+/** Point light type. */
+typedef struct dmnsn_point_light {
+  dmnsn_light light;
   dmnsn_vector origin;
   dmnsn_color color;
-} dmnsn_point_light_payload;
+} dmnsn_point_light;
 
 /** Point light direction callback. */
 static dmnsn_vector
 dmnsn_point_light_direction_fn(const dmnsn_light *light, dmnsn_vector v)
 {
-  dmnsn_point_light_payload *payload = light->ptr;
-  return dmnsn_vector_sub(payload->origin, v);
+  const dmnsn_point_light *point_light = (const dmnsn_point_light *)light;
+  return dmnsn_vector_sub(point_light->origin, v);
 }
 
 /** Point light illumination callback. */
 static dmnsn_color
 dmnsn_point_light_illumination_fn(const dmnsn_light *light, dmnsn_vector v)
 {
-  dmnsn_point_light_payload *payload = light->ptr;
-  return payload->color;
+  const dmnsn_point_light *point_light = (const dmnsn_point_light *)light;
+  return point_light->color;
 }
 
 /** Point light illumination callback. */
@@ -58,17 +59,14 @@ dmnsn_point_light_shadow_fn(const dmnsn_light *light, double t)
 dmnsn_light *
 dmnsn_new_point_light(dmnsn_vector x0, dmnsn_color color)
 {
-  dmnsn_light *light = dmnsn_new_light();
+  dmnsn_point_light *point_light = DMNSN_MALLOC(dmnsn_point_light);
+  point_light->origin = x0;
+  point_light->color = color;
 
-  dmnsn_point_light_payload *payload = DMNSN_MALLOC(dmnsn_point_light_payload);
-  payload->origin = x0;
-  payload->color  = color;
-  light->ptr = payload;
-
-  light->direction_fn    = dmnsn_point_light_direction_fn;
+  dmnsn_light *light = &point_light->light;
+  dmnsn_init_light(light);
+  light->direction_fn = dmnsn_point_light_direction_fn;
   light->illumination_fn = dmnsn_point_light_illumination_fn;
-  light->shadow_fn       = dmnsn_point_light_shadow_fn;
-  light->free_fn         = dmnsn_free;
-
+  light->shadow_fn = dmnsn_point_light_shadow_fn;
   return light;
 }

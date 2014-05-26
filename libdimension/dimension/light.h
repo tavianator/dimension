@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -54,16 +54,19 @@ typedef dmnsn_color dmnsn_light_illumination_fn(const dmnsn_light *light,
  */
 typedef bool dmnsn_light_shadow_fn(const dmnsn_light *light, double t);
 
+/**
+ * Light destruction callback.
+ * @param[in,out] light  The light to free.
+ */
+typedef void dmnsn_light_free_fn(dmnsn_light *light);
+
 /** A light. */
 struct dmnsn_light {
   /* Callbacks */
   dmnsn_light_direction_fn    *direction_fn;    /**< Direction callback. */
   dmnsn_light_illumination_fn *illumination_fn; /**< Illumination callback. */
   dmnsn_light_shadow_fn       *shadow_fn;       /**< Shadow callback. */
-  dmnsn_free_fn               *free_fn;         /**< Desctructor callback. */
-
-  /** Generic pointer for light info. */
-  void *ptr;
+  dmnsn_light_free_fn         *free_fn;         /**< Desctructor callback. */
 
   DMNSN_REFCOUNT; /**< Reference count. */
 };
@@ -73,6 +76,12 @@ struct dmnsn_light {
  * @return The allocated light.
  */
 dmnsn_light *dmnsn_new_light(void);
+
+/**
+ * Initialize a dmnsn_light field.
+ * @param[out] light  The light to initialize.
+ */
+void dmnsn_init_light(dmnsn_light *light);
 
 /**
  * Delete a light.

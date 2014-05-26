@@ -26,18 +26,30 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
+static void
+dmnsn_default_light_free_fn(dmnsn_light *light)
+{
+  dmnsn_free(light);
+}
+
 /* Allocate a new dummy light */
 dmnsn_light *
 dmnsn_new_light(void)
 {
   dmnsn_light *light = DMNSN_MALLOC(dmnsn_light);
-  light->direction_fn    = NULL;
-  light->illumination_fn = NULL;
-  light->shadow_fn       = NULL;
-  light->free_fn         = NULL;
-  light->ptr             = NULL;
-  DMNSN_REFCOUNT_INIT(light);
+  dmnsn_init_light(light);
   return light;
+}
+
+/* Initialize a light */
+void
+dmnsn_init_light(dmnsn_light *light)
+{
+  light->direction_fn = NULL;
+  light->illumination_fn = NULL;
+  light->shadow_fn = NULL;
+  light->free_fn = dmnsn_default_light_free_fn;
+  DMNSN_REFCOUNT_INIT(light);
 }
 
 /* Free a dummy light */
@@ -45,9 +57,6 @@ void
 dmnsn_delete_light(dmnsn_light *light)
 {
   if (DMNSN_DECREF(light)) {
-    if (light->free_fn) {
-      light->free_fn(light->ptr);
-    }
-    dmnsn_free(light);
+    light->free_fn(light);
   }
 }

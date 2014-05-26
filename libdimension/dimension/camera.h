@@ -61,7 +61,7 @@ dmnsn_camera *dmnsn_new_camera(void);
 
 /**
  * Initialize a dmnsn_camera field.
- * @param[in,out] camera  The camera to initialize.
+ * @param[out] camera  The camera to initialize.
  */
 void dmnsn_init_camera(dmnsn_camera *camera);
 

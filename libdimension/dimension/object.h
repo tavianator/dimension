@@ -105,7 +105,7 @@ dmnsn_object *dmnsn_new_object(void);
 
 /**
  * Initialize a dmnsn_object field.
- * @param[in,out] object  The object to initialize.
+ * @param[out] object  The object to initialize.
  */
 void dmnsn_init_object(dmnsn_object *object);
 
