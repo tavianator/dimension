@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -36,15 +36,19 @@ typedef struct dmnsn_camera dmnsn_camera;
 typedef dmnsn_line dmnsn_camera_ray_fn(const dmnsn_camera *camera,
                                        double x, double y);
 
+/**
+ * Camera destruction callback.
+ * @param[in,out] camera  The camera to delete.
+ */
+typedef void dmnsn_camera_free_fn(dmnsn_camera *camera);
+
 /** A camera. */
 struct dmnsn_camera {
   /* Callback functions */
-  dmnsn_camera_ray_fn *ray_fn;  /**< Camera ray callback. */
-  dmnsn_free_fn       *free_fn; /**< Destructor callback. */
+  dmnsn_camera_ray_fn *ray_fn; /**< Camera ray callback. */
+  dmnsn_camera_free_fn *free_fn; /**< Destructor callback. */
 
   dmnsn_matrix trans; /**< Transformation matrix. */
-
-  void *ptr; /**< Generic pointer for camera info. */
 
   DMNSN_REFCOUNT; /**< Reference count. */
 };
@@ -54,6 +58,12 @@ struct dmnsn_camera {
  * @return The allocated camera.
  */
 dmnsn_camera *dmnsn_new_camera(void);
+
+/**
+ * Initialize a dmnsn_camera field.
+ * @param[in,out] camera  The camera to initialize.
+ */
+void dmnsn_init_camera(dmnsn_camera *camera);
 
 /**
  * Delete a camera.

@@ -26,15 +26,27 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
+static void dmnsn_default_camera_free_fn(dmnsn_camera *camera)
+{
+  dmnsn_free(camera);
+}
+
 /* Allocate a new dummy camera */
 dmnsn_camera *
 dmnsn_new_camera(void)
 {
   dmnsn_camera *camera = DMNSN_MALLOC(dmnsn_camera);
-  camera->free_fn = NULL;
-  camera->trans   = dmnsn_identity_matrix();
-  DMNSN_REFCOUNT_INIT(camera);
+  dmnsn_init_camera(camera);
   return camera;
+}
+
+/* Initialize a camera */
+void
+dmnsn_init_camera(dmnsn_camera *camera)
+{
+  camera->free_fn = dmnsn_default_camera_free_fn;
+  camera->trans = dmnsn_identity_matrix();
+  DMNSN_REFCOUNT_INIT(camera);
 }
 
 /* Free a dummy camera */
@@ -42,10 +54,7 @@ void
 dmnsn_delete_camera(dmnsn_camera *camera)
 {
   if (DMNSN_DECREF(camera)) {
-    if (camera->free_fn) {
-      camera->free_fn(camera->ptr);
-    }
-    dmnsn_free(camera);
+    camera->free_fn(camera);
   }
 }
 
