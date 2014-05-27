@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -41,20 +41,23 @@ typedef dmnsn_tcolor dmnsn_pigment_fn(const dmnsn_pigment *pigment,
  */
 typedef void dmnsn_pigment_initialize_fn(dmnsn_pigment *pigment);
 
+/**
+ * Pigment destructor callback.
+ * @param[in,out] pigment  The pigment to destroy.
+ */
+typedef void dmnsn_pigment_free_fn(dmnsn_pigment *pigment);
+
 /** A pigment. */
 struct dmnsn_pigment {
-  dmnsn_pigment_fn *pigment_fn;               /**< The pigment callback. */
+  dmnsn_pigment_fn *pigment_fn; /**< The pigment callback. */
   dmnsn_pigment_initialize_fn *initialize_fn; /**< The initializer callback. */
-  dmnsn_free_fn *free_fn;                     /**< The destructor callback. */
+  dmnsn_pigment_free_fn *free_fn; /**< The destructor callback. */
 
-  dmnsn_matrix trans;     /**< Transformation matrix. */
+  dmnsn_matrix trans; /**< Transformation matrix. */
   dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
 
   /** Quick color -- used for low-quality renders. */
   dmnsn_tcolor quick_color;
-
-  /** Generic pointer. */
-  void *ptr;
 
   DMNSN_REFCOUNT; /** Reference count. */
   bool initialized; /** @internal Whether the pigment is initialized. */
@@ -65,6 +68,12 @@ struct dmnsn_pigment {
  * @return The allocated pigment.
  */
 dmnsn_pigment *dmnsn_new_pigment(void);
+
+/**
+ * Initialize a dmnsn_pigment field.
+ * @param[out] pigment  The pigment to initialize.
+ */
+void dmnsn_init_pigment(dmnsn_pigment *pigment);
 
 /**
  * Delete a pigment.

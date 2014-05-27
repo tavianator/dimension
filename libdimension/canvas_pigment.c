@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -25,11 +25,19 @@
 
 #include "dimension.h"
 
+/** Canvas pigment type. */
+typedef struct dmnsn_canvas_pigment {
+  dmnsn_pigment pigment;
+  dmnsn_canvas *canvas;
+} dmnsn_canvas_pigment;
+
 /** Canvas pigment color callback. */
 static dmnsn_tcolor
 dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
-  dmnsn_canvas *canvas = pigment->ptr;
+  const dmnsn_canvas_pigment *canvas_pigment =
+    (const dmnsn_canvas_pigment *)pigment;
+  dmnsn_canvas *canvas = canvas_pigment->canvas;
 
   size_t x = llround((fmod(v.x, 1.0) + 1.0)*(canvas->width  - 1));
   size_t y = llround((fmod(v.y, 1.0) + 1.0)*(canvas->height - 1));
@@ -38,18 +46,23 @@ dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 
 /** Canvas pigment destructor. */
 static void
-dmnsn_canvas_pigment_free_fn(void *ptr)
+dmnsn_canvas_pigment_free_fn(dmnsn_pigment *pigment)
 {
-  dmnsn_delete_canvas(ptr);
+  dmnsn_canvas_pigment *canvas_pigment = (dmnsn_canvas_pigment *)pigment;
+  dmnsn_delete_canvas(canvas_pigment->canvas);
+  dmnsn_free(canvas_pigment);
 }
 
 /* Create a canvas color */
 dmnsn_pigment *
 dmnsn_new_canvas_pigment(dmnsn_canvas *canvas)
 {
-  dmnsn_pigment *pigment = dmnsn_new_pigment();
+  dmnsn_canvas_pigment *canvas_pigment = DMNSN_MALLOC(dmnsn_canvas_pigment);
+  canvas_pigment->canvas = canvas;
+
+  dmnsn_pigment *pigment = &canvas_pigment->pigment;
+  dmnsn_init_pigment(pigment);
   pigment->pigment_fn = dmnsn_canvas_pigment_fn;
-  pigment->free_fn    = dmnsn_canvas_pigment_free_fn;
-  pigment->ptr        = canvas;
+  pigment->free_fn = dmnsn_canvas_pigment_free_fn;
   return pigment;
 }

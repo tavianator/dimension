@@ -49,41 +49,43 @@ dmnsn_new_pigment_map(void)
   return pigment_map;
 }
 
-/** Payload for a pigment_map pigment. */
-typedef struct dmnsn_pigment_map_payload {
+/** Pigment map type. */
+typedef struct dmnsn_pigment_map {
+  dmnsn_pigment pigment;
   dmnsn_pattern *pattern;
   dmnsn_map *map;
   dmnsn_pigment_map_flags flags;
-} dmnsn_pigment_map_payload;
+} dmnsn_pigment_map;
 
-/** Free a pigment_map payload. */
+/** Free a pigment map. */
 static void
-dmnsn_delete_pigment_map_payload(void *ptr)
+dmnsn_pigment_map_free_fn(dmnsn_pigment *pigment)
 {
-  dmnsn_pigment_map_payload *payload = ptr;
-  dmnsn_delete_map(payload->map);
-  dmnsn_delete_pattern(payload->pattern);
-  dmnsn_free(payload);
+  dmnsn_pigment_map *pigment_map = (dmnsn_pigment_map *)pigment;
+  dmnsn_delete_map(pigment_map->map);
+  dmnsn_delete_pattern(pigment_map->pattern);
+  dmnsn_free(pigment_map);
 }
 
 /** pigment_map pigment callback. */
 static dmnsn_tcolor
 dmnsn_pigment_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
-  const dmnsn_pigment_map_payload *payload = pigment->ptr;
+  const dmnsn_pigment_map *pigment_map = (const dmnsn_pigment_map *)pigment;
   double n;
   dmnsn_pigment *pigment1, *pigment2;
-  dmnsn_map_evaluate(payload->map, dmnsn_pattern_value(payload->pattern, v),
+  dmnsn_map_evaluate(pigment_map->map,
+                     dmnsn_pattern_value(pigment_map->pattern, v),
                      &n, &pigment1, &pigment2);
   dmnsn_tcolor color1 = dmnsn_pigment_evaluate(pigment1, v);
   dmnsn_tcolor color2 = dmnsn_pigment_evaluate(pigment2, v);
 
-  if (payload->flags == DMNSN_PIGMENT_MAP_SRGB) {
+  if (pigment_map->flags == DMNSN_PIGMENT_MAP_SRGB) {
     color1.c = dmnsn_color_to_sRGB(color1.c);
     color2.c = dmnsn_color_to_sRGB(color2.c);
   }
   dmnsn_tcolor ret = dmnsn_tcolor_gradient(color1, color2, n);
-  if (payload->flags == DMNSN_PIGMENT_MAP_SRGB) {
+  if (pigment_map->flags == DMNSN_PIGMENT_MAP_SRGB) {
     ret.c = dmnsn_color_from_sRGB(ret.c);
   }
 
@@ -94,24 +96,23 @@ dmnsn_pigment_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 static void
 dmnsn_pigment_map_initialize_fn(dmnsn_pigment *pigment)
 {
-  dmnsn_pigment_map_payload *payload = pigment->ptr;
-  dmnsn_map_apply(payload->map, dmnsn_initialize_mapped_pigment);
+  dmnsn_pigment_map *pigment_map = (dmnsn_pigment_map *)pigment;
+  dmnsn_map_apply(pigment_map->map, dmnsn_initialize_mapped_pigment);
 }
 
 dmnsn_pigment *
 dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern, dmnsn_map *map,
                               dmnsn_pigment_map_flags flags)
 {
-  dmnsn_pigment *pigment = dmnsn_new_pigment();
+  dmnsn_pigment_map *pigment_map = DMNSN_MALLOC(dmnsn_pigment_map);
+  pigment_map->pattern = pattern;
+  pigment_map->map = map;
+  pigment_map->flags = flags;
 
-  dmnsn_pigment_map_payload *payload = DMNSN_MALLOC(dmnsn_pigment_map_payload);
-  payload->pattern = pattern;
-  payload->map     = map;
-  payload->flags   = flags;
-
-  pigment->pigment_fn    = dmnsn_pigment_map_pigment_fn;
+  dmnsn_pigment *pigment = &pigment_map->pigment;
+  dmnsn_init_pigment(pigment);
+  pigment->pigment_fn = dmnsn_pigment_map_pigment_fn;
   pigment->initialize_fn = dmnsn_pigment_map_initialize_fn;
-  pigment->free_fn       = dmnsn_delete_pigment_map_payload;
-  pigment->ptr           = payload;
+  pigment->free_fn = dmnsn_pigment_map_free_fn;
   return pigment;
 }
