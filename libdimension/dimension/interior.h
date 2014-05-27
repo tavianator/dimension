@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -25,10 +25,9 @@
 
 /** An interior. */
 typedef struct dmnsn_interior {
-  double ior;             /**< Refractive index. */
-  dmnsn_free_fn *free_fn; /**< Destructor callback. */
-  void *ptr;              /**< Generic pointer. */
-  DMNSN_REFCOUNT;         /**< Reference count. */
+  double ior; /**< Refractive index. */
+
+  DMNSN_REFCOUNT; /**< Reference count. */
 } dmnsn_interior;
 
 /**
