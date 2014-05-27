@@ -25,28 +25,32 @@
 
 #include "dimension.h"
 
+/** Gradient pattern type. */
+typedef struct dmnns_gradient {
+  dmnsn_pattern pattern;
+  dmnsn_vector orientation;
+} dmnsn_gradient;
+
 /** Gradient pattern callback. */
 static double
-dmnsn_gradient_pattern_fn(const dmnsn_pattern *gradient, dmnsn_vector v)
+dmnsn_gradient_pattern_fn(const dmnsn_pattern *pattern, dmnsn_vector v)
 {
-  dmnsn_vector *orientation = gradient->ptr;
-  double n = fmod(dmnsn_vector_dot(*orientation, v), 1.0);
-  if (n < -dmnsn_epsilon)
+  const dmnsn_gradient *gradient = (const dmnsn_gradient *)pattern;
+  double n = fmod(dmnsn_vector_dot(gradient->orientation, v), 1.0);
+  if (n < -dmnsn_epsilon) {
     n += 1.0;
+  }
   return n;
 }
 
 dmnsn_pattern *
 dmnsn_new_gradient_pattern(dmnsn_vector orientation)
 {
-  dmnsn_pattern *gradient = dmnsn_new_pattern();
+  dmnsn_gradient *gradient = DMNSN_MALLOC(dmnsn_gradient);
+  gradient->orientation = dmnsn_vector_normalized(orientation);
 
-  dmnsn_vector *payload = DMNSN_MALLOC(dmnsn_vector);
-  *payload = dmnsn_vector_normalized(orientation);
-
-  gradient->pattern_fn = dmnsn_gradient_pattern_fn;
-  gradient->free_fn    = dmnsn_free;
-  gradient->ptr        = payload;
-
-  return gradient;
+  dmnsn_pattern *pattern = &gradient->pattern;
+  dmnsn_init_pattern(pattern);
+  pattern->pattern_fn = dmnsn_gradient_pattern_fn;
+  return pattern;
 }

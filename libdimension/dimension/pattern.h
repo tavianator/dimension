@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -35,12 +35,16 @@ typedef struct dmnsn_pattern dmnsn_pattern;
  */
 typedef double dmnsn_pattern_fn(const dmnsn_pattern *pattern, dmnsn_vector v);
 
+/**
+ * Pattern destruction callback.
+ * @param[in,out] pattern  The pattern to destroy.
+ */
+typedef void dmnsn_pattern_free_fn(dmnsn_pattern *pattern);
+
 /** A pattern. */
 struct dmnsn_pattern {
   dmnsn_pattern_fn *pattern_fn; /**< The pattern callback. */
-  dmnsn_free_fn    *free_fn;    /**< The destructor callback. */
-
-  void *ptr; /**< Generic pointer. */
+  dmnsn_pattern_free_fn *free_fn; /**< The destructor callback. */
 
   DMNSN_REFCOUNT; /**< Reference count. */
 };
@@ -50,6 +54,12 @@ struct dmnsn_pattern {
  * @return A pattern with no callbacks set.
  */
 dmnsn_pattern *dmnsn_new_pattern(void);
+
+/**
+ * Initialize a dmnsn_pattern field.
+ * @param[out] pattern  The pattern to initialize.
+ */
+void dmnsn_init_pattern(dmnsn_pattern *pattern);
 
 /**
  * Delete a pattern.
