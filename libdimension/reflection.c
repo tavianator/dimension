@@ -27,11 +27,12 @@
 #include <math.h>
 #include <stdlib.h>
 
-/** Reflective finish payload. */
-typedef struct dmnsn_reflection_params {
+/** Basic reflective finish type. */
+typedef struct dmnsn_basic_reflection {
+  dmnsn_reflection reflection;
   dmnsn_color min, max;
   double falloff;
-} dmnsn_reflection_params;
+} dmnsn_basic_reflection;
 
 /** Reflective finish callback. */
 static dmnsn_color
@@ -39,11 +40,11 @@ dmnsn_basic_reflection_fn(const dmnsn_reflection *reflection,
                           dmnsn_color reflect, dmnsn_color color,
                           dmnsn_vector ray, dmnsn_vector normal)
 {
-  dmnsn_reflection_params *params = reflection->ptr;
-  double coeff = pow(fabs(dmnsn_vector_dot(ray, normal)), params->falloff);
+  const dmnsn_basic_reflection *basic = (const dmnsn_basic_reflection *)reflection;
+  double coeff = pow(fabs(dmnsn_vector_dot(ray, normal)), basic->falloff);
 
   return dmnsn_color_illuminate(
-    dmnsn_color_gradient(params->min, params->max, coeff),
+    dmnsn_color_gradient(basic->min, basic->max, coeff),
     reflect
   );
 }
@@ -51,16 +52,13 @@ dmnsn_basic_reflection_fn(const dmnsn_reflection *reflection,
 dmnsn_reflection *
 dmnsn_new_basic_reflection(dmnsn_color min, dmnsn_color max, double falloff)
 {
-  dmnsn_reflection *reflection = dmnsn_new_reflection();
+  dmnsn_basic_reflection *basic = DMNSN_MALLOC(dmnsn_basic_reflection);
+  basic->min = min;
+  basic->max = max;
+  basic->falloff = falloff;
 
-  dmnsn_reflection_params *params = DMNSN_MALLOC(dmnsn_reflection_params);
-  params->min     = min;
-  params->max     = max;
-  params->falloff = falloff;
-
+  dmnsn_reflection *reflection = &basic->reflection;
+  dmnsn_init_reflection(reflection);
   reflection->reflection_fn = dmnsn_basic_reflection_fn;
-  reflection->free_fn       = dmnsn_free;
-  reflection->ptr           = params;
-
   return reflection;
 }

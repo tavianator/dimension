@@ -27,28 +27,31 @@
 #include <math.h>
 #include <stdlib.h>
 
+/** Lambertian diffuse type. */
+typedef struct dmnsn_lambertian {
+  dmnsn_diffuse diffuse;
+  double coeff;
+} dmnsn_lambertian;
+
 /** Diffuse finish callback. */
 static dmnsn_color
 dmnsn_lambertian_diffuse_fn(const dmnsn_diffuse *diffuse,
                             dmnsn_color light, dmnsn_color color,
                             dmnsn_vector ray, dmnsn_vector normal)
 {
-  double *coeff = diffuse->ptr;
-  double diffuse_factor = fabs((*coeff)*dmnsn_vector_dot(ray, normal));
+  const dmnsn_lambertian *lambertian = (const dmnsn_lambertian *)diffuse;
+  double diffuse_factor = fabs((lambertian->coeff)*dmnsn_vector_dot(ray, normal));
   return dmnsn_color_mul(diffuse_factor, dmnsn_color_illuminate(light, color));
 }
 
 dmnsn_diffuse *
-dmnsn_new_lambertian(double diffuse)
+dmnsn_new_lambertian(double coeff)
 {
-  dmnsn_diffuse *lambertian = dmnsn_new_diffuse();
+  dmnsn_lambertian *lambertian = DMNSN_MALLOC(dmnsn_lambertian);
+  lambertian->coeff = coeff;
 
-  double *param = DMNSN_MALLOC(double);
-  *param = diffuse;
-
-  lambertian->diffuse_fn = dmnsn_lambertian_diffuse_fn;
-  lambertian->free_fn    = dmnsn_free;
-  lambertian->ptr        = param;
-
-  return lambertian;
+  dmnsn_diffuse *diffuse = &lambertian->diffuse;
+  dmnsn_init_diffuse(diffuse);
+  diffuse->diffuse_fn = dmnsn_lambertian_diffuse_fn;
+  return diffuse;
 }

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -25,22 +25,11 @@
 
 /* Ambient component */
 
-typedef struct dmnsn_ambient dmnsn_ambient;
-
-/**
- * Ambient light callback.
- * @param[in] ambient  The ambient object itself.
- * @param[in] pigment  The pigment of the object.
- * @return The ambient contribution to the object's color.
- */
-typedef dmnsn_color dmnsn_ambient_fn(const dmnsn_ambient *ambient,
-                                     dmnsn_color pigment);
-
 /** Ambient finish component. */
-struct dmnsn_ambient {
+typedef struct dmnsn_ambient {
   dmnsn_color ambient; /**< Ambient light. */
   DMNSN_REFCOUNT;      /**< Reference count. */
-};
+} dmnsn_ambient;
 
 /** Allocate a dummy ambient component. */
 dmnsn_ambient *dmnsn_new_ambient(dmnsn_color ambient);
@@ -64,16 +53,24 @@ typedef dmnsn_color dmnsn_diffuse_fn(const dmnsn_diffuse *diffuse,
                                      dmnsn_color light, dmnsn_color color,
                                      dmnsn_vector ray, dmnsn_vector normal);
 
+/**
+ * Diffuse destruction callback.
+ * @param[in,out] diffuse  The diffuse object to destroy.
+ */
+typedef void dmnsn_diffuse_free_fn(dmnsn_diffuse *diffuse);
+
 /** Diffuse finish component. */
 struct dmnsn_diffuse {
   dmnsn_diffuse_fn *diffuse_fn; /**< Diffuse callback. */
-  dmnsn_free_fn    *free_fn;    /**< Destructor callback. */
-  void             *ptr;        /**< Generic data pointer. */
-  DMNSN_REFCOUNT;               /**< Reference count. */
+  dmnsn_diffuse_free_fn *free_fn; /**< Destructor callback. */
+
+  DMNSN_REFCOUNT; /**< Reference count. */
 };
 
 /** Allocate a dummy diffuse component. */
 dmnsn_diffuse *dmnsn_new_diffuse(void);
+/** Initialize a dmnsn_diffuse field. */
+void dmnsn_init_diffuse(dmnsn_diffuse *diffuse);
 /** Delete a diffuse component. */
 void dmnsn_delete_diffuse(dmnsn_diffuse *diffuse);
 
@@ -96,16 +93,24 @@ typedef dmnsn_color dmnsn_specular_fn(const dmnsn_specular *specular,
                                       dmnsn_vector ray, dmnsn_vector normal,
                                       dmnsn_vector viewer);
 
+/**
+ * Specular destruction callback.
+ * @param[in,out] specular  The specular object to destroy.
+ */
+typedef void dmnsn_specular_free_fn(dmnsn_specular *specular);
+
 /** Specular finish component. */
 struct dmnsn_specular {
   dmnsn_specular_fn *specular_fn; /**< Specular callback. */
-  dmnsn_free_fn     *free_fn;     /**< Destructor callback. */
-  void              *ptr;         /**< Generic data pointer. */
-  DMNSN_REFCOUNT;                 /**< Reference count. */
+  dmnsn_specular_free_fn *free_fn; /**< Destructor callback. */
+
+  DMNSN_REFCOUNT; /**< Reference count. */
 };
 
 /** Allocate a dummy specular component. */
 dmnsn_specular *dmnsn_new_specular(void);
+/** Initialize a dmnsn_specular field. */
+void dmnsn_init_specular(dmnsn_specular *specular);
 /** Delete a specular component. */
 void dmnsn_delete_specular(dmnsn_specular *specular);
 
@@ -126,16 +131,24 @@ typedef dmnsn_color dmnsn_reflection_fn(const dmnsn_reflection *reflection,
                                         dmnsn_color reflect, dmnsn_color color,
                                         dmnsn_vector ray, dmnsn_vector normal);
 
+/**
+ * Reflection destruction callback.
+ * @param[in,out] reflection  The reflection object to destroy.
+ */
+typedef void dmnsn_reflection_free_fn(dmnsn_reflection *reflection);
+
 /** The reflection component. */
 struct dmnsn_reflection {
   dmnsn_reflection_fn *reflection_fn; /**< Reflection callback. */
-  dmnsn_free_fn       *free_fn;       /**< Destructor callback. */
-  void                *ptr;           /**< Generic data pointer. */
-  DMNSN_REFCOUNT;                     /**< Reference count. */
+  dmnsn_reflection_free_fn *free_fn; /**< Destructor callback. */
+
+  DMNSN_REFCOUNT; /**< Reference count. */
 };
 
 /** Allocate a dummy reflection component. */
 dmnsn_reflection *dmnsn_new_reflection(void);
+/** Initialize a dmnsn_reflection field. */
+void dmnsn_init_reflection(dmnsn_reflection *reflection);
 /** Delete a reflection component. */
 void dmnsn_delete_reflection(dmnsn_reflection *reflection);
 

@@ -42,66 +42,90 @@ dmnsn_delete_ambient(dmnsn_ambient *ambient)
   }
 }
 
+static void
+dmnsn_default_diffuse_free_fn(dmnsn_diffuse *diffuse)
+{
+  dmnsn_free(diffuse);
+}
+
 dmnsn_diffuse *
 dmnsn_new_diffuse(void)
 {
   dmnsn_diffuse *diffuse = DMNSN_MALLOC(dmnsn_diffuse);
-  diffuse->free_fn = NULL;
-  diffuse->ptr     = NULL;
-  DMNSN_REFCOUNT_INIT(diffuse);
+  dmnsn_init_diffuse(diffuse);
   return diffuse;
+}
+
+void
+dmnsn_init_diffuse(dmnsn_diffuse *diffuse)
+{
+  diffuse->free_fn = dmnsn_default_diffuse_free_fn;
+  DMNSN_REFCOUNT_INIT(diffuse);
 }
 
 void
 dmnsn_delete_diffuse(dmnsn_diffuse *diffuse)
 {
   if (DMNSN_DECREF(diffuse)) {
-    if (diffuse->free_fn) {
-      diffuse->free_fn(diffuse->ptr);
-    }
-    dmnsn_free(diffuse);
+    diffuse->free_fn(diffuse);
   }
+}
+
+static void
+dmnsn_default_specular_free_fn(dmnsn_specular *specular)
+{
+  dmnsn_free(specular);
 }
 
 dmnsn_specular *
 dmnsn_new_specular(void)
 {
   dmnsn_specular *specular = DMNSN_MALLOC(dmnsn_specular);
-  specular->free_fn = NULL;
-  specular->ptr     = NULL;
-  DMNSN_REFCOUNT_INIT(specular);
+  dmnsn_init_specular(specular);
   return specular;
+}
+
+void
+dmnsn_init_specular(dmnsn_specular *specular)
+{
+  specular->free_fn = dmnsn_default_specular_free_fn;
+  DMNSN_REFCOUNT_INIT(specular);
 }
 
 void
 dmnsn_delete_specular(dmnsn_specular *specular)
 {
   if (DMNSN_DECREF(specular)) {
-    if (specular->free_fn) {
-      specular->free_fn(specular->ptr);
-    }
-    dmnsn_free(specular);
+    specular->free_fn(specular);
   }
+}
+
+static void
+dmnsn_default_reflection_free_fn(dmnsn_reflection *reflection)
+{
+  dmnsn_free(reflection);
 }
 
 dmnsn_reflection *
 dmnsn_new_reflection(void)
 {
   dmnsn_reflection *reflection = DMNSN_MALLOC(dmnsn_reflection);
-  reflection->free_fn = NULL;
-  reflection->ptr     = NULL;
-  DMNSN_REFCOUNT_INIT(reflection);
+  dmnsn_init_reflection(reflection);
   return reflection;
+}
+
+void
+dmnsn_init_reflection(dmnsn_reflection *reflection)
+{
+  reflection->free_fn = dmnsn_default_reflection_free_fn;
+  DMNSN_REFCOUNT_INIT(reflection);
 }
 
 void
 dmnsn_delete_reflection(dmnsn_reflection *reflection)
 {
   if (DMNSN_DECREF(reflection)) {
-    if (reflection->free_fn) {
-      reflection->free_fn(reflection->ptr);
-    }
-    dmnsn_free(reflection);
+    reflection->free_fn(reflection);
   }
 }
 
