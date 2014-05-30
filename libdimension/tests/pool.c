@@ -42,7 +42,7 @@ DMNSN_TEST_TEARDOWN(pool)
 DMNSN_TEST(pool, simple)
 {
   for (int i = 0; i < 10000; ++i) {
-    int *p = DMNSN_POOL_ALLOC(pool, int);
+    int *p = DMNSN_PALLOC(pool, int);
     *p = i;
   }
 
@@ -59,10 +59,10 @@ callback(void *ptr)
 
 DMNSN_TEST(pool, callback)
 {
-  dmnsn_pool_alloc(pool, sizeof(int), NULL);
-  dmnsn_pool_alloc(pool, sizeof(int), callback);
-  dmnsn_pool_alloc(pool, sizeof(int), callback);
-  dmnsn_pool_alloc(pool, sizeof(int), NULL);
+  dmnsn_palloc(pool, sizeof(int), NULL);
+  dmnsn_palloc(pool, sizeof(int), callback);
+  dmnsn_palloc(pool, sizeof(int), callback);
+  dmnsn_palloc(pool, sizeof(int), NULL);
 
   dmnsn_delete_pool(pool);
   pool = NULL;
@@ -74,7 +74,7 @@ static int
 alloc_thread(void *ptr, unsigned int thread, unsigned int nthreads)
 {
   for (unsigned int i = thread; i < 10000; i += nthreads) {
-    int *p = DMNSN_POOL_ALLOC(pool, int);
+    int *p = DMNSN_PALLOC(pool, int);
     *p = i;
   }
   return 0;

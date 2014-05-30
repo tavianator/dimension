@@ -43,7 +43,7 @@ dmnsn_pool *dmnsn_new_pool(void);
  * @param[in] callback  An optional callback to invoke before the memory is freed.
  * @return The allocated memory area.
  */
-void *dmnsn_pool_alloc(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *callback);
+void *dmnsn_palloc(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *callback);
 
 /**
  * Allocate some memory from a pool.
@@ -51,7 +51,7 @@ void *dmnsn_pool_alloc(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *callbac
  * @param[in] type  The type of the memory block to allocate.
  * @return The allocated memory area.
  */
-#define DMNSN_POOL_ALLOC(pool, type) ((type *)dmnsn_pool_alloc((pool), sizeof(type), NULL))
+#define DMNSN_PALLOC(pool, type) ((type *)dmnsn_palloc((pool), sizeof(type), NULL))
 
 /**
  * Free a memory pool and all associated allocations.

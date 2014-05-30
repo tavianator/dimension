@@ -66,7 +66,7 @@ dmnsn_new_pool(void)
 }
 
 void *
-dmnsn_pool_alloc(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *callback)
+dmnsn_palloc(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *callback)
 {
   dmnsn_pool_block *old_block = pthread_getspecific(pool->thread_block);
 
