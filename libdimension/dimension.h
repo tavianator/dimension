@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -77,6 +77,7 @@ typedef void dmnsn_free_fn(void *ptr);
 #include <dimension/compiler.h>
 #include <dimension/error.h>
 #include <dimension/malloc.h>
+#include <dimension/pool.h>
 #include <dimension/refcount.h>
 #include <dimension/array.h>
 #include <dimension/dictionary.h>

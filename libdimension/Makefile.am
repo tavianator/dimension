@@ -54,6 +54,7 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/pigments.h                                  \
                          dimension/png.h                                       \
                          dimension/polynomial.h                                \
+                         dimension/pool.h                                      \
                          dimension/ray_trace.h                                 \
                          dimension/refcount.h                                  \
                          dimension/scene.h                                     \
@@ -101,6 +102,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           profile.h                                            \
                           point_light.c                                        \
                           polynomial.c                                         \
+                          pool.c                                               \
                           prtree.c                                             \
                           prtree.h                                             \
                           ray_trace.c                                          \

@@ -1,5 +1,5 @@
 ###########################################################################
-## Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>     ##
+## Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     ##
 ##                                                                       ##
 ## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
@@ -26,6 +26,7 @@ check_PROGRAMS    = warning.test                                               \
                     warning-as-error.test                                      \
                     error.test                                                 \
                     custom-error-fn.test                                       \
+                    pool.test                                                  \
                     refcount.test                                              \
                     dictionary.test                                            \
                     polynomial.test                                            \
@@ -73,6 +74,9 @@ error_test_LDADD   = libdimension-tests.la
 
 custom_error_fn_test_SOURCES = custom-error-fn.c
 custom_error_fn_test_LDADD   = libdimension-tests.la
+
+pool_test_SOURCES = pool.c
+pool_test_LDADD   = libdimension-unit-test.la
 
 refcount_test_SOURCES = refcount.c
 refcount_test_LDADD   = libdimension-unit-test.la
