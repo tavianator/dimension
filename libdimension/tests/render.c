@@ -106,9 +106,10 @@ dmnsn_test_scene_add_background(dmnsn_pool *pool, dmnsn_scene *scene)
 }
 
 static void
-dmnsn_test_scene_add_lights(dmnsn_scene *scene)
+dmnsn_test_scene_add_lights(dmnsn_pool *pool, dmnsn_scene *scene)
 {
   dmnsn_light *light = dmnsn_new_point_light(
+    pool,
     dmnsn_new_vector(-15.0, 20.0, 10.0),
     dmnsn_white
   );
@@ -308,7 +309,7 @@ dmnsn_new_test_scene(dmnsn_pool *pool)
   dmnsn_test_scene_add_canvas(pool, scene);
   dmnsn_test_scene_add_camera(pool, scene);
   dmnsn_test_scene_add_background(pool, scene);
-  dmnsn_test_scene_add_lights(scene);
+  dmnsn_test_scene_add_lights(pool, scene);
   dmnsn_test_scene_add_objects(scene);
   return scene;
 }

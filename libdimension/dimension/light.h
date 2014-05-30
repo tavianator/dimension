@@ -54,37 +54,23 @@ typedef dmnsn_color dmnsn_light_illumination_fn(const dmnsn_light *light,
  */
 typedef bool dmnsn_light_shadow_fn(const dmnsn_light *light, double t);
 
-/**
- * Light destruction callback.
- * @param[in,out] light  The light to free.
- */
-typedef void dmnsn_light_free_fn(dmnsn_light *light);
-
 /** A light. */
 struct dmnsn_light {
   /* Callbacks */
-  dmnsn_light_direction_fn    *direction_fn;    /**< Direction callback. */
+  dmnsn_light_direction_fn *direction_fn; /**< Direction callback. */
   dmnsn_light_illumination_fn *illumination_fn; /**< Illumination callback. */
-  dmnsn_light_shadow_fn       *shadow_fn;       /**< Shadow callback. */
-  dmnsn_light_free_fn         *free_fn;         /**< Desctructor callback. */
-
-  DMNSN_REFCOUNT; /**< Reference count. */
+  dmnsn_light_shadow_fn *shadow_fn; /**< Shadow callback. */
 };
 
 /**
  * Create a dummy light.
+ * @param[in] pool  The memory pool to allocate from.
  * @return The allocated light.
  */
-dmnsn_light *dmnsn_new_light(void);
+dmnsn_light *dmnsn_new_light(dmnsn_pool *pool);
 
 /**
  * Initialize a dmnsn_light field.
  * @param[out] light  The light to initialize.
  */
 void dmnsn_init_light(dmnsn_light *light);
-
-/**
- * Delete a light.
- * @param[in,out] light  The light to delete.
- */
-void dmnsn_delete_light(dmnsn_light *light);

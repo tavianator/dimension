@@ -57,9 +57,9 @@ dmnsn_point_light_shadow_fn(const dmnsn_light *light, double t)
 }
 
 dmnsn_light *
-dmnsn_new_point_light(dmnsn_vector x0, dmnsn_color color)
+dmnsn_new_point_light(dmnsn_pool *pool, dmnsn_vector x0, dmnsn_color color)
 {
-  dmnsn_point_light *point_light = DMNSN_MALLOC(dmnsn_point_light);
+  dmnsn_point_light *point_light = DMNSN_PALLOC(pool, dmnsn_point_light);
   point_light->origin = x0;
   point_light->color = color;
 

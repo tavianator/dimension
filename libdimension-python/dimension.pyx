@@ -1415,9 +1415,6 @@ cdef class Light:
   """A light."""
   cdef dmnsn_light *_light
 
-  def __dealloc__(self):
-    dmnsn_delete_light(self._light)
-
 cdef class PointLight(Light):
   """A point light."""
   def __init__(self, location, color):
@@ -1428,7 +1425,7 @@ cdef class PointLight(Light):
     location -- the origin of the light rays
     color    -- the color and intensity of the light
     """
-    self._light = dmnsn_new_point_light(Vector(location)._v, Color(color)._c)
+    self._light = dmnsn_new_point_light(_get_pool(), Vector(location)._v, Color(color)._c)
     Light.__init__(self)
 
 ###########
@@ -1521,7 +1518,6 @@ cdef class Scene:
     cdef dmnsn_light *l
     for light in lights:
       l = (<Light?>light)._light
-      DMNSN_INCREF(l)
       dmnsn_array_push(self._scene.lights, &l)
 
     self._scene.camera = camera._camera

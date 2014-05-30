@@ -360,10 +360,9 @@ cdef extern from "../libdimension/dimension.h":
   ctypedef struct dmnsn_light:
     dmnsn_vector x0
 
-  dmnsn_light *dmnsn_new_light()
-  void dmnsn_delete_light(dmnsn_light *light)
+  dmnsn_light *dmnsn_new_light(dmnsn_pool *pool)
 
-  dmnsn_light *dmnsn_new_point_light(dmnsn_vector x0, dmnsn_color color)
+  dmnsn_light *dmnsn_new_point_light(dmnsn_pool *pool, dmnsn_vector x0, dmnsn_color color)
 
   ###########
   # Cameras #

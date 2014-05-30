@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -25,8 +25,9 @@
 
 /**
  * A point light.
+ * @param[in] pool  The memory pool to allocate from.
  * @param[in] x0     The origin of the light.
  * @param[in] color  The color of the light.
  * @return A point light.
  */
-dmnsn_light *dmnsn_new_point_light(dmnsn_vector x0, dmnsn_color color);
+dmnsn_light *dmnsn_new_point_light(dmnsn_pool *pool, dmnsn_vector x0, dmnsn_color color);

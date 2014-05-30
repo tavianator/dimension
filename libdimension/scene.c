@@ -57,9 +57,6 @@ void
 dmnsn_delete_scene(dmnsn_scene *scene)
 {
   if (scene) {
-    DMNSN_ARRAY_FOREACH (dmnsn_light **, light, scene->lights) {
-      dmnsn_delete_light(*light);
-    }
     DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
       dmnsn_delete_object(*object);
     }
