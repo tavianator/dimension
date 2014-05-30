@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -48,14 +48,14 @@ dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
 }
 
 dmnsn_canvas *
-dmnsn_png_read_canvas(FILE *file)
+dmnsn_png_read_canvas(dmnsn_pool *pool, FILE *file)
 {
   errno = ENOSYS;
   return NULL;
 }
 
 dmnsn_future *
-dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
+dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, dmnsn_pool *pool, FILE *file)
 {
   errno = ENOSYS;
   return NULL;

@@ -643,11 +643,8 @@ cdef class Canvas:
     width  -- the width of the canvas
     height -- the height of the canvas
     """
-    self._canvas = dmnsn_new_canvas(width, height)
+    self._canvas = dmnsn_new_canvas(_get_pool(), width, height)
     self.clear(Black)
-
-  def __dealloc__(self):
-    dmnsn_delete_canvas(self._canvas)
 
   property width:
     """The width of the canvas."""
@@ -834,7 +831,7 @@ cdef class ImageMap(Pigment):
     cdef FILE *file = fopen(cpath, "rb")
     if file == NULL:
       _raise_OSError(path)
-    cdef dmnsn_canvas *canvas = dmnsn_png_read_canvas(file)
+    cdef dmnsn_canvas *canvas = dmnsn_png_read_canvas(_get_pool(), file)
     if canvas == NULL:
       _raise_OSError(path)
     if fclose(file) != 0:
@@ -1514,7 +1511,6 @@ cdef class Scene:
     self._scene = dmnsn_new_scene(_get_pool())
 
     self._scene.canvas = canvas._canvas
-    DMNSN_INCREF(self._scene.canvas)
     self.outer_width = self._scene.canvas.width
     self.outer_height = self._scene.canvas.height
     self.background = Black

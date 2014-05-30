@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -27,14 +27,8 @@ main(void)
   dmnsn_die_on_warnings(true);
 
   /* Allocate our canvas */
-  dmnsn_canvas *canvas = dmnsn_new_canvas(768, 480);
-
-  /* Optimize the canvas for GL drawing */
-  if (dmnsn_gl_optimize_canvas(canvas) != 0) {
-    dmnsn_delete_canvas(canvas);
-    fprintf(stderr, "--- Couldn't optimize canvas for GL! ---\n");
-    return EXIT_FAILURE;
-  }
+  dmnsn_pool *pool = dmnsn_new_pool();
+  dmnsn_canvas *canvas = dmnsn_new_canvas(pool, 768, 480);
 
   /* Paint the test pattern */
   dmnsn_paint_test_canvas(canvas);
@@ -43,7 +37,7 @@ main(void)
   dmnsn_display *display = dmnsn_new_display(canvas);
   if (!display) {
     fprintf(stderr, "--- WARNING: Couldn't initialize X or glX! ---\n");
-    dmnsn_delete_canvas(canvas);
+    dmnsn_delete_pool(pool);
     return EXIT_SUCCESS;
   }
 
@@ -51,23 +45,28 @@ main(void)
   printf("Drawing to OpenGL\n");
   if (dmnsn_gl_write_canvas(canvas) != 0) {
     dmnsn_delete_display(display);
-    dmnsn_delete_canvas(canvas);
+    dmnsn_delete_pool(pool);
     fprintf(stderr, "--- Drawing to OpenGL failed! ---\n");
     return EXIT_FAILURE;
   }
   dmnsn_display_flush(display);
-  dmnsn_delete_canvas(canvas);
 
   /*
    * Now test GL import/export
    */
 
+  /* Optimize the canvas for GL drawing */
+  if (dmnsn_gl_optimize_canvas(canvas) != 0) {
+    dmnsn_delete_pool(pool);
+    fprintf(stderr, "--- Couldn't optimize canvas for GL! ---\n");
+    return EXIT_FAILURE;
+  }
+
   /* Read the image back from OpenGL */
   printf("Reading from OpenGL\n");
-  canvas = dmnsn_gl_read_canvas(0, 0, 768, 480);
-  if (!canvas) {
+  if (dmnsn_gl_read_canvas(canvas, 0, 0) != 0) {
     dmnsn_delete_display(display);
-    dmnsn_delete_canvas(canvas);
+    dmnsn_delete_pool(pool);
     fprintf(stderr, "--- Reading from OpenGL failed! ---\n");
     return EXIT_FAILURE;
   }
@@ -76,13 +75,13 @@ main(void)
   printf("Drawing to OpenGL\n");
   if (dmnsn_gl_write_canvas(canvas) != 0) {
     dmnsn_delete_display(display);
-    dmnsn_delete_canvas(canvas);
+    dmnsn_delete_pool(pool);
     fprintf(stderr, "--- Drawing to OpenGL failed! ---\n");
     return EXIT_FAILURE;
   }
 
   dmnsn_display_flush(display);
   dmnsn_delete_display(display);
-  dmnsn_delete_canvas(canvas);
+  dmnsn_delete_pool(pool);
   return EXIT_SUCCESS;
 }

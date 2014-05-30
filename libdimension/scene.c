@@ -66,7 +66,6 @@ dmnsn_delete_scene(dmnsn_scene *scene)
 
     dmnsn_delete_array(scene->lights);
     dmnsn_delete_array(scene->objects);
-    dmnsn_delete_canvas(scene->canvas);
     dmnsn_delete_camera(scene->camera);
     dmnsn_delete_interior(scene->default_interior);
     dmnsn_delete_texture(scene->default_texture);

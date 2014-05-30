@@ -49,7 +49,6 @@ static void
 dmnsn_canvas_pigment_free_fn(dmnsn_pigment *pigment)
 {
   dmnsn_canvas_pigment *canvas_pigment = (dmnsn_canvas_pigment *)pigment;
-  dmnsn_delete_canvas(canvas_pigment->canvas);
   dmnsn_free(canvas_pigment);
 }
 

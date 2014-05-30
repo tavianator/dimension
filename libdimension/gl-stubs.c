@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -40,9 +40,8 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   return -1;
 }
 
-dmnsn_canvas *
-dmnsn_gl_read_canvas(size_t x0, size_t y0,
-                     size_t width, size_t height)
+int
+dmnsn_gl_read_canvas(dmnsn_canvas *canvas, size_t x0, size_t y0)
 {
   errno = ENOSYS;
   return NULL;

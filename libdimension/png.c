@@ -49,6 +49,7 @@ typedef struct {
 typedef struct {
   dmnsn_future *future;
   dmnsn_canvas **canvas;
+  dmnsn_pool *pool;
   FILE *file;
 } dmnsn_png_read_payload;
 
@@ -85,25 +86,26 @@ dmnsn_png_write_canvas_async(const dmnsn_canvas *canvas, FILE *file)
 
 /* Read a canvas from the PNG file `file'.  Return NULL on error. */
 dmnsn_canvas *
-dmnsn_png_read_canvas(FILE *file)
+dmnsn_png_read_canvas(dmnsn_pool *pool, FILE *file)
 {
   dmnsn_canvas *canvas;
-  dmnsn_future *future = dmnsn_png_read_canvas_async(&canvas, file);
+  dmnsn_future *future = dmnsn_png_read_canvas_async(&canvas, pool, file);
   dmnsn_future_join(future);
   return canvas;
 }
 
 /* Read a canvas from a png file in the background */
 dmnsn_future *
-dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, FILE *file)
+dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, dmnsn_pool *pool, FILE *file)
 {
   dmnsn_future *future = dmnsn_new_future();
   dmnsn_png_read_payload *payload = DMNSN_MALLOC(dmnsn_png_read_payload);
 
-  payload->future  = future;
-  payload->canvas  = canvas;
+  payload->future = future;
+  payload->canvas = canvas;
   *payload->canvas = NULL;
-  payload->file    = file;
+  payload->pool = pool;
+  payload->file = file;
 
   /* Create the worker thread */
   dmnsn_new_thread(future, dmnsn_png_read_canvas_thread, payload);
@@ -339,7 +341,7 @@ dmnsn_png_read_canvas_thread(void *ptr)
   png_read_image(png_ptr, row_pointers);
 
   /* Allocate the canvas */
-  *payload->canvas = dmnsn_new_canvas(width, height);
+  *payload->canvas = dmnsn_new_canvas(payload->pool, width, height);
 
   /* Now we convert the image to our canvas format.  This depends on the image
      bit depth (which has been scaled up to at least 8 or 16), and the presence

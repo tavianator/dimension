@@ -24,38 +24,36 @@
  */
 
 #include "dimension-internal.h"
-#include <stdlib.h> /* For dmnsn_free() */
 
-/* Allocate a new canvas, of width x and height y */
+/** cleanup_fn for canvases. */
+static void dmnsn_canvas_cleanup(void *ptr);
+
 dmnsn_canvas *
-dmnsn_new_canvas(size_t width, size_t height)
+dmnsn_new_canvas(dmnsn_pool *pool, size_t width, size_t height)
 {
-  dmnsn_canvas *canvas = DMNSN_MALLOC(dmnsn_canvas);
+  dmnsn_canvas *canvas = DMNSN_PALLOC_TIDY(pool, dmnsn_canvas, dmnsn_canvas_cleanup);
   canvas->width      = width;
   canvas->height     = height;
   canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
   canvas->pixels     = dmnsn_malloc(sizeof(dmnsn_tcolor)*width*height);
-  DMNSN_REFCOUNT_INIT(canvas);
   return canvas;
 }
 
-/* Delete a dmnsn_canvas allocated with dmnsn_new_canvas */
 void
-dmnsn_delete_canvas(dmnsn_canvas *canvas)
+dmnsn_canvas_cleanup(void *ptr)
 {
-  if (DMNSN_DECREF(canvas)) {
-    /* Free the optimizers */
-    DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-      if (i->free_fn) {
-        i->free_fn(i->ptr);
-      }
-    }
-    dmnsn_delete_array(canvas->optimizers);
+  dmnsn_canvas *canvas = ptr;
 
-    /* Free the pixels and canvas */
-    dmnsn_free(canvas->pixels);
-    dmnsn_free(canvas);
+  /* Free the optimizers */
+  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
+    if (i->free_fn) {
+      i->free_fn(i->ptr);
+    }
   }
+  dmnsn_delete_array(canvas->optimizers);
+
+  /* Free the pixels and canvas */
+  dmnsn_free(canvas->pixels);
 }
 
 /* Set a canvas optimizer */

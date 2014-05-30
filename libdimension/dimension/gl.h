@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -32,18 +32,16 @@ int dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas);
 
 /**
  * Write canvas to GL framebuffer.
- * @param[in] canvas  The canvas to write.
+ * @param[in] canvas  The canvas to draw.
  * @return 0 on success, non-zero on failure.
  */
 int dmnsn_gl_write_canvas(const dmnsn_canvas *canvas);
 
 /**
  * Read a canvas from a GL framebuffer.
- * @param[in] x0      The \a x screen coordinate to start copying from.
- * @param[in] y0      The \a y screen coordinate to start copying from.
- * @param[in] width   The width of the read area.
- * @param[in] height  The height of the read area.
- * @return The allocated canvas, or NULL on failure.
+ * @param[in] canvas  The canvas to write to.
+ * @param[in] x0  The \a x screen coordinate to start copying from.
+ * @param[in] y0  The \a y screen coordinate to start copying from.
+ * @return 0 on success, non-zero on failure.
  */
-dmnsn_canvas *dmnsn_gl_read_canvas(size_t x0, size_t y0,
-                                   size_t width, size_t height);
+int dmnsn_gl_read_canvas(dmnsn_canvas *canvas, size_t x0, size_t y0);

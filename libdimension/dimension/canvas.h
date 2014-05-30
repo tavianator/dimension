@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -39,8 +39,6 @@ typedef struct dmnsn_canvas {
    * at (a,b) is accessible as pixels[b*width + a].
    */
   dmnsn_tcolor *pixels;
-
-  DMNSN_REFCOUNT; /**< Reference count. */
 } dmnsn_canvas;
 
 /**
@@ -63,17 +61,12 @@ typedef struct dmnsn_canvas_optimizer {
 
 /**
  * Allocate a new canvas.
- * @param[in] width   The width of the canvas to allocate (in pixels).
+ * @param[in] pool  The memory pool to allocate from.
+ * @param[in] width  The width of the canvas to allocate (in pixels).
  * @param[in] height  The height of the canvas to allocate (in pixels).
  * @return The allocated canvas.
  */
-dmnsn_canvas *dmnsn_new_canvas(size_t width, size_t height);
-
-/**
- * Delete a canvas.
- * @param[in,out] canvas  The canvas to delete.
- */
-void dmnsn_delete_canvas(dmnsn_canvas *canvas);
+dmnsn_canvas *dmnsn_new_canvas(dmnsn_pool *pool, size_t width, size_t height);
 
 /**
  * Set a canvas optimizer

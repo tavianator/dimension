@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -77,21 +77,18 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 }
 
 /* Read a canvas from a GL framebuffer.  Returns NULL on failure. */
-dmnsn_canvas *
-dmnsn_gl_read_canvas(size_t x0, size_t y0,
-                     size_t width, size_t height)
+int
+dmnsn_gl_read_canvas(dmnsn_canvas *canvas, size_t x0, size_t y0)
 {
-  dmnsn_canvas *canvas = dmnsn_new_canvas(width, height);
+  size_t width = canvas->width;
+  size_t height = canvas->height;
 
   /* Array of 16-bit ints in RGBA order */
   GLushort *pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
-
   glReadPixels(x0, y0, width, height, GL_RGBA, GL_UNSIGNED_SHORT, pixels);
-
   if (glGetError() != GL_NO_ERROR) {
     dmnsn_free(pixels);
-    dmnsn_delete_canvas(canvas);
-    return NULL;
+    return -1;
   }
 
   for (size_t y = 0; y < height; ++y) {
@@ -111,5 +108,5 @@ dmnsn_gl_read_canvas(size_t x0, size_t y0,
   }
 
   dmnsn_free(pixels);
-  return canvas;
+  return 0;
 }

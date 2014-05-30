@@ -36,9 +36,9 @@ dmnsn_test_scene_set_defaults(dmnsn_scene *scene)
 }
 
 static void
-dmnsn_test_scene_add_canvas(dmnsn_scene *scene)
+dmnsn_test_scene_add_canvas(dmnsn_pool *pool, dmnsn_scene *scene)
 {
-  scene->canvas = dmnsn_new_canvas(768, 480);
+  scene->canvas = dmnsn_new_canvas(pool, 768, 480);
 }
 
 static void
@@ -69,7 +69,7 @@ dmnsn_test_scene_add_camera(dmnsn_scene *scene)
 }
 
 static void
-dmnsn_test_scene_add_background(dmnsn_scene *scene)
+dmnsn_test_scene_add_background(dmnsn_pool *pool, dmnsn_scene *scene)
 {
   dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(dmnsn_y);
   dmnsn_map *sky_gradient_pigment_map = dmnsn_new_pigment_map();
@@ -78,7 +78,7 @@ dmnsn_test_scene_add_background(dmnsn_scene *scene)
   dmnsn_pigment *png_pigment;
   FILE *png = fopen("png2.png", "rb");
   if (png) {
-    png_canvas = dmnsn_png_read_canvas(png);
+    png_canvas = dmnsn_png_read_canvas(pool, png);
     fclose(png);
   }
   if (png_canvas) {
@@ -305,9 +305,9 @@ dmnsn_new_test_scene(dmnsn_pool *pool)
 {
   dmnsn_scene *scene = dmnsn_new_scene(pool);
   dmnsn_test_scene_set_defaults(scene);
-  dmnsn_test_scene_add_canvas(scene);
+  dmnsn_test_scene_add_canvas(pool, scene);
   dmnsn_test_scene_add_camera(scene);
-  dmnsn_test_scene_add_background(scene);
+  dmnsn_test_scene_add_background(pool, scene);
   dmnsn_test_scene_add_lights(scene);
   dmnsn_test_scene_add_objects(scene);
   return scene;

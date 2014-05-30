@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -24,17 +24,20 @@
 int
 main(void)
 {
+  int ret = EXIT_SUCCESS;
+
   /* Treat warnings as errors for tests */
   dmnsn_die_on_warnings(true);
 
   /* Allocate our canvas */
-  dmnsn_canvas *canvas = dmnsn_new_canvas(768, 480);
+  dmnsn_pool *pool = dmnsn_new_pool();
+  dmnsn_canvas *canvas = dmnsn_new_canvas(pool, 768, 480);
 
   /* Optimize the canvas for PNG export */
   if (dmnsn_png_optimize_canvas(canvas) != 0) {
-    dmnsn_delete_canvas(canvas);
     fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
-    return EXIT_FAILURE;
+    ret = EXIT_FAILURE;
+    goto exit;
   }
 
   /* Paint the test pattern */
@@ -45,20 +48,19 @@ main(void)
   printf("Writing scene to PNG\n");
   FILE *ofile = fopen("png1.png", "wb");
   if (!ofile) {
-    dmnsn_delete_canvas(canvas);
     fprintf(stderr, "--- Couldn't open 'png1.png' for writing! ---\n");
-    return EXIT_FAILURE;
+    ret = EXIT_FAILURE;
+    goto exit;
   }
 
   if (dmnsn_png_write_canvas(canvas, ofile) != 0) {
-    fclose(ofile);
-    dmnsn_delete_canvas(canvas);
     fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
-    return EXIT_FAILURE;
+    fclose(ofile);
+    ret = EXIT_FAILURE;
+    goto exit;
   }
 
   fclose(ofile);
-  dmnsn_delete_canvas(canvas);
 
   /*
    * Now test PNG import/export
@@ -70,14 +72,16 @@ main(void)
   FILE *ifile = fopen("png1.png", "rb");
   if (!ifile) {
     fprintf(stderr, "--- Couldn't open 'png1.png' for reading! ---\n");
-    return EXIT_FAILURE;
+    ret = EXIT_FAILURE;
+    goto exit;
   }
 
-  canvas = dmnsn_png_read_canvas(ifile);
+  canvas = dmnsn_png_read_canvas(pool, ifile);
   if (!canvas) {
-    fclose(ifile);
     fprintf(stderr, "--- Reading canvas from PNG failed! ---\n");
-    return EXIT_FAILURE;
+    fclose(ifile);
+    ret = EXIT_FAILURE;
+    goto exit;
   }
 
   fclose(ifile);
@@ -88,19 +92,20 @@ main(void)
   ofile = fopen("png2.png", "wb");
   if (!ofile) {
     fprintf(stderr, "--- Couldn't open 'png2.png' for writing! ---\n");
-    dmnsn_delete_canvas(canvas);
-    return EXIT_FAILURE;
+    ret = EXIT_FAILURE;
+    goto exit;
   }
 
   if (dmnsn_png_write_canvas(canvas, ofile) != 0) {
-    fclose(ofile);
-    dmnsn_delete_canvas(canvas);
     fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
-    return EXIT_FAILURE;
+    fclose(ofile);
+    ret = EXIT_FAILURE;
+    goto exit;
   }
 
   fclose(ofile);
-  dmnsn_delete_canvas(canvas);
 
-  return EXIT_SUCCESS;
+ exit:
+  dmnsn_delete_pool(pool);
+  return ret;
 }
