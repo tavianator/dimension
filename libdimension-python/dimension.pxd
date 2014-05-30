@@ -317,8 +317,7 @@ cdef extern from "../libdimension/dimension.h":
   ctypedef struct dmnsn_interior:
     double ior
 
-  dmnsn_interior *dmnsn_new_interior()
-  void dmnsn_delete_interior(dmnsn_interior *interior)
+  dmnsn_interior *dmnsn_new_interior(dmnsn_pool *pool)
 
   ###########
   # Objects #

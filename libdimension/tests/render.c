@@ -117,7 +117,7 @@ dmnsn_test_scene_add_lights(dmnsn_pool *pool, dmnsn_scene *scene)
 }
 
 static void
-dmnsn_test_scene_add_hollow_cube(dmnsn_scene *scene)
+dmnsn_test_scene_add_hollow_cube(dmnsn_pool *pool, dmnsn_scene *scene)
 {
   dmnsn_object *cube = dmnsn_new_cube();
   cube->trans = dmnsn_rotation_matrix(
@@ -133,7 +133,7 @@ dmnsn_test_scene_add_hollow_cube(dmnsn_scene *scene)
   cube->texture->finish.reflection =
     dmnsn_new_basic_reflection(dmnsn_black, reflect, 1.0);
 
-  cube->interior = dmnsn_new_interior();
+  cube->interior = dmnsn_new_interior(pool);
   cube->interior->ior = 1.1;
 
   dmnsn_object *sphere = dmnsn_new_sphere();
@@ -290,9 +290,9 @@ dmnsn_test_scene_add_ground(dmnsn_scene *scene)
 }
 
 static void
-dmnsn_test_scene_add_objects(dmnsn_scene *scene)
+dmnsn_test_scene_add_objects(dmnsn_pool *pool, dmnsn_scene *scene)
 {
-  dmnsn_test_scene_add_hollow_cube(scene);
+  dmnsn_test_scene_add_hollow_cube(pool, scene);
   dmnsn_test_scene_add_spike(scene);
   dmnsn_test_scene_add_triangle_strip(scene);
   dmnsn_test_scene_add_ground(scene);
@@ -310,7 +310,7 @@ dmnsn_new_test_scene(dmnsn_pool *pool)
   dmnsn_test_scene_add_camera(pool, scene);
   dmnsn_test_scene_add_background(pool, scene);
   dmnsn_test_scene_add_lights(pool, scene);
-  dmnsn_test_scene_add_objects(scene);
+  dmnsn_test_scene_add_objects(pool, scene);
   return scene;
 }
 

@@ -26,21 +26,14 @@
 /** An interior. */
 typedef struct dmnsn_interior {
   double ior; /**< Refractive index. */
-
-  DMNSN_REFCOUNT; /**< Reference count. */
 } dmnsn_interior;
 
 /**
  * Create an interior object.
+ * @param[in] pool  The memory pool to allocate from.
  * @return The new interior.
  */
-dmnsn_interior *dmnsn_new_interior(void);
-
-/**
- * Delete an interior.
- * @param[in,out] interior  The interior to delete.
- */
-void dmnsn_delete_interior(dmnsn_interior *interior);
+dmnsn_interior *dmnsn_new_interior(dmnsn_pool *pool);
 
 /**
  * Fill missing interior properties from a default interior.

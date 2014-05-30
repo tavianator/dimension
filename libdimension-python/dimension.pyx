@@ -1045,11 +1045,8 @@ cdef class Interior:
     Keyword arguments:
     ior -- index of reflection
     """
-    self._interior = dmnsn_new_interior()
+    self._interior = dmnsn_new_interior(_get_pool())
     self._interior.ior = ior
-
-  def __dealloc__(self):
-    dmnsn_delete_interior(self._interior)
 
   property ior:
     """Index of reflection."""
@@ -1062,7 +1059,6 @@ cdef Interior _Interior(dmnsn_interior *interior):
   """Wrap an Interior object around a dmnsn_interior *."""
   cdef Interior self = Interior.__new__(Interior)
   self._interior = interior
-  DMNSN_INCREF(self._interior)
   return self
 
 ###########
@@ -1134,7 +1130,6 @@ cdef class Object(_Transformable):
       return _Interior(self._object.interior)
     def __set__(self, Interior interior not None):
       self._object.interior = interior._interior
-      DMNSN_INCREF(self._object.interior)
 
   def transform(self, Matrix trans not None):
     """Transform an object."""
@@ -1561,9 +1556,7 @@ cdef class Scene:
     def __get__(self):
       return _Interior(self._scene.default_interior)
     def __set__(self, Interior interior not None):
-      dmnsn_delete_interior(self._scene.default_interior)
       self._scene.default_interior = interior._interior
-      DMNSN_INCREF(self._scene.default_interior)
 
   property background:
     """The background pigment of the scene (default: Black)."""

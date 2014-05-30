@@ -28,21 +28,11 @@
 
 /* Allocate an interior */
 dmnsn_interior *
-dmnsn_new_interior(void)
+dmnsn_new_interior(dmnsn_pool *pool)
 {
-  dmnsn_interior *interior = DMNSN_MALLOC(dmnsn_interior);
+  dmnsn_interior *interior = DMNSN_PALLOC(pool, dmnsn_interior);
   interior->ior = 1.0;
-  DMNSN_REFCOUNT_INIT(interior);
   return interior;
-}
-
-/* Free a interior */
-void
-dmnsn_delete_interior(dmnsn_interior *interior)
-{
-  if (DMNSN_DECREF(interior)) {
-    dmnsn_free(interior);
-  }
 }
 
 /* Cascade a interior */
@@ -52,6 +42,5 @@ dmnsn_interior_cascade(dmnsn_interior *default_interior,
 {
   if (!*interiorp) {
     *interiorp = default_interior;
-    DMNSN_INCREF(*interiorp);
   }
 }

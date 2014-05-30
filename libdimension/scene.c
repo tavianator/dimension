@@ -34,7 +34,7 @@ dmnsn_new_scene(dmnsn_pool *pool)
 
   scene->background       = NULL;
   scene->default_texture  = dmnsn_new_texture();
-  scene->default_interior = dmnsn_new_interior();
+  scene->default_interior = dmnsn_new_interior(pool);
   scene->canvas           = NULL;
   scene->region_x         = 0;
   scene->region_y         = 0;
@@ -63,7 +63,6 @@ dmnsn_delete_scene(dmnsn_scene *scene)
 
     dmnsn_delete_array(scene->lights);
     dmnsn_delete_array(scene->objects);
-    dmnsn_delete_interior(scene->default_interior);
     dmnsn_delete_texture(scene->default_texture);
     dmnsn_delete_pigment(scene->background);
   }
