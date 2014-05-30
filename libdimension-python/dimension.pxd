@@ -204,7 +204,6 @@ cdef extern from "../libdimension/dimension.h":
     size_t height
 
   dmnsn_canvas *dmnsn_new_canvas(dmnsn_pool *pool, size_t width, size_t height)
-  void dmnsn_delete_canvas(dmnsn_canvas *canvas)
 
   dmnsn_tcolor dmnsn_canvas_get_pixel(dmnsn_canvas *canvas, size_t x, size_t y)
   void dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
@@ -373,10 +372,9 @@ cdef extern from "../libdimension/dimension.h":
   ctypedef struct dmnsn_camera:
     dmnsn_matrix trans
 
-  dmnsn_camera *dmnsn_new_camera()
-  void dmnsn_delete_camera(dmnsn_camera *camera)
+  dmnsn_camera *dmnsn_new_camera(dmnsn_pool *pool)
 
-  dmnsn_camera *dmnsn_new_perspective_camera()
+  dmnsn_camera *dmnsn_new_perspective_camera(dmnsn_pool *pool)
 
   ##########
   # Scenes #

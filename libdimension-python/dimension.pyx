@@ -1446,9 +1446,6 @@ cdef class Camera(_Transformable):
     if self._camera == NULL:
       raise TypeError("attempt to initialize base Camera")
 
-  def __dealloc__(self):
-    dmnsn_delete_camera(self._camera)
-
   def transform(self, Matrix trans not None):
     """Transform a camera."""
     self._camera.trans = dmnsn_matrix_mul(trans._m, self._camera.trans)
@@ -1467,7 +1464,7 @@ cdef class PerspectiveCamera(Camera):
     sky      -- the direction of the top of the camera (default: Y)
     angle    -- the field of view angle (from bottom to top) (default: 45)
     """
-    self._camera = dmnsn_new_perspective_camera()
+    self._camera = dmnsn_new_perspective_camera(_get_pool())
     Camera.__init__(self)
 
     # Apply the field of view angle
@@ -1528,7 +1525,6 @@ cdef class Scene:
       dmnsn_array_push(self._scene.lights, &l)
 
     self._scene.camera = camera._camera
-    DMNSN_INCREF(self._scene.camera)
 
   # Subregion render support
   property region_x:

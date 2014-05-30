@@ -36,40 +36,26 @@ typedef struct dmnsn_camera dmnsn_camera;
 typedef dmnsn_line dmnsn_camera_ray_fn(const dmnsn_camera *camera,
                                        double x, double y);
 
-/**
- * Camera destruction callback.
- * @param[in,out] camera  The camera to delete.
- */
-typedef void dmnsn_camera_free_fn(dmnsn_camera *camera);
-
 /** A camera. */
 struct dmnsn_camera {
   /* Callback functions */
   dmnsn_camera_ray_fn *ray_fn; /**< Camera ray callback. */
-  dmnsn_camera_free_fn *free_fn; /**< Destructor callback. */
 
   dmnsn_matrix trans; /**< Transformation matrix. */
-
-  DMNSN_REFCOUNT; /**< Reference count. */
 };
 
 /**
  * Create a dummy camera.
+ * @param[in] pool  The memory pool to allocate from.
  * @return The allocated camera.
  */
-dmnsn_camera *dmnsn_new_camera(void);
+dmnsn_camera *dmnsn_new_camera(dmnsn_pool *pool);
 
 /**
  * Initialize a dmnsn_camera field.
  * @param[out] camera  The camera to initialize.
  */
 void dmnsn_init_camera(dmnsn_camera *camera);
-
-/**
- * Delete a camera.
- * @param[in,out] camera  The camera to delete.
- */
-void dmnsn_delete_camera(dmnsn_camera *camera);
 
 /**
  * Invoke the camera ray callback, then correctly transform the ray.

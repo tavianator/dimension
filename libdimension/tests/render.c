@@ -42,7 +42,7 @@ dmnsn_test_scene_add_canvas(dmnsn_pool *pool, dmnsn_scene *scene)
 }
 
 static void
-dmnsn_test_scene_add_camera(dmnsn_scene *scene)
+dmnsn_test_scene_add_camera(dmnsn_pool *pool, dmnsn_scene *scene)
 {
   /* Set up the transformation matrix for the perspective camera */
   dmnsn_matrix trans = dmnsn_scale_matrix(
@@ -64,7 +64,7 @@ dmnsn_test_scene_add_camera(dmnsn_scene *scene)
   );
 
   /* Create a perspective camera */
-  scene->camera = dmnsn_new_perspective_camera();
+  scene->camera = dmnsn_new_perspective_camera(pool);
   scene->camera->trans = trans;
 }
 
@@ -306,7 +306,7 @@ dmnsn_new_test_scene(dmnsn_pool *pool)
   dmnsn_scene *scene = dmnsn_new_scene(pool);
   dmnsn_test_scene_set_defaults(scene);
   dmnsn_test_scene_add_canvas(pool, scene);
-  dmnsn_test_scene_add_camera(scene);
+  dmnsn_test_scene_add_camera(pool, scene);
   dmnsn_test_scene_add_background(pool, scene);
   dmnsn_test_scene_add_lights(scene);
   dmnsn_test_scene_add_objects(scene);
