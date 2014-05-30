@@ -40,10 +40,18 @@ dmnsn_pool *dmnsn_new_pool(void);
  * Allocate some memory from a pool.
  * @param[in] pool  The memory pool to allocate from.
  * @param[in] size  The size of the memory block to allocate.
- * @param[in] callback  An optional callback to invoke before the memory is freed.
  * @return The allocated memory area.
  */
-void *dmnsn_palloc(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *callback);
+void *dmnsn_palloc(dmnsn_pool *pool, size_t size);
+
+/**
+ * Allocate some memory from a pool.
+ * @param[in] pool  The memory pool to allocate from.
+ * @param[in] size  The size of the memory block to allocate.
+ * @param[in] cleanup_fn  A callback to invoke before the memory is freed.
+ * @return The allocated memory area.
+ */
+void *dmnsn_palloc_tidy(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *cleanup_fn);
 
 /**
  * Allocate some memory from a pool.
@@ -51,7 +59,16 @@ void *dmnsn_palloc(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *callback);
  * @param[in] type  The type of the memory block to allocate.
  * @return The allocated memory area.
  */
-#define DMNSN_PALLOC(pool, type) ((type *)dmnsn_palloc((pool), sizeof(type), NULL))
+#define DMNSN_PALLOC(pool, type) ((type *)dmnsn_palloc((pool), sizeof(type)))
+
+/**
+ * Allocate some memory from a pool.
+ * @param[in] pool  The memory pool to allocate from.
+ * @param[in] type  The type of the memory block to allocate.
+ * @param[in] cleanup_fn  A callback to invoke before the memory is freed.
+ * @return The allocated memory area.
+ */
+#define DMNSN_PALLOC_TIDY(pool, type, cleanup_fn) ((type *)dmnsn_palloc_tidy((pool), sizeof(type), (cleanup_fn)))
 
 /**
  * Free a memory pool and all associated allocations.

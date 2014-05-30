@@ -28,7 +28,7 @@
 /** A single allocation and associated destructor. */
 typedef struct dmnsn_allocation {
   void *ptr;
-  dmnsn_callback_fn *callback;
+  dmnsn_callback_fn *cleanup_fn;
 } dmnsn_allocation;
 
 /** Number of pointers per block, we want a block to fit in a single page. */
@@ -66,7 +66,13 @@ dmnsn_new_pool(void)
 }
 
 void *
-dmnsn_palloc(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *callback)
+dmnsn_palloc(dmnsn_pool *pool, size_t size)
+{
+  return dmnsn_palloc_tidy(pool, size, NULL);
+}
+
+void *
+dmnsn_palloc_tidy(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *cleanup_fn)
 {
   dmnsn_pool_block *old_block = pthread_getspecific(pool->thread_block);
 
@@ -78,7 +84,7 @@ dmnsn_palloc(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *callback)
 
   dmnsn_allocation *alloc = new_block->allocs + new_block->i;
   void *result = alloc->ptr = dmnsn_malloc(size);
-  alloc->callback = callback;
+  alloc->cleanup_fn = cleanup_fn;
   ++new_block->i;
 
   if (dmnsn_unlikely(new_block != old_block)) {
@@ -105,8 +111,8 @@ dmnsn_delete_pool(dmnsn_pool *pool)
     /* Free all the allocations in reverse order */
     for (size_t i = block->i; i-- > 0;) {
       dmnsn_allocation *alloc = block->allocs + i;
-      if (alloc->callback) {
-        alloc->callback(alloc->ptr);
+      if (alloc->cleanup_fn) {
+        alloc->cleanup_fn(alloc->ptr);
       }
       dmnsn_free(alloc->ptr);
     }
