@@ -301,9 +301,9 @@ dmnsn_test_scene_add_objects(dmnsn_scene *scene)
  * Test scene
  */
 static dmnsn_scene *
-dmnsn_new_test_scene(void)
+dmnsn_new_test_scene(dmnsn_pool *pool)
 {
-  dmnsn_scene *scene = dmnsn_new_scene();
+  dmnsn_scene *scene = dmnsn_new_scene(pool);
   dmnsn_test_scene_set_defaults(scene);
   dmnsn_test_scene_add_canvas(scene);
   dmnsn_test_scene_add_camera(scene);
@@ -320,7 +320,8 @@ main(void)
   dmnsn_die_on_warnings(true);
 
   /* Create the test scene */
-  dmnsn_scene *scene = dmnsn_new_test_scene();
+  dmnsn_pool *pool = dmnsn_new_pool();
+  dmnsn_scene *scene = dmnsn_new_test_scene(pool);
 
   /* Optimize the canvas for PNG export */
   bool have_png = true;
@@ -422,5 +423,6 @@ main(void)
 
   dmnsn_delete_display(display);
   dmnsn_delete_scene(scene);
+  dmnsn_delete_pool(pool);
   return EXIT_SUCCESS;
 }

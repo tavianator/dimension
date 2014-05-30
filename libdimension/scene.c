@@ -28,9 +28,9 @@
 
 /* Allocate an empty scene */
 dmnsn_scene *
-dmnsn_new_scene(void)
+dmnsn_new_scene(dmnsn_pool *pool)
 {
-  dmnsn_scene *scene = DMNSN_MALLOC(dmnsn_scene);
+  dmnsn_scene *scene = DMNSN_PALLOC(pool, dmnsn_scene);
 
   scene->background       = NULL;
   scene->default_texture  = dmnsn_new_texture();
@@ -71,7 +71,6 @@ dmnsn_delete_scene(dmnsn_scene *scene)
     dmnsn_delete_interior(scene->default_interior);
     dmnsn_delete_texture(scene->default_texture);
     dmnsn_delete_pigment(scene->background);
-    dmnsn_free(scene);
   }
 }
 

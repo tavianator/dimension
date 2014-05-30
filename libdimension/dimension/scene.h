@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -83,9 +83,10 @@ typedef struct dmnsn_scene {
 
 /**
  * Create a scene.
+ * @param[in] pool  The memory pool to allocate from.
  * @return A new empty scene.
  */
-dmnsn_scene *dmnsn_new_scene(void);
+dmnsn_scene *dmnsn_new_scene(dmnsn_pool *pool);
 
 /**
  * Delete a scene.

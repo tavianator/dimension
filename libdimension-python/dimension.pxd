@@ -414,7 +414,7 @@ cdef extern from "../libdimension/dimension.h":
     dmnsn_timer bounding_timer
     dmnsn_timer render_timer
 
-  dmnsn_scene *dmnsn_new_scene()
+  dmnsn_scene *dmnsn_new_scene(dmnsn_pool *pool)
   void dmnsn_delete_scene(dmnsn_scene *scene)
 
   void dmnsn_ray_trace(dmnsn_scene *scene)

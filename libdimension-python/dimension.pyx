@@ -1511,7 +1511,7 @@ cdef class Scene:
     lights  -- the list of lights in the scene
     camera  -- the camera for the scene
     """
-    self._scene = dmnsn_new_scene()
+    self._scene = dmnsn_new_scene(_get_pool())
 
     self._scene.canvas = canvas._canvas
     DMNSN_INCREF(self._scene.canvas)
