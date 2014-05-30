@@ -46,6 +46,24 @@ def terminal_width():
   """Return the width of the terminal, if present."""
   return dmnsn_terminal_width()
 
+#########
+# Pools #
+#########
+
+cdef class _Pool:
+  cdef dmnsn_pool *_pool
+
+  def __cinit__(self):
+    self._pool = dmnsn_new_pool()
+
+  def __dealloc__(self):
+    dmnsn_delete_pool(self._pool)
+
+cdef _Pool _global_pool = _Pool()
+
+cdef dmnsn_pool *_get_pool():
+  return _global_pool._pool
+
 ###########
 # Futures #
 ###########

@@ -1,5 +1,5 @@
 ###########################################################################
-## Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          ##
+## Copyright (C) 2011-2014 Tavian Barnes <tavianator@tavianator.com>     ##
 ##                                                                       ##
 ## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
@@ -25,9 +25,9 @@ AM_LDFLAGS = $(Python_LDFLAGS)
 
 dimension.c: dimension.pyx dimension.pxd
 if DEBUG
-	cython --line-directives dimension.pyx
+	cython --line-directives --cleanup 2 dimension.pyx
 else
-	cython dimension.pyx
+	cython --cleanup 2 dimension.pyx
 endif
 	sed -i 's/initdimension/initwrapper/g' dimension.c
 	sed -i 's/PyInit_dimension/PyInit_wrapper/g' dimension.c

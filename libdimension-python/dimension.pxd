@@ -39,6 +39,16 @@ cdef extern from "../libdimension/dimension.h":
 
   double dmnsn_epsilon
 
+  #########
+  # Pools #
+  #########
+
+  ctypedef struct dmnsn_pool
+
+  dmnsn_pool *dmnsn_new_pool()
+  void *dmnsn_palloc(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *callback)
+  void dmnsn_delete_pool(dmnsn_pool *pool)
+
   ##########
   # Arrays #
   ##########
