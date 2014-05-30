@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -54,12 +54,10 @@ dmnsn_checker_pattern_fn(const dmnsn_pattern *checker, dmnsn_vector v)
 /** The singleton instance. */
 static dmnsn_pattern dmnsn_checker_instance = {
   .pattern_fn = dmnsn_checker_pattern_fn,
-  DMNSN_REFCOUNT_INITIALIZER,
 };
 
 dmnsn_pattern *
-dmnsn_new_checker_pattern(void)
+dmnsn_new_checker_pattern(dmnsn_pool *pool)
 {
-  DMNSN_INCREF(&dmnsn_checker_instance);
   return &dmnsn_checker_instance;
 }

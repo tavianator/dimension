@@ -25,39 +25,19 @@
 
 #include "dimension-internal.h"
 
-static void
-dmnsn_default_pattern_free_fn(dmnsn_pattern *pattern)
-{
-  dmnsn_free(pattern);
-}
-
-/* Allocate a dummy pattern */
 dmnsn_pattern *
-dmnsn_new_pattern(void)
+dmnsn_new_pattern(dmnsn_pool *pool)
 {
-  dmnsn_pattern *pattern = DMNSN_MALLOC(dmnsn_pattern);
+  dmnsn_pattern *pattern = DMNSN_PALLOC(pool, dmnsn_pattern);
   dmnsn_init_pattern(pattern);
   return pattern;
 }
 
-/* Initialize a pattern */
 void
 dmnsn_init_pattern(dmnsn_pattern *pattern)
 {
-  pattern->free_fn = dmnsn_default_pattern_free_fn;
-  DMNSN_REFCOUNT_INIT(pattern);
 }
 
-/* Delete a pattern */
-void
-dmnsn_delete_pattern(dmnsn_pattern *pattern)
-{
-  if (DMNSN_DECREF(pattern)) {
-    pattern->free_fn(pattern);
-  }
-}
-
-/* Invoke the pattern callback with the right transformation */
 double
 dmnsn_pattern_value(const dmnsn_pattern *pattern, dmnsn_vector v)
 {

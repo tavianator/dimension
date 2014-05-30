@@ -227,11 +227,11 @@ cdef extern from "../libdimension/dimension.h":
   ctypedef struct dmnsn_pattern:
     pass
 
-  void dmnsn_delete_pattern(dmnsn_pattern *pattern)
+  void dmnsn_new_pattern(dmnsn_pool *pool)
 
-  dmnsn_pattern *dmnsn_new_checker_pattern()
-  dmnsn_pattern *dmnsn_new_gradient_pattern(dmnsn_vector orientation)
-  dmnsn_pattern *dmnsn_new_leopard_pattern()
+  dmnsn_pattern *dmnsn_new_checker_pattern(dmnsn_pool *pool)
+  dmnsn_pattern *dmnsn_new_gradient_pattern(dmnsn_pool *pool, dmnsn_vector orientation)
+  dmnsn_pattern *dmnsn_new_leopard_pattern(dmnsn_pool *pool)
 
   ########
   # Maps #

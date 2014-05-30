@@ -63,7 +63,6 @@ dmnsn_pigment_map_free_fn(dmnsn_pigment *pigment)
 {
   dmnsn_pigment_map *pigment_map = (dmnsn_pigment_map *)pigment;
   dmnsn_delete_map(pigment_map->map);
-  dmnsn_delete_pattern(pigment_map->pattern);
   dmnsn_free(pigment_map);
 }
 

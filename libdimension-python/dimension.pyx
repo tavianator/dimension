@@ -744,13 +744,10 @@ cdef class Pattern:
   def __cinit__(self):
     self._pattern = NULL
 
-  def __dealloc__(self):
-    dmnsn_delete_pattern(self._pattern)
-
 cdef class Checker(Pattern):
   """A checkerboard pattern."""
   def __init__(self):
-    self._pattern = dmnsn_new_checker_pattern()
+    self._pattern = dmnsn_new_checker_pattern(_get_pool())
     Pattern.__init__(self)
 
 cdef class Gradient(Pattern):
@@ -762,13 +759,13 @@ cdef class Gradient(Pattern):
     Keyword arguments:
     orientation -- The direction of the linear gradient.
     """
-    self._pattern = dmnsn_new_gradient_pattern(Vector(orientation)._v)
+    self._pattern = dmnsn_new_gradient_pattern(_get_pool(), Vector(orientation)._v)
     Pattern.__init__(self)
 
 cdef class Leopard(Pattern):
   """A leopard pattern."""
   def __init__(self):
-    self._pattern = dmnsn_new_leopard_pattern()
+    self._pattern = dmnsn_new_leopard_pattern(_get_pool())
     Pattern.__init__(self)
 
 ############
@@ -875,7 +872,6 @@ cdef class PigmentMap(Pigment):
     else:
       flags = DMNSN_PIGMENT_MAP_REGULAR
 
-    DMNSN_INCREF(pattern._pattern)
     self._pigment = dmnsn_new_pigment_map_pigment(pattern._pattern, pigment_map,
                                                   flags)
     Pigment.__init__(self, *args, **kwargs)

@@ -44,9 +44,9 @@ dmnsn_gradient_pattern_fn(const dmnsn_pattern *pattern, dmnsn_vector v)
 }
 
 dmnsn_pattern *
-dmnsn_new_gradient_pattern(dmnsn_vector orientation)
+dmnsn_new_gradient_pattern(dmnsn_pool *pool, dmnsn_vector orientation)
 {
-  dmnsn_gradient *gradient = DMNSN_MALLOC(dmnsn_gradient);
+  dmnsn_gradient *gradient = DMNSN_PALLOC(pool, dmnsn_gradient);
   gradient->orientation = dmnsn_vector_normalized(orientation);
 
   dmnsn_pattern *pattern = &gradient->pattern;

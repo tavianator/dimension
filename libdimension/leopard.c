@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2011 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2011-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -37,12 +37,10 @@ dmnsn_leopard_pattern_fn(const dmnsn_pattern *leopard, dmnsn_vector v)
 /** The singleton instance. */
 static dmnsn_pattern dmnsn_leopard_instance = {
   .pattern_fn = dmnsn_leopard_pattern_fn,
-  DMNSN_REFCOUNT_INITIALIZER,
 };
 
 dmnsn_pattern *
-dmnsn_new_leopard_pattern(void)
+dmnsn_new_leopard_pattern(dmnsn_pool *pool)
 {
-  DMNSN_INCREF(&dmnsn_leopard_instance);
   return &dmnsn_leopard_instance;
 }

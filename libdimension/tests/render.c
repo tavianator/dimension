@@ -71,7 +71,7 @@ dmnsn_test_scene_add_camera(dmnsn_pool *pool, dmnsn_scene *scene)
 static void
 dmnsn_test_scene_add_background(dmnsn_pool *pool, dmnsn_scene *scene)
 {
-  dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(dmnsn_y);
+  dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(pool, dmnsn_y);
   dmnsn_map *sky_gradient_pigment_map = dmnsn_new_pigment_map();
 
   dmnsn_canvas *png_canvas = NULL;
@@ -155,7 +155,7 @@ dmnsn_test_scene_add_hollow_cube(dmnsn_pool *pool, dmnsn_scene *scene)
   } while (0)
 
 static void
-dmnsn_test_scene_add_spike(dmnsn_scene *scene)
+dmnsn_test_scene_add_spike(dmnsn_pool *pool, dmnsn_scene *scene)
 {
   dmnsn_array *arrow_array = dmnsn_new_array(sizeof(dmnsn_object *));
 
@@ -172,7 +172,7 @@ dmnsn_test_scene_add_spike(dmnsn_scene *scene)
 
   dmnsn_object *arrow = dmnsn_new_csg_union(arrow_array);
   dmnsn_delete_array(arrow_array);
-  dmnsn_pattern *gradient = dmnsn_new_gradient_pattern(dmnsn_y);
+  dmnsn_pattern *gradient = dmnsn_new_gradient_pattern(pool, dmnsn_y);
   dmnsn_map *gradient_pigment_map = dmnsn_new_pigment_map();
   dmnsn_pigment_map_add_color(gradient_pigment_map, 0.0,     dmnsn_red);
   dmnsn_pigment_map_add_color(gradient_pigment_map, 1.0/6.0, dmnsn_orange);
@@ -261,17 +261,16 @@ dmnsn_test_scene_add_triangle_strip(dmnsn_scene *scene)
 }
 
 static void
-dmnsn_test_scene_add_ground(dmnsn_scene *scene)
+dmnsn_test_scene_add_ground(dmnsn_pool *pool, dmnsn_scene *scene)
 {
   dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
-  dmnsn_pattern *checker1 = dmnsn_new_checker_pattern();
-  dmnsn_pattern *checker2 = dmnsn_new_checker_pattern();
+  dmnsn_pattern *checker = dmnsn_new_checker_pattern(pool);
   dmnsn_map *small_map = dmnsn_new_pigment_map();
   dmnsn_pigment_map_add_color(small_map, 0.0, dmnsn_black);
   dmnsn_pigment_map_add_color(small_map, 1.0, dmnsn_white);
   dmnsn_pigment *small_pigment =
-    dmnsn_new_pigment_map_pigment(checker1, small_map,
+    dmnsn_new_pigment_map_pigment(checker, small_map,
                                   DMNSN_PIGMENT_MAP_REGULAR);
   small_pigment->trans =
     dmnsn_scale_matrix(dmnsn_new_vector(1.0/3.0, 1.0/3.0, 1.0/3.0));
@@ -280,7 +279,7 @@ dmnsn_test_scene_add_ground(dmnsn_scene *scene)
   dmnsn_map_add_entry(big_map, 1.0, &small_pigment);
   plane->texture = dmnsn_new_texture();
   plane->texture->pigment =
-    dmnsn_new_pigment_map_pigment(checker2, big_map, DMNSN_PIGMENT_MAP_REGULAR);
+    dmnsn_new_pigment_map_pigment(checker, big_map, DMNSN_PIGMENT_MAP_REGULAR);
   plane->texture->pigment->quick_color = DMNSN_TCOLOR(
     dmnsn_color_from_sRGB(
       dmnsn_new_color(1.0, 0.5, 0.75)
@@ -293,9 +292,9 @@ static void
 dmnsn_test_scene_add_objects(dmnsn_pool *pool, dmnsn_scene *scene)
 {
   dmnsn_test_scene_add_hollow_cube(pool, scene);
-  dmnsn_test_scene_add_spike(scene);
+  dmnsn_test_scene_add_spike(pool, scene);
   dmnsn_test_scene_add_triangle_strip(scene);
-  dmnsn_test_scene_add_ground(scene);
+  dmnsn_test_scene_add_ground(pool, scene);
 }
 
 /*
