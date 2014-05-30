@@ -72,7 +72,7 @@ static void
 dmnsn_test_scene_add_background(dmnsn_pool *pool, dmnsn_scene *scene)
 {
   dmnsn_pattern *sky_gradient = dmnsn_new_gradient_pattern(pool, dmnsn_y);
-  dmnsn_map *sky_gradient_pigment_map = dmnsn_new_pigment_map();
+  dmnsn_map *sky_gradient_pigment_map = dmnsn_new_pigment_map(pool);
 
   dmnsn_canvas *png_canvas = NULL;
   dmnsn_pigment *png_pigment;
@@ -173,7 +173,7 @@ dmnsn_test_scene_add_spike(dmnsn_pool *pool, dmnsn_scene *scene)
   dmnsn_object *arrow = dmnsn_new_csg_union(arrow_array);
   dmnsn_delete_array(arrow_array);
   dmnsn_pattern *gradient = dmnsn_new_gradient_pattern(pool, dmnsn_y);
-  dmnsn_map *gradient_pigment_map = dmnsn_new_pigment_map();
+  dmnsn_map *gradient_pigment_map = dmnsn_new_pigment_map(pool);
   dmnsn_pigment_map_add_color(gradient_pigment_map, 0.0,     dmnsn_red);
   dmnsn_pigment_map_add_color(gradient_pigment_map, 1.0/6.0, dmnsn_orange);
   dmnsn_pigment_map_add_color(gradient_pigment_map, 2.0/6.0, dmnsn_yellow);
@@ -266,7 +266,7 @@ dmnsn_test_scene_add_ground(dmnsn_pool *pool, dmnsn_scene *scene)
   dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
   dmnsn_pattern *checker = dmnsn_new_checker_pattern(pool);
-  dmnsn_map *small_map = dmnsn_new_pigment_map();
+  dmnsn_map *small_map = dmnsn_new_pigment_map(pool);
   dmnsn_pigment_map_add_color(small_map, 0.0, dmnsn_black);
   dmnsn_pigment_map_add_color(small_map, 1.0, dmnsn_white);
   dmnsn_pigment *small_pigment =
@@ -274,7 +274,7 @@ dmnsn_test_scene_add_ground(dmnsn_pool *pool, dmnsn_scene *scene)
                                   DMNSN_PIGMENT_MAP_REGULAR);
   small_pigment->trans =
     dmnsn_scale_matrix(dmnsn_new_vector(1.0/3.0, 1.0/3.0, 1.0/3.0));
-  dmnsn_map *big_map = dmnsn_new_pigment_map();
+  dmnsn_map *big_map = dmnsn_new_pigment_map(pool);
   dmnsn_pigment_map_add_color(big_map, 0.0, dmnsn_white);
   dmnsn_map_add_entry(big_map, 1.0, &small_pigment);
   plane->texture = dmnsn_new_texture();

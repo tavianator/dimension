@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -48,9 +48,10 @@ typedef enum dmnsn_pigment_map_flags {
 
 /**
  * Construct a pigment map.
+ * @param[in] pool  The memory pool to allocate from.
  * @return An empty pigment map.
  */
-dmnsn_map *dmnsn_new_pigment_map(void);
+dmnsn_map *dmnsn_new_pigment_map(dmnsn_pool *pool);
 
 /**
  * A pigment-mapped pigment.

@@ -240,12 +240,10 @@ cdef extern from "../libdimension/dimension.h":
   ctypedef struct dmnsn_map:
     pass
 
-  void dmnsn_delete_map(dmnsn_map *map)
-
   void dmnsn_map_add_entry(dmnsn_map *map, double n, void *obj)
   size_t dmnsn_map_size(dmnsn_map *map)
 
-  dmnsn_map *dmnsn_new_pigment_map()
+  dmnsn_map *dmnsn_new_pigment_map(dmnsn_pool *pool)
 
   ############
   # Pigments #

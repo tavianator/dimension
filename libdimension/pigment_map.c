@@ -42,9 +42,9 @@ dmnsn_delete_mapped_pigment(void *ptr)
 }
 
 dmnsn_map *
-dmnsn_new_pigment_map(void)
+dmnsn_new_pigment_map(dmnsn_pool *pool)
 {
-  dmnsn_map *pigment_map = dmnsn_new_map(sizeof(dmnsn_pigment *));
+  dmnsn_map *pigment_map = dmnsn_new_map(pool, sizeof(dmnsn_pigment *));
   pigment_map->free_fn = dmnsn_delete_mapped_pigment;
   return pigment_map;
 }
@@ -62,7 +62,6 @@ static void
 dmnsn_pigment_map_free_fn(dmnsn_pigment *pigment)
 {
   dmnsn_pigment_map *pigment_map = (dmnsn_pigment_map *)pigment;
-  dmnsn_delete_map(pigment_map->map);
   dmnsn_free(pigment_map);
 }
 

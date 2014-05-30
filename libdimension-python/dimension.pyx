@@ -851,7 +851,7 @@ cdef class PigmentMap(Pigment):
     sRGB    -- whether the gradients should be in sRGB or linear space
                (default True)
     """
-    cdef dmnsn_map *pigment_map = dmnsn_new_pigment_map()
+    cdef dmnsn_map *pigment_map = dmnsn_new_pigment_map(_get_pool())
     cdef dmnsn_pigment *real_pigment
     if hasattr(map, "items"):
       for i, pigment in map.items():

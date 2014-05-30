@@ -31,30 +31,28 @@ typedef struct dmnsn_map_entry {
   char object[];
 } dmnsn_map_entry;
 
-dmnsn_map *
-dmnsn_new_map(size_t size)
+static void
+dmnsn_map_cleanup(void *ptr)
 {
-  dmnsn_map *map = DMNSN_MALLOC(dmnsn_map);
+  dmnsn_map *map = ptr;
+  if (map->free_fn) {
+    for (size_t i = 0; i < dmnsn_array_size(map->array); ++i) {
+      dmnsn_map_entry *entry = dmnsn_array_at(map->array, i);
+      map->free_fn(entry->object);
+    }
+  }
+
+  dmnsn_delete_array(map->array);
+}
+
+dmnsn_map *
+dmnsn_new_map(dmnsn_pool *pool, size_t size)
+{
+  dmnsn_map *map = DMNSN_PALLOC_TIDY(pool, dmnsn_map, dmnsn_map_cleanup);
   map->free_fn = NULL;
   map->obj_size = size;
   map->array = dmnsn_new_array(sizeof(dmnsn_map_entry) + size);
   return map;
-}
-
-void
-dmnsn_delete_map(dmnsn_map *map)
-{
-  if (map) {
-    if (map->free_fn) {
-      for (size_t i = 0; i < dmnsn_array_size(map->array); ++i) {
-        dmnsn_map_entry *entry = dmnsn_array_at(map->array, i);
-        map->free_fn(entry->object);
-      }
-    }
-
-    dmnsn_delete_array(map->array);
-    dmnsn_free(map);
-  }
 }
 
 void

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -32,16 +32,11 @@ typedef struct dmnsn_map {
 
 /**
  * Create an empty map.
+ * @param[in] pool  The memory pool to allocate from.
  * @param[in] size  The size of the objects to store in the map.
  * @return A map with no entries.
  */
-dmnsn_map *dmnsn_new_map(size_t size);
-
-/**
- * Delete a map.
- * @param[in,out] map  The map to delete.
- */
-void dmnsn_delete_map(dmnsn_map *map);
+dmnsn_map *dmnsn_new_map(dmnsn_pool *pool, size_t size);
 
 /**
  * Add an entry (a scalar-object pair) to a map.
