@@ -36,6 +36,23 @@ typedef struct dmnsn_array {
 } dmnsn_array;
 
 /**
+ * @internal
+ * Initialize a new array.
+ * @param[out] array  The array to initialize.
+ * @param[in] obj_size  The size of the objects to store in the array.
+ */
+DMNSN_INLINE void
+dmnsn_init_array(dmnsn_array *array, size_t obj_size)
+{
+  array->obj_size = obj_size;
+  array->length   = 0;
+  array->capacity = 2; /* Start with capacity of 2 */
+
+  /* Allocate the memory */
+  array->ptr = dmnsn_malloc(array->capacity*array->obj_size);
+}
+
+/**
  * Allocate an array.
  * @param[in] obj_size  The size of the objects to store in the array.
  * @return An empty array.
@@ -43,14 +60,8 @@ typedef struct dmnsn_array {
 DMNSN_INLINE dmnsn_array *
 dmnsn_new_array(size_t obj_size)
 {
-  dmnsn_array *array = (dmnsn_array *)dmnsn_malloc(sizeof(dmnsn_array));
-  array->obj_size = obj_size;
-  array->length   = 0;
-  array->capacity = 2; /* Start with capacity of 2 */
-
-  /* Allocate the memory */
-  array->ptr = dmnsn_malloc(array->capacity*array->obj_size);
-
+  dmnsn_array *array = DMNSN_MALLOC(dmnsn_array);
+  dmnsn_init_array(array, obj_size);
   return array;
 }
 
@@ -73,6 +84,35 @@ dmnsn_delete_array(dmnsn_array *array)
     dmnsn_free(array);
   }
 }
+
+/**
+ * @internal
+ * Free a pool-allocated array.
+ * @param[in,out] ptr  The array to clean up.
+ */
+void dmnsn_array_cleanup(void *ptr);
+
+/**
+ * Allocate an array from a pool.
+ * @param[in] pool  The memory pool to allocate from.
+ * @param[in] obj_size  The size of the objects to store in the array.
+ * @return An empty array.
+ */
+DMNSN_INLINE dmnsn_array *
+dmnsn_palloc_array(dmnsn_pool *pool, size_t obj_size)
+{
+  dmnsn_array *array = DMNSN_PALLOC_TIDY(pool, dmnsn_array, dmnsn_array_cleanup);
+  dmnsn_init_array(array, obj_size);
+  return array;
+}
+
+/**
+ * Allocate an array from a pool.
+ * @param[in] pool  The memory pool to allocate from.
+ * @param[in] type  Type type of element to store in the array.
+ * @return An empty array.
+ */
+#define DMNSN_PALLOC_ARRAY(pool, type) (dmnsn_palloc_array(pool, sizeof(type)))
 
 /**
  * Get the size of the array.
