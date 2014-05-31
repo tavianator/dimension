@@ -295,11 +295,9 @@ cdef extern from "../libdimension/dimension.h":
     dmnsn_finish finish
     dmnsn_matrix trans
 
-  dmnsn_texture *dmnsn_new_texture()
-  void dmnsn_delete_texture(dmnsn_texture *texture)
+  dmnsn_texture *dmnsn_new_texture(dmnsn_pool *pool)
 
-  void dmnsn_texture_cascade(dmnsn_texture *default_texture,
-                             dmnsn_texture **texture)
+  void dmnsn_texture_cascade(dmnsn_texture *default_texture, dmnsn_texture **texture)
 
   #############
   # Interiors #

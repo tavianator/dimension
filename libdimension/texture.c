@@ -25,29 +25,17 @@
 
 #include "dimension-internal.h"
 
-/* Allocate a dummy texture */
 dmnsn_texture *
-dmnsn_new_texture(void)
+dmnsn_new_texture(dmnsn_pool *pool)
 {
-  dmnsn_texture *texture = DMNSN_MALLOC(dmnsn_texture);
-  texture->pigment     = NULL;
-  texture->finish      = dmnsn_new_finish();
-  texture->trans       = dmnsn_identity_matrix();
+  dmnsn_texture *texture = DMNSN_PALLOC(pool, dmnsn_texture);
+  texture->pigment = NULL;
+  texture->finish = dmnsn_new_finish();
+  texture->trans = dmnsn_identity_matrix();
   texture->initialized = false;
-  DMNSN_REFCOUNT_INIT(texture);
   return texture;
 }
 
-/* Free a texture */
-void
-dmnsn_delete_texture(dmnsn_texture *texture)
-{
-  if (DMNSN_DECREF(texture)) {
-    dmnsn_free(texture);
-  }
-}
-
-/* Calculate matrix inverses */
 void
 dmnsn_texture_initialize(dmnsn_texture *texture)
 {
@@ -63,14 +51,11 @@ dmnsn_texture_initialize(dmnsn_texture *texture)
   }
 }
 
-/* Cascade a texture */
 void
-dmnsn_texture_cascade(dmnsn_texture *default_texture,
-                      dmnsn_texture **texturep)
+dmnsn_texture_cascade(dmnsn_texture *default_texture, dmnsn_texture **texturep)
 {
   if (!*texturep) {
     *texturep = default_texture;
-    DMNSN_INCREF(*texturep);
   }
 
   dmnsn_texture *texture = *texturep;

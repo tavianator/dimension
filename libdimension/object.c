@@ -68,7 +68,6 @@ dmnsn_delete_object(dmnsn_object *object)
       dmnsn_delete_object(*child);
     }
     dmnsn_delete_array(object->children);
-    dmnsn_delete_texture(object->texture);
     object->free_fn(object);
   }
 }

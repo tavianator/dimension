@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -31,21 +31,15 @@ typedef struct {
   dmnsn_matrix trans;     /**< Transformation matrix. */
   dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
 
-  DMNSN_REFCOUNT; /**< Reference count. */
   bool initialized; /**< @internal Whether the texture is initialized yet. */
 } dmnsn_texture;
 
 /**
  * Create a blank texture.
+ * @param[in] pool  The memory pool to allocate from.
  * @return The new texture.
  */
-dmnsn_texture *dmnsn_new_texture(void);
-
-/**
- * Delete a texture.
- * @param[in,out] texture  The texture to delete.
- */
-void dmnsn_delete_texture(dmnsn_texture *texture);
+dmnsn_texture *dmnsn_new_texture(dmnsn_pool *pool);
 
 /**
  * Initialize a texture.  Textures should not be used before being initialized,
@@ -60,5 +54,4 @@ void dmnsn_texture_initialize(dmnsn_texture *texture);
  * @param[in]     default_texture  The default texture.
  * @param[in,out] texturep         A pointer to the texture to fill.
  */
-void dmnsn_texture_cascade(dmnsn_texture *default_texture,
-                           dmnsn_texture **texturep);
+void dmnsn_texture_cascade(dmnsn_texture *default_texture, dmnsn_texture **texturep);

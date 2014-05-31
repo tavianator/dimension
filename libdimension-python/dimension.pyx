@@ -963,16 +963,13 @@ cdef class Texture(_Transformable):
     pigment -- the Pigment for the texture, or a color (default: None)
     finish  -- the Finish for the texture (default: None)
     """
-    self._texture = dmnsn_new_texture()
+    self._texture = dmnsn_new_texture(_get_pool())
 
     if pigment is not None:
       self.pigment = Pigment(pigment)
 
     if finish is not None:
       self.finish = finish
-
-  def __dealloc__(self):
-    dmnsn_delete_texture(self._texture)
 
   property pigment:
     """The texture's pigment."""
@@ -1005,7 +1002,6 @@ cdef Texture _Texture(dmnsn_texture *texture):
   """Wrap a Texture object around a dmnsn_texture *."""
   cdef Texture self = Texture.__new__(Texture)
   self._texture = texture
-  DMNSN_INCREF(self._texture)
   return self
 
 #############
@@ -1095,12 +1091,10 @@ cdef class Object(_Transformable):
       else:
         return _Texture(self._object.texture)
     def __set__(self, Texture texture):
-      dmnsn_delete_texture(self._object.texture)
       if texture is None:
         self._object.texture = NULL
       else:
         self._object.texture = texture._texture
-        DMNSN_INCREF(self._object.texture)
 
   property interior:
     """The object's Interior."""
@@ -1526,9 +1520,7 @@ cdef class Scene:
     def __get__(self):
       return _Texture(self._scene.default_texture)
     def __set__(self, Texture texture not None):
-      dmnsn_delete_texture(self._scene.default_texture)
       self._scene.default_texture = texture._texture
-      DMNSN_INCREF(self._scene.default_texture)
   property default_interior:
     """The default Interior for objects."""
     def __get__(self):

@@ -35,8 +35,6 @@ dmnsn_scene_cleanup(void *ptr)
     dmnsn_delete_object(*object);
   }
   dmnsn_delete_array(scene->objects);
-
-  dmnsn_delete_texture(scene->default_texture);
 }
 
 /* Allocate an empty scene */
@@ -46,7 +44,7 @@ dmnsn_new_scene(dmnsn_pool *pool)
   dmnsn_scene *scene = DMNSN_PALLOC_TIDY(pool, dmnsn_scene, dmnsn_scene_cleanup);
 
   scene->background       = NULL;
-  scene->default_texture  = dmnsn_new_texture();
+  scene->default_texture  = dmnsn_new_texture(pool);
   scene->default_interior = dmnsn_new_interior(pool);
   scene->canvas           = NULL;
   scene->region_x         = 0;
