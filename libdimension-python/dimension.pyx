@@ -1625,9 +1625,6 @@ cdef class Scene:
     dmnsn_texture_cascade(default._texture, &self._scene.default_texture)
     return _Future(dmnsn_ray_trace_async(self._scene))
 
-  def __dealloc__(self):
-    dmnsn_delete_scene(self._scene)
-
 def _quality_to_string(int quality):
   cdef str s = ""
 

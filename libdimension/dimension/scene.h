@@ -89,12 +89,6 @@ typedef struct dmnsn_scene {
 dmnsn_scene *dmnsn_new_scene(dmnsn_pool *pool);
 
 /**
- * Delete a scene.
- * @param[in,out] scene  The scene to delete.
- */
-void dmnsn_delete_scene(dmnsn_scene *scene);
-
-/**
  * Initialize a scene.
  * @param[in,out] scene  The scene to initalize.
  */

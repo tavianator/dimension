@@ -316,8 +316,12 @@ dmnsn_new_test_scene(dmnsn_pool *pool)
 int
 main(void)
 {
+  int ret = EXIT_FAILURE;
+
   /* Treat warnings as errors for tests */
   dmnsn_die_on_warnings(true);
+
+  dmnsn_display *display = NULL;
 
   /* Create the test scene */
   dmnsn_pool *pool = dmnsn_new_pool();
@@ -330,9 +334,8 @@ main(void)
     if (errno == ENOSYS) {
       have_png = false;
     } else {
-      dmnsn_delete_scene(scene);
       fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
-      return EXIT_FAILURE;
+      goto exit;
     }
   }
 
@@ -343,16 +346,14 @@ main(void)
     if (errno == ENOSYS) {
       have_gl = false;
     } else {
-      dmnsn_delete_scene(scene);
       fprintf(stderr, "--- Couldn't optimize canvas for GL! ---\n");
-      return EXIT_FAILURE;
+      goto exit;
     }
   }
 
   dmnsn_canvas_clear(scene->canvas, DMNSN_TCOLOR(dmnsn_black));
 
   /* Create a new glX display */
-  dmnsn_display *display = NULL;
   if (have_gl) {
     display = dmnsn_new_display(scene->canvas);
     if (!display) {
@@ -370,10 +371,8 @@ main(void)
     while (!dmnsn_future_is_done(future)) {
       dmnsn_future_pause(future);
         if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
-          dmnsn_delete_display(display);
-          dmnsn_delete_scene(scene);
           fprintf(stderr, "--- Drawing to OpenGL failed! ---\n");
-          return EXIT_FAILURE;
+          goto exit;
         }
       dmnsn_future_resume(future);
 
@@ -382,20 +381,16 @@ main(void)
   }
 
   if (dmnsn_future_join(future) != 0) {
-    dmnsn_delete_display(display);
-    dmnsn_delete_scene(scene);
     fprintf(stderr, "--- Raytracing failed! ---\n");
-    return EXIT_FAILURE;
+    goto exit;
   }
 
   /* Make sure we show the completed rendering */
   if (display) {
     printf("Drawing to OpenGL\n");
     if (dmnsn_gl_write_canvas(scene->canvas) != 0) {
-      dmnsn_delete_display(display);
-      dmnsn_delete_scene(scene);
       fprintf(stderr, "--- Drawing to OpenGL failed! ---\n");
-      return EXIT_FAILURE;
+      goto exit;
     }
     dmnsn_display_flush(display);
   }
@@ -404,25 +399,22 @@ main(void)
     printf("Writing scene to PNG\n");
     FILE *ofile = fopen("render.png", "wb");
     if (!ofile) {
-      dmnsn_delete_display(display);
-      dmnsn_delete_scene(scene);
       fprintf(stderr, "--- Couldn't open 'render.png' for writing! ---\n");
-      return EXIT_FAILURE;
+      goto exit;
     }
 
     if (dmnsn_png_write_canvas(scene->canvas, ofile) != 0) {
       fclose(ofile);
-      dmnsn_delete_display(display);
-      dmnsn_delete_scene(scene);
       fprintf(stderr, "--- Writing canvas to PNG failed! ---\n");
-      return EXIT_FAILURE;
+      goto exit;
     }
 
     fclose(ofile);
   }
 
+  ret = EXIT_SUCCESS;
+ exit:
   dmnsn_delete_display(display);
-  dmnsn_delete_scene(scene);
   dmnsn_delete_pool(pool);
-  return EXIT_SUCCESS;
+  return ret;
 }

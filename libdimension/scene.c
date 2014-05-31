@@ -26,11 +26,25 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
+static void
+dmnsn_scene_cleanup(void *ptr)
+{
+  dmnsn_scene *scene = ptr;
+  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
+    dmnsn_delete_object(*object);
+  }
+
+  dmnsn_delete_array(scene->lights);
+  dmnsn_delete_array(scene->objects);
+  dmnsn_delete_texture(scene->default_texture);
+  dmnsn_delete_pigment(scene->background);
+}
+
 /* Allocate an empty scene */
 dmnsn_scene *
 dmnsn_new_scene(dmnsn_pool *pool)
 {
-  dmnsn_scene *scene = DMNSN_PALLOC(pool, dmnsn_scene);
+  dmnsn_scene *scene = DMNSN_PALLOC_TIDY(pool, dmnsn_scene, dmnsn_scene_cleanup);
 
   scene->background       = NULL;
   scene->default_texture  = dmnsn_new_texture();
@@ -50,22 +64,6 @@ dmnsn_new_scene(dmnsn_pool *pool)
   scene->initialized      = false;
 
   return scene;
-}
-
-/* Free a scene */
-void
-dmnsn_delete_scene(dmnsn_scene *scene)
-{
-  if (scene) {
-    DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
-      dmnsn_delete_object(*object);
-    }
-
-    dmnsn_delete_array(scene->lights);
-    dmnsn_delete_array(scene->objects);
-    dmnsn_delete_texture(scene->default_texture);
-    dmnsn_delete_pigment(scene->background);
-  }
 }
 
 void
