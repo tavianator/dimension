@@ -29,9 +29,9 @@ dmnsn_test_scene_set_defaults(dmnsn_pool *pool, dmnsn_scene *scene)
   scene->default_texture->pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_black));
   dmnsn_finish *default_finish = &scene->default_texture->finish;
   default_finish->ambient = dmnsn_new_ambient(
-    dmnsn_color_from_sRGB(dmnsn_color_mul(0.1, dmnsn_white))
+    pool, dmnsn_color_from_sRGB(dmnsn_color_mul(0.1, dmnsn_white))
   );
-  default_finish->diffuse = dmnsn_new_lambertian(dmnsn_sRGB_inverse_gamma(0.7));
+  default_finish->diffuse = dmnsn_new_lambertian(pool, dmnsn_sRGB_inverse_gamma(0.7));
 }
 
 static void
@@ -127,10 +127,8 @@ dmnsn_test_scene_add_hollow_cube(dmnsn_pool *pool, dmnsn_scene *scene)
   dmnsn_tcolor cube_color = dmnsn_new_tcolor(dmnsn_blue, 0.75, 1.0/3.0);
   cube->texture->pigment = dmnsn_new_solid_pigment(pool, cube_color);
 
-  dmnsn_color reflect =
-    dmnsn_color_from_sRGB(dmnsn_color_mul(0.5, dmnsn_white));
-  cube->texture->finish.reflection =
-    dmnsn_new_basic_reflection(dmnsn_black, reflect, 1.0);
+  dmnsn_color reflect = dmnsn_color_from_sRGB(dmnsn_color_mul(0.5, dmnsn_white));
+  cube->texture->finish.reflection = dmnsn_new_basic_reflection(pool, dmnsn_black, reflect, 1.0);
 
   cube->interior = dmnsn_new_interior(pool);
   cube->interior->ior = 1.1;
@@ -138,8 +136,7 @@ dmnsn_test_scene_add_hollow_cube(dmnsn_pool *pool, dmnsn_scene *scene)
   dmnsn_object *sphere = dmnsn_new_sphere();
   sphere->texture = dmnsn_new_texture();
   sphere->texture->pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_green));
-  sphere->texture->finish.specular =
-    dmnsn_new_phong(dmnsn_sRGB_inverse_gamma(0.2), 40.0);
+  sphere->texture->finish.specular = dmnsn_new_phong(pool, dmnsn_sRGB_inverse_gamma(0.2), 40.0);
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.25, 1.25, 1.25));
 
   dmnsn_object *hollow_cube = dmnsn_new_csg_difference(cube, sphere);
@@ -208,7 +205,7 @@ dmnsn_test_scene_add_spike(dmnsn_pool *pool, dmnsn_scene *scene)
   dmnsn_delete_array(torus_array);
   torii->texture = dmnsn_new_texture();
   torii->texture->pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_blue));
-  torii->texture->finish.ambient = dmnsn_new_ambient(dmnsn_white);
+  torii->texture->finish.ambient = dmnsn_new_ambient(pool, dmnsn_white);
 
   dmnsn_array *spike_array = DMNSN_NEW_ARRAY(dmnsn_object *);
   dmnsn_array_push(spike_array, &arrow);

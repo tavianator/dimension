@@ -45,9 +45,9 @@ dmnsn_lambertian_diffuse_fn(const dmnsn_diffuse *diffuse,
 }
 
 dmnsn_diffuse *
-dmnsn_new_lambertian(double coeff)
+dmnsn_new_lambertian(dmnsn_pool *pool, double coeff)
 {
-  dmnsn_lambertian *lambertian = DMNSN_MALLOC(dmnsn_lambertian);
+  dmnsn_lambertian *lambertian = DMNSN_PALLOC(pool, dmnsn_lambertian);
   lambertian->coeff = coeff;
 
   dmnsn_diffuse *diffuse = &lambertian->diffuse;

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -25,25 +25,27 @@
 
 /**
  * Regular diffuse finish.
+ * @param[in] pool  The memory pool to allocate from.
  * @param[in] diffuse  The diffuse reflection coefficient.
  * @return A diffuse finish component.
  */
-dmnsn_diffuse *dmnsn_new_lambertian(double diffuse);
+dmnsn_diffuse *dmnsn_new_lambertian(dmnsn_pool *pool, double diffuse);
 
 /**
  * A phong specular highlight.
+ * @param[in] pool  The memory pool to allocate from.
  * @param[in] specular  The specular reflection coefficient.
- * @param[in] exp       The exponent (roughly the highlight size).
+ * @param[in] exp  The exponent (roughly the highlight size).
  * @return A phong specular finish component.
  */
-dmnsn_specular *dmnsn_new_phong(double specular, double exp);
+dmnsn_specular *dmnsn_new_phong(dmnsn_pool *pool, double specular, double exp);
 
 /**
  * Specular (mirror) reflection.
- * @param[in] min      Reflection at paralell angles.
- * @param[in] max      Reflection at perpendicular angles (often == \p min).
+ * @param[in] pool  The memory pool to allocate from.
+ * @param[in] min  Reflection at paralell angles.
+ * @param[in] max  Reflection at perpendicular angles (often == \p min).
  * @param[in] falloff  Degree of exponential falloff (usually 1).
  * @return A reflective finish component.
  */
-dmnsn_reflection *dmnsn_new_basic_reflection(dmnsn_color min, dmnsn_color max,
-                                             double falloff);
+dmnsn_reflection *dmnsn_new_basic_reflection(dmnsn_pool *pool, dmnsn_color min, dmnsn_color max, double falloff);

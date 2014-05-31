@@ -879,9 +879,6 @@ cdef class Finish:
   def __cinit__(self):
     self._finish = dmnsn_new_finish()
 
-  def __dealloc__(self):
-    dmnsn_delete_finish(self._finish)
-
   def __add__(Finish lhs not None, Finish rhs not None):
     """
     Combine two finishes.
@@ -898,7 +895,6 @@ cdef Finish _Finish(dmnsn_finish finish):
   """Wrap a Finish object around a dmnsn_finish."""
   cdef Finish self = Finish.__new__(Finish)
   self._finish = finish
-  dmnsn_finish_incref(&self._finish)
   return self
 
 cdef class Ambient(Finish):
@@ -910,7 +906,7 @@ cdef class Ambient(Finish):
     Keyword arguments:
     color -- the color and intensity of the ambient light
     """
-    self._finish.ambient = dmnsn_new_ambient(Color(color)._c)
+    self._finish.ambient = dmnsn_new_ambient(_get_pool(), Color(color)._c)
 
 cdef class Diffuse(Finish):
   """Lambertian diffuse reflection."""
@@ -921,7 +917,7 @@ cdef class Diffuse(Finish):
     Keyword arguments:
     diffuse -- the intensity of the diffuse reflection
     """
-    self._finish.diffuse = dmnsn_new_lambertian(Color(diffuse).intensity())
+    self._finish.diffuse = dmnsn_new_lambertian(_get_pool(), Color(diffuse).intensity())
 
 cdef class Phong(Finish):
   """Phong specular highlight."""
@@ -933,7 +929,7 @@ cdef class Phong(Finish):
     strength -- the strength of the Phong highlight
     size -- the "shininess" of the material
     """
-    self._finish.specular = dmnsn_new_phong(Color(strength).intensity(), size)
+    self._finish.specular = dmnsn_new_phong(_get_pool(), Color(strength).intensity(), size)
 
 cdef class Reflection(Finish):
   """Reflective finish."""
@@ -949,9 +945,7 @@ cdef class Reflection(Finish):
     if max is None:
       max = min
 
-    self._finish.reflection = dmnsn_new_basic_reflection(Color(min)._c,
-                                                         Color(max)._c,
-                                                         falloff)
+    self._finish.reflection = dmnsn_new_basic_reflection(_get_pool(), Color(min)._c, Color(max)._c, falloff)
 
 ############
 # Textures #
@@ -1000,9 +994,7 @@ cdef class Texture(_Transformable):
     def __get__(self):
       return _Finish(self._texture.finish)
     def __set__(self, Finish finish not None):
-      dmnsn_delete_finish(self._texture.finish)
       self._texture.finish = finish._finish
-      dmnsn_finish_incref(&self._texture.finish)
 
   def transform(self, Matrix trans not None):
     """Transform a texture."""

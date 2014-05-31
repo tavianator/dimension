@@ -50,9 +50,9 @@ dmnsn_basic_reflection_fn(const dmnsn_reflection *reflection,
 }
 
 dmnsn_reflection *
-dmnsn_new_basic_reflection(dmnsn_color min, dmnsn_color max, double falloff)
+dmnsn_new_basic_reflection(dmnsn_pool *pool, dmnsn_color min, dmnsn_color max, double falloff)
 {
-  dmnsn_basic_reflection *basic = DMNSN_MALLOC(dmnsn_basic_reflection);
+  dmnsn_basic_reflection *basic = DMNSN_PALLOC(pool, dmnsn_basic_reflection);
   basic->min = min;
   basic->max = max;
   basic->falloff = falloff;

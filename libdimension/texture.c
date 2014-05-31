@@ -43,7 +43,6 @@ void
 dmnsn_delete_texture(dmnsn_texture *texture)
 {
   if (DMNSN_DECREF(texture)) {
-    dmnsn_delete_finish(texture->finish);
     dmnsn_free(texture);
   }
 }

@@ -272,23 +272,19 @@ cdef extern from "../libdimension/dimension.h":
   ctypedef struct dmnsn_reflection
 
   ctypedef struct dmnsn_finish:
-    dmnsn_ambient    *ambient
-    dmnsn_diffuse    *diffuse
-    dmnsn_specular   *specular
+    dmnsn_ambient *ambient
+    dmnsn_diffuse *diffuse
+    dmnsn_specular *specular
     dmnsn_reflection *reflection
 
   dmnsn_finish dmnsn_new_finish()
-  void dmnsn_delete_finish(dmnsn_finish finish)
-
-  void dmnsn_finish_incref(dmnsn_finish *finish)
 
   void dmnsn_finish_cascade(dmnsn_finish *default_finish, dmnsn_finish *finish)
 
-  dmnsn_ambient *dmnsn_new_ambient(dmnsn_color ambient)
-  dmnsn_diffuse *dmnsn_new_lambertian(double diffuse)
-  dmnsn_specular *dmnsn_new_phong(double specular, double exp)
-  dmnsn_reflection *dmnsn_new_basic_reflection(dmnsn_color min, dmnsn_color max,
-                                               double falloff)
+  dmnsn_ambient *dmnsn_new_ambient(dmnsn_pool *pool, dmnsn_color ambient)
+  dmnsn_diffuse *dmnsn_new_lambertian(dmnsn_pool *pool, double diffuse)
+  dmnsn_specular *dmnsn_new_phong(dmnsn_pool *pool, double specular, double exp)
+  dmnsn_reflection *dmnsn_new_basic_reflection(dmnsn_pool *pool, dmnsn_color min, dmnsn_color max, double falloff)
 
   ############
   # Textures #

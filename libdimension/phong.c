@@ -56,9 +56,9 @@ dmnsn_phong_specular_fn(const dmnsn_specular *specular,
 
 /* A phong finish */
 dmnsn_specular *
-dmnsn_new_phong(double coeff, double exp)
+dmnsn_new_phong(dmnsn_pool *pool, double coeff, double exp)
 {
-  dmnsn_phong *phong = DMNSN_MALLOC(dmnsn_phong);
+  dmnsn_phong *phong = DMNSN_PALLOC(pool, dmnsn_phong);
   phong->coeff = coeff;
   phong->exp = exp;
 

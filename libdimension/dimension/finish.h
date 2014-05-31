@@ -28,13 +28,10 @@
 /** Ambient finish component. */
 typedef struct dmnsn_ambient {
   dmnsn_color ambient; /**< Ambient light. */
-  DMNSN_REFCOUNT;      /**< Reference count. */
 } dmnsn_ambient;
 
-/** Allocate a dummy ambient component. */
-dmnsn_ambient *dmnsn_new_ambient(dmnsn_color ambient);
-/** Delete an ambient component. */
-void dmnsn_delete_ambient(dmnsn_ambient *ambient);
+/** Allocate an ambient component. */
+dmnsn_ambient *dmnsn_new_ambient(dmnsn_pool *pool, dmnsn_color ambient);
 
 /* Diffuse component */
 
@@ -53,26 +50,15 @@ typedef dmnsn_color dmnsn_diffuse_fn(const dmnsn_diffuse *diffuse,
                                      dmnsn_color light, dmnsn_color color,
                                      dmnsn_vector ray, dmnsn_vector normal);
 
-/**
- * Diffuse destruction callback.
- * @param[in,out] diffuse  The diffuse object to destroy.
- */
-typedef void dmnsn_diffuse_free_fn(dmnsn_diffuse *diffuse);
-
 /** Diffuse finish component. */
 struct dmnsn_diffuse {
   dmnsn_diffuse_fn *diffuse_fn; /**< Diffuse callback. */
-  dmnsn_diffuse_free_fn *free_fn; /**< Destructor callback. */
-
-  DMNSN_REFCOUNT; /**< Reference count. */
 };
 
 /** Allocate a dummy diffuse component. */
-dmnsn_diffuse *dmnsn_new_diffuse(void);
+dmnsn_diffuse *dmnsn_new_diffuse(dmnsn_pool *pool);
 /** Initialize a dmnsn_diffuse field. */
 void dmnsn_init_diffuse(dmnsn_diffuse *diffuse);
-/** Delete a diffuse component. */
-void dmnsn_delete_diffuse(dmnsn_diffuse *diffuse);
 
 /* Specular component */
 
@@ -93,26 +79,15 @@ typedef dmnsn_color dmnsn_specular_fn(const dmnsn_specular *specular,
                                       dmnsn_vector ray, dmnsn_vector normal,
                                       dmnsn_vector viewer);
 
-/**
- * Specular destruction callback.
- * @param[in,out] specular  The specular object to destroy.
- */
-typedef void dmnsn_specular_free_fn(dmnsn_specular *specular);
-
 /** Specular finish component. */
 struct dmnsn_specular {
   dmnsn_specular_fn *specular_fn; /**< Specular callback. */
-  dmnsn_specular_free_fn *free_fn; /**< Destructor callback. */
-
-  DMNSN_REFCOUNT; /**< Reference count. */
 };
 
 /** Allocate a dummy specular component. */
-dmnsn_specular *dmnsn_new_specular(void);
+dmnsn_specular *dmnsn_new_specular(dmnsn_pool *pool);
 /** Initialize a dmnsn_specular field. */
 void dmnsn_init_specular(dmnsn_specular *specular);
-/** Delete a specular component. */
-void dmnsn_delete_specular(dmnsn_specular *specular);
 
 /* Reflection component */
 
@@ -131,34 +106,23 @@ typedef dmnsn_color dmnsn_reflection_fn(const dmnsn_reflection *reflection,
                                         dmnsn_color reflect, dmnsn_color color,
                                         dmnsn_vector ray, dmnsn_vector normal);
 
-/**
- * Reflection destruction callback.
- * @param[in,out] reflection  The reflection object to destroy.
- */
-typedef void dmnsn_reflection_free_fn(dmnsn_reflection *reflection);
-
 /** The reflection component. */
 struct dmnsn_reflection {
   dmnsn_reflection_fn *reflection_fn; /**< Reflection callback. */
-  dmnsn_reflection_free_fn *free_fn; /**< Destructor callback. */
-
-  DMNSN_REFCOUNT; /**< Reference count. */
 };
 
 /** Allocate a dummy reflection component. */
-dmnsn_reflection *dmnsn_new_reflection(void);
+dmnsn_reflection *dmnsn_new_reflection(dmnsn_pool *pool);
 /** Initialize a dmnsn_reflection field. */
 void dmnsn_init_reflection(dmnsn_reflection *reflection);
-/** Delete a reflection component. */
-void dmnsn_delete_reflection(dmnsn_reflection *reflection);
 
 /* Entire finishes */
 
 /** A finish. */
 typedef struct dmnsn_finish {
-  dmnsn_ambient    *ambient;    /**< Ambient component. */
-  dmnsn_diffuse    *diffuse;    /**< Diffuse component. */
-  dmnsn_specular   *specular;   /**< Specular component. */
+  dmnsn_ambient *ambient; /**< Ambient component. */
+  dmnsn_diffuse *diffuse; /**< Diffuse component. */
+  dmnsn_specular *specular; /**< Specular component. */
   dmnsn_reflection *reflection; /**< Reflection component. */
 } dmnsn_finish;
 
@@ -167,18 +131,6 @@ typedef struct dmnsn_finish {
  * @return The new finish.
  */
 dmnsn_finish dmnsn_new_finish(void);
-
-/**
- * Delete a finish.
- * @param[in,out] finish  The finish to delete.
- */
-void dmnsn_delete_finish(dmnsn_finish finish);
-
-/**
- * Increment a finish's reference count.
- * @param[in,out] finish  The finish to acquire.
- */
-void dmnsn_finish_incref(dmnsn_finish *finish);
 
 /**
  * Fill missing finish properties from a default finish.
