@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Benchmark Suite.                   *
  *                                                                       *
@@ -79,7 +79,7 @@ main(void)
     return EXIT_FAILURE;
   }
 
-  dmnsn_array *objects = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_array *objects = DMNSN_NEW_ARRAY(dmnsn_object *);
   dmnsn_texture *texture = dmnsn_new_texture();
   texture->pigment = dmnsn_new_pigment();
   for (size_t i = 0; i < nobjects; ++i) {

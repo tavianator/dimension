@@ -157,7 +157,7 @@ dmnsn_test_scene_add_hollow_cube(dmnsn_pool *pool, dmnsn_scene *scene)
 static void
 dmnsn_test_scene_add_spike(dmnsn_pool *pool, dmnsn_scene *scene)
 {
-  dmnsn_array *arrow_array = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_array *arrow_array = DMNSN_NEW_ARRAY(dmnsn_object *);
 
   dmnsn_object *cylinder = dmnsn_new_cone(0.1, 0.1, false);
   cylinder->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.0, 1.25, 1.0));
@@ -192,7 +192,7 @@ dmnsn_test_scene_add_spike(dmnsn_pool *pool, dmnsn_scene *scene)
       dmnsn_scale_matrix(dmnsn_new_vector(1.0, 2.75, 1.0))
     );
 
-  dmnsn_array *torus_array = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_array *torus_array = DMNSN_NEW_ARRAY(dmnsn_object *);
 
   dmnsn_object *torus1 = dmnsn_new_torus(0.15, 0.05);
   torus1->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -1.0, 0.0));
@@ -211,7 +211,7 @@ dmnsn_test_scene_add_spike(dmnsn_pool *pool, dmnsn_scene *scene)
   torii->texture->pigment = dmnsn_new_solid_pigment(DMNSN_TCOLOR(dmnsn_blue));
   torii->texture->finish.ambient = dmnsn_new_ambient(dmnsn_white);
 
-  dmnsn_array *spike_array = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_array *spike_array = DMNSN_NEW_ARRAY(dmnsn_object *);
   dmnsn_array_push(spike_array, &arrow);
   dmnsn_array_push(spike_array, &torii);
   dmnsn_object *spike = dmnsn_new_csg_union(spike_array);
@@ -225,7 +225,7 @@ dmnsn_test_scene_add_spike(dmnsn_pool *pool, dmnsn_scene *scene)
 static void
 dmnsn_test_scene_add_triangle_strip(dmnsn_scene *scene)
 {
-  dmnsn_array *strip_array = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_array *strip_array = DMNSN_NEW_ARRAY(dmnsn_object *);
   dmnsn_vector a = dmnsn_zero;
   dmnsn_vector b = dmnsn_new_vector(0.0, sqrt(3.0)/2.0, 0.5);
   dmnsn_vector c = dmnsn_z;

@@ -70,7 +70,7 @@ dmnsn_split_add_object(dmnsn_array *objects, const dmnsn_object *object)
 static dmnsn_array *
 dmnsn_split_objects(const dmnsn_array *objects)
 {
-  dmnsn_array *split = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_array *split = DMNSN_NEW_ARRAY(dmnsn_object *);
   DMNSN_ARRAY_FOREACH (const dmnsn_object **, object, objects) {
     dmnsn_split_add_object(split, *object);
   }
@@ -81,7 +81,7 @@ dmnsn_split_objects(const dmnsn_array *objects)
 static dmnsn_array *
 dmnsn_split_unbounded(dmnsn_array *objects)
 {
-  dmnsn_array *unbounded = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_array *unbounded = DMNSN_NEW_ARRAY(dmnsn_object *);
 
   dmnsn_object **array = dmnsn_array_first(objects);
   size_t i, skip;
@@ -122,7 +122,7 @@ dmnsn_flatten_bvh_recursive(dmnsn_bvh_node *node, dmnsn_array *flat)
 static dmnsn_array *
 dmnsn_flatten_bvh(dmnsn_bvh_node *root)
 {
-  dmnsn_array *flat = dmnsn_new_array(sizeof(dmnsn_flat_bvh_node));
+  dmnsn_array *flat = DMNSN_NEW_ARRAY(dmnsn_flat_bvh_node);
   if (root) {
     dmnsn_flatten_bvh_recursive(root, flat);
   }

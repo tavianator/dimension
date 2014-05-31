@@ -65,7 +65,7 @@ main(void)
   dmnsn_die_on_warnings(true);
 
   const size_t nobjects = 128;
-  dmnsn_array *objects = dmnsn_new_array(sizeof(dmnsn_object *));
+  dmnsn_array *objects = DMNSN_NEW_ARRAY(dmnsn_object *);
 
   for (size_t i = 0; i < nobjects; ++i) {
     dmnsn_object *object = dmnsn_new_object();

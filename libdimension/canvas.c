@@ -34,7 +34,7 @@ dmnsn_new_canvas(dmnsn_pool *pool, size_t width, size_t height)
   dmnsn_canvas *canvas = DMNSN_PALLOC_TIDY(pool, dmnsn_canvas, dmnsn_canvas_cleanup);
   canvas->width      = width;
   canvas->height     = height;
-  canvas->optimizers = dmnsn_new_array(sizeof(dmnsn_canvas_optimizer));
+  canvas->optimizers = DMNSN_NEW_ARRAY(dmnsn_canvas_optimizer);
   canvas->pixels     = dmnsn_malloc(sizeof(dmnsn_tcolor)*width*height);
   return canvas;
 }

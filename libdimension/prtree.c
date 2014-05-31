@@ -317,7 +317,7 @@ dmnsn_priority_leaves(const dmnsn_array *leaves, unsigned int nthreads)
   size_t buffer_size = nleaves/2;
   dmnsn_bvh_node **buffer = dmnsn_malloc(buffer_size*sizeof(dmnsn_bvh_node *));
 
-  dmnsn_array *new_leaves = dmnsn_new_array(sizeof(dmnsn_bvh_node *));
+  dmnsn_array *new_leaves = DMNSN_NEW_ARRAY(dmnsn_bvh_node *);
 
   dmnsn_priority_leaves_recursive(sorted_leaves, nleaves, buffer, new_leaves,
                                   0);
@@ -338,7 +338,7 @@ dmnsn_new_prtree(const dmnsn_array *objects)
   }
 
   /* Make the initial array of leaves */
-  dmnsn_array *leaves = dmnsn_new_array(sizeof(dmnsn_bvh_node *));
+  dmnsn_array *leaves = DMNSN_NEW_ARRAY(dmnsn_bvh_node *);
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
     dmnsn_bvh_node *node = dmnsn_new_bvh_leaf_node(*object);
     node->data = DMNSN_PRTREE_LEFT; /* Mustn't be _LEAF */

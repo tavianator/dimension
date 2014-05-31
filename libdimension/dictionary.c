@@ -39,7 +39,7 @@ dmnsn_new_dictionary(size_t obj_size)
   dict->obj_size = obj_size;
   dict->prefix   = dmnsn_strdup("");
   dict->value    = NULL;
-  dict->children = dmnsn_new_array(sizeof(dmnsn_dictionary *));
+  dict->children = DMNSN_NEW_ARRAY(dmnsn_dictionary *);
   return dict;
 }
 

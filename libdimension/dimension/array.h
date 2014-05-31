@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -53,6 +53,13 @@ dmnsn_new_array(size_t obj_size)
 
   return array;
 }
+
+/**
+ * Allocate an array.
+ * @param[in] type  Type type of element to store in the array.
+ * @return An empty array.
+ */
+#define DMNSN_NEW_ARRAY(type) (dmnsn_new_array(sizeof(type)))
 
 /**
  * Delete an array.

@@ -54,8 +54,8 @@ dmnsn_new_scene(dmnsn_pool *pool)
   scene->region_y         = 0;
   scene->outer_width      = 0;
   scene->outer_height     = 0;
-  scene->objects          = dmnsn_new_array(sizeof(dmnsn_object *));
-  scene->lights           = dmnsn_new_array(sizeof(dmnsn_light *));
+  scene->objects          = DMNSN_NEW_ARRAY(dmnsn_object *);
+  scene->lights           = DMNSN_NEW_ARRAY(dmnsn_light *);
   scene->camera           = NULL;
   scene->quality          = DMNSN_RENDER_FULL;
   scene->reclimit         = 5;

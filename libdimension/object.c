@@ -49,7 +49,7 @@ dmnsn_init_object(dmnsn_object *object)
   object->interior        = NULL;
   object->trans           = dmnsn_identity_matrix();
   object->intrinsic_trans = dmnsn_identity_matrix();
-  object->children        = dmnsn_new_array(sizeof(dmnsn_object *));
+  object->children        = DMNSN_NEW_ARRAY(dmnsn_object *);
   object->split_children  = false;
   object->intersection_fn = NULL;
   object->inside_fn       = NULL;
