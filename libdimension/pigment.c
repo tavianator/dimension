@@ -25,17 +25,11 @@
 
 #include "dimension-internal.h"
 
-static void
-dmnsn_default_pigment_free_fn(dmnsn_pigment *pigment)
-{
-  dmnsn_free(pigment);
-}
-
 /* Allocate a dummy pigment */
 dmnsn_pigment *
-dmnsn_new_pigment(void)
+dmnsn_new_pigment(dmnsn_pool *pool)
 {
-  dmnsn_pigment *pigment = DMNSN_MALLOC(dmnsn_pigment);
+  dmnsn_pigment *pigment = DMNSN_PALLOC(pool, dmnsn_pigment);
   dmnsn_init_pigment(pigment);
   return pigment;
 }
@@ -46,20 +40,9 @@ dmnsn_init_pigment(dmnsn_pigment *pigment)
 {
   pigment->pigment_fn = NULL;
   pigment->initialize_fn = NULL;
-  pigment->free_fn = dmnsn_default_pigment_free_fn;
   pigment->trans = dmnsn_identity_matrix();
   pigment->quick_color = DMNSN_TCOLOR(dmnsn_black);
   pigment->initialized = false;
-  DMNSN_REFCOUNT_INIT(pigment);
-}
-
-/* Free a pigment */
-void
-dmnsn_delete_pigment(dmnsn_pigment *pigment)
-{
-  if (DMNSN_DECREF(pigment)) {
-    pigment->free_fn(pigment);
-  }
 }
 
 /* Precompute pigment properties */

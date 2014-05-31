@@ -257,13 +257,10 @@ cdef extern from "../libdimension/dimension.h":
     DMNSN_PIGMENT_MAP_REGULAR
     DMNSN_PIGMENT_MAP_SRGB
 
-  void dmnsn_delete_pigment(dmnsn_pigment *pigment)
-
-  dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_tcolor tcolor)
-  dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_canvas *canvas)
-  dmnsn_pigment *dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern,
-                                               dmnsn_map *map,
-                                               dmnsn_pigment_map_flags flags)
+  dmnsn_pigment *dmnsn_new_solid_pigment(dmnsn_pool *pool, dmnsn_tcolor tcolor)
+  dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_pool *pool, dmnsn_canvas *canvas)
+  dmnsn_pigment *dmnsn_new_pigment_map_pigment(dmnsn_pool *pool, dmnsn_pattern *pattern,
+                                               dmnsn_map *map, dmnsn_pigment_map_flags flags)
 
   ############
   # Finishes #

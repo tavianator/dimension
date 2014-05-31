@@ -24,11 +24,7 @@
  */
 
 /** A map. */
-typedef struct dmnsn_map {
-  dmnsn_free_fn *free_fn; /**< Destructor callback. */
-  size_t obj_size; /**< @internal The size of the mapped objects. */
-  dmnsn_array *array; /**< @internal The map entries. */
-} dmnsn_map;
+typedef struct dmnsn_map dmnsn_map;
 
 /**
  * Create an empty map.

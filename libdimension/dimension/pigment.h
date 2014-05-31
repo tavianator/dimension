@@ -41,17 +41,10 @@ typedef dmnsn_tcolor dmnsn_pigment_fn(const dmnsn_pigment *pigment,
  */
 typedef void dmnsn_pigment_initialize_fn(dmnsn_pigment *pigment);
 
-/**
- * Pigment destructor callback.
- * @param[in,out] pigment  The pigment to destroy.
- */
-typedef void dmnsn_pigment_free_fn(dmnsn_pigment *pigment);
-
 /** A pigment. */
 struct dmnsn_pigment {
   dmnsn_pigment_fn *pigment_fn; /**< The pigment callback. */
   dmnsn_pigment_initialize_fn *initialize_fn; /**< The initializer callback. */
-  dmnsn_pigment_free_fn *free_fn; /**< The destructor callback. */
 
   dmnsn_matrix trans; /**< Transformation matrix. */
   dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
@@ -59,27 +52,21 @@ struct dmnsn_pigment {
   /** Quick color -- used for low-quality renders. */
   dmnsn_tcolor quick_color;
 
-  DMNSN_REFCOUNT; /** Reference count. */
   bool initialized; /** @internal Whether the pigment is initialized. */
 };
 
 /**
  * Allocate a new dummy pigment.
+ * @param[in] pool  The memory pool to allocate from.
  * @return The allocated pigment.
  */
-dmnsn_pigment *dmnsn_new_pigment(void);
+dmnsn_pigment *dmnsn_new_pigment(dmnsn_pool *pool);
 
 /**
  * Initialize a dmnsn_pigment field.
  * @param[out] pigment  The pigment to initialize.
  */
 void dmnsn_init_pigment(dmnsn_pigment *pigment);
-
-/**
- * Delete a pigment.
- * @param[in,out] pigment  The pigment to delete.
- */
-void dmnsn_delete_pigment(dmnsn_pigment *pigment);
 
 /**
  * Initialize a pigment.  Pigments should not be used before being initialized,

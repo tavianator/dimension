@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -28,9 +28,9 @@
 
 /* Create a solid color */
 dmnsn_pigment *
-dmnsn_new_solid_pigment(dmnsn_tcolor color)
+dmnsn_new_solid_pigment(dmnsn_pool *pool, dmnsn_tcolor color)
 {
-  dmnsn_pigment *pigment = dmnsn_new_pigment();
+  dmnsn_pigment *pigment = dmnsn_new_pigment(pool);
   pigment->quick_color = color;
   return pigment;
 }

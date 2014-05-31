@@ -37,7 +37,6 @@ dmnsn_scene_cleanup(void *ptr)
   dmnsn_delete_array(scene->objects);
 
   dmnsn_delete_texture(scene->default_texture);
-  dmnsn_delete_pigment(scene->background);
 }
 
 /* Allocate an empty scene */

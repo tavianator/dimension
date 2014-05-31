@@ -25,41 +25,32 @@
 
 #include "dimension.h"
 
+/** dmnsn_map definition. */
+struct dmnsn_map {
+  size_t obj_size; /**< @internal The size of the mapped objects. */
+  dmnsn_array *array; /**< @internal The map entries. */
+};
+
 /** An [index, object] pair. */
 typedef struct dmnsn_map_entry {
   double n;
   char object[];
 } dmnsn_map_entry;
 
-static void
-dmnsn_map_cleanup(void *ptr)
-{
-  dmnsn_map *map = ptr;
-  if (map->free_fn) {
-    for (size_t i = 0; i < dmnsn_array_size(map->array); ++i) {
-      dmnsn_map_entry *entry = dmnsn_array_at(map->array, i);
-      map->free_fn(entry->object);
-    }
-  }
-
-  dmnsn_delete_array(map->array);
-}
-
 dmnsn_map *
 dmnsn_new_map(dmnsn_pool *pool, size_t size)
 {
-  dmnsn_map *map = DMNSN_PALLOC_TIDY(pool, dmnsn_map, dmnsn_map_cleanup);
-  map->free_fn = NULL;
+  dmnsn_map *map = DMNSN_PALLOC(pool, dmnsn_map);
   map->obj_size = size;
-  map->array = dmnsn_new_array(sizeof(dmnsn_map_entry) + size);
+  map->array = dmnsn_palloc_array(pool, sizeof(dmnsn_map_entry) + size);
   return map;
 }
 
 void
 dmnsn_map_add_entry(dmnsn_map *map, double n, const void *obj)
 {
-  dmnsn_map_entry *entry
-    = dmnsn_malloc(sizeof(dmnsn_map_entry) + map->obj_size);
+  char mem[sizeof(dmnsn_map_entry) + map->obj_size];
+  dmnsn_map_entry *entry = (dmnsn_map_entry *)mem;
   entry->n = n;
   memcpy(entry->object, obj, map->obj_size);
 
@@ -67,12 +58,12 @@ dmnsn_map_add_entry(dmnsn_map *map, double n, const void *obj)
   size_t i;
   for (i = dmnsn_array_size(map->array); i-- > 0;) {
     dmnsn_map_entry *other = dmnsn_array_at(map->array, i);
-    if (other->n <= n)
+    if (other->n <= n) {
       break;
+    }
   }
 
   dmnsn_array_insert(map->array, i + 1, entry);
-  dmnsn_free(entry);
 }
 
 size_t

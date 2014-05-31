@@ -33,20 +33,10 @@ dmnsn_initialize_mapped_pigment(void *ptr)
   dmnsn_pigment_initialize(*pigment);
 }
 
-/** Free a pigment in a pigment map. */
-static void
-dmnsn_delete_mapped_pigment(void *ptr)
-{
-  dmnsn_pigment **pigment = ptr;
-  dmnsn_delete_pigment(*pigment);
-}
-
 dmnsn_map *
 dmnsn_new_pigment_map(dmnsn_pool *pool)
 {
-  dmnsn_map *pigment_map = dmnsn_new_map(pool, sizeof(dmnsn_pigment *));
-  pigment_map->free_fn = dmnsn_delete_mapped_pigment;
-  return pigment_map;
+  return dmnsn_new_map(pool, sizeof(dmnsn_pigment *));
 }
 
 /** Pigment map type. */
@@ -56,14 +46,6 @@ typedef struct dmnsn_pigment_map {
   dmnsn_map *map;
   dmnsn_pigment_map_flags flags;
 } dmnsn_pigment_map;
-
-/** Free a pigment map. */
-static void
-dmnsn_pigment_map_free_fn(dmnsn_pigment *pigment)
-{
-  dmnsn_pigment_map *pigment_map = (dmnsn_pigment_map *)pigment;
-  dmnsn_free(pigment_map);
-}
 
 /** pigment_map pigment callback. */
 static dmnsn_tcolor
@@ -99,10 +81,9 @@ dmnsn_pigment_map_initialize_fn(dmnsn_pigment *pigment)
 }
 
 dmnsn_pigment *
-dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern, dmnsn_map *map,
-                              dmnsn_pigment_map_flags flags)
+dmnsn_new_pigment_map_pigment(dmnsn_pool *pool, dmnsn_pattern *pattern, dmnsn_map *map, dmnsn_pigment_map_flags flags)
 {
-  dmnsn_pigment_map *pigment_map = DMNSN_MALLOC(dmnsn_pigment_map);
+  dmnsn_pigment_map *pigment_map = DMNSN_PALLOC(pool, dmnsn_pigment_map);
   pigment_map->pattern = pattern;
   pigment_map->map = map;
   pigment_map->flags = flags;
@@ -111,6 +92,5 @@ dmnsn_new_pigment_map_pigment(dmnsn_pattern *pattern, dmnsn_map *map,
   dmnsn_init_pigment(pigment);
   pigment->pigment_fn = dmnsn_pigment_map_pigment_fn;
   pigment->initialize_fn = dmnsn_pigment_map_initialize_fn;
-  pigment->free_fn = dmnsn_pigment_map_free_fn;
   return pigment;
 }

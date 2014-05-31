@@ -44,7 +44,6 @@ dmnsn_delete_texture(dmnsn_texture *texture)
 {
   if (DMNSN_DECREF(texture)) {
     dmnsn_delete_finish(texture->finish);
-    dmnsn_delete_pigment(texture->pigment);
     dmnsn_free(texture);
   }
 }
@@ -79,7 +78,6 @@ dmnsn_texture_cascade(dmnsn_texture *default_texture,
 
   if (!texture->pigment) {
     texture->pigment = default_texture->pigment;
-    DMNSN_INCREF(texture->pigment);
   }
 
   dmnsn_finish_cascade(&default_texture->finish, &texture->finish);

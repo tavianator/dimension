@@ -793,14 +793,10 @@ cdef class Pigment(_Transformable):
       if self._pigment == NULL:
         if isinstance(quick_color, Pigment):
           self._pigment = (<Pigment>quick_color)._pigment
-          DMNSN_INCREF(self._pigment)
         else:
-          self._pigment = dmnsn_new_solid_pigment(TColor(quick_color)._tc)
+          self._pigment = dmnsn_new_solid_pigment(_get_pool(), TColor(quick_color)._tc)
       else:
         self._pigment.quick_color = TColor(quick_color)._tc
-
-  def __dealloc__(self):
-    dmnsn_delete_pigment(self._pigment)
 
   def transform(self, Matrix trans not None):
     """Transform a pigment."""
@@ -811,7 +807,6 @@ cdef Pigment _Pigment(dmnsn_pigment *pigment):
   """Wrap a Pigment object around a dmnsn_pigment *."""
   cdef Pigment self = Pigment.__new__(Pigment)
   self._pigment = pigment
-  DMNSN_INCREF(self._pigment)
   return self
 
 cdef class ImageMap(Pigment):
@@ -834,7 +829,7 @@ cdef class ImageMap(Pigment):
     if fclose(file) != 0:
       _raise_OSError()
 
-    self._pigment = dmnsn_new_canvas_pigment(canvas)
+    self._pigment = dmnsn_new_canvas_pigment(_get_pool(), canvas)
     Pigment.__init__(self, *args, **kwargs)
 
 cdef class PigmentMap(Pigment):
@@ -857,13 +852,11 @@ cdef class PigmentMap(Pigment):
       for i, pigment in map.items():
         pigment = Pigment(pigment)
         real_pigment = (<Pigment>pigment)._pigment
-        DMNSN_INCREF(real_pigment)
         dmnsn_map_add_entry(pigment_map, i, &real_pigment)
     else:
       for i, pigment in enumerate(map):
         pigment = Pigment(pigment)
         real_pigment = (<Pigment>pigment)._pigment
-        DMNSN_INCREF(real_pigment)
         dmnsn_map_add_entry(pigment_map, i/len(map), &real_pigment)
 
     cdef dmnsn_pigment_map_flags flags
@@ -872,8 +865,7 @@ cdef class PigmentMap(Pigment):
     else:
       flags = DMNSN_PIGMENT_MAP_REGULAR
 
-    self._pigment = dmnsn_new_pigment_map_pigment(pattern._pattern, pigment_map,
-                                                  flags)
+    self._pigment = dmnsn_new_pigment_map_pigment(_get_pool(), pattern._pattern, pigment_map, flags)
     Pigment.__init__(self, *args, **kwargs)
 
 ############
@@ -996,14 +988,12 @@ cdef class Texture(_Transformable):
       else:
         return _Pigment(self._texture.pigment)
     def __set__(self, pigment):
-      dmnsn_delete_pigment(self._texture.pigment)
       cdef Pigment real_pigment
       if pigment is None:
         self._texture.pigment = NULL
       else:
         real_pigment = Pigment(pigment)
         self._texture.pigment = real_pigment._pigment
-        DMNSN_INCREF(self._texture.pigment)
 
   property finish:
     """The texture's finish."""
@@ -1559,10 +1549,8 @@ cdef class Scene:
     def __get__(self):
       return _Pigment(self._scene.background)
     def __set__(self, pigment):
-      dmnsn_delete_pigment(self._scene.background)
       cdef Pigment real_pigment = Pigment(pigment)
       self._scene.background = real_pigment._pigment
-      DMNSN_INCREF(self._scene.background)
 
   property adc_bailout:
     """The adaptive depth control bailout (default: 1/255)."""

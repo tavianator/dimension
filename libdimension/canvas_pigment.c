@@ -35,8 +35,7 @@ typedef struct dmnsn_canvas_pigment {
 static dmnsn_tcolor
 dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
-  const dmnsn_canvas_pigment *canvas_pigment =
-    (const dmnsn_canvas_pigment *)pigment;
+  const dmnsn_canvas_pigment *canvas_pigment = (const dmnsn_canvas_pigment *)pigment;
   dmnsn_canvas *canvas = canvas_pigment->canvas;
 
   size_t x = llround((fmod(v.x, 1.0) + 1.0)*(canvas->width  - 1));
@@ -44,24 +43,15 @@ dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
   return dmnsn_canvas_get_pixel(canvas, x%canvas->width, y%canvas->height);
 }
 
-/** Canvas pigment destructor. */
-static void
-dmnsn_canvas_pigment_free_fn(dmnsn_pigment *pigment)
-{
-  dmnsn_canvas_pigment *canvas_pigment = (dmnsn_canvas_pigment *)pigment;
-  dmnsn_free(canvas_pigment);
-}
-
 /* Create a canvas color */
 dmnsn_pigment *
-dmnsn_new_canvas_pigment(dmnsn_canvas *canvas)
+dmnsn_new_canvas_pigment(dmnsn_pool *pool, dmnsn_canvas *canvas)
 {
-  dmnsn_canvas_pigment *canvas_pigment = DMNSN_MALLOC(dmnsn_canvas_pigment);
+  dmnsn_canvas_pigment *canvas_pigment = DMNSN_PALLOC(pool, dmnsn_canvas_pigment);
   canvas_pigment->canvas = canvas;
 
   dmnsn_pigment *pigment = &canvas_pigment->pigment;
   dmnsn_init_pigment(pigment);
   pigment->pigment_fn = dmnsn_canvas_pigment_fn;
-  pigment->free_fn = dmnsn_canvas_pigment_free_fn;
   return pigment;
 }
