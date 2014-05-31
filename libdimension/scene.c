@@ -30,12 +30,12 @@ static void
 dmnsn_scene_cleanup(void *ptr)
 {
   dmnsn_scene *scene = ptr;
+
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
     dmnsn_delete_object(*object);
   }
-
-  dmnsn_delete_array(scene->lights);
   dmnsn_delete_array(scene->objects);
+
   dmnsn_delete_texture(scene->default_texture);
   dmnsn_delete_pigment(scene->background);
 }
@@ -55,7 +55,7 @@ dmnsn_new_scene(dmnsn_pool *pool)
   scene->outer_width      = 0;
   scene->outer_height     = 0;
   scene->objects          = DMNSN_NEW_ARRAY(dmnsn_object *);
-  scene->lights           = DMNSN_NEW_ARRAY(dmnsn_light *);
+  scene->lights           = DMNSN_PALLOC_ARRAY(pool, dmnsn_light *);
   scene->camera           = NULL;
   scene->quality          = DMNSN_RENDER_FULL;
   scene->reclimit         = 5;
