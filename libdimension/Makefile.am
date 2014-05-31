@@ -56,7 +56,6 @@ nobase_include_HEADERS = dimension.h                                           \
                          dimension/polynomial.h                                \
                          dimension/pool.h                                      \
                          dimension/ray_trace.h                                 \
-                         dimension/refcount.h                                  \
                          dimension/scene.h                                     \
                          dimension/tcolor.h                                    \
                          dimension/texture.h                                   \
@@ -107,7 +106,6 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS)                            \
                           prtree.c                                             \
                           prtree.h                                             \
                           ray_trace.c                                          \
-                          refcount-internal.h                                  \
                           reflection.c                                         \
                           rgba.c                                               \
                           rgba.h                                               \

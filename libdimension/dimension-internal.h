@@ -28,7 +28,6 @@
 #define DIMENSION_INTERNAL_H
 
 #include "dimension.h"
-#include "refcount-internal.h"
 #include "compiler-internal.h"
 #include "profile.h"
 #include "platform.h"

@@ -27,7 +27,6 @@ check_PROGRAMS    = warning.test                                               \
                     error.test                                                 \
                     custom-error-fn.test                                       \
                     pool.test                                                  \
-                    refcount.test                                              \
                     dictionary.test                                            \
                     polynomial.test                                            \
                     prtree.test                                                \
@@ -77,9 +76,6 @@ custom_error_fn_test_LDADD   = libdimension-tests.la
 
 pool_test_SOURCES = pool.c
 pool_test_LDADD   = libdimension-unit-test.la
-
-refcount_test_SOURCES = refcount.c
-refcount_test_LDADD   = libdimension-unit-test.la
 
 dictionary_test_SOURCES = dictionary.c
 dictionary_test_LDADD   = libdimension-unit-test.la
