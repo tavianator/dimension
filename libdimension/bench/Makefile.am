@@ -18,9 +18,9 @@
 ###########################################################################
 
 EXTRA_PROGRAMS = array.bench                                                   \
+                 future.bench                                                  \
                  geometry.bench                                                \
                  polynomial.bench                                              \
-                 future.bench                                                  \
                  prtree.bench                                                  \
                  triangle.bench
 
@@ -39,9 +39,9 @@ bench: $(EXTRA_PROGRAMS)
 	./array.bench
 	./geometry.bench
 	./polynomial.bench
-	./future.bench
 	./prtree.bench
 	./triangle.bench
+	./future.bench
 
 clean-local:
 	rm -f *.bench
