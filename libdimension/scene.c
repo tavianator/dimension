@@ -26,22 +26,11 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
-static void
-dmnsn_scene_cleanup(void *ptr)
-{
-  dmnsn_scene *scene = ptr;
-
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
-    dmnsn_delete_object(*object);
-  }
-  dmnsn_delete_array(scene->objects);
-}
-
 /* Allocate an empty scene */
 dmnsn_scene *
 dmnsn_new_scene(dmnsn_pool *pool)
 {
-  dmnsn_scene *scene = DMNSN_PALLOC_TIDY(pool, dmnsn_scene, dmnsn_scene_cleanup);
+  dmnsn_scene *scene = DMNSN_PALLOC(pool, dmnsn_scene);
 
   scene->background       = NULL;
   scene->default_texture  = dmnsn_new_texture(pool);
@@ -51,7 +40,7 @@ dmnsn_new_scene(dmnsn_pool *pool)
   scene->region_y         = 0;
   scene->outer_width      = 0;
   scene->outer_height     = 0;
-  scene->objects          = DMNSN_NEW_ARRAY(dmnsn_object *);
+  scene->objects          = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
   scene->lights           = DMNSN_PALLOC_ARRAY(pool, dmnsn_light *);
   scene->camera           = NULL;
   scene->quality          = DMNSN_RENDER_FULL;

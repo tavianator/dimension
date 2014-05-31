@@ -33,8 +33,6 @@ cdef extern from "../libdimension/dimension.h":
 
   ctypedef void dmnsn_callback_fn(void *ptr)
 
-  void DMNSN_INCREF(void *)
-
   void dmnsn_die_on_warnings(bint always_die)
 
   double dmnsn_epsilon
@@ -318,28 +316,23 @@ cdef extern from "../libdimension/dimension.h":
     dmnsn_matrix trans
     dmnsn_matrix intrinsic_trans
 
-  dmnsn_object *dmnsn_new_object()
-  void dmnsn_delete_object(dmnsn_object *object)
+  dmnsn_object *dmnsn_new_object(dmnsn_pool *pool)
 
-  dmnsn_object *dmnsn_new_flat_triangle(dmnsn_vector a,
-                                        dmnsn_vector b,
-                                        dmnsn_vector c)
-  dmnsn_object *dmnsn_new_triangle(dmnsn_vector a,
-                                   dmnsn_vector b,
-                                   dmnsn_vector c,
-                                   dmnsn_vector na,
-                                   dmnsn_vector nb,
-                                   dmnsn_vector nc)
-  dmnsn_object *dmnsn_new_plane(dmnsn_vector normal)
-  dmnsn_object *dmnsn_new_sphere()
-  dmnsn_object *dmnsn_new_cube()
-  dmnsn_object *dmnsn_new_cone(double r1, double r2, bint open)
-  dmnsn_object *dmnsn_new_torus(double major, double minor)
+  dmnsn_object *dmnsn_new_flat_triangle(dmnsn_pool *pool, dmnsn_vector a, dmnsn_vector b, dmnsn_vector c)
+  dmnsn_object *dmnsn_new_triangle(
+    dmnsn_pool *pool,
+    dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
+    dmnsn_vector na, dmnsn_vector nb, dmnsn_vector nc)
+  dmnsn_object *dmnsn_new_plane(dmnsn_pool *pool, dmnsn_vector normal)
+  dmnsn_object *dmnsn_new_sphere(dmnsn_pool *pool)
+  dmnsn_object *dmnsn_new_cube(dmnsn_pool *pool)
+  dmnsn_object *dmnsn_new_cone(dmnsn_pool *pool, double r1, double r2, bint open)
+  dmnsn_object *dmnsn_new_torus(dmnsn_pool *pool, double major, double minor)
 
-  dmnsn_object *dmnsn_new_csg_union(dmnsn_array *objects)
-  dmnsn_object *dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
-  dmnsn_object *dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
-  dmnsn_object *dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B)
+  dmnsn_object *dmnsn_new_csg_union(dmnsn_pool *pool, dmnsn_array *objects)
+  dmnsn_object *dmnsn_new_csg_intersection(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
+  dmnsn_object *dmnsn_new_csg_difference(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
+  dmnsn_object *dmnsn_new_csg_merge(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
 
   ##########
   # Lights #

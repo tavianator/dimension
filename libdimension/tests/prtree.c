@@ -64,11 +64,13 @@ main(void)
   /* Treat warnings as errors for tests */
   dmnsn_die_on_warnings(true);
 
+  dmnsn_pool *pool = dmnsn_new_pool();
+
   const size_t nobjects = 128;
-  dmnsn_array *objects = DMNSN_NEW_ARRAY(dmnsn_object *);
+  dmnsn_array *objects = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
 
   for (size_t i = 0; i < nobjects; ++i) {
-    dmnsn_object *object = dmnsn_new_object();
+    dmnsn_object *object = dmnsn_new_object(pool);
     dmnsn_randomize_bounding_box(object);
     object->intersection_fn = dmnsn_fake_intersection_fn;
     object->trans_inv = dmnsn_identity_matrix();
@@ -96,9 +98,6 @@ main(void)
   }
 
   dmnsn_delete_bvh(bvh);
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
-    dmnsn_delete_object(*object);
-  }
-  dmnsn_delete_array(objects);
+  dmnsn_delete_pool(pool);
   return EXIT_SUCCESS;
 }

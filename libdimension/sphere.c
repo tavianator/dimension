@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -60,11 +60,11 @@ dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
 
 /* Allocate a new sphere */
 dmnsn_object *
-dmnsn_new_sphere(void)
+dmnsn_new_sphere(dmnsn_pool *pool)
 {
-  dmnsn_object *sphere = dmnsn_new_object();
-  sphere->intersection_fn  = dmnsn_sphere_intersection_fn;
-  sphere->inside_fn        = dmnsn_sphere_inside_fn;
+  dmnsn_object *sphere = dmnsn_new_object(pool);
+  sphere->intersection_fn = dmnsn_sphere_intersection_fn;
+  sphere->inside_fn = dmnsn_sphere_inside_fn;
   sphere->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
   sphere->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
   return sphere;

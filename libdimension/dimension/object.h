@@ -67,12 +67,6 @@ typedef bool dmnsn_object_intersection_fn(const dmnsn_object *object,
 typedef bool dmnsn_object_inside_fn(const dmnsn_object *object,
                                     dmnsn_vector point);
 
-/**
- * Object destruction callback.
- * @param[in,out] object  The object to delete.
- */
-typedef void dmnsn_object_free_fn(dmnsn_object *object);
-
 /** An object. */
 struct dmnsn_object {
   dmnsn_texture  *texture;  /**< Surface properties. */
@@ -88,32 +82,26 @@ struct dmnsn_object {
   dmnsn_array *children; /**< Child objects. */
   bool split_children;   /**< Whether the child objects can be split. */
 
-  dmnsn_object_initialize_fn   *initialize_fn; /**< Initialization callback. */
+  dmnsn_object_initialize_fn *initialize_fn; /**< Initialization callback. */
   dmnsn_object_intersection_fn *intersection_fn; /**< Intersection callback. */
-  dmnsn_object_inside_fn       *inside_fn; /**< Inside callback. */
-  dmnsn_object_free_fn         *free_fn; /**< Destruction callback. */
+  dmnsn_object_inside_fn *inside_fn; /**< Inside callback. */
 
-  DMNSN_REFCOUNT; /**< Reference count. */
   bool initialized; /**< @internal Whether the object is initialized yet. */
 };
 
 /**
  * Allocate a dummy object.
+ * @param[in] pool  The memory pool to allocate from.
  * @return The allocated object.
  */
-dmnsn_object *dmnsn_new_object(void);
+dmnsn_object *dmnsn_new_object(dmnsn_pool *pool);
 
 /**
  * Initialize a dmnsn_object field.
+ * @param[in] pool  The memory pool to allocate from.
  * @param[out] object  The object to initialize.
  */
-void dmnsn_init_object(dmnsn_object *object);
-
-/**
- * Free an object
- * @param[in,out] object  The object to destroy.
- */
-void dmnsn_delete_object(dmnsn_object *object);
+void dmnsn_init_object(dmnsn_pool *pool, dmnsn_object *object);
 
 /**
  * Initialize an object and potentially its children.

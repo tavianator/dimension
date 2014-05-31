@@ -58,13 +58,13 @@ dmnsn_randomize_bounding_box(dmnsn_object *object)
 }
 
 static dmnsn_object *
-dmnsn_new_fake_object(void)
+dmnsn_new_fake_object(dmnsn_pool *pool)
 {
-  dmnsn_object *object = dmnsn_new_object();
+  dmnsn_object *object = dmnsn_new_object(pool);
   /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
   dmnsn_randomize_bounding_box(object);
   object->intersection_fn = dmnsn_fake_intersection_fn;
-  object->inside_fn       = dmnsn_fake_inside_fn;
+  object->inside_fn = dmnsn_fake_inside_fn;
   return object;
 }
 
@@ -79,13 +79,13 @@ main(void)
     return EXIT_FAILURE;
   }
 
-  dmnsn_array *objects = DMNSN_NEW_ARRAY(dmnsn_object *);
-  dmnsn_texture *texture = dmnsn_new_texture();
-  texture->pigment = dmnsn_new_pigment();
+  dmnsn_pool *pool = dmnsn_new_pool();
+  dmnsn_array *objects = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
+  dmnsn_texture *texture = dmnsn_new_texture(pool);
+  texture->pigment = dmnsn_new_pigment(pool);
   for (size_t i = 0; i < nobjects; ++i) {
-    dmnsn_object *object = dmnsn_new_fake_object();
+    dmnsn_object *object = dmnsn_new_fake_object(pool);
     object->texture = texture;
-    DMNSN_INCREF(object->texture);
     dmnsn_object_initialize(object);
     dmnsn_array_push(objects, &object);
   }
@@ -121,10 +121,6 @@ main(void)
 
   /* Cleanup */
   dmnsn_delete_bvh(bvh);
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
-    dmnsn_delete_object(*object);
-  }
-  dmnsn_delete_texture(texture);
-  dmnsn_delete_array(objects);
+  dmnsn_delete_pool(pool);
   return EXIT_SUCCESS;
 }

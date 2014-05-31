@@ -46,8 +46,7 @@ dmnsn_torus_bound_intersection(const dmnsn_torus *torus, dmnsn_line l)
   dmnsn_vector upper = dmnsn_line_point(l, tupper);
   double ldist2 = lower.x*lower.x + lower.z*lower.z;
   double udist2 = upper.x*upper.x + upper.z*upper.z;
-  if ((ldist2 < rmin2 || ldist2 > rmax2) && (udist2 < rmin2 || udist2 > rmax2))
-  {
+  if ((ldist2 < rmin2 || ldist2 > rmax2) && (udist2 < rmin2 || udist2 > rmax2)) {
     /* No valid intersection with the caps, try the cylinder walls */
     double dist2 = l.x0.x*l.x0.x + l.x0.z*l.x0.z;
     double bigcyl[3], smallcyl[3];
@@ -143,14 +142,14 @@ dmnsn_torus_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 
 /* Allocate a new torus */
 dmnsn_object *
-dmnsn_new_torus(double major, double minor)
+dmnsn_new_torus(dmnsn_pool *pool, double major, double minor)
 {
-  dmnsn_torus *torus = DMNSN_MALLOC(dmnsn_torus);
+  dmnsn_torus *torus = DMNSN_PALLOC(pool, dmnsn_torus);
   torus->major = major;
   torus->minor = minor;
 
   dmnsn_object *object = &torus->object;
-  dmnsn_init_object(object);
+  dmnsn_init_object(pool, object);
   object->intersection_fn  = dmnsn_torus_intersection_fn;
   object->inside_fn = dmnsn_torus_inside_fn;
 

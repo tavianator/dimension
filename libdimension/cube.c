@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -131,11 +131,11 @@ dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
 
 /* Allocate a new cube object */
 dmnsn_object *
-dmnsn_new_cube(void)
+dmnsn_new_cube(dmnsn_pool *pool)
 {
-  dmnsn_object *cube = dmnsn_new_object();
-  cube->intersection_fn  = dmnsn_cube_intersection_fn;
-  cube->inside_fn        = dmnsn_cube_inside_fn;
+  dmnsn_object *cube = dmnsn_new_object(pool);
+  cube->intersection_fn = dmnsn_cube_intersection_fn;
+  cube->inside_fn = dmnsn_cube_inside_fn;
   cube->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
   cube->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
   return cube;

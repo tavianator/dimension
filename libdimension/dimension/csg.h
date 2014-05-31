@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -25,31 +25,35 @@
 
 /**
  * CSG union.
+ * @param[in] pool  The memory pool to allocate from.
  * @param[in] objects  The objects from which to compose the union.
  * @return A union of the objects in \p objects.
  */
-dmnsn_object *dmnsn_new_csg_union(const dmnsn_array *objects);
+dmnsn_object *dmnsn_new_csg_union(dmnsn_pool *pool, const dmnsn_array *objects);
 
 /**
  * CSG intersection.
+ * @param[in] pool  The memory pool to allocate from.
  * @param[in,out] A  The first object.
  * @param[in,out] B  The second object.
  * @return The intersection of \p A and \p B.
  */
-dmnsn_object *dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B);
+dmnsn_object *dmnsn_new_csg_intersection(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B);
 
 /**
  * CSG intersection.
+ * @param[in] pool  The memory pool to allocate from.
  * @param[in,out] A  The outer object.
  * @param[in,out] B  The inner object.
  * @return The difference between \p A and \p B.
  */
-dmnsn_object *dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B);
+dmnsn_object *dmnsn_new_csg_difference(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B);
 
 /**
  * CSG Merge.
+ * @param[in] pool  The memory pool to allocate from.
  * @param[in,out] A  The first object.
  * @param[in,out] B  The second object.
  * @return The merge of \p A and \p B.
  */
-dmnsn_object *dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B);
+dmnsn_object *dmnsn_new_csg_merge(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B);

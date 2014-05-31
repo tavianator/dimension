@@ -30,13 +30,16 @@ main(void)
     return EXIT_FAILURE;
   }
 
+  dmnsn_pool *pool = dmnsn_new_pool();
+
   dmnsn_object *triangle = dmnsn_new_flat_triangle(
+    pool,
     dmnsn_new_vector(1.0, 0.0, 0.0),
     dmnsn_new_vector(2.0, 2.0, 1.0),
     dmnsn_new_vector(3.0, 0.0, 2.0)
   );
-  triangle->texture = dmnsn_new_texture();
-  triangle->texture->pigment = dmnsn_new_pigment();
+  triangle->texture = dmnsn_new_texture(pool);
+  triangle->texture->pigment = dmnsn_new_pigment(pool);
   dmnsn_object_initialize(triangle);
 
   dmnsn_intersection intersection;
@@ -59,7 +62,7 @@ main(void)
   dmnsn_assert(!intersected, "Intersected");
   printf("dmnsn_triangle_intersection(false): %ld\n", sandglass.grains);
 
-  dmnsn_delete_object(triangle);
+  dmnsn_delete_pool(pool);
 
   return EXIT_SUCCESS;
 }

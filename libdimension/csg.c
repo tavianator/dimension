@@ -67,31 +67,29 @@ dmnsn_csg_union_initialize_fn(dmnsn_object *object)
 
 /** CSG union destruction callback. */
 static void
-dmnsn_csg_union_free_fn(dmnsn_object *object)
+dmnsn_csg_union_cleanup(void *ptr)
 {
-  dmnsn_csg_union *csg = (dmnsn_csg_union *)object;
+  dmnsn_csg_union *csg = ptr;
   dmnsn_delete_bvh(csg->bvh);
-  dmnsn_free(csg);
 }
 
 /* Bulk-load a union */
 dmnsn_object *
-dmnsn_new_csg_union(const dmnsn_array *objects)
+dmnsn_new_csg_union(dmnsn_pool *pool, const dmnsn_array *objects)
 {
-  dmnsn_csg_union *csg = DMNSN_MALLOC(dmnsn_csg_union);
+  dmnsn_csg_union *csg = DMNSN_PALLOC_TIDY(pool, dmnsn_csg_union, dmnsn_csg_union_cleanup);
   csg->bvh = NULL;
 
   dmnsn_object *object = &csg->object;
-  dmnsn_init_object(object);
+  dmnsn_init_object(pool, object);
 
   DMNSN_ARRAY_FOREACH (dmnsn_object **, child, objects) {
     dmnsn_array_push(object->children, child);
   }
-  object->split_children  = true;
+  object->split_children = true;
   object->intersection_fn = dmnsn_csg_union_intersection_fn;
-  object->inside_fn       = dmnsn_csg_union_inside_fn;
-  object->initialize_fn   = dmnsn_csg_union_initialize_fn;
-  object->free_fn         = dmnsn_csg_union_free_fn;
+  object->inside_fn = dmnsn_csg_union_inside_fn;
+  object->initialize_fn = dmnsn_csg_union_initialize_fn;
 
   return object;
 }
@@ -207,16 +205,16 @@ dmnsn_csg_intersection_initialize_fn(dmnsn_object *csg)
 }
 
 dmnsn_object *
-dmnsn_new_csg_intersection(dmnsn_object *A, dmnsn_object *B)
+dmnsn_new_csg_intersection(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
 {
-  dmnsn_object *csg = dmnsn_new_object();
+  dmnsn_object *csg = dmnsn_new_object(pool);
 
   dmnsn_array_push(csg->children, &A);
   dmnsn_array_push(csg->children, &B);
 
   csg->intersection_fn = dmnsn_csg_intersection_intersection_fn;
-  csg->inside_fn       = dmnsn_csg_intersection_inside_fn;
-  csg->initialize_fn   = dmnsn_csg_intersection_initialize_fn;
+  csg->inside_fn = dmnsn_csg_intersection_inside_fn;
+  csg->initialize_fn = dmnsn_csg_intersection_initialize_fn;
 
   return csg;
 }
@@ -254,9 +252,9 @@ dmnsn_csg_difference_initialize_fn(dmnsn_object *csg)
 }
 
 dmnsn_object *
-dmnsn_new_csg_difference(dmnsn_object *A, dmnsn_object *B)
+dmnsn_new_csg_difference(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
 {
-  dmnsn_object *csg = dmnsn_new_object();
+  dmnsn_object *csg = dmnsn_new_object(pool);
 
   dmnsn_array_push(csg->children, &A);
   dmnsn_array_push(csg->children, &B);
@@ -305,9 +303,9 @@ dmnsn_csg_merge_initialize_fn(dmnsn_object *csg)
 }
 
 dmnsn_object *
-dmnsn_new_csg_merge(dmnsn_object *A, dmnsn_object *B)
+dmnsn_new_csg_merge(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
 {
-  dmnsn_object *csg = dmnsn_new_object();
+  dmnsn_object *csg = dmnsn_new_object(pool);
 
   dmnsn_array_push(csg->children, &A);
   dmnsn_array_push(csg->children, &B);

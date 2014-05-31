@@ -26,50 +26,29 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
-static void
-dmnsn_default_object_free_fn(dmnsn_object *object)
-{
-  dmnsn_free(object);
-}
-
 /* Allocate a dummy object */
 dmnsn_object *
-dmnsn_new_object(void)
+dmnsn_new_object(dmnsn_pool *pool)
 {
-  dmnsn_object *object = DMNSN_MALLOC(dmnsn_object);
-  dmnsn_init_object(object);
+  dmnsn_object *object = DMNSN_PALLOC(pool, dmnsn_object);
+  dmnsn_init_object(pool, object);
   return object;
 }
 
 /* Initialize a dmnsn_object field */
 void
-dmnsn_init_object(dmnsn_object *object)
+dmnsn_init_object(dmnsn_pool *pool, dmnsn_object *object)
 {
   object->texture         = NULL;
   object->interior        = NULL;
   object->trans           = dmnsn_identity_matrix();
   object->intrinsic_trans = dmnsn_identity_matrix();
-  object->children        = DMNSN_NEW_ARRAY(dmnsn_object *);
+  object->children        = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
   object->split_children  = false;
   object->intersection_fn = NULL;
   object->inside_fn       = NULL;
   object->initialize_fn   = NULL;
-  object->free_fn         = dmnsn_default_object_free_fn;
   object->initialized     = false;
-  DMNSN_REFCOUNT_INIT(object);
-}
-
-/* Free a dmnsn_object */
-void
-dmnsn_delete_object(dmnsn_object *object)
-{
-  if (DMNSN_DECREF(object)) {
-    DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
-      dmnsn_delete_object(*child);
-    }
-    dmnsn_delete_array(object->children);
-    object->free_fn(object);
-  }
 }
 
 /** Recursively initialize objects. */

@@ -1080,9 +1080,6 @@ cdef class Object(_Transformable):
     if interior is not None:
       self.interior = interior
 
-  def __dealloc__(self):
-    dmnsn_delete_object(self._object)
-
   property texture:
     """The object's Texture."""
     def __get__(self):
@@ -1132,10 +1129,11 @@ cdef class Triangle(Object):
       a_normal = cross(b - a, c - a)
       b_normal = a_normal
       c_normal = a_normal
-    self._object = dmnsn_new_triangle(Vector(a)._v, Vector(b)._v, Vector(c)._v,
-                                      Vector(a_normal)._v,
-                                      Vector(b_normal)._v,
-                                      Vector(c_normal)._v)
+    self._object = dmnsn_new_triangle(
+      _get_pool(),
+      Vector(a)._v, Vector(b)._v, Vector(c)._v,
+      Vector(a_normal)._v, Vector(b_normal)._v, Vector(c_normal)._v
+    )
     Object.__init__(self, *args, **kwargs)
 
 cdef class Plane(Object):
@@ -1151,7 +1149,7 @@ cdef class Plane(Object):
 
     Additionally, Plane() accepts any arguments that Object() accepts.
     """
-    self._object = dmnsn_new_plane(Vector(normal)._v)
+    self._object = dmnsn_new_plane(_get_pool(), Vector(normal)._v)
     Object.__init__(self, *args, **kwargs)
 
     self._intrinsic_transform(translate(distance*Vector(normal)))
@@ -1168,7 +1166,7 @@ cdef class Sphere(Object):
 
     Additionally, Sphere() accepts any arguments that Object() accepts.
     """
-    self._object = dmnsn_new_sphere()
+    self._object = dmnsn_new_sphere(_get_pool())
     Object.__init__(self, *args, **kwargs)
 
     cdef Matrix trans = translate(Vector(center))
@@ -1187,7 +1185,7 @@ cdef class Box(Object):
 
     Additionally, Box() accepts any arguments that Object() accepts.
     """
-    self._object = dmnsn_new_cube()
+    self._object = dmnsn_new_cube(_get_pool())
     Object.__init__(self, *args, **kwargs)
 
     min = Vector(min)
@@ -1212,7 +1210,7 @@ cdef class Cone(Object):
 
     Additionally, Cone() accepts any arguments that Object() accepts.
     """
-    self._object = dmnsn_new_cone(bottom_radius, top_radius, open)
+    self._object = dmnsn_new_cone(_get_pool(), bottom_radius, top_radius, open)
     Object.__init__(self, *args, **kwargs)
 
     # Lift the cone to start at the origin, then scale, rotate, and translate
@@ -1261,7 +1259,7 @@ cdef class Torus(Object):
 
     Additionally, Torus() accepts any arguments that Object() accepts.
     """
-    self._object = dmnsn_new_torus(major_radius, minor_radius)
+    self._object = dmnsn_new_torus(_get_pool(), major_radius, minor_radius)
     Object.__init__(self, *args, **kwargs)
 
 cdef class Union(Object):
@@ -1284,10 +1282,9 @@ cdef class Union(Object):
     try:
       for obj in objects:
         o = (<Object?>obj)._object
-        DMNSN_INCREF(o)
         dmnsn_array_push(array, &o)
 
-      self._object = dmnsn_new_csg_union(array)
+      self._object = dmnsn_new_csg_union(_get_pool(), array)
     finally:
       dmnsn_delete_array(array)
 
@@ -1312,11 +1309,9 @@ cdef class Intersection(Object):
     for obj in objects:
       if self._object == NULL:
         self._object = (<Object?>obj)._object
-        DMNSN_INCREF(self._object)
       else:
         o = (<Object?>obj)._object
-        DMNSN_INCREF(o)
-        self._object = dmnsn_new_csg_intersection(self._object, o)
+        self._object = dmnsn_new_csg_intersection(_get_pool(), self._object, o)
 
     Object.__init__(self, *args, **kwargs)
 
@@ -1339,11 +1334,9 @@ cdef class Difference(Object):
     for obj in objects:
       if self._object == NULL:
         self._object = (<Object?>obj)._object
-        DMNSN_INCREF(self._object)
       else:
         o = (<Object?>obj)._object
-        DMNSN_INCREF(o)
-        self._object = dmnsn_new_csg_difference(self._object, o)
+        self._object = dmnsn_new_csg_difference(_get_pool(), self._object, o)
 
     Object.__init__(self, *args, **kwargs)
 
@@ -1366,11 +1359,9 @@ cdef class Merge(Object):
     for obj in objects:
       if self._object == NULL:
         self._object = (<Object?>obj)._object
-        DMNSN_INCREF(self._object)
       else:
         o = (<Object?>obj)._object
-        DMNSN_INCREF(o)
-        self._object = dmnsn_new_csg_merge(self._object, o)
+        self._object = dmnsn_new_csg_merge(_get_pool(), self._object, o)
 
     Object.__init__(self, *args, **kwargs)
 
@@ -1479,7 +1470,6 @@ cdef class Scene:
     cdef dmnsn_object *o
     for obj in objects:
       o = (<Object?>obj)._object
-      DMNSN_INCREF(o)
       dmnsn_array_push(self._scene.objects, &o)
 
     cdef dmnsn_light *l

@@ -124,13 +124,13 @@ dmnsn_cone_cap_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 
 /** Allocate a new cone cap. */
 dmnsn_object *
-dmnsn_new_cone_cap(double r)
+dmnsn_new_cone_cap(dmnsn_pool *pool, double r)
 {
-  dmnsn_cone_cap *cap = DMNSN_MALLOC(dmnsn_cone_cap);
+  dmnsn_cone_cap *cap = DMNSN_PALLOC(pool, dmnsn_cone_cap);
   cap->r = r;
 
   dmnsn_object *object = &cap->object;
-  dmnsn_init_object(object);
+  dmnsn_init_object(pool, object);
   object->intersection_fn  = dmnsn_cone_cap_intersection_fn;
   object->inside_fn = dmnsn_cone_cap_inside_fn;
   object->bounding_box.min = dmnsn_new_vector(-r, 0.0, -r);
@@ -140,15 +140,15 @@ dmnsn_new_cone_cap(double r)
 
 /* Allocate a new cone object */
 dmnsn_object *
-dmnsn_new_cone(double r1, double r2, bool open)
+dmnsn_new_cone(dmnsn_pool *pool, double r1, double r2, bool open)
 {
-  dmnsn_cone *cone = DMNSN_MALLOC(dmnsn_cone);
+  dmnsn_cone *cone = DMNSN_PALLOC(pool, dmnsn_cone);
   cone->r1 = r1;
   cone->r2 = r2;
 
   dmnsn_object *object = &cone->object;
-  dmnsn_init_object(object);
-  object->intersection_fn  = dmnsn_cone_intersection_fn;
+  dmnsn_init_object(pool, object);
+  object->intersection_fn = dmnsn_cone_intersection_fn;
   object->inside_fn = dmnsn_cone_inside_fn;
 
   double rmax = dmnsn_max(r1, r2);
@@ -160,8 +160,8 @@ dmnsn_new_cone(double r1, double r2, bool open)
   }
 
   /* Implement closed cones as a union with the caps */
-  dmnsn_object *cap1 = dmnsn_new_cone_cap(r1);
-  dmnsn_object *cap2 = dmnsn_new_cone_cap(r2);
+  dmnsn_object *cap1 = dmnsn_new_cone_cap(pool, r1);
+  dmnsn_object *cap2 = dmnsn_new_cone_cap(pool, r2);
   cap1->intrinsic_trans = dmnsn_translation_matrix(
     dmnsn_new_vector(0.0, -1.0, 0.0)
   );
@@ -175,7 +175,7 @@ dmnsn_new_cone(double r1, double r2, bool open)
   dmnsn_array_push(withcaps, &cone);
   dmnsn_array_push(withcaps, &cap1);
   dmnsn_array_push(withcaps, &cap2);
-  dmnsn_object *cone_cap_union = dmnsn_new_csg_union(withcaps);
+  dmnsn_object *cone_cap_union = dmnsn_new_csg_union(pool, withcaps);
   dmnsn_delete_array(withcaps);
 
   return cone_cap_union;

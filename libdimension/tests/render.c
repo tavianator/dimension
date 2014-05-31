@@ -118,7 +118,7 @@ dmnsn_test_scene_add_lights(dmnsn_pool *pool, dmnsn_scene *scene)
 static void
 dmnsn_test_scene_add_hollow_cube(dmnsn_pool *pool, dmnsn_scene *scene)
 {
-  dmnsn_object *cube = dmnsn_new_cube();
+  dmnsn_object *cube = dmnsn_new_cube(pool);
   cube->trans = dmnsn_rotation_matrix(
     dmnsn_new_vector(dmnsn_radians(45.0), 0.0, 0.0)
   );
@@ -133,13 +133,13 @@ dmnsn_test_scene_add_hollow_cube(dmnsn_pool *pool, dmnsn_scene *scene)
   cube->interior = dmnsn_new_interior(pool);
   cube->interior->ior = 1.1;
 
-  dmnsn_object *sphere = dmnsn_new_sphere();
+  dmnsn_object *sphere = dmnsn_new_sphere(pool);
   sphere->texture = dmnsn_new_texture(pool);
   sphere->texture->pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_green));
   sphere->texture->finish.specular = dmnsn_new_phong(pool, dmnsn_sRGB_inverse_gamma(0.2), 40.0);
   sphere->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.25, 1.25, 1.25));
 
-  dmnsn_object *hollow_cube = dmnsn_new_csg_difference(cube, sphere);
+  dmnsn_object *hollow_cube = dmnsn_new_csg_difference(pool, cube, sphere);
   dmnsn_array_push(scene->objects, &hollow_cube);
 }
 
@@ -155,18 +155,18 @@ dmnsn_test_scene_add_spike(dmnsn_pool *pool, dmnsn_scene *scene)
 {
   dmnsn_array *arrow_array = DMNSN_NEW_ARRAY(dmnsn_object *);
 
-  dmnsn_object *cylinder = dmnsn_new_cone(0.1, 0.1, false);
+  dmnsn_object *cylinder = dmnsn_new_cone(pool, 0.1, 0.1, false);
   cylinder->trans = dmnsn_scale_matrix(dmnsn_new_vector(1.0, 1.25, 1.0));
   dmnsn_array_push(arrow_array, &cylinder);
 
-  dmnsn_object *cone = dmnsn_new_cone(0.1, 0.0, true);
+  dmnsn_object *cone = dmnsn_new_cone(pool, 0.1, 0.0, true);
   cone->trans = dmnsn_matrix_mul(
     dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.375, 0.0)),
     dmnsn_scale_matrix(dmnsn_new_vector(1.0, 0.125, 1.0))
   );
   dmnsn_array_push(arrow_array, &cone);
 
-  dmnsn_object *arrow = dmnsn_new_csg_union(arrow_array);
+  dmnsn_object *arrow = dmnsn_new_csg_union(pool, arrow_array);
   dmnsn_delete_array(arrow_array);
   dmnsn_pattern *gradient = dmnsn_new_gradient_pattern(pool, dmnsn_y);
   dmnsn_map *gradient_pigment_map = dmnsn_new_pigment_map(pool);
@@ -190,18 +190,18 @@ dmnsn_test_scene_add_spike(dmnsn_pool *pool, dmnsn_scene *scene)
 
   dmnsn_array *torus_array = DMNSN_NEW_ARRAY(dmnsn_object *);
 
-  dmnsn_object *torus1 = dmnsn_new_torus(0.15, 0.05);
+  dmnsn_object *torus1 = dmnsn_new_torus(pool, 0.15, 0.05);
   torus1->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -1.0, 0.0));
   dmnsn_array_push(torus_array, &torus1);
 
-  dmnsn_object *torus2 = dmnsn_new_torus(0.15, 0.05);
+  dmnsn_object *torus2 = dmnsn_new_torus(pool, 0.15, 0.05);
   dmnsn_array_push(torus_array, &torus2);
 
-  dmnsn_object *torus3 = dmnsn_new_torus(0.15, 0.05);
+  dmnsn_object *torus3 = dmnsn_new_torus(pool, 0.15, 0.05);
   torus3->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, 1.0, 0.0));
   dmnsn_array_push(torus_array, &torus3);
 
-  dmnsn_object *torii = dmnsn_new_csg_union(torus_array);
+  dmnsn_object *torii = dmnsn_new_csg_union(pool, torus_array);
   dmnsn_delete_array(torus_array);
   torii->texture = dmnsn_new_texture(pool);
   torii->texture->pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_blue));
@@ -210,7 +210,7 @@ dmnsn_test_scene_add_spike(dmnsn_pool *pool, dmnsn_scene *scene)
   dmnsn_array *spike_array = DMNSN_NEW_ARRAY(dmnsn_object *);
   dmnsn_array_push(spike_array, &arrow);
   dmnsn_array_push(spike_array, &torii);
-  dmnsn_object *spike = dmnsn_new_csg_union(spike_array);
+  dmnsn_object *spike = dmnsn_new_csg_union(pool, spike_array);
   dmnsn_delete_array(spike_array);
   spike->trans = dmnsn_rotation_matrix(
     dmnsn_new_vector(dmnsn_radians(-45.0), 0.0, 0.0)
@@ -234,7 +234,7 @@ dmnsn_test_scene_add_triangle_strip(dmnsn_pool *pool, dmnsn_scene *scene)
   strip_textures[1]->pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_orange));
   strip_textures[2]->pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_yellow));
   for (unsigned int i = 0; i < 128; ++i) {
-    dmnsn_object *triangle = dmnsn_new_flat_triangle(a, b, c);
+    dmnsn_object *triangle = dmnsn_new_flat_triangle(pool, a, b, c);
     triangle->texture = strip_textures[i%3];
     dmnsn_array_push(strip_array, &triangle);
 
@@ -243,7 +243,7 @@ dmnsn_test_scene_add_triangle_strip(dmnsn_pool *pool, dmnsn_scene *scene)
     c = dmnsn_vector_add(a, dmnsn_z);
   }
 
-  dmnsn_object *strip = dmnsn_new_csg_union(strip_array);
+  dmnsn_object *strip = dmnsn_new_csg_union(pool, strip_array);
   dmnsn_delete_array(strip_array);
   strip->trans = dmnsn_translation_matrix(dmnsn_new_vector(5.0, -2.0, -4.0));
   dmnsn_array_push(scene->objects, &strip);
@@ -252,7 +252,7 @@ dmnsn_test_scene_add_triangle_strip(dmnsn_pool *pool, dmnsn_scene *scene)
 static void
 dmnsn_test_scene_add_ground(dmnsn_pool *pool, dmnsn_scene *scene)
 {
-  dmnsn_object *plane = dmnsn_new_plane(dmnsn_new_vector(0.0, 1.0, 0.0));
+  dmnsn_object *plane = dmnsn_new_plane(pool, dmnsn_new_vector(0.0, 1.0, 0.0));
   plane->trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -2.0, 0.0));
   dmnsn_pattern *checker = dmnsn_new_checker_pattern(pool);
   dmnsn_map *small_map = dmnsn_new_pigment_map(pool);

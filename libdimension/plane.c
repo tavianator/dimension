@@ -43,13 +43,13 @@ static bool dmnsn_plane_inside_fn(const dmnsn_object *plane,
 
 /* Allocate a new plane */
 dmnsn_object *
-dmnsn_new_plane(dmnsn_vector normal)
+dmnsn_new_plane(dmnsn_pool *pool, dmnsn_vector normal)
 {
-  dmnsn_plane *plane = DMNSN_MALLOC(dmnsn_plane);
+  dmnsn_plane *plane = DMNSN_PALLOC(pool, dmnsn_plane);
   plane->normal = normal;
 
   dmnsn_object *object = &plane->object;
-  dmnsn_init_object(object);
+  dmnsn_init_object(pool, object);
   object->intersection_fn = dmnsn_plane_intersection_fn;
   object->inside_fn = dmnsn_plane_inside_fn;
   object->bounding_box = dmnsn_infinite_bounding_box();

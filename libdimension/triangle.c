@@ -66,20 +66,21 @@ dmnsn_triangle_inside_fn(const dmnsn_object *triangle, dmnsn_vector point)
 
 /* Allocate a new triangle */
 dmnsn_object *
-dmnsn_new_triangle(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
+dmnsn_new_triangle(dmnsn_pool *pool,
+                   dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
                    dmnsn_vector na, dmnsn_vector nb, dmnsn_vector nc)
 {
   na = dmnsn_vector_normalized(na);
   nb = dmnsn_vector_normalized(nb);
   nc = dmnsn_vector_normalized(nc);
 
-  dmnsn_triangle *triangle = DMNSN_MALLOC(dmnsn_triangle);
+  dmnsn_triangle *triangle = DMNSN_PALLOC(pool, dmnsn_triangle);
   triangle->na  = na;
   triangle->nab = dmnsn_vector_sub(nb, na);
   triangle->nac = dmnsn_vector_sub(nc, na);
 
   dmnsn_object *object = &triangle->object;
-  dmnsn_init_object(object);
+  dmnsn_init_object(pool, object);
   object->intersection_fn  = dmnsn_triangle_intersection_fn;
   object->inside_fn = dmnsn_triangle_inside_fn;
   object->bounding_box.min = dmnsn_zero;
@@ -101,7 +102,7 @@ dmnsn_new_triangle(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
 
 /* Allocate a new flat triangle */
 dmnsn_object *
-dmnsn_new_flat_triangle(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c)
+dmnsn_new_flat_triangle(dmnsn_pool *pool, dmnsn_vector a, dmnsn_vector b, dmnsn_vector c)
 {
   /* Flat triangles are just smooth triangles with identical normals at all
      verticies */
@@ -109,5 +110,5 @@ dmnsn_new_flat_triangle(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c)
     dmnsn_vector_sub(b, a),
     dmnsn_vector_sub(c, a)
   );
-  return dmnsn_new_triangle(a, b, c, normal, normal, normal);
+  return dmnsn_new_triangle(pool, a, b, c, normal, normal, normal);
 }
