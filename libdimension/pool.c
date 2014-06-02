@@ -58,7 +58,7 @@ dmnsn_new_pool(void)
 {
   dmnsn_pool *pool = DMNSN_MALLOC(dmnsn_pool);
   dmnsn_key_create(&pool->thread_block, NULL);
-  atomic_init(&pool->chain, NULL);
+  atomic_store_explicit(&pool->chain, NULL, memory_order_relaxed);
   return pool;
 }
 
