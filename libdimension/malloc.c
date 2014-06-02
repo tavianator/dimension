@@ -26,9 +26,10 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdatomic.h>
 
 #ifndef NDEBUG
-static size_t dmnsn_allocs = 0;
+static atomic_size_t dmnsn_allocs = 0;
 #endif
 
 void *
@@ -40,7 +41,7 @@ dmnsn_malloc(size_t size)
   }
 
 #ifndef NDEBUG
-  __sync_fetch_and_add(&dmnsn_allocs, 1);
+  atomic_fetch_add(&dmnsn_allocs, 1);
 #endif
 
   return ptr;
@@ -51,7 +52,7 @@ dmnsn_realloc(void *ptr, size_t size)
 {
 #ifndef NDEBUG
   if (!ptr) {
-    __sync_fetch_and_add(&dmnsn_allocs, 1);
+    atomic_fetch_add(&dmnsn_allocs, 1);
   }
 #endif
 
@@ -75,7 +76,7 @@ dmnsn_free(void *ptr)
 {
 #ifndef NDEBUG
   if (ptr) {
-    __sync_fetch_and_sub(&dmnsn_allocs, 1);
+    atomic_fetch_sub(&dmnsn_allocs, 1);
   }
 #endif
 
@@ -86,7 +87,7 @@ dmnsn_free(void *ptr)
 DMNSN_LATE_DESTRUCTOR static void
 dmnsn_leak_check(void)
 {
-  if (dmnsn_allocs > 0) {
+  if (atomic_load_explicit(&dmnsn_allocs, memory_order_relaxed) > 0) {
     dmnsn_warning("Leaking memory.");
   }
 }

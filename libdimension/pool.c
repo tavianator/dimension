@@ -24,6 +24,7 @@
  */
 
 #include "dimension-internal.h"
+#include <stdatomic.h>
 
 /** A single allocation and associated destructor. */
 typedef struct dmnsn_allocation {
@@ -48,11 +49,8 @@ typedef struct dmnsn_pool_block {
 struct dmnsn_pool {
   /** Thread-local block. */
   pthread_key_t thread_block;
-
   /** Global chain of pools. */
-  dmnsn_pool_block *chain;
-  /** Mutex guarding the global chain. */
-  pthread_mutex_t mutex;
+  _Atomic(dmnsn_pool_block *) chain;
 };
 
 dmnsn_pool *
@@ -60,8 +58,7 @@ dmnsn_new_pool(void)
 {
   dmnsn_pool *pool = DMNSN_MALLOC(dmnsn_pool);
   dmnsn_key_create(&pool->thread_block, NULL);
-  pool->chain = NULL;
-  dmnsn_initialize_mutex(&pool->mutex);
+  atomic_init(&pool->chain, NULL);
   return pool;
 }
 
@@ -90,10 +87,12 @@ dmnsn_palloc_tidy(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *cleanup_fn)
   if (dmnsn_unlikely(new_block != old_block)) {
     dmnsn_setspecific(pool->thread_block, new_block);
 
-    dmnsn_lock_mutex(&pool->mutex);
-      new_block->prev = pool->chain;
-      pool->chain = new_block;
-    dmnsn_unlock_mutex(&pool->mutex);
+    /* Atomically update pool->chain */
+    dmnsn_pool_block *chain;
+    do {
+      chain = atomic_load(&pool->chain);
+    } while (!atomic_compare_exchange_weak(&pool->chain, &chain, new_block));
+    new_block->prev = chain;
   }
 
   return result;
@@ -106,7 +105,7 @@ dmnsn_delete_pool(dmnsn_pool *pool)
     return;
   }
 
-  dmnsn_pool_block *block = pool->chain;
+  dmnsn_pool_block *block = atomic_load_explicit(&pool->chain, memory_order_relaxed);
   while (block) {
     /* Free all the allocations in reverse order */
     for (size_t i = block->i; i-- > 0;) {
@@ -123,7 +122,6 @@ dmnsn_delete_pool(dmnsn_pool *pool)
     dmnsn_free(saved);
   }
 
-  dmnsn_destroy_mutex(&pool->mutex);
   dmnsn_key_delete(pool->thread_block);
   dmnsn_free(pool);
 }

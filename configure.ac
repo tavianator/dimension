@@ -22,8 +22,8 @@ AC_INIT([Dimension], [0.0], [tavianator@tavianator.com], [dimension],
 AM_INIT_AUTOMAKE([parallel-tests color-tests std-options])
 AM_SILENT_RULES([yes])
 
-dnl Use C99 mode with GNU extensions by default
-CFLAGS="-std=gnu99 $CFLAGS"
+dnl Use C11 mode with GNU extensions by default
+CFLAGS="-std=gnu11 $CFLAGS"
 
 dnl Programs
 AC_PROG_CC
