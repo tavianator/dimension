@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -29,7 +29,7 @@
 #include <stdatomic.h>
 
 #ifndef NDEBUG
-static atomic_size_t dmnsn_allocs = 0;
+static atomic_size_t dmnsn_allocs = ATOMIC_VAR_INIT(0);
 #endif
 
 void *
