@@ -171,12 +171,11 @@ dmnsn_new_cone(dmnsn_pool *pool, double r1, double r2, bool open)
   /* Flip the normal around for the top cap */
   cap2->intrinsic_trans.n[1][1] = -1.0;
 
-  dmnsn_array *withcaps = DMNSN_NEW_ARRAY(dmnsn_object *);
+  dmnsn_array *withcaps = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
   dmnsn_array_push(withcaps, &cone);
   dmnsn_array_push(withcaps, &cap1);
   dmnsn_array_push(withcaps, &cap2);
   dmnsn_object *cone_cap_union = dmnsn_new_csg_union(pool, withcaps);
-  dmnsn_delete_array(withcaps);
 
   return cone_cap_union;
 }

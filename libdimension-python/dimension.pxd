@@ -54,6 +54,7 @@ cdef extern from "../libdimension/dimension.h":
   ctypedef struct dmnsn_array
 
   dmnsn_array *dmnsn_new_array(size_t objsize)
+  dmnsn_array *dmnsn_palloc_array(dmnsn_pool *pool, size_t objsize)
   void dmnsn_delete_array(dmnsn_array *array)
 
   size_t dmnsn_array_size(dmnsn_array *array)

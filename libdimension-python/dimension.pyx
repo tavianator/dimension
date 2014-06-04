@@ -1283,17 +1283,14 @@ cdef class Union(Object):
     if len(objects) < 1:
       raise TypeError("expected a list of one or more Objects")
 
-    cdef dmnsn_array *array = dmnsn_new_array(sizeof(dmnsn_object *))
+    cdef dmnsn_array *array = dmnsn_palloc_array(_get_pool(), sizeof(dmnsn_object *))
     cdef dmnsn_object *o
 
-    try:
-      for obj in objects:
-        o = (<Object?>obj)._object
-        dmnsn_array_push(array, &o)
+    for obj in objects:
+      o = (<Object?>obj)._object
+      dmnsn_array_push(array, &o)
 
-      self._object = dmnsn_new_csg_union(_get_pool(), array)
-    finally:
-      dmnsn_delete_array(array)
+    self._object = dmnsn_new_csg_union(_get_pool(), array)
 
     Object.__init__(self, *args, **kwargs)
 

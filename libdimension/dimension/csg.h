@@ -29,7 +29,7 @@
  * @param[in] objects  The objects from which to compose the union.
  * @return A union of the objects in \p objects.
  */
-dmnsn_object *dmnsn_new_csg_union(dmnsn_pool *pool, const dmnsn_array *objects);
+dmnsn_object *dmnsn_new_csg_union(dmnsn_pool *pool, dmnsn_array *objects);
 
 /**
  * CSG intersection.

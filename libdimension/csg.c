@@ -75,7 +75,7 @@ dmnsn_csg_union_cleanup(void *ptr)
 
 /* Bulk-load a union */
 dmnsn_object *
-dmnsn_new_csg_union(dmnsn_pool *pool, const dmnsn_array *objects)
+dmnsn_new_csg_union(dmnsn_pool *pool, dmnsn_array *objects)
 {
   dmnsn_csg_union *csg = DMNSN_PALLOC_TIDY(pool, dmnsn_csg_union, dmnsn_csg_union_cleanup);
   csg->bvh = NULL;
@@ -83,10 +83,7 @@ dmnsn_new_csg_union(dmnsn_pool *pool, const dmnsn_array *objects)
   dmnsn_object *object = &csg->object;
   dmnsn_init_object(pool, object);
 
-  object->children = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, child, objects) {
-    dmnsn_array_push(object->children, child);
-  }
+  object->children = objects;
   object->split_children = true;
   object->intersection_fn = dmnsn_csg_union_intersection_fn;
   object->inside_fn = dmnsn_csg_union_inside_fn;
