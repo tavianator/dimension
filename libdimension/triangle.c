@@ -79,9 +79,21 @@ dmnsn_new_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3])
 dmnsn_object *
 dmnsn_new_smooth_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3], dmnsn_vector normals[3])
 {
-  dmnsn_vector na = dmnsn_vector_normalized(normals[0]);
-  dmnsn_vector nb = dmnsn_vector_normalized(normals[1]);
-  dmnsn_vector nc = dmnsn_vector_normalized(normals[2]);
+  /*
+   * Make a change-of-basis matrix
+   *
+   * The new vector space has corners at <0, 1, 0>, <0, 0, 1>, and 0,
+   * corresponding to the basis (ab, ac, ab X ac).
+   */
+  dmnsn_vector ab = dmnsn_vector_sub(vertices[1], vertices[0]);
+  dmnsn_vector ac = dmnsn_vector_sub(vertices[2], vertices[0]);
+  dmnsn_vector normal = dmnsn_vector_cross(ab, ac);
+  dmnsn_matrix P = dmnsn_new_matrix4(ab, ac, normal, vertices[0]);
+
+  /* Transform the given normals. */
+  dmnsn_vector na = dmnsn_vector_normalized(dmnsn_transform_normal(P, normals[0]));
+  dmnsn_vector nb = dmnsn_vector_normalized(dmnsn_transform_normal(P, normals[1]));
+  dmnsn_vector nc = dmnsn_vector_normalized(dmnsn_transform_normal(P, normals[2]));
 
   dmnsn_triangle *triangle = DMNSN_PALLOC(pool, dmnsn_triangle);
   triangle->na  = na;
@@ -94,17 +106,7 @@ dmnsn_new_smooth_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3], dmnsn_vect
   object->inside_fn = dmnsn_triangle_inside_fn;
   object->bounding_box.min = dmnsn_zero;
   object->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 0.0);
-
-  /*
-   * Make a change-of-basis matrix
-   *
-   * The new vector space has corners at <0, 1, 0>, <0, 0, 1>, and 0,
-   * corresponding to the basis (ab, ac, ab X ac).
-   */
-  dmnsn_vector ab = dmnsn_vector_sub(vertices[1], vertices[0]);
-  dmnsn_vector ac = dmnsn_vector_sub(vertices[2], vertices[0]);
-  dmnsn_vector normal = dmnsn_vector_cross(ab, ac);
-  object->intrinsic_trans = dmnsn_new_matrix4(ab, ac, normal, vertices[0]);
+  object->intrinsic_trans = P;
 
   return object;
 }

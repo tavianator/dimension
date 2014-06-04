@@ -54,7 +54,7 @@ main(void)
   dmnsn_assert(intersected, "Didn't intersect");
   printf("dmnsn_triangle_intersection(true): %ld\n", sandglass.grains);
 
-  /* Intersecting case */
+  /* Non-intersecting case */
   line = dmnsn_new_line(dmnsn_new_vector(3.0, 3.0, -1.0), dmnsn_z);
   sandglass_bench_fine(&sandglass, {
     intersected = dmnsn_object_intersection(triangle, line, &intersection);
