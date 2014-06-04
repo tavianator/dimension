@@ -1129,11 +1129,18 @@ cdef class Triangle(Object):
       a_normal = cross(b - a, c - a)
       b_normal = a_normal
       c_normal = a_normal
-    self._object = dmnsn_new_triangle(
-      _get_pool(),
-      Vector(a)._v, Vector(b)._v, Vector(c)._v,
-      Vector(a_normal)._v, Vector(b_normal)._v, Vector(c_normal)._v
-    )
+
+    cdef dmnsn_vector vertices[3]
+    vertices[0] = Vector(a)._v
+    vertices[1] = Vector(b)._v
+    vertices[2] = Vector(c)._v
+
+    cdef dmnsn_vector normals[3]
+    normals[0] = Vector(a_normal)._v
+    normals[1] = Vector(b_normal)._v
+    normals[2] = Vector(c_normal)._v
+
+    self._object = dmnsn_new_smooth_triangle(_get_pool(), vertices, normals)
     Object.__init__(self, *args, **kwargs)
 
 cdef class Plane(Object):

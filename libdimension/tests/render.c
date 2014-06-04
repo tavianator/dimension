@@ -222,9 +222,11 @@ static void
 dmnsn_test_scene_add_triangle_strip(dmnsn_pool *pool, dmnsn_scene *scene)
 {
   dmnsn_array *strip_array = DMNSN_NEW_ARRAY(dmnsn_object *);
-  dmnsn_vector a = dmnsn_zero;
-  dmnsn_vector b = dmnsn_new_vector(0.0, sqrt(3.0)/2.0, 0.5);
-  dmnsn_vector c = dmnsn_z;
+  dmnsn_vector vertices[] = {
+    dmnsn_zero,
+    dmnsn_new_vector(0.0, sqrt(3.0)/2.0, 0.5),
+    dmnsn_z,
+  };
   dmnsn_texture *strip_textures[3] = {
     dmnsn_new_texture(pool),
     dmnsn_new_texture(pool),
@@ -234,13 +236,13 @@ dmnsn_test_scene_add_triangle_strip(dmnsn_pool *pool, dmnsn_scene *scene)
   strip_textures[1]->pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_orange));
   strip_textures[2]->pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_yellow));
   for (unsigned int i = 0; i < 128; ++i) {
-    dmnsn_object *triangle = dmnsn_new_flat_triangle(pool, a, b, c);
+    dmnsn_object *triangle = dmnsn_new_triangle(pool, vertices);
     triangle->texture = strip_textures[i%3];
     dmnsn_array_push(strip_array, &triangle);
 
-    a = b;
-    b = c;
-    c = dmnsn_vector_add(a, dmnsn_z);
+    vertices[0] = vertices[1];
+    vertices[1] = vertices[2];
+    vertices[2] = dmnsn_vector_add(vertices[0], dmnsn_z);
   }
 
   dmnsn_object *strip = dmnsn_new_csg_union(pool, strip_array);

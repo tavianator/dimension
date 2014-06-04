@@ -26,29 +26,19 @@
 #include <stdbool.h>
 
 /**
- * A triangle, with normals interpolated between the points.
- * @param[in] pool  The memory pool to allocate from.
- * @param[in] a   The first corner of the triangle.
- * @param[in] b   The second corner of the triangle.
- * @param[in] c   The third corner of the triangle.
- * @param[in] na  The normal at \p a.
- * @param[in] nb  The normal at \p b.
- * @param[in] nc  The normal at \p c.
- */
-dmnsn_object *dmnsn_new_triangle(
-  dmnsn_pool *pool,
-  dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
-  dmnsn_vector na, dmnsn_vector nb, dmnsn_vector nc
-);
-
-/**
  * A flat triangle, without normal interpolation.
  * @param[in] pool  The memory pool to allocate from.
- * @param[in] a  The first corner of the triangle.
- * @param[in] b  The second corner of the triangle.
- * @param[in] c  The third corner of the triangle.
+ * @param[in] vertices  The corners of the triangle.
  */
-dmnsn_object *dmnsn_new_flat_triangle(dmnsn_pool *pool, dmnsn_vector a, dmnsn_vector b, dmnsn_vector c);
+dmnsn_object *dmnsn_new_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3]);
+
+/**
+ * A triangle, with normals interpolated between the points.
+ * @param[in] pool  The memory pool to allocate from.
+ * @param[in] vertices  The corners of the triangle.
+ * @param[in] normals  The normals at each corner.
+ */
+dmnsn_object *dmnsn_new_smooth_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3], dmnsn_vector normals[3]);
 
 /**
  * A plane.

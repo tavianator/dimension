@@ -318,11 +318,8 @@ cdef extern from "../libdimension/dimension.h":
 
   dmnsn_object *dmnsn_new_object(dmnsn_pool *pool)
 
-  dmnsn_object *dmnsn_new_flat_triangle(dmnsn_pool *pool, dmnsn_vector a, dmnsn_vector b, dmnsn_vector c)
-  dmnsn_object *dmnsn_new_triangle(
-    dmnsn_pool *pool,
-    dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
-    dmnsn_vector na, dmnsn_vector nb, dmnsn_vector nc)
+  dmnsn_object *dmnsn_new_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3])
+  dmnsn_object *dmnsn_new_smooth_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3], dmnsn_vector normals[3])
   dmnsn_object *dmnsn_new_plane(dmnsn_pool *pool, dmnsn_vector normal)
   dmnsn_object *dmnsn_new_sphere(dmnsn_pool *pool)
   dmnsn_object *dmnsn_new_cube(dmnsn_pool *pool)

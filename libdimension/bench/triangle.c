@@ -32,12 +32,12 @@ main(void)
 
   dmnsn_pool *pool = dmnsn_new_pool();
 
-  dmnsn_object *triangle = dmnsn_new_flat_triangle(
-    pool,
+  dmnsn_vector vertices[] = {
     dmnsn_new_vector(1.0, 0.0, 0.0),
     dmnsn_new_vector(2.0, 2.0, 1.0),
-    dmnsn_new_vector(3.0, 0.0, 2.0)
-  );
+    dmnsn_new_vector(3.0, 0.0, 2.0),
+  };
+  dmnsn_object *triangle = dmnsn_new_triangle(pool, vertices);
   triangle->texture = dmnsn_new_texture(pool);
   triangle->texture->pigment = dmnsn_new_pigment(pool);
   dmnsn_object_initialize(triangle);

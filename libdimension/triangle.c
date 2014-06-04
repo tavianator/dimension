@@ -64,15 +64,24 @@ dmnsn_triangle_inside_fn(const dmnsn_object *triangle, dmnsn_vector point)
   return false;
 }
 
+dmnsn_object *
+dmnsn_new_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3])
+{
+  dmnsn_vector normal = dmnsn_vector_cross(
+    dmnsn_vector_sub(vertices[1], vertices[0]),
+    dmnsn_vector_sub(vertices[2], vertices[0])
+  );
+  dmnsn_vector normals[] = { normal, normal, normal };
+  return dmnsn_new_smooth_triangle(pool, vertices, normals);
+}
+
 /* Allocate a new triangle */
 dmnsn_object *
-dmnsn_new_triangle(dmnsn_pool *pool,
-                   dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
-                   dmnsn_vector na, dmnsn_vector nb, dmnsn_vector nc)
+dmnsn_new_smooth_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3], dmnsn_vector normals[3])
 {
-  na = dmnsn_vector_normalized(na);
-  nb = dmnsn_vector_normalized(nb);
-  nc = dmnsn_vector_normalized(nc);
+  dmnsn_vector na = dmnsn_vector_normalized(normals[0]);
+  dmnsn_vector nb = dmnsn_vector_normalized(normals[1]);
+  dmnsn_vector nc = dmnsn_vector_normalized(normals[2]);
 
   dmnsn_triangle *triangle = DMNSN_PALLOC(pool, dmnsn_triangle);
   triangle->na  = na;
@@ -81,7 +90,7 @@ dmnsn_new_triangle(dmnsn_pool *pool,
 
   dmnsn_object *object = &triangle->object;
   dmnsn_init_object(pool, object);
-  object->intersection_fn  = dmnsn_triangle_intersection_fn;
+  object->intersection_fn = dmnsn_triangle_intersection_fn;
   object->inside_fn = dmnsn_triangle_inside_fn;
   object->bounding_box.min = dmnsn_zero;
   object->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 0.0);
@@ -92,23 +101,10 @@ dmnsn_new_triangle(dmnsn_pool *pool,
    * The new vector space has corners at <0, 1, 0>, <0, 0, 1>, and 0,
    * corresponding to the basis (ab, ac, ab X ac).
    */
-  dmnsn_vector ab = dmnsn_vector_sub(b, a);
-  dmnsn_vector ac = dmnsn_vector_sub(c, a);
+  dmnsn_vector ab = dmnsn_vector_sub(vertices[1], vertices[0]);
+  dmnsn_vector ac = dmnsn_vector_sub(vertices[2], vertices[0]);
   dmnsn_vector normal = dmnsn_vector_cross(ab, ac);
-  object->intrinsic_trans = dmnsn_new_matrix4(ab, ac, normal, a);
+  object->intrinsic_trans = dmnsn_new_matrix4(ab, ac, normal, vertices[0]);
 
   return object;
-}
-
-/* Allocate a new flat triangle */
-dmnsn_object *
-dmnsn_new_flat_triangle(dmnsn_pool *pool, dmnsn_vector a, dmnsn_vector b, dmnsn_vector c)
-{
-  /* Flat triangles are just smooth triangles with identical normals at all
-     verticies */
-  dmnsn_vector normal = dmnsn_vector_cross(
-    dmnsn_vector_sub(b, a),
-    dmnsn_vector_sub(c, a)
-  );
-  return dmnsn_new_triangle(pool, a, b, c, normal, normal, normal);
 }
