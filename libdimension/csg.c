@@ -83,6 +83,7 @@ dmnsn_new_csg_union(dmnsn_pool *pool, const dmnsn_array *objects)
   dmnsn_object *object = &csg->object;
   dmnsn_init_object(pool, object);
 
+  object->children = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
   DMNSN_ARRAY_FOREACH (dmnsn_object **, child, objects) {
     dmnsn_array_push(object->children, child);
   }
@@ -209,6 +210,7 @@ dmnsn_new_csg_intersection(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
 {
   dmnsn_object *csg = dmnsn_new_object(pool);
 
+  csg->children = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
   dmnsn_array_push(csg->children, &A);
   dmnsn_array_push(csg->children, &B);
 
@@ -256,6 +258,7 @@ dmnsn_new_csg_difference(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
 {
   dmnsn_object *csg = dmnsn_new_object(pool);
 
+  csg->children = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
   dmnsn_array_push(csg->children, &A);
   dmnsn_array_push(csg->children, &B);
 
@@ -307,6 +310,7 @@ dmnsn_new_csg_merge(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
 {
   dmnsn_object *csg = dmnsn_new_object(pool);
 
+  csg->children = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
   dmnsn_array_push(csg->children, &A);
   dmnsn_array_push(csg->children, &B);
 

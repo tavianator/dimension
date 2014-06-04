@@ -43,7 +43,7 @@ dmnsn_init_object(dmnsn_pool *pool, dmnsn_object *object)
   object->interior        = NULL;
   object->trans           = dmnsn_identity_matrix();
   object->intrinsic_trans = dmnsn_identity_matrix();
-  object->children        = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
+  object->children        = NULL;
   object->split_children  = false;
   object->intersection_fn = NULL;
   object->inside_fn       = NULL;
@@ -69,20 +69,22 @@ dmnsn_object_initialize_recursive(dmnsn_object *object,
   object->trans = dmnsn_matrix_mul(object->trans, object->intrinsic_trans);
 
   /* Initialize the object's children */
-  DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
-    (*child)->trans = dmnsn_matrix_mul(object->trans, (*child)->trans);
+  if (object->children) {
+    DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
+      (*child)->trans = dmnsn_matrix_mul(object->trans, (*child)->trans);
 
-    dmnsn_matrix child_pigment_trans;
-    if ((*child)->texture == NULL || (*child)->texture->pigment == NULL) {
-      /* Don't transform cascaded pigments with the child object */
-      child_pigment_trans = pigment_trans;
-    } else {
-      child_pigment_trans = dmnsn_matrix_inverse((*child)->trans);
+      dmnsn_matrix child_pigment_trans;
+      if ((*child)->texture == NULL || (*child)->texture->pigment == NULL) {
+        /* Don't transform cascaded pigments with the child object */
+        child_pigment_trans = pigment_trans;
+      } else {
+        child_pigment_trans = dmnsn_matrix_inverse((*child)->trans);
+      }
+
+      dmnsn_texture_cascade(object->texture, &(*child)->texture);
+      dmnsn_interior_cascade(object->interior, &(*child)->interior);
+      dmnsn_object_initialize_recursive(*child, child_pigment_trans);
     }
-
-    dmnsn_texture_cascade(object->texture, &(*child)->texture);
-    dmnsn_interior_cascade(object->interior, &(*child)->interior);
-    dmnsn_object_initialize_recursive(*child, child_pigment_trans);
   }
 
   /* Initialization callback */
