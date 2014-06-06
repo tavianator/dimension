@@ -58,13 +58,17 @@ dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
   return point.x*point.x + point.y*point.y + point.z*point.z < 1.0;
 }
 
-/* Allocate a new sphere */
+/** Torus vtable. */
+static const dmnsn_object_vtable dmnsn_sphere_vtable = {
+  .intersection_fn = dmnsn_sphere_intersection_fn,
+  .inside_fn = dmnsn_sphere_inside_fn,
+};
+
 dmnsn_object *
 dmnsn_new_sphere(dmnsn_pool *pool)
 {
   dmnsn_object *sphere = dmnsn_new_object(pool);
-  sphere->intersection_fn = dmnsn_sphere_intersection_fn;
-  sphere->inside_fn = dmnsn_sphere_inside_fn;
+  sphere->vtable = &dmnsn_sphere_vtable;
   sphere->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
   sphere->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
   return sphere;

@@ -60,6 +60,12 @@ dmnsn_triangle_inside_fn(const dmnsn_object *triangle, dmnsn_vector point)
   return false;
 }
 
+/** Triangle vtable. */
+static const dmnsn_object_vtable dmnsn_triangle_vtable = {
+  .intersection_fn = dmnsn_triangle_intersection_fn,
+  .inside_fn = dmnsn_triangle_inside_fn,
+};
+
 /** Smooth triangle type. */
 typedef struct {
   dmnsn_object object;
@@ -89,6 +95,12 @@ dmnsn_smooth_triangle_intersection_fn(const dmnsn_object *object, dmnsn_line l,
   return false;
 }
 
+/** Smooth triangle vtable. */
+static const dmnsn_object_vtable dmnsn_smooth_triangle_vtable = {
+  .intersection_fn = dmnsn_smooth_triangle_intersection_fn,
+  .inside_fn = dmnsn_triangle_inside_fn,
+};
+
 /** Make a change-of-basis matrix. */
 static inline dmnsn_matrix
 dmnsn_triangle_basis(dmnsn_vector vertices[3])
@@ -107,8 +119,7 @@ dmnsn_object *
 dmnsn_new_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3])
 {
   dmnsn_object *object = dmnsn_new_object(pool);
-  object->intersection_fn = dmnsn_triangle_intersection_fn;
-  object->inside_fn = dmnsn_triangle_inside_fn;
+  object->vtable = &dmnsn_triangle_vtable;
   object->bounding_box.min = dmnsn_zero;
   object->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 0.0);
   object->intrinsic_trans = dmnsn_triangle_basis(vertices);
@@ -132,8 +143,7 @@ dmnsn_new_smooth_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3], dmnsn_vect
 
   dmnsn_object *object = &triangle->object;
   dmnsn_init_object(object);
-  object->intersection_fn = dmnsn_smooth_triangle_intersection_fn;
-  object->inside_fn = dmnsn_triangle_inside_fn;
+  object->vtable = &dmnsn_smooth_triangle_vtable;
   object->bounding_box.min = dmnsn_zero;
   object->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 0.0);
   object->intrinsic_trans = P;

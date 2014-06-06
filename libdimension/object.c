@@ -39,16 +39,14 @@ dmnsn_new_object(dmnsn_pool *pool)
 void
 dmnsn_init_object(dmnsn_object *object)
 {
-  object->texture         = NULL;
-  object->interior        = NULL;
-  object->trans           = dmnsn_identity_matrix();
+  object->vtable = NULL;
+  object->texture = NULL;
+  object->interior = NULL;
+  object->trans = dmnsn_identity_matrix();
   object->intrinsic_trans = dmnsn_identity_matrix();
-  object->children        = NULL;
-  object->split_children  = false;
-  object->intersection_fn = NULL;
-  object->inside_fn       = NULL;
-  object->initialize_fn   = NULL;
-  object->initialized     = false;
+  object->children = NULL;
+  object->split_children = false;
+  object->initialized = false;
 }
 
 /** Recursively initialize objects. */
@@ -88,8 +86,8 @@ dmnsn_object_initialize_recursive(dmnsn_object *object,
   }
 
   /* Initialization callback */
-  if (object->initialize_fn) {
-    object->initialize_fn(object);
+  if (object->vtable->initialize_fn) {
+    object->vtable->initialize_fn(object);
   }
 
   /* Precalculate more object values */

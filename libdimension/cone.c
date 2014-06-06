@@ -89,6 +89,12 @@ dmnsn_cone_inside_fn(const dmnsn_object *object, dmnsn_vector point)
          && point.y > -1.0 && point.y < 1.0;
 }
 
+/** Cone vtable. */
+static const dmnsn_object_vtable dmnsn_cone_vtable = {
+  .intersection_fn = dmnsn_cone_intersection_fn,
+  .inside_fn = dmnsn_cone_inside_fn,
+};
+
 /** Cone cap type. */
 typedef struct dmnsn_cone_cap {
   dmnsn_object object;
@@ -122,6 +128,12 @@ dmnsn_cone_cap_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return false;
 }
 
+/** Cone cap vtable. */
+static const dmnsn_object_vtable dmnsn_cone_cap_vtable = {
+  .intersection_fn = dmnsn_cone_cap_intersection_fn,
+  .inside_fn = dmnsn_cone_cap_inside_fn,
+};
+
 /** Allocate a new cone cap. */
 dmnsn_object *
 dmnsn_new_cone_cap(dmnsn_pool *pool, double r)
@@ -131,8 +143,7 @@ dmnsn_new_cone_cap(dmnsn_pool *pool, double r)
 
   dmnsn_object *object = &cap->object;
   dmnsn_init_object(object);
-  object->intersection_fn  = dmnsn_cone_cap_intersection_fn;
-  object->inside_fn = dmnsn_cone_cap_inside_fn;
+  object->vtable = &dmnsn_cone_cap_vtable;
   object->bounding_box.min = dmnsn_new_vector(-r, 0.0, -r);
   object->bounding_box.max = dmnsn_new_vector(+r, 0.0, +r);
   return object;
@@ -148,8 +159,7 @@ dmnsn_new_cone(dmnsn_pool *pool, double r1, double r2, bool open)
 
   dmnsn_object *object = &cone->object;
   dmnsn_init_object(object);
-  object->intersection_fn = dmnsn_cone_intersection_fn;
-  object->inside_fn = dmnsn_cone_inside_fn;
+  object->vtable = &dmnsn_cone_vtable;
 
   double rmax = dmnsn_max(r1, r2);
   object->bounding_box.min = dmnsn_new_vector(-rmax, -1.0, -rmax);

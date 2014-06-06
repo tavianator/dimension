@@ -67,9 +67,18 @@ typedef bool dmnsn_object_intersection_fn(const dmnsn_object *object,
 typedef bool dmnsn_object_inside_fn(const dmnsn_object *object,
                                     dmnsn_vector point);
 
+/** Object callbacks. */
+typedef struct dmnsn_object_vtable {
+  dmnsn_object_intersection_fn *intersection_fn; /**< Intersection callback. */
+  dmnsn_object_inside_fn *inside_fn; /**< Inside callback. */
+  dmnsn_object_initialize_fn *initialize_fn; /**< Initialization callback. */
+} dmnsn_object_vtable;
+
 /** An object. */
 struct dmnsn_object {
-  dmnsn_texture  *texture;  /**< Surface properties. */
+  const dmnsn_object_vtable *vtable; /**< Callbacks. */
+
+  dmnsn_texture *texture;  /**< Surface properties. */
   dmnsn_interior *interior; /**< Interior properties. */
 
   dmnsn_matrix trans; /**< Transformation matrix. */
@@ -81,10 +90,6 @@ struct dmnsn_object {
 
   dmnsn_array *children; /**< Child objects. */
   bool split_children;   /**< Whether the child objects can be split. */
-
-  dmnsn_object_initialize_fn *initialize_fn; /**< Initialization callback. */
-  dmnsn_object_intersection_fn *intersection_fn; /**< Intersection callback. */
-  dmnsn_object_inside_fn *inside_fn; /**< Inside callback. */
 
   bool initialized; /**< @internal Whether the object is initialized yet. */
 };
@@ -121,7 +126,7 @@ dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
 {
   dmnsn_line line_trans = dmnsn_transform_line(object->trans_inv, line);
   intersection->object = NULL;
-  if (object->intersection_fn(object, line_trans, intersection)) {
+  if (object->vtable->intersection_fn(object, line_trans, intersection)) {
     /* Get us back into world coordinates */
     intersection->ray = line;
     intersection->normal = dmnsn_vector_normalized(
@@ -151,5 +156,5 @@ DMNSN_INLINE bool
 dmnsn_object_inside(const dmnsn_object *object, dmnsn_vector point)
 {
   point = dmnsn_transform_point(object->trans_inv, point);
-  return object->inside_fn(object, point);
+  return object->vtable->inside_fn(object, point);
 }

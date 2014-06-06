@@ -140,7 +140,12 @@ dmnsn_torus_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return dmajor*dmajor + point.y*point.y < torus->minor*torus->minor;
 }
 
-/* Allocate a new torus */
+/** Torus vtable. */
+static const dmnsn_object_vtable dmnsn_torus_vtable = {
+  .intersection_fn = dmnsn_torus_intersection_fn,
+  .inside_fn = dmnsn_torus_inside_fn,
+};
+
 dmnsn_object *
 dmnsn_new_torus(dmnsn_pool *pool, double major, double minor)
 {
@@ -150,8 +155,7 @@ dmnsn_new_torus(dmnsn_pool *pool, double major, double minor)
 
   dmnsn_object *object = &torus->object;
   dmnsn_init_object(object);
-  object->intersection_fn  = dmnsn_torus_intersection_fn;
-  object->inside_fn = dmnsn_torus_inside_fn;
+  object->vtable = &dmnsn_torus_vtable;
 
   double extent = major + minor;
   object->bounding_box.min = dmnsn_new_vector(-extent, -minor, -extent);

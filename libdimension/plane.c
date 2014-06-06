@@ -33,30 +33,7 @@ typedef struct {
   dmnsn_vector normal;
 } dmnsn_plane;
 
-/* Plane object callbacks */
-
-static bool dmnsn_plane_intersection_fn(const dmnsn_object *plane,
-                                        dmnsn_line line,
-                                        dmnsn_intersection *intersection);
-static bool dmnsn_plane_inside_fn(const dmnsn_object *plane,
-                                  dmnsn_vector point);
-
-/* Allocate a new plane */
-dmnsn_object *
-dmnsn_new_plane(dmnsn_pool *pool, dmnsn_vector normal)
-{
-  dmnsn_plane *plane = DMNSN_PALLOC(pool, dmnsn_plane);
-  plane->normal = normal;
-
-  dmnsn_object *object = &plane->object;
-  dmnsn_init_object(object);
-  object->intersection_fn = dmnsn_plane_intersection_fn;
-  object->inside_fn = dmnsn_plane_inside_fn;
-  object->bounding_box = dmnsn_infinite_bounding_box();
-  return object;
-}
-
-/* Returns the closest intersection of `line' with `plane' */
+/** Returns the closest intersection of `line' with `plane'. */
 static bool
 dmnsn_plane_intersection_fn(const dmnsn_object *object, dmnsn_line line,
                             dmnsn_intersection *intersection)
@@ -76,10 +53,29 @@ dmnsn_plane_intersection_fn(const dmnsn_object *object, dmnsn_line line,
   return false;
 }
 
-/* Return whether a point is inside a plane */
+/** Return whether a point is inside a plane. */
 static bool
 dmnsn_plane_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
   const dmnsn_plane *plane = (const dmnsn_plane *)object;
   return dmnsn_vector_dot(point, plane->normal) < 0.0;
+}
+
+/** Plane vtable. */
+static const dmnsn_object_vtable dmnsn_plane_vtable = {
+  .intersection_fn = dmnsn_plane_intersection_fn,
+  .inside_fn = dmnsn_plane_inside_fn,
+};
+
+dmnsn_object *
+dmnsn_new_plane(dmnsn_pool *pool, dmnsn_vector normal)
+{
+  dmnsn_plane *plane = DMNSN_PALLOC(pool, dmnsn_plane);
+  plane->normal = normal;
+
+  dmnsn_object *object = &plane->object;
+  dmnsn_init_object(object);
+  object->vtable = &dmnsn_plane_vtable;
+  object->bounding_box = dmnsn_infinite_bounding_box();
+  return object;
 }
