@@ -149,7 +149,7 @@ dmnsn_new_torus(dmnsn_pool *pool, double major, double minor)
   torus->minor = minor;
 
   dmnsn_object *object = &torus->object;
-  dmnsn_init_object(pool, object);
+  dmnsn_init_object(object);
   object->intersection_fn  = dmnsn_torus_intersection_fn;
   object->inside_fn = dmnsn_torus_inside_fn;
 

@@ -81,7 +81,7 @@ dmnsn_new_csg_union(dmnsn_pool *pool, dmnsn_array *objects)
   csg->bvh = NULL;
 
   dmnsn_object *object = &csg->object;
-  dmnsn_init_object(pool, object);
+  dmnsn_init_object(object);
 
   object->children = objects;
   object->split_children = true;

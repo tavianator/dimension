@@ -131,7 +131,7 @@ dmnsn_new_smooth_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3], dmnsn_vect
   triangle->nac = dmnsn_vector_sub(nc, na);
 
   dmnsn_object *object = &triangle->object;
-  dmnsn_init_object(pool, object);
+  dmnsn_init_object(object);
   object->intersection_fn = dmnsn_smooth_triangle_intersection_fn;
   object->inside_fn = dmnsn_triangle_inside_fn;
   object->bounding_box.min = dmnsn_zero;

@@ -31,13 +31,13 @@ dmnsn_object *
 dmnsn_new_object(dmnsn_pool *pool)
 {
   dmnsn_object *object = DMNSN_PALLOC(pool, dmnsn_object);
-  dmnsn_init_object(pool, object);
+  dmnsn_init_object(object);
   return object;
 }
 
 /* Initialize a dmnsn_object field */
 void
-dmnsn_init_object(dmnsn_pool *pool, dmnsn_object *object)
+dmnsn_init_object(dmnsn_object *object)
 {
   object->texture         = NULL;
   object->interior        = NULL;

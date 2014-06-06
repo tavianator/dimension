@@ -98,10 +98,9 @@ dmnsn_object *dmnsn_new_object(dmnsn_pool *pool);
 
 /**
  * Initialize a dmnsn_object field.
- * @param[in] pool  The memory pool to allocate from.
  * @param[out] object  The object to initialize.
  */
-void dmnsn_init_object(dmnsn_pool *pool, dmnsn_object *object);
+void dmnsn_init_object(dmnsn_object *object);
 
 /**
  * Initialize an object and potentially its children.

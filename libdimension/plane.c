@@ -49,7 +49,7 @@ dmnsn_new_plane(dmnsn_pool *pool, dmnsn_vector normal)
   plane->normal = normal;
 
   dmnsn_object *object = &plane->object;
-  dmnsn_init_object(pool, object);
+  dmnsn_init_object(object);
   object->intersection_fn = dmnsn_plane_intersection_fn;
   object->inside_fn = dmnsn_plane_inside_fn;
   object->bounding_box = dmnsn_infinite_bounding_box();

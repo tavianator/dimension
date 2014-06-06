@@ -130,7 +130,7 @@ dmnsn_new_cone_cap(dmnsn_pool *pool, double r)
   cap->r = r;
 
   dmnsn_object *object = &cap->object;
-  dmnsn_init_object(pool, object);
+  dmnsn_init_object(object);
   object->intersection_fn  = dmnsn_cone_cap_intersection_fn;
   object->inside_fn = dmnsn_cone_cap_inside_fn;
   object->bounding_box.min = dmnsn_new_vector(-r, 0.0, -r);
@@ -147,7 +147,7 @@ dmnsn_new_cone(dmnsn_pool *pool, double r1, double r2, bool open)
   cone->r2 = r2;
 
   dmnsn_object *object = &cone->object;
-  dmnsn_init_object(pool, object);
+  dmnsn_init_object(object);
   object->intersection_fn = dmnsn_cone_intersection_fn;
   object->inside_fn = dmnsn_cone_inside_fn;
 
