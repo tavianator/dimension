@@ -1,5 +1,5 @@
 ###########################################################################
-## Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     ##
+## Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     ##
 ##                                                                       ##
 ## This file is part of The Dimension Build Suite.                       ##
 ##                                                                       ##
@@ -17,8 +17,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>. ##
 ###########################################################################
 
-TESTS = demo.dmnsn                                                             \
-        cube.dmnsn
+TESTS = cube.dmnsn                                                             \
+        demo.dmnsn                                                             \
+        ellipsoid.dmnsn
 TEST_EXTENSIONS = .dmnsn
 DMNSN_LOG_COMPILER = $(top_srcdir)/dimension/dimension
 AM_DMNSN_LOG_FLAGS = --strict -v
