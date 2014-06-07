@@ -27,50 +27,50 @@
 
 #include <stdbool.h>
 
-/** A bounding volume hierarchy. */
+/// A bounding volume hierarchy.
 typedef struct dmnsn_bvh dmnsn_bvh;
 
-/** Available BVH implementations. */
+/// Available BVH implementations.
 typedef enum dmnsn_bvh_kind {
   DMNSN_BVH_NONE,
   DMNSN_BVH_PRTREE,
 } dmnsn_bvh_kind;
 
-/** Create a BVH. */
+/// Create a BVH.
 DMNSN_INTERNAL dmnsn_bvh *dmnsn_new_bvh(const dmnsn_array *objects,
                                         dmnsn_bvh_kind kind);
-/** Delete a BVH. */
+/// Delete a BVH.
 DMNSN_INTERNAL void dmnsn_delete_bvh(dmnsn_bvh *bvh);
 
-/** Find the closest ray-object intersection in the tree. */
+/// Find the closest ray-object intersection in the tree.
 DMNSN_INTERNAL bool dmnsn_bvh_intersection(const dmnsn_bvh *bvh,
                                            dmnsn_line ray,
                                            dmnsn_intersection *intersection,
                                            bool reset);
-/** Determine whether a point is inside any object in the tree. */
+/// Determine whether a point is inside any object in the tree.
 DMNSN_INTERNAL bool dmnsn_bvh_inside(const dmnsn_bvh *bvh, dmnsn_vector point);
-/** Return the bounding box of the whole hierarchy. */
+/// Return the bounding box of the whole hierarchy.
 DMNSN_INTERNAL dmnsn_bounding_box dmnsn_bvh_bounding_box(const dmnsn_bvh *bvh);
 
-/** A non-flat BVH representation, used by BVH implementations. */
+/// A non-flat BVH representation, used by BVH implementations.
 typedef struct dmnsn_bvh_node {
-  dmnsn_bounding_box bounding_box;   /** The bounding box of this node. */
-  dmnsn_object *object;              /** The object, for leaf nodes. */
-  int data;                          /** Extra field for implementation use. */
-  size_t nchildren;                  /** How many children this node has. */
-  size_t max_children;               /** Maximum number of children. */
-  struct dmnsn_bvh_node *children[]; /** Flexible array of children. */
+  dmnsn_bounding_box bounding_box;   /// The bounding box of this node.
+  dmnsn_object *object;              /// The object, for leaf nodes.
+  int data;                          /// Extra field for implementation use.
+  size_t nchildren;                  /// How many children this node has.
+  size_t max_children;               /// Maximum number of children.
+  struct dmnsn_bvh_node *children[]; /// Flexible array of children.
 } dmnsn_bvh_node;
 
-/** Create a BVH node. */
+/// Create a BVH node.
 DMNSN_INTERNAL dmnsn_bvh_node *dmnsn_new_bvh_node(size_t max_children);
 
-/** Create a BVH leaf node. */
+/// Create a BVH leaf node.
 DMNSN_INTERNAL dmnsn_bvh_node *dmnsn_new_bvh_leaf_node(dmnsn_object *object);
 
-/** Delete a BVH node. */
+/// Delete a BVH node.
 DMNSN_INTERNAL void dmnsn_delete_bvh_node(dmnsn_bvh_node *node);
 
-/** Add a child to a BVH node. */
+/// Add a child to a BVH node.
 DMNSN_INTERNAL void dmnsn_bvh_node_add(dmnsn_bvh_node *parent,
                                        dmnsn_bvh_node *child);

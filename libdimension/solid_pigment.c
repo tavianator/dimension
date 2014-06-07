@@ -26,7 +26,7 @@
 #include "dimension.h"
 #include <stdlib.h>
 
-/* Create a solid color */
+// Create a solid color
 dmnsn_pigment *
 dmnsn_new_solid_pigment(dmnsn_pool *pool, dmnsn_tcolor color)
 {

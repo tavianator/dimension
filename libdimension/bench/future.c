@@ -37,7 +37,7 @@ dmnsn_bench_future_increment(void)
     exit(EXIT_FAILURE);
   }
 
-  /* Benchmark the increment operation. */
+  // Benchmark the increment operation.
   sandglass_bench_fine(&sandglass, dmnsn_future_increment(future));
   printf("dmnsn_future_increment(): %ld\n", sandglass.grains);
 
@@ -62,7 +62,7 @@ dmnsn_bench_future_thread(void *ptr)
   size_t nthreads = 2*dmnsn_ncpus();
   dmnsn_future_set_total(future, nthreads*ITERATIONS);
 
-  /* Now run a bunch of increments concurrently. */
+  // Now run a bunch of increments concurrently.
   return dmnsn_execute_concurrently(future, dmnsn_bench_future_ccthread,
                                     future, nthreads);
 }

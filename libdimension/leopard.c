@@ -26,7 +26,7 @@
 #include "dimension-internal.h"
 #include <math.h>
 
-/** Leopard pattern callback. */
+/// Leopard pattern callback.
 static double
 dmnsn_leopard_pattern_fn(const dmnsn_pattern *leopard, dmnsn_vector v)
 {
@@ -34,7 +34,7 @@ dmnsn_leopard_pattern_fn(const dmnsn_pattern *leopard, dmnsn_vector v)
   return val*val;
 }
 
-/** The singleton instance. */
+/// The singleton instance.
 static dmnsn_pattern dmnsn_leopard_instance = {
   .pattern_fn = dmnsn_leopard_pattern_fn,
 };

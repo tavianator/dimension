@@ -23,16 +23,16 @@
  * RGBA canvas optimizer interface, used by image optimizers.
  */
 
-/** Apply the RGBA8 optimizer to a canvas. */
+/// Apply the RGBA8 optimizer to a canvas.
 DMNSN_INTERNAL void dmnsn_rgba8_optimize_canvas(dmnsn_canvas *canvas);
-/** Apply the RGBA16 optimizer to a canvas. */
+/// Apply the RGBA16 optimizer to a canvas.
 DMNSN_INTERNAL void dmnsn_rgba16_optimize_canvas(dmnsn_canvas *canvas);
 
-/** RGBA8 optimizer callback. */
+/// RGBA8 optimizer callback.
 DMNSN_INTERNAL void dmnsn_rgba8_optimizer_fn(const dmnsn_canvas *canvas,
                                              void *ptr,
                                              size_t x, size_t y);
-/** RGBA16 optimizer callback. */
+/// RGBA16 optimizer callback.
 DMNSN_INTERNAL void dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas,
                                               void *ptr,
                                               size_t x, size_t y);

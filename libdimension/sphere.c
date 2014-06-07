@@ -25,12 +25,12 @@
 
 #include "dimension-internal.h"
 
-/** Sphere intersection callback. */
+/// Sphere intersection callback.
 static bool
 dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line l,
                              dmnsn_intersection *intersection)
 {
-  /* Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1 */
+  // Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1
   double poly[3], x[2];
   poly[2] = dmnsn_vector_dot(l.n, l.n);
   poly[1] = 2.0*dmnsn_vector_dot(l.n, l.x0);
@@ -42,7 +42,7 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line l,
   }
 
   double t = x[0];
-  /* Optimize for the case where we're outside the sphere */
+  // Optimize for the case where we're outside the sphere
   if (dmnsn_likely(n == 2)) {
     t = dmnsn_min(t, x[1]);
   }
@@ -52,23 +52,23 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line l,
   return true;
 }
 
-/** Sphere inside callback. */
+/// Sphere inside callback.
 static bool
 dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
 {
   return point.x*point.x + point.y*point.y + point.z*point.z < 1.0;
 }
 
-/** Sphere bounding callback. */
+/// Sphere bounding callback.
 static dmnsn_bounding_box
 dmnsn_sphere_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
-  /* TODO: tighter bound */
+  // TODO: tighter bound
   dmnsn_bounding_box box = dmnsn_symmetric_bounding_box(dmnsn_new_vector(1.0, 1.0, 1.0));
   return dmnsn_transform_bounding_box(trans, box);
 }
 
-/** Sphere vtable. */
+/// Sphere vtable.
 static const dmnsn_object_vtable dmnsn_sphere_vtable = {
   .intersection_fn = dmnsn_sphere_intersection_fn,
   .inside_fn = dmnsn_sphere_inside_fn,

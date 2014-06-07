@@ -26,5 +26,5 @@
  * from B-trees.
  */
 
-/** Create a PR-tree. */
+/// Create a PR-tree.
 DMNSN_INTERNAL dmnsn_bvh_node *dmnsn_new_prtree(const dmnsn_array *objects);

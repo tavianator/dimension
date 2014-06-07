@@ -26,10 +26,10 @@
 #include "dimension.h"
 
 struct dmnsn_dictionary {
-  size_t obj_size;       /**< The size of the objects in the trie. */
-  char *prefix;          /**< The local string prefix of the current node. */
-  void *value;           /**< The node's stored object, if it's a leaf. */
-  dmnsn_array *children; /**< The node's children. */
+  size_t obj_size;       ///< The size of the objects in the trie.
+  char *prefix;          ///< The local string prefix of the current node.
+  void *value;           ///< The node's stored object, if it's a leaf.
+  dmnsn_array *children; ///< The node's children.
 };
 
 dmnsn_dictionary *
@@ -73,10 +73,8 @@ dmnsn_dictionary_get(const dmnsn_dictionary *dict, const char *key, void *obj)
 void *
 dmnsn_dictionary_at(const dmnsn_dictionary *dict, const char *key)
 {
-  /*
-   * PATRICIA trie search: O(k), where k is the length of the longest string
-   * in the trie.
-   */
+  // PATRICIA trie search: O(k), where k is the length of the longest string in
+  // the trie.
 
   size_t len = strlen(dict->prefix);
   if (strncmp(key, dict->prefix, len) != 0)
@@ -110,16 +108,14 @@ void
 dmnsn_dictionary_insert(dmnsn_dictionary *dict, const char *key,
                         const void *obj)
 {
-  /*
-   * PATRICIA trie insertion: O(k), where k is the length of the longest string
-   * in the trie.
-   */
+  // PATRICIA trie insertion: O(k), where k is the length of the longest string
+  // in the trie.
 
   while (true) {
     if (dict->prefix[0] == '\0' && !dict->value
         && dmnsn_array_size(dict->children) == 0)
     {
-      /* Replace an empty tree with a single-element tree */
+      // Replace an empty tree with a single-element tree
       dict->prefix = dmnsn_realloc(dict->prefix, strlen(key) + 1);
       strcpy(dict->prefix, key);
 
@@ -135,14 +131,14 @@ dmnsn_dictionary_insert(dmnsn_dictionary *dict, const char *key,
     }
 
     if (*key == '\0' && *prefix == '\0') {
-      /* Complete match */
+      // Complete match
       if (!dict->value) {
         dict->value = dmnsn_malloc(dict->obj_size);
       }
       memcpy(dict->value, obj, dict->obj_size);
       break;
     } else if (*prefix == '\0') {
-      /* Partial match; key starts with prefix */
+      // Partial match; key starts with prefix
       dmnsn_dictionary **first = dmnsn_array_first(dict->children), **subtrie;
       ptrdiff_t size = dmnsn_array_size(dict->children);
       for (subtrie = first; subtrie - first < size; ++subtrie) {
@@ -153,13 +149,13 @@ dmnsn_dictionary_insert(dmnsn_dictionary *dict, const char *key,
       }
 
       if (subtrie - first == size) {
-        /* No submatch found, add a new child */
+        // No submatch found, add a new child
         dmnsn_dictionary *child = dmnsn_new_dictionary(dict->obj_size);
         dmnsn_array_push(dict->children, &child);
         dict = child;
       }
     } else {
-      /* Split the tree */
+      // Split the tree
       dmnsn_dictionary *copy = dmnsn_new_dictionary(dict->obj_size);
       copy->prefix = dmnsn_realloc(copy->prefix, strlen(prefix) + 1);
       strcpy(copy->prefix, prefix);
@@ -183,13 +179,11 @@ dmnsn_dictionary_insert(dmnsn_dictionary *dict, const char *key,
 bool
 dmnsn_dictionary_remove(dmnsn_dictionary *dict, const char *key)
 {
-  /*
-   * PATRICIA trie removal: O(k), where k is the length of the longest string
-   * in the trie.
-   *
-   * This implementation doesn't actually collapse the tree back upwards if a
-   * node is left with only one child, to reduce complexity.
-   */
+  // PATRICIA trie removal: O(k), where k is the length of the longest string
+  // in the trie.
+
+  // This implementation doesn't actually collapse the tree back upwards if a
+  // node is left with only one child, to reduce complexity.
 
   size_t len = strlen(dict->prefix);
   if (strncmp(key, dict->prefix, len) != 0)

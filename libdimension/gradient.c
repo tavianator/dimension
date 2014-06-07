@@ -25,13 +25,13 @@
 
 #include "dimension.h"
 
-/** Gradient pattern type. */
+/// Gradient pattern type.
 typedef struct dmnns_gradient {
   dmnsn_pattern pattern;
   dmnsn_vector orientation;
 } dmnsn_gradient;
 
-/** Gradient pattern callback. */
+/// Gradient pattern callback.
 static double
 dmnsn_gradient_pattern_fn(const dmnsn_pattern *pattern, dmnsn_vector v)
 {

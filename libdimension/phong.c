@@ -26,14 +26,14 @@
 #include "dimension.h"
 #include <stdlib.h>
 
-/** Phone specular type. */
+/// Phone specular type.
 typedef struct dmnsn_phong {
   dmnsn_specular specular;
   double coeff;
   double exp;
 } dmnsn_phong;
 
-/** Phong specular highlight callback. */
+/// Phong specular highlight callback.
 static dmnsn_color
 dmnsn_phong_specular_fn(const dmnsn_specular *specular,
                         dmnsn_color light, dmnsn_color color,
@@ -54,7 +54,7 @@ dmnsn_phong_specular_fn(const dmnsn_specular *specular,
   return dmnsn_color_mul(phong->coeff*specular_factor, light);
 }
 
-/* A phong finish */
+// A phong finish
 dmnsn_specular *
 dmnsn_new_phong(dmnsn_pool *pool, double coeff, double exp)
 {

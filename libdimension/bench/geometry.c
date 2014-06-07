@@ -35,13 +35,13 @@ main(void)
     return EXIT_FAILURE;
   }
 
-  /* dmnsn_new_vector() */
+  // dmnsn_new_vector()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_new_vector(1.0, 2.0, 3.0);
   });
   printf("dmnsn_new_vector(): %ld\n", sandglass.grains);
 
-  /* dmnsn_matrix_construct() */
+  // dmnsn_matrix_construct()
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_new_matrix(1.0, 1.0, 0.0, 0.0,
                               1.0, 1.0, 1.0, 0.0,
@@ -49,92 +49,92 @@ main(void)
   });
   printf("dmnsn_new_matrix(): %ld\n", sandglass.grains);
 
-  /* dmnsn_identity_matrix() */
+  // dmnsn_identity_matrix()
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_identity_matrix();
   });
   printf("dmnsn_identity_matrix(): %ld\n", sandglass.grains);
 
-  /* dmnsn_scale_matrix() */
+  // dmnsn_scale_matrix()
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_scale_matrix(vector);
   });
   printf("dmnsn_scale_matrix(): %ld\n", sandglass.grains);
 
-  /* dmnsn_identity_matrix() */
+  // dmnsn_identity_matrix()
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_translation_matrix(vector);
   });
   printf("dmnsn_translation_matrix(): %ld\n", sandglass.grains);
 
-  /* dmnsn_rotation_matrix() */
+  // dmnsn_rotation_matrix()
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_rotation_matrix(vector);
   });
   printf("dmnsn_rotation_matrix(): %ld\n", sandglass.grains);
 
-  /* dmnsn_new_line() */
+  // dmnsn_new_line()
   vector2 = dmnsn_new_vector(3.0, 2.0, 1.0);
   sandglass_bench_fine(&sandglass, {
     line = dmnsn_new_line(vector, vector2);
   });
   printf("dmnsn_new_line(): %ld\n", sandglass.grains);
 
-  /* dmnsn_vector_add() */
+  // dmnsn_vector_add()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_vector_add(vector, vector2);
   });
   printf("dmnsn_vector_add(): %ld\n", sandglass.grains);
 
-  /* dmnsn_vector_sub() */
+  // dmnsn_vector_sub()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_vector_sub(vector, vector2);
   });
   printf("dmnsn_vector_sub(): %ld\n", sandglass.grains);
 
-  /* dmnsn_vector_mul() */
+  // dmnsn_vector_mul()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_vector_mul(2.0, vector);
   });
   printf("dmnsn_vector_mul(): %ld\n", sandglass.grains);
 
-  /* dmnsn_vector_div() */
+  // dmnsn_vector_div()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_vector_div(vector, 2.0);
   });
   printf("dmnsn_vector_div(): %ld\n", sandglass.grains);
 
-  /* dmnsn_vector_cross() */
+  // dmnsn_vector_cross()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_vector_cross(vector, vector2);
   });
   printf("dmnsn_vector_cross(): %ld\n", sandglass.grains);
 
-  /* dmnsn_vector_dot() */
+  // dmnsn_vector_dot()
   sandglass_bench_fine(&sandglass, {
     result = dmnsn_vector_dot(vector, vector2);
   });
   printf("dmnsn_vector_dot(): %ld\n", sandglass.grains);
 
-  /* dmnsn_vector_norm() */
+  // dmnsn_vector_norm()
   sandglass_bench_fine(&sandglass, {
     result = dmnsn_vector_norm(vector);
   });
   printf("dmnsn_vector_norm(): %ld\n", sandglass.grains);
 
-  /* dmnsn_vector_normalized() */
+  // dmnsn_vector_normalized()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_vector_normalized(vector);
   });
   printf("dmnsn_vector_normalized(): %ld\n", sandglass.grains);
 
-  /* dmnsn_matrix_inverse() */
+  // dmnsn_matrix_inverse()
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_matrix_inverse(matrix);
   });
   printf("dmnsn_matrix_inverse(): %ld\n", sandglass.grains);
 
-  /* dmnsn_matrix_inverse(HARD) */
+  // dmnsn_matrix_inverse(HARD)
   matrix2 = dmnsn_new_matrix(1.0, 1.0, 0.0, 0.0,
                              1.0, 1.0, 1.0, 0.0,
                              0.0, 1.0, 1.0, 0.0);
@@ -143,37 +143,37 @@ main(void)
   });
   printf("dmnsn_matrix_inverse(HARD): %ld\n", sandglass.grains);
 
-  /* dmnsn_matrix_mul() */
+  // dmnsn_matrix_mul()
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_matrix_mul(matrix, matrix2);
   });
   printf("dmnsn_matrix_mul(): %ld\n", sandglass.grains);
 
-  /* dmnsn_transform_point() */
+  // dmnsn_transform_point()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_transform_point(matrix, vector);
   });
   printf("dmnsn_transform_point(): %ld\n", sandglass.grains);
 
-  /* dmnsn_transform_direction() */
+  // dmnsn_transform_direction()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_transform_direction(matrix, vector);
   });
   printf("dmnsn_transform_direction(): %ld\n", sandglass.grains);
 
-  /* dmnsn_transform_normal() */
+  // dmnsn_transform_normal()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_transform_normal(matrix, vector);
   });
   printf("dmnsn_transform_normal(): %ld\n", sandglass.grains);
 
-  /* dmnsn_transform_line() */
+  // dmnsn_transform_line()
   sandglass_bench_fine(&sandglass, {
     line = dmnsn_transform_line(matrix, line);
   });
   printf("dmnsn_transform_line(): %ld\n", sandglass.grains);
 
-  /* dmnsn_line_point() */
+  // dmnsn_line_point()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_line_point(line, result);
   });

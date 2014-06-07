@@ -25,47 +25,47 @@
 
 #include <pthread.h>
 
-/** Allocate a new future object. */
+/// Allocate a new future object.
 DMNSN_INTERNAL dmnsn_future *dmnsn_new_future(void);
 
-/** Set the total number of loop iterations. */
+/// Set the total number of loop iterations.
 DMNSN_INTERNAL void dmnsn_future_set_total(dmnsn_future *future, size_t total);
-/** Increment the progress of a background task. */
+/// Increment the progress of a background task.
 DMNSN_INTERNAL void dmnsn_future_increment(dmnsn_future *future);
-/** Instantly complete the background teask. */
+/// Instantly complete the background teask.
 DMNSN_INTERNAL void dmnsn_future_finish(dmnsn_future *future);
-/** Set the number of worker threads. */
+/// Set the number of worker threads.
 DMNSN_INTERNAL void dmnsn_future_set_nthreads(dmnsn_future *future,
                                               unsigned int nthreads);
-/** Notify completion of a worker thread. */
+/// Notify completion of a worker thread.
 DMNSN_INTERNAL void dmnsn_future_finish_thread(dmnsn_future *future);
 
 struct dmnsn_future {
-  size_t progress; /**< Completed loop iterations. */
-  size_t total;    /**< Total expected loop iterations. */
+  size_t progress; ///< Completed loop iterations.
+  size_t total;    ///< Total expected loop iterations.
 
-  /** The worker thread. */
+  /// The worker thread.
   pthread_t thread;
 
-  /** Mutex to guard progress and total. */
+  /// Mutex to guard progress and total.
   pthread_mutex_t mutex;
 
-  /** Condition variable for waiting for a particular amount of progress. */
+  /// Condition variable for waiting for a particular amount of progress.
   pthread_cond_t cond;
 
-  /** Minimum waited-on value. */
+  /// Minimum waited-on value.
   double min_wait;
 
-  /** Number of threads working on the future's background task. */
+  /// Number of threads working on the future's background task.
   unsigned int nthreads;
-  /** Number of threads not yet paused. */
+  /// Number of threads not yet paused.
   unsigned int nrunning;
-  /** Count of threads holding the future paused. */
+  /// Count of threads holding the future paused.
   unsigned int npaused;
-  /** Condition variable for waiting for nrunning == 0. */
+  /// Condition variable for waiting for nrunning == 0.
   pthread_cond_t none_running_cond;
-  /** Condition variable for waiting for nrunning == nthreads. */
+  /// Condition variable for waiting for nrunning == nthreads.
   pthread_cond_t all_running_cond;
-  /** Condition variable for waiting for npaused == 0. */
+  /// Condition variable for waiting for npaused == 0.
   pthread_cond_t resume_cond;
 };

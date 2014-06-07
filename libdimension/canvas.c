@@ -25,7 +25,7 @@
 
 #include "dimension-internal.h"
 
-/** cleanup_fn for canvases. */
+/// cleanup_fn for canvases.
 static void dmnsn_canvas_cleanup(void *ptr);
 
 dmnsn_canvas *
@@ -44,7 +44,7 @@ dmnsn_canvas_cleanup(void *ptr)
 {
   dmnsn_canvas *canvas = ptr;
 
-  /* Free the optimizers */
+  // Free the optimizers
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
     if (i->free_fn) {
       i->free_fn(i->ptr);
@@ -53,7 +53,7 @@ dmnsn_canvas_cleanup(void *ptr)
   dmnsn_delete_array(canvas->optimizers);
 }
 
-/* Set a canvas optimizer */
+// Set a canvas optimizer
 void
 dmnsn_canvas_optimize(dmnsn_canvas *canvas,
                       const dmnsn_canvas_optimizer *optimizer)
@@ -61,7 +61,7 @@ dmnsn_canvas_optimize(dmnsn_canvas *canvas,
   dmnsn_array_push(canvas->optimizers, optimizer);
 }
 
-/* Find an optimizer if it's already installed */
+// Find an optimizer if it's already installed
 dmnsn_canvas_optimizer *
 dmnsn_canvas_find_optimizer(const dmnsn_canvas *canvas,
                             dmnsn_canvas_optimizer_fn *optimizer_fn)
@@ -75,7 +75,7 @@ dmnsn_canvas_find_optimizer(const dmnsn_canvas *canvas,
   return NULL;
 }
 
-/* Set the value of a pixel */
+// Set the value of a pixel
 void
 dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
                        dmnsn_tcolor tcolor)
@@ -84,16 +84,16 @@ dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
                "Canvas access out of bounds.");
   dmnsn_assert(!dmnsn_tcolor_isnan(tcolor), "Pixel has NaN component.");
 
-  /* Set the pixel */
+  // Set the pixel
   canvas->pixels[y*canvas->width + x] = tcolor;
 
-  /* Call the optimizers */
+  // Call the optimizers
   DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
     i->optimizer_fn(canvas, i->ptr, x, y);
   }
 }
 
-/* Fill a canvas with a solid color */
+// Fill a canvas with a solid color
 void
 dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_tcolor tcolor)
 {

@@ -26,7 +26,7 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
-/* Allocate an interior */
+// Allocate an interior
 dmnsn_interior *
 dmnsn_new_interior(dmnsn_pool *pool)
 {
@@ -35,7 +35,7 @@ dmnsn_new_interior(dmnsn_pool *pool)
   return interior;
 }
 
-/* Cascade a interior */
+// Cascade an interior
 void
 dmnsn_interior_cascade(dmnsn_interior *default_interior,
                        dmnsn_interior **interiorp)

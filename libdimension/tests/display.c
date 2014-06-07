@@ -31,7 +31,7 @@ struct dmnsn_display {
   XVisualInfo *vi;
 };
 
-/* XIfEvent callback */
+// XIfEvent callback
 static Bool
 WaitForNotify(Display *d, XEvent *e, char *arg)
 {
@@ -60,14 +60,14 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
   display->cx   = NULL;
   display->vi   = NULL;
 
-  /* Get an X connection */
+  // Get an X connection
   display->dpy = XOpenDisplay(0);
   if (!display->dpy) {
     dmnsn_delete_display(display);
     return NULL;
   }
 
-  /* Get an appropriate visual */
+  // Get an appropriate visual
   display->vi = glXChooseVisual(display->dpy, DefaultScreen(display->dpy),
                                 attributeList);
   if (!display->vi) {
@@ -75,14 +75,14 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
     return NULL;
   }
 
-  /* Create a GLX context */
+  // Create a GLX context
   display->cx = glXCreateContext(display->dpy, display->vi, 0, GL_TRUE);
   if (!display->cx) {
     dmnsn_delete_display(display);
     return NULL;
   }
 
-  /* Create a color map */
+  // Create a color map
   display->cmap = XCreateColormap(display->dpy,
                                   RootWindow(display->dpy, display->vi->screen),
                                   display->vi->visual, AllocNone);
@@ -91,7 +91,7 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
     return NULL;
   }
 
-  /* Create a window */
+  // Create a window
   swa.colormap = display->cmap;
   swa.border_pixel = 0;
   swa.event_mask = StructureNotifyMask;
@@ -111,7 +111,7 @@ dmnsn_new_display(const dmnsn_canvas *canvas)
   XMapWindow(display->dpy, display->win);
   XIfEvent(display->dpy, &display->event, WaitForNotify, (char*)display->win);
 
-  /* Connect the context to the window */
+  // Connect the context to the window
   glXMakeCurrent(display->dpy, display->win, display->cx);
   glClearColor(0.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);

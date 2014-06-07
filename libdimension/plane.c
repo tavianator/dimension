@@ -27,13 +27,13 @@
 #include <math.h>
 #include <stdlib.h>
 
-/** Plane type. */
+/// Plane type.
 typedef struct {
   dmnsn_object object;
   dmnsn_vector normal;
 } dmnsn_plane;
 
-/** Returns the closest intersection of `line' with `plane'. */
+/// Returns the closest intersection of `line' with `plane'.
 static bool
 dmnsn_plane_intersection_fn(const dmnsn_object *object, dmnsn_line line,
                             dmnsn_intersection *intersection)
@@ -53,7 +53,7 @@ dmnsn_plane_intersection_fn(const dmnsn_object *object, dmnsn_line line,
   return false;
 }
 
-/** Return whether a point is inside a plane. */
+/// Return whether a point is inside a plane.
 static bool
 dmnsn_plane_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
@@ -61,14 +61,14 @@ dmnsn_plane_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return dmnsn_vector_dot(point, plane->normal) < 0.0;
 }
 
-/** Plane bounding callback. */
+/// Plane bounding callback.
 static dmnsn_bounding_box
 dmnsn_plane_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
   return dmnsn_infinite_bounding_box();
 }
 
-/** Plane vtable. */
+/// Plane vtable.
 static const dmnsn_object_vtable dmnsn_plane_vtable = {
   .intersection_fn = dmnsn_plane_intersection_fn,
   .inside_fn = dmnsn_plane_inside_fn,

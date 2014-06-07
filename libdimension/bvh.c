@@ -25,7 +25,7 @@
 
 #include "dimension-internal.h"
 
-/** Implementation for DMNSN_BVH_NONE: just stick all objects in one node. */
+/// Implementation for DMNSN_BVH_NONE: just stick all objects in one node.
 static dmnsn_bvh_node *
 dmnsn_new_stupid_bvh(const dmnsn_array *objects)
 {
@@ -39,21 +39,21 @@ dmnsn_new_stupid_bvh(const dmnsn_array *objects)
   return root;
 }
 
-/* Implementation of opaque dmnsn_bvh type. */
+// Implementation of opaque dmnsn_bvh type.
 struct dmnsn_bvh {
-  dmnsn_array *unbounded;           /**< The unbounded objects. */
-  dmnsn_array *bounded;             /**< The BVH of the bounded objects. */
-  pthread_key_t intersection_cache; /**< The thread-local intersection cache. */
+  dmnsn_array *unbounded;           ///< The unbounded objects.
+  dmnsn_array *bounded;             ///< The BVH of the bounded objects.
+  pthread_key_t intersection_cache; ///< The thread-local intersection cache.
 };
 
-/** A flat BVH node for storing in an array for fast pre-order traversal. */
+/// A flat BVH node for storing in an array for fast pre-order traversal.
 typedef struct dmnsn_flat_bvh_node {
-  dmnsn_bounding_box bounding_box; /* The bounding box of this node. */
-  dmnsn_object *object;            /* The referenced object, for leaf nodes. */
-  ptrdiff_t skip;                  /* Displacement to the next sibling. */
+  dmnsn_bounding_box bounding_box; // The bounding box of this node.
+  dmnsn_object *object;            // The referenced object, for leaf nodes.
+  ptrdiff_t skip;                  // Displacement to the next sibling.
 } dmnsn_flat_bvh_node;
 
-/** Add an object or its children, if any, to an array. */
+/// Add an object or its children, if any, to an array.
 static void
 dmnsn_split_add_object(dmnsn_array *objects, const dmnsn_object *object)
 {
@@ -66,7 +66,7 @@ dmnsn_split_add_object(dmnsn_array *objects, const dmnsn_object *object)
   }
 }
 
-/** Split unions to create the input for the BVH. */
+/// Split unions to create the input for the BVH.
 static dmnsn_array *
 dmnsn_split_objects(const dmnsn_array *objects)
 {
@@ -77,7 +77,7 @@ dmnsn_split_objects(const dmnsn_array *objects)
   return split;
 }
 
-/** Split unbounded objects into a new array. */
+/// Split unbounded objects into a new array.
 static dmnsn_array *
 dmnsn_split_unbounded(dmnsn_array *objects)
 {
@@ -98,7 +98,7 @@ dmnsn_split_unbounded(dmnsn_array *objects)
   return unbounded;
 }
 
-/** Recursively flatten a BVH into an array of flat nodes. */
+/// Recursively flatten a BVH into an array of flat nodes.
 static void
 dmnsn_flatten_bvh_recursive(dmnsn_bvh_node *node, dmnsn_array *flat)
 {
@@ -113,12 +113,12 @@ dmnsn_flatten_bvh_recursive(dmnsn_bvh_node *node, dmnsn_array *flat)
     dmnsn_flatten_bvh_recursive(node->children[i], flat);
   }
 
-  /* Array could have been realloc()'d somewhere else above */
+  // Array could have been realloc()'d somewhere else above
   flatnode = dmnsn_array_at(flat, currenti);
   flatnode->skip = dmnsn_array_size(flat) - currenti;
 }
 
-/** Flatten a BVH into an array of flat nodes. */
+/// Flatten a BVH into an array of flat nodes.
 static dmnsn_array *
 dmnsn_flatten_bvh(dmnsn_bvh_node *root)
 {
@@ -171,13 +171,13 @@ dmnsn_delete_bvh(dmnsn_bvh *bvh)
   }
 }
 
-/** A line with pre-calculated reciprocals to avoid divisions. */
+/// A line with pre-calculated reciprocals to avoid divisions.
 typedef struct dmnsn_optimized_line {
-  dmnsn_vector x0;    /**< The origin of the line. */
-  dmnsn_vector n_inv; /**< The inverse of each component of the line's slope .*/
+  dmnsn_vector x0;    ///< The origin of the line.
+  dmnsn_vector n_inv; ///< The inverse of each component of the line's slope
 } dmnsn_optimized_line;
 
-/** Precompute inverses for faster ray-box intersection tests. */
+/// Precompute inverses for faster ray-box intersection tests.
 static inline dmnsn_optimized_line
 dmnsn_optimize_line(dmnsn_line line)
 {
@@ -188,19 +188,17 @@ dmnsn_optimize_line(dmnsn_line line)
   return optline;
 }
 
-/** Ray-AABB intersection test, by the slab method.  Highly optimized. */
+/// Ray-AABB intersection test, by the slab method.  Highly optimized.
 static inline bool
 dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
                            dmnsn_bounding_box box, double t)
 {
-  /*
-   * This is actually correct, even though it appears not to handle edge cases
-   * (line.n.{x,y,z} == 0).  It works because the infinities that result from
-   * dividing by zero will still behave correctly in the comparisons.  Lines
-   * which are parallel to an axis and outside the box will have tmin == inf
-   * or tmax == -inf, while lines inside the box will have tmin and tmax
-   * unchanged.
-   */
+  // This is actually correct, even though it appears not to handle edge cases
+  // (line.n.{x,y,z} == 0).  It works because the infinities that result from
+  // dividing by zero will still behave correctly in the comparisons.  Lines
+  // which are parallel to an axis and outside the box will have tmin == inf
+  // or tmax == -inf, while lines inside the box will have tmin and tmax
+  // unchanged.
 
   double tx1 = (box.min.x - optline.x0.x)*optline.n_inv.x;
   double tx2 = (box.max.x - optline.x0.x)*optline.n_inv.x;
@@ -223,10 +221,10 @@ dmnsn_ray_box_intersection(dmnsn_optimized_line optline,
   return tmax >= dmnsn_max(0.0, tmin) && tmin < t;
 }
 
-/** The number of intersections to cache. */
+/// The number of intersections to cache.
 #define DMNSN_INTERSECTION_CACHE_SIZE 32
 
-/** An array of cached intersections. */
+/// An array of cached intersections.
 typedef struct dmnsn_intersection_cache {
   size_t i;
   dmnsn_object *objects[DMNSN_INTERSECTION_CACHE_SIZE];
@@ -250,7 +248,7 @@ dmnsn_get_intersection_cache(const dmnsn_bvh *bvh)
   return cache;
 }
 
-/** Test for a closer object intersection than we've found so far. */
+/// Test for a closer object intersection than we've found so far.
 static inline bool
 dmnsn_closer_intersection(dmnsn_object *object, dmnsn_line ray,
                           dmnsn_intersection *intersection, double *t)
@@ -272,15 +270,15 @@ dmnsn_bvh_intersection(const dmnsn_bvh *bvh, dmnsn_line ray,
 {
   double t = INFINITY;
 
-  /* Search the unbounded objects */
+  // Search the unbounded objects
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, bvh->unbounded) {
     dmnsn_closer_intersection(*object, ray, intersection, &t);
   }
 
-  /* Precalculate 1.0/ray.n.{x,y,z} to save time in intersection tests */
+  // Precalculate 1.0/ray.n.{x,y,z} to save time in intersection tests
   dmnsn_optimized_line optline = dmnsn_optimize_line(ray);
 
-  /* Search the intersection cache */
+  // Search the intersection cache
   dmnsn_intersection_cache *cache = dmnsn_get_intersection_cache(bvh);
   if (dmnsn_unlikely(reset)) {
     cache->i = 0;
@@ -295,7 +293,7 @@ dmnsn_bvh_intersection(const dmnsn_bvh *bvh, dmnsn_line ray,
     }
   }
 
-  /* Search the bounded objects */
+  // Search the bounded objects
   dmnsn_flat_bvh_node *node = dmnsn_array_first(bvh->bounded);
   dmnsn_flat_bvh_node *last = dmnsn_array_last(bvh->bounded);
   while (node <= last) {
@@ -311,7 +309,7 @@ dmnsn_bvh_intersection(const dmnsn_bvh *bvh, dmnsn_line ray,
     }
   }
 
-  /* Update the cache */
+  // Update the cache
   if (dmnsn_likely(cache->i < DMNSN_INTERSECTION_CACHE_SIZE)) {
     cache->objects[cache->i] = found;
     ++cache->i;
@@ -323,13 +321,13 @@ dmnsn_bvh_intersection(const dmnsn_bvh *bvh, dmnsn_line ray,
 DMNSN_HOT bool
 dmnsn_bvh_inside(const dmnsn_bvh *bvh, dmnsn_vector point)
 {
-  /* Search the unbounded objects */
+  // Search the unbounded objects
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, bvh->unbounded) {
     if (dmnsn_object_inside(*object, point))
       return true;
   }
 
-  /* Search the bounded objects */
+  // Search the bounded objects
   dmnsn_flat_bvh_node *node = dmnsn_array_first(bvh->bounded);
   dmnsn_flat_bvh_node *last = dmnsn_array_last(bvh->bounded);
   while (node <= last) {

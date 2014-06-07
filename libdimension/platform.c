@@ -33,13 +33,13 @@
   #include <windows.h>
 #endif
 #if DMNSN_BACKTRACE
-  #include <execinfo.h>    /* For backtrace() etc. */
+  #include <execinfo.h>    // For backtrace() etc.
 #endif
 #if DMNSN_GETTID
-  #include <sys/syscall.h> /* For gettid() where supported */
+  #include <sys/syscall.h> // For gettid() where supported
 #endif
 #if DMNSN_SCHED_GETAFFINITY
-  #include <sched.h>       /* For sched_getaffinity() */
+  #include <sched.h>       // For sched_getaffinity()
 #endif
 #if DMNSN_TIMES
   #include <sys/times.h>
@@ -77,7 +77,7 @@ dmnsn_is_main_thread(void)
 bool
 dmnsn_is_little_endian(void)
 {
-  /* Undefined behaviour, but quite portable */
+  // Undefined behaviour, but quite portable
   union {
     unsigned int i;
     unsigned char c;
@@ -114,7 +114,7 @@ dmnsn_ncpus(void)
 }
 
 #if DMNSN_GETRUSAGE
-/** Convert a struct timeval to a double. */
+/// Convert a struct timeval to a double.
 static inline double
 dmnsn_timeval2double(struct timeval tv)
 {
@@ -141,7 +141,7 @@ dmnsn_get_times(dmnsn_timer *timer)
 #elif DMNSN_TIMES
   static long clk_tck = 0;
 
-  /* Figure out the clock ticks per second */
+  // Figure out the clock ticks per second
   if (!clk_tck) {
     clk_tck = sysconf(_SC_CLK_TCK);
     if (clk_tck == -1) {

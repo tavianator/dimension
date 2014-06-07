@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-/* Optimize canvas for GL drawing */
+// Optimize canvas for GL drawing
 int
 dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
 {
@@ -36,14 +36,14 @@ dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
   return 0;
 }
 
-/* Write canvas to GL framebuffer.  Returns 0 on success, nonzero on failure */
+// Write canvas to GL framebuffer.  Returns 0 on success, nonzero on failure
 int
 dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
 {
   size_t width = canvas->width;
   size_t height = canvas->height;
 
-  /* Check if we can optimize this */
+  // Check if we can optimize this
   dmnsn_canvas_optimizer *optimizer =
     dmnsn_canvas_find_optimizer(canvas, dmnsn_rgba8_optimizer_fn);
   if (optimizer) {
@@ -51,7 +51,7 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
     return glGetError() == GL_NO_ERROR ? 0 : 1;
   }
 
-  /* We couldn't, so transform the canvas to RGB now */
+  // We couldn't, so transform the canvas to RGB now
   GLubyte *pixels = dmnsn_malloc(4*width*height*sizeof(GLubyte));
 
   for (size_t y = 0; y < height; ++y) {
@@ -76,14 +76,14 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   return glGetError() == GL_NO_ERROR ? 0 : 1;
 }
 
-/* Read a canvas from a GL framebuffer.  Returns NULL on failure. */
+// Read a canvas from a GL framebuffer.  Returns NULL on failure.
 int
 dmnsn_gl_read_canvas(dmnsn_canvas *canvas, size_t x0, size_t y0)
 {
   size_t width = canvas->width;
   size_t height = canvas->height;
 
-  /* Array of 16-bit ints in RGBA order */
+  // Array of 16-bit ints in RGBA order
   GLushort *pixels = dmnsn_malloc(4*width*height*sizeof(GLushort));
   glReadPixels(x0, y0, width, height, GL_RGBA, GL_UNSIGNED_SHORT, pixels);
   if (glGetError() != GL_NO_ERROR) {

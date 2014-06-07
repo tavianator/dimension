@@ -25,7 +25,7 @@
 
 #include "dimension-internal.h"
 
-/* Allocate a dummy pigment */
+// Allocate a dummy pigment
 dmnsn_pigment *
 dmnsn_new_pigment(dmnsn_pool *pool)
 {
@@ -34,7 +34,7 @@ dmnsn_new_pigment(dmnsn_pool *pool)
   return pigment;
 }
 
-/* Initialize a pigment */
+// Initialize a pigment
 void
 dmnsn_init_pigment(dmnsn_pigment *pigment)
 {
@@ -45,7 +45,7 @@ dmnsn_init_pigment(dmnsn_pigment *pigment)
   pigment->initialized = false;
 }
 
-/* Precompute pigment properties */
+// Precompute pigment properties
 void
 dmnsn_pigment_initialize(dmnsn_pigment *pigment)
 {
@@ -59,7 +59,7 @@ dmnsn_pigment_initialize(dmnsn_pigment *pigment)
   pigment->trans_inv = dmnsn_matrix_inverse(pigment->trans);
 }
 
-/* Evaluate a pigment */
+// Evaluate a pigment
 dmnsn_tcolor
 dmnsn_pigment_evaluate(const dmnsn_pigment *pigment, dmnsn_vector v)
 {

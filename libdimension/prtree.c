@@ -26,28 +26,28 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
-/** Number of children per PR-node. */
+/// Number of children per PR-node.
 #define DMNSN_PRTREE_B 8
-/** Number of priority leaves per pseudo-PR-node (must be 2*ndimensions). */
+/// Number of priority leaves per pseudo-PR-node (must be 2*ndimensions).
 #define DMNSN_PSEUDO_B 6
 
-/** The side of the split that a node ended up on. */
+/// The side of the split that a node ended up on.
 typedef enum dmnsn_prnode_location {
-  DMNSN_PRTREE_LEAF, /**< Priority leaf. */
-  DMNSN_PRTREE_LEFT, /**< Left child. */
-  DMNSN_PRTREE_RIGHT /**< Right child. */
+  DMNSN_PRTREE_LEAF, ///< Priority leaf.
+  DMNSN_PRTREE_LEFT, ///< Left child.
+  DMNSN_PRTREE_RIGHT ///< Right child.
 } dmnsn_prnode_location;
 
-/** Construct an empty PR-node. */
+/// Construct an empty PR-node.
 static inline dmnsn_bvh_node *
 dmnsn_new_prnode(void)
 {
   dmnsn_bvh_node *node = dmnsn_new_bvh_node(DMNSN_PRTREE_B);
-  node->data = DMNSN_PRTREE_LEFT; /* Mustn't be _LEAF */
+  node->data = DMNSN_PRTREE_LEFT; // Mustn't be _LEAF
   return node;
 }
 
-/** Comparator types. */
+/// Comparator types.
 enum {
   DMNSN_XMIN,
   DMNSN_YMIN,
@@ -57,7 +57,7 @@ enum {
   DMNSN_ZMAX
 };
 
-/* List sorting comparators */
+// List sorting comparators
 
 static int
 dmnsn_xmin_comp(const void *l, const void *r)
@@ -107,7 +107,7 @@ dmnsn_zmax_comp(const void *l, const void *r)
   return (lval < rval) - (lval > rval);
 }
 
-/** All comparators. */
+/// All comparators.
 static dmnsn_array_comparator_fn *const dmnsn_comparators[DMNSN_PSEUDO_B] = {
   [DMNSN_XMIN] = dmnsn_xmin_comp,
   [DMNSN_YMIN] = dmnsn_ymin_comp,
@@ -117,7 +117,7 @@ static dmnsn_array_comparator_fn *const dmnsn_comparators[DMNSN_PSEUDO_B] = {
   [DMNSN_ZMAX] = dmnsn_zmax_comp,
 };
 
-/** Add the priority leaves for this level. */
+/// Add the priority leaves for this level.
 static void
 dmnsn_add_priority_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
                           size_t nleaves,
@@ -130,7 +130,7 @@ dmnsn_add_priority_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
          j < nleaves && (!leaf || leaf->nchildren < DMNSN_PRTREE_B);
          ++j)
     {
-      /* Skip all the previously found extreme nodes */
+      // Skip all the previously found extreme nodes
       if (leaves[j]->data == DMNSN_PRTREE_LEAF) {
         continue;
       }
@@ -155,7 +155,7 @@ dmnsn_split_sorted_leaves_easy(dmnsn_bvh_node **leaves,
                                size_t *nleaves,
                                size_t *nright_leaves)
 {
-  /* Get rid of the extreme nodes */
+  // Get rid of the extreme nodes
   size_t i, skip, size = *nleaves;
   for (i = 0, skip = 0; i < size; ++i) {
     if (leaves[i]->data == DMNSN_PRTREE_LEAF) {
@@ -167,7 +167,7 @@ dmnsn_split_sorted_leaves_easy(dmnsn_bvh_node **leaves,
 
   size -= skip;
 
-  /* Split the leaves and mark the left and right child nodes */
+  // Split the leaves and mark the left and right child nodes
   size_t left_size = (size + 1)/2;
   for (i = 0; i < left_size; ++i) {
     leaves[i]->data = DMNSN_PRTREE_LEFT;
@@ -204,7 +204,7 @@ dmnsn_split_sorted_leaves_hard(dmnsn_bvh_node **leaves,
   }
 }
 
-/** Split the sorted lists into the left and right subtrees. */
+/// Split the sorted lists into the left and right subtrees.
 static void
 dmnsn_split_sorted_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
                           size_t *nleaves,
@@ -215,10 +215,10 @@ dmnsn_split_sorted_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
 {
   size_t original_size = *nleaves;
 
-  /* Split the ith list */
+  // Split the ith list
   dmnsn_split_sorted_leaves_easy(sorted_leaves[i], nleaves, nright_leaves);
 
-  /* Split the rest of the lists */
+  // Split the rest of the lists
   for (size_t j = 0; j < DMNSN_PSEUDO_B; ++j) {
     right_sorted_leaves[j] = sorted_leaves[j] + *nleaves;
     if (j == i) {
@@ -229,8 +229,8 @@ dmnsn_split_sorted_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
   }
 }
 
-/** Recursively constructs an implicit pseudo-PR-tree and collects the priority
-    leaves. */
+/// Recursively constructs an implicit pseudo-PR-tree and collects the priority
+/// leaves.
 static void
 dmnsn_priority_leaves_recursive(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
                                 size_t nleaves,
@@ -260,7 +260,7 @@ dmnsn_priority_leaves_recursive(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
   }
 }
 
-/** Sort each dimension in parallel with more than this many leaves. */
+/// Sort each dimension in parallel with more than this many leaves.
 #define DMNSN_PARALLEL_SORT_THRESHOLD 1024
 
 typedef struct {
@@ -293,7 +293,7 @@ dmnsn_sort_leaves(void *ptr, unsigned int thread, unsigned int nthreads)
   return 0;
 }
 
-/** Constructs an implicit pseudo-PR-tree and returns the priority leaves. */
+/// Constructs an implicit pseudo-PR-tree and returns the priority leaves.
 static dmnsn_array *
 dmnsn_priority_leaves(const dmnsn_array *leaves, unsigned int nthreads)
 {
@@ -337,11 +337,11 @@ dmnsn_new_prtree(const dmnsn_array *objects)
     return NULL;
   }
 
-  /* Make the initial array of leaves */
+  // Make the initial array of leaves
   dmnsn_array *leaves = DMNSN_NEW_ARRAY(dmnsn_bvh_node *);
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, objects) {
     dmnsn_bvh_node *node = dmnsn_new_bvh_leaf_node(*object);
-    node->data = DMNSN_PRTREE_LEFT; /* Mustn't be _LEAF */
+    node->data = DMNSN_PRTREE_LEFT; // Mustn't be _LEAF
     dmnsn_array_push(leaves, &node);
   }
 

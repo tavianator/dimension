@@ -26,7 +26,7 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
-/* Allocate a dummy object */
+// Allocate a dummy object
 dmnsn_object *
 dmnsn_new_object(dmnsn_pool *pool)
 {
@@ -35,7 +35,7 @@ dmnsn_new_object(dmnsn_pool *pool)
   return object;
 }
 
-/* Initialize a dmnsn_object field */
+// Initialize a dmnsn_object field
 void
 dmnsn_init_object(dmnsn_object *object)
 {
@@ -49,7 +49,7 @@ dmnsn_init_object(dmnsn_object *object)
   object->precomputed = false;
 }
 
-/** Recursively precompute objects. */
+/// Recursively precompute objects.
 static void
 dmnsn_object_precompute_recursive(dmnsn_object *object, dmnsn_matrix pigment_trans)
 {
@@ -61,14 +61,14 @@ dmnsn_object_precompute_recursive(dmnsn_object *object, dmnsn_matrix pigment_tra
   dmnsn_assert(vtable->inside_fn, "Missing inside function.");
   dmnsn_assert(vtable->bounding_fn || vtable->precompute_fn, "Missing bounding and precompute function.");
 
-  /* Initialize the texture */
+  // Initialize the texture
   if (!object->texture->initialized) {
     dmnsn_texture_initialize(object->texture);
   }
 
   dmnsn_matrix total_trans = dmnsn_matrix_mul(object->trans, object->intrinsic_trans);
 
-  /* Precompute the object's children */
+  // Precompute the object's children
   if (object->children) {
     DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
       dmnsn_matrix saved_trans = (*child)->trans;
@@ -76,7 +76,7 @@ dmnsn_object_precompute_recursive(dmnsn_object *object, dmnsn_matrix pigment_tra
 
       dmnsn_matrix child_pigment_trans;
       if ((*child)->texture == NULL || (*child)->texture->pigment == NULL) {
-        /* Don't transform cascaded pigments with the child object */
+        // Don't transform cascaded pigments with the child object
         child_pigment_trans = pigment_trans;
       } else {
         child_pigment_trans = dmnsn_matrix_inverse((*child)->trans);
@@ -89,7 +89,7 @@ dmnsn_object_precompute_recursive(dmnsn_object *object, dmnsn_matrix pigment_tra
     }
   }
 
-  /* Precalculate object values */
+  // Precalculate object values
   object->pigment_trans = pigment_trans;
   object->trans_inv = dmnsn_matrix_inverse(total_trans);
   if (vtable->bounding_fn) {
@@ -100,7 +100,7 @@ dmnsn_object_precompute_recursive(dmnsn_object *object, dmnsn_matrix pigment_tra
   }
 }
 
-/* Precompute object properties */
+// Precompute object properties
 void
 dmnsn_object_precompute(dmnsn_object *object)
 {

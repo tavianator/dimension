@@ -25,7 +25,7 @@
 
 #include "dimension.h"
 
-/** Initialize a pigment in a pigment map. */
+/// Initialize a pigment in a pigment map.
 static void
 dmnsn_initialize_mapped_pigment(void *ptr)
 {
@@ -39,7 +39,7 @@ dmnsn_new_pigment_map(dmnsn_pool *pool)
   return dmnsn_new_map(pool, sizeof(dmnsn_pigment *));
 }
 
-/** Pigment map type. */
+/// Pigment map type.
 typedef struct dmnsn_pigment_map {
   dmnsn_pigment pigment;
   dmnsn_pattern *pattern;
@@ -47,7 +47,7 @@ typedef struct dmnsn_pigment_map {
   dmnsn_pigment_map_flags flags;
 } dmnsn_pigment_map;
 
-/** pigment_map pigment callback. */
+/// pigment_map pigment callback.
 static dmnsn_tcolor
 dmnsn_pigment_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
@@ -72,7 +72,7 @@ dmnsn_pigment_map_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
   return ret;
 }
 
-/** pigment_map initialization callback. */
+/// pigment_map initialization callback.
 static void
 dmnsn_pigment_map_initialize_fn(dmnsn_pigment *pigment)
 {

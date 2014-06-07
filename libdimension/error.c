@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-/** Report internal errors in this file. */
+/// Report internal errors in this file.
 #define DMNSN_LOCAL_ERROR(str)                          \
   do {                                                  \
     fprintf(stderr, "Dimension ERROR: %s, %s:%u: %s\n", \
@@ -38,7 +38,7 @@
     abort();                                            \
   } while (0)
 
-/** dmnsn_local_lock_mutex implementation. */
+/// dmnsn_local_lock_mutex implementation.
 static void
 dmnsn_local_lock_mutex_impl(pthread_mutex_t *mutex)
 {
@@ -47,7 +47,7 @@ dmnsn_local_lock_mutex_impl(pthread_mutex_t *mutex)
   }
 }
 
-/** dmnsn_local_unlock_mutex implementation. */
+/// dmnsn_local_unlock_mutex implementation.
 static void
 dmnsn_local_unlock_mutex_impl(pthread_mutex_t *mutex)
 {
@@ -56,32 +56,32 @@ dmnsn_local_unlock_mutex_impl(pthread_mutex_t *mutex)
   }
 }
 
-/** Lock a mutex, bailing out without dmnsn_error() on error. */
+/// Lock a mutex, bailing out without dmnsn_error() on error.
 #define dmnsn_local_lock_mutex(mutex)           \
   dmnsn_local_lock_mutex_impl((mutex)); {
-/** Unlock a mutex, bailing out without dmnsn_error() on error. */
+/// Unlock a mutex, bailing out without dmnsn_error() on error.
 #define dmnsn_local_unlock_mutex(mutex)         \
   dmnsn_local_unlock_mutex_impl((mutex)); }
 
-/** The default fatal error handler. */
+/// The default fatal error handler.
 static void dmnsn_default_fatal_error_fn(void);
 
-/** The current fatal error handler. */
+/// The current fatal error handler.
 static dmnsn_fatal_error_fn *dmnsn_fatal = dmnsn_default_fatal_error_fn;
-/** Mutex which protects \c dmnsn_fatal. */
+/// Mutex which protects \c dmnsn_fatal.
 static pthread_mutex_t dmnsn_fatal_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/** The current resilience. */
+/// The current resilience.
 static bool dmnsn_always_die = false;
-/** Mutex which protects \c dmnsn_always_die. */
+/// Mutex which protects \c dmnsn_always_die.
 static pthread_mutex_t dmnsn_always_die_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/* Called by dmnsn_error macro (don't call directly) */
+// Called by dmnsn_error macro (don't call directly)
 void
 dmnsn_report_error(bool die, const char *func, const char *file,
                    unsigned int line, const char *str)
 {
-  /* Save the value of errno */
+  // Save the value of errno
   int err = errno;
 
   bool always_die;
@@ -89,11 +89,11 @@ dmnsn_report_error(bool die, const char *func, const char *file,
     always_die = dmnsn_always_die;
   dmnsn_local_unlock_mutex(&dmnsn_always_die_mutex);
 
-  /* Print the diagnostic string */
+  // Print the diagnostic string
   fprintf(stderr, "Dimension %s: %s, %s:%u: %s\n",
           die ? "ERROR" : "WARNING", func, file, line, str);
 
-  /* Print the value of errno */
+  // Print the value of errno
   if (err != 0) {
     fprintf(stderr, "Last error: %d", err);
 #if DMNSN_STRERROR_R
@@ -109,17 +109,17 @@ dmnsn_report_error(bool die, const char *func, const char *file,
     fprintf(stderr, "\n");
   }
 
-  /* Print a stack trace to standard error */
+  // Print a stack trace to standard error
   dmnsn_backtrace(stderr);
 
-  /* Call the fatal error handler if needed */
+  // Call the fatal error handler if needed
   if (die || always_die) {
     static __thread bool thread_exiting = false;
 
     if (thread_exiting) {
       if (die) {
-        /* Prevent infinite recursion if the fatal error function itself calls
-           dmnsn_error() (not dmnsn_warning()) */
+        // Prevent infinite recursion if the fatal error function itself calls
+        // dmnsn_error() (not dmnsn_warning()) */
         DMNSN_LOCAL_ERROR("Error raised while in error handler, aborting.");
       }
     } else {

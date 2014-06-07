@@ -86,12 +86,12 @@ DMNSN_TEST(dictionary, insert_overwrites)
   const int value1 = 123, value2 = 456;
   int value_out;
 
-  /* Insert and read back value1 */
+  // Insert and read back value1
   dmnsn_dictionary_insert(dict, "key", &value1);
   ck_assert(dmnsn_dictionary_get(dict, "key", &value_out));
   ck_assert_int_eq(value_out, value1);
 
-  /* Insert and read back value2 */
+  // Insert and read back value2
   dmnsn_dictionary_insert(dict, "key", &value2);
   ck_assert(dmnsn_dictionary_get(dict, "key", &value_out));
   ck_assert_int_eq(value_out, value2);

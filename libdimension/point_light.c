@@ -26,14 +26,14 @@
 #include "dimension.h"
 #include <stdlib.h>
 
-/** Point light type. */
+/// Point light type.
 typedef struct dmnsn_point_light {
   dmnsn_light light;
   dmnsn_vector origin;
   dmnsn_color color;
 } dmnsn_point_light;
 
-/** Point light direction callback. */
+/// Point light direction callback.
 static dmnsn_vector
 dmnsn_point_light_direction_fn(const dmnsn_light *light, dmnsn_vector v)
 {
@@ -41,7 +41,7 @@ dmnsn_point_light_direction_fn(const dmnsn_light *light, dmnsn_vector v)
   return dmnsn_vector_sub(point_light->origin, v);
 }
 
-/** Point light illumination callback. */
+/// Point light illumination callback.
 static dmnsn_color
 dmnsn_point_light_illumination_fn(const dmnsn_light *light, dmnsn_vector v)
 {
@@ -49,7 +49,7 @@ dmnsn_point_light_illumination_fn(const dmnsn_light *light, dmnsn_vector v)
   return point_light->color;
 }
 
-/** Point light illumination callback. */
+/// Point light illumination callback.
 static bool
 dmnsn_point_light_shadow_fn(const dmnsn_light *light, double t)
 {

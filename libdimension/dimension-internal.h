@@ -37,4 +37,4 @@
 #include "prtree.h"
 #include "rgba.h"
 
-#endif /* DIMENSION_INTERNAL_H */
+#endif // DIMENSION_INTERNAL_H

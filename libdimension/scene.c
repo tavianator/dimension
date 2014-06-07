@@ -26,7 +26,7 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
-/* Allocate an empty scene */
+// Allocate an empty scene
 dmnsn_scene *
 dmnsn_new_scene(dmnsn_pool *pool)
 {

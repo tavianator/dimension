@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-/* Make sure warnings kill us in strict mode - this test should fail */
+// Make sure warnings kill us in strict mode - this test should fail
 
 #include "dimension.h"
 #include <stdlib.h>

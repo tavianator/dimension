@@ -25,7 +25,7 @@
 
 #include "dimension-internal.h"
 
-/** Checker pattern callback. */
+/// Checker pattern callback.
 static double
 dmnsn_checker_pattern_fn(const dmnsn_pattern *checker, dmnsn_vector v)
 {
@@ -40,7 +40,7 @@ dmnsn_checker_pattern_fn(const dmnsn_pattern *checker, dmnsn_vector v)
   if (zmod < -dmnsn_epsilon)
     zmod += 2.0;
 
-  /* Return 0 when an even number of coordinates are in [0, 1), 1 otherwise */
+  // Return 0 when an even number of coordinates are in [0, 1), 1 otherwise
   unsigned int n = 0;
   if (xmod >= 1.0)
     ++n;
@@ -51,7 +51,7 @@ dmnsn_checker_pattern_fn(const dmnsn_pattern *checker, dmnsn_vector v)
   return (n%2 == 0) ? 0.0 : 1.0;
 }
 
-/** The singleton instance. */
+/// The singleton instance.
 static dmnsn_pattern dmnsn_checker_instance = {
   .pattern_fn = dmnsn_checker_pattern_fn,
 };

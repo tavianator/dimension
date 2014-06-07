@@ -25,13 +25,13 @@
 
 #include "dimension.h"
 
-/** Torus type. */
+/// Torus type.
 typedef struct {
   dmnsn_object object;
   double major, minor;
 } dmnsn_torus;
 
-/** Bound the torus in a cylindrical shell. */
+/// Bound the torus in a cylindrical shell.
 static inline bool
 dmnsn_torus_bound_intersection(const dmnsn_torus *torus, dmnsn_line l)
 {
@@ -39,7 +39,7 @@ dmnsn_torus_bound_intersection(const dmnsn_torus *torus, dmnsn_line l)
   double rmax = R + r, rmin = R - r;
   double rmax2 = rmax*rmax, rmin2 = rmin*rmin;
 
-  /* Try the caps first */
+  // Try the caps first
   double tlower = (-r - l.x0.y)/l.n.y;
   double tupper = (+r - l.x0.y)/l.n.y;
   dmnsn_vector lower = dmnsn_line_point(l, tlower);
@@ -47,7 +47,7 @@ dmnsn_torus_bound_intersection(const dmnsn_torus *torus, dmnsn_line l)
   double ldist2 = lower.x*lower.x + lower.z*lower.z;
   double udist2 = upper.x*upper.x + upper.z*upper.z;
   if ((ldist2 < rmin2 || ldist2 > rmax2) && (udist2 < rmin2 || udist2 > rmax2)) {
-    /* No valid intersection with the caps, try the cylinder walls */
+    // No valid intersection with the caps, try the cylinder walls
     double dist2 = l.x0.x*l.x0.x + l.x0.z*l.x0.z;
     double bigcyl[3], smallcyl[3];
     bigcyl[2]   = smallcyl[2] = l.n.x*l.n.x + l.n.z*l.n.z;
@@ -67,7 +67,7 @@ dmnsn_torus_bound_intersection(const dmnsn_torus *torus, dmnsn_line l)
     }
 
     if (i == n) {
-      /* No valid intersection found */
+      // No valid intersection found
       return false;
     }
   }
@@ -75,7 +75,7 @@ dmnsn_torus_bound_intersection(const dmnsn_torus *torus, dmnsn_line l)
   return true;
 }
 
-/** Torus intersection callback. */
+/// Torus intersection callback.
 static bool
 dmnsn_torus_intersection_fn(const dmnsn_object *object, dmnsn_line l,
                             dmnsn_intersection *intersection)
@@ -88,7 +88,7 @@ dmnsn_torus_intersection_fn(const dmnsn_object *object, dmnsn_line l,
     return false;
   }
 
-  /* This bit of algebra here is correct */
+  // This bit of algebra here is correct
   dmnsn_vector x0mod = dmnsn_new_vector(l.x0.x, -l.x0.y, l.x0.z);
   dmnsn_vector nmod  = dmnsn_new_vector(l.n.x,  -l.n.y,  l.n.z);
   double nn      = dmnsn_vector_dot(l.n, l.n);
@@ -131,7 +131,7 @@ dmnsn_torus_intersection_fn(const dmnsn_object *object, dmnsn_line l,
   return true;
 }
 
-/** Torus inside callback. */
+/// Torus inside callback.
 static bool
 dmnsn_torus_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
@@ -140,7 +140,7 @@ dmnsn_torus_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return dmajor*dmajor + point.y*point.y < torus->minor*torus->minor;
 }
 
-/** Torus bounding callback. */
+/// Torus bounding callback.
 static dmnsn_bounding_box
 dmnsn_torus_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
@@ -151,7 +151,7 @@ dmnsn_torus_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
   return dmnsn_transform_bounding_box(trans, box);
 }
 
-/** Torus vtable. */
+/// Torus vtable.
 static const dmnsn_object_vtable dmnsn_torus_vtable = {
   .intersection_fn = dmnsn_torus_intersection_fn,
   .inside_fn = dmnsn_torus_inside_fn,

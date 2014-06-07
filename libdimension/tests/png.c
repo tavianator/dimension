@@ -26,24 +26,24 @@ main(void)
 {
   int ret = EXIT_SUCCESS;
 
-  /* Treat warnings as errors for tests */
+  // Treat warnings as errors for tests
   dmnsn_die_on_warnings(true);
 
-  /* Allocate our canvas */
+  // Allocate our canvas
   dmnsn_pool *pool = dmnsn_new_pool();
   dmnsn_canvas *canvas = dmnsn_new_canvas(pool, 768, 480);
 
-  /* Optimize the canvas for PNG export */
+  // Optimize the canvas for PNG export
   if (dmnsn_png_optimize_canvas(canvas) != 0) {
     fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
     ret = EXIT_FAILURE;
     goto exit;
   }
 
-  /* Paint the test pattern */
+  // Paint the test pattern
   dmnsn_paint_test_canvas(canvas);
 
-  /* Write the image to PNG */
+  // Write the image to PNG
 
   printf("Writing scene to PNG\n");
   FILE *ofile = fopen("png1.png", "wb");
@@ -66,7 +66,7 @@ main(void)
    * Now test PNG import/export
    */
 
-  /* Read the image back from PNG */
+  // Read the image back from PNG
 
   printf("Reading scene from PNG\n");
   FILE *ifile = fopen("png1.png", "rb");
@@ -86,7 +86,7 @@ main(void)
 
   fclose(ifile);
 
-  /* And write it back */
+  // And write it back
 
   printf("Writing scene to PNG\n");
   ofile = fopen("png2.png", "wb");

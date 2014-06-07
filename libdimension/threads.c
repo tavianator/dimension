@@ -26,14 +26,14 @@
 #include "dimension-internal.h"
 #include <pthread.h>
 
-/** The payload to pass to the pthread callback. */
+/// The payload to pass to the pthread callback.
 typedef struct dmnsn_thread_payload {
   dmnsn_thread_fn *thread_fn;
   void *arg;
   dmnsn_future *future;
 } dmnsn_thread_payload;
 
-/** Clean up after a thread. */
+/// Clean up after a thread.
 static void
 dmnsn_thread_cleanup(void *arg)
 {
@@ -44,7 +44,7 @@ dmnsn_thread_cleanup(void *arg)
   dmnsn_future_finish(future);
 }
 
-/** pthread callback -- call the real thread callback. */
+/// pthread callback -- call the real thread callback.
 static void *
 dmnsn_thread(void *arg)
 {
@@ -71,7 +71,7 @@ dmnsn_new_thread(dmnsn_future *future, dmnsn_thread_fn *thread_fn, void *arg)
   }
 }
 
-/** Payload for threads executed by dmnsn_execute_concurrently(). */
+/// Payload for threads executed by dmnsn_execute_concurrently().
 typedef struct dmnsn_ccthread_payload {
   dmnsn_future *future;
   dmnsn_ccthread_fn *ccthread_fn;
@@ -177,7 +177,7 @@ dmnsn_execute_concurrently(dmnsn_future *future, dmnsn_ccthread_fn *ccthread_fn,
   return ret;
 }
 
-/* pthread wrappers */
+// pthread wrappers
 
 void
 dmnsn_initialize_mutex(pthread_mutex_t *mutex)

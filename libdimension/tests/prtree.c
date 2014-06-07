@@ -75,7 +75,7 @@ dmnsn_new_fake_object(dmnsn_pool *pool)
 int
 main(void)
 {
-  /* Treat warnings as errors for tests */
+  // Treat warnings as errors for tests
   dmnsn_die_on_warnings(true);
 
   dmnsn_pool *pool = dmnsn_new_pool();

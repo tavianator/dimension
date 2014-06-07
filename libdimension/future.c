@@ -33,7 +33,7 @@
  */
 #define MUTATE(future) ((dmnsn_future *)(future))
 
-/* Allocate a new dmnsn_future* */
+// Allocate a new dmnsn_future*
 dmnsn_future *
 dmnsn_new_future(void)
 {
@@ -68,7 +68,7 @@ dmnsn_delete_future(dmnsn_future *future)
   }
 }
 
-/* Join the worker thread and delete `future'. */
+// Join the worker thread and delete `future'.
 int
 dmnsn_future_join(dmnsn_future *future)
 {
@@ -78,21 +78,21 @@ dmnsn_future_join(dmnsn_future *future)
   if (future) {
     dmnsn_assert(future->npaused == 0, "Attempt to join future while paused");
 
-    /* Get the thread's return value */
+    // Get the thread's return value
     dmnsn_join_thread(future->thread, &ptr);
     if (ptr && ptr != PTHREAD_CANCELED) {
       retval = *(int *)ptr;
       dmnsn_free(ptr);
     }
 
-    /* Free the future object */
+    // Free the future object
     dmnsn_delete_future(future);
   }
 
   return retval;
 }
 
-/* Cancel a background thread */
+// Cancel a background thread
 void
 dmnsn_future_cancel(dmnsn_future *future)
 {
@@ -110,7 +110,7 @@ dmnsn_future_progress_unlocked(const dmnsn_future *future)
   return (double)future->progress/future->total;
 }
 
-/* Get the current progress of the worker thread, in [0.0, 1.0] */
+// Get the current progress of the worker thread, in [0.0, 1.0]
 double
 dmnsn_future_progress(const dmnsn_future *future)
 {
@@ -124,7 +124,7 @@ dmnsn_future_progress(const dmnsn_future *future)
   return progress;
 }
 
-/* Find out whether the task is complete. */
+// Find out whether the task is complete.
 bool
 dmnsn_future_is_done(const dmnsn_future *future)
 {
@@ -138,7 +138,7 @@ dmnsn_future_is_done(const dmnsn_future *future)
   return result;
 }
 
-/* Wait until dmnsn_future_progress(future) >= progress */
+// Wait until dmnsn_future_progress(future) >= progress
 void
 dmnsn_future_wait(const dmnsn_future *future, double progress)
 {
@@ -146,7 +146,7 @@ dmnsn_future_wait(const dmnsn_future *future, double progress)
 
   dmnsn_lock_mutex(&mfuture->mutex);
     while (dmnsn_future_progress_unlocked(mfuture) < progress) {
-      /* Set the minimum waited-on value */
+      // Set the minimum waited-on value
       if (progress < mfuture->min_wait) {
         mfuture->min_wait = progress;
       }
@@ -156,7 +156,7 @@ dmnsn_future_wait(const dmnsn_future *future, double progress)
   dmnsn_unlock_mutex(&mfuture->mutex);
 }
 
-/* Pause all threads working on a future. */
+// Pause all threads working on a future.
 void
 dmnsn_future_pause(dmnsn_future *future)
 {
@@ -172,7 +172,7 @@ dmnsn_future_pause(dmnsn_future *future)
   dmnsn_unlock_mutex(&future->mutex);
 }
 
-/* Resume all threads working on a future. */
+// Resume all threads working on a future.
 void
 dmnsn_future_resume(dmnsn_future *future)
 {
@@ -185,7 +185,7 @@ dmnsn_future_resume(dmnsn_future *future)
   dmnsn_unlock_mutex(&future->mutex);
 }
 
-/* Set the total number of loop iterations */
+// Set the total number of loop iterations
 void
 dmnsn_future_set_total(dmnsn_future *future, size_t total)
 {
@@ -202,13 +202,13 @@ dmnsn_future_increment_cleanup(void *ptr)
   dmnsn_unlock_mutex_impl(&future->mutex);
 }
 
-/* Increment the number of completed loop iterations */
+// Increment the number of completed loop iterations
 void
 dmnsn_future_increment(dmnsn_future *future)
 {
-  /* Allow a thread to be canceled whenever it increments a future object --
-     this is close to PTHREAD_CANCEL_ASYNCHRONOUS but allows consistent state
-     on cancellation */
+  // Allow a thread to be canceled whenever it increments a future object --
+  // this is close to PTHREAD_CANCEL_ASYNCHRONOUS but allows consistent state
+  // on cancellation
   pthread_testcancel();
 
   dmnsn_lock_mutex(&future->mutex);
@@ -239,7 +239,7 @@ dmnsn_future_increment(dmnsn_future *future)
   dmnsn_unlock_mutex(&future->mutex);
 }
 
-/* Immediately set to 100% completion */
+// Immediately set to 100% completion
 void
 dmnsn_future_finish(dmnsn_future *future)
 {
@@ -252,7 +252,7 @@ dmnsn_future_finish(dmnsn_future *future)
   dmnsn_unlock_mutex(&future->mutex);
 }
 
-/* Set the number of threads */
+// Set the number of threads
 void
 dmnsn_future_set_nthreads(dmnsn_future *future, unsigned int nthreads)
 {
@@ -263,7 +263,7 @@ dmnsn_future_set_nthreads(dmnsn_future *future, unsigned int nthreads)
   dmnsn_unlock_mutex(&future->mutex);
 }
 
-/* Notify completion of a worker thread */
+// Notify completion of a worker thread
 void
 dmnsn_future_finish_thread(dmnsn_future *future)
 {

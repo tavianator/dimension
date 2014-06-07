@@ -26,12 +26,12 @@
 #include "dimension.h"
 #include <math.h>
 
-/** Intersection callback for a cube. */
+/// Intersection callback for a cube.
 static bool
 dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
                            dmnsn_intersection *intersection)
 {
-  /* Clip the given line against the X, Y, and Z slabs */
+  // Clip the given line against the X, Y, and Z slabs
 
   dmnsn_vector nmin, nmax;
   double tmin, tmax;
@@ -120,7 +120,7 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_line line,
   }
 }
 
-/** Inside callback for a cube. */
+/// Inside callback for a cube.
 static bool
 dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
 {
@@ -129,7 +129,7 @@ dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
       && point.z > -1.0 && point.z < 1.0;
 }
 
-/** Boundary callback for a cube. */
+/// Boundary callback for a cube.
 static dmnsn_bounding_box
 dmnsn_cube_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
@@ -137,14 +137,14 @@ dmnsn_cube_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
   return dmnsn_transform_bounding_box(trans, box);
 }
 
-/** Cube vtable. */
+/// Cube vtable.
 static const dmnsn_object_vtable dmnsn_cube_vtable = {
   .intersection_fn = dmnsn_cube_intersection_fn,
   .inside_fn = dmnsn_cube_inside_fn,
   .bounding_fn = dmnsn_cube_bounding_fn,
 };
 
-/* Allocate a new cube object */
+// Allocate a new cube object
 dmnsn_object *
 dmnsn_new_cube(dmnsn_pool *pool)
 {

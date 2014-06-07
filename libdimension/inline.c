@@ -23,20 +23,20 @@
  * Emit definitions of inline functions, if necessary.
  */
 
-/* Set DMNSN_INLINE to produce definitions of inline functions, emitted here,
-   if needed */
+// Set DMNSN_INLINE to produce definitions of inline functions, emitted here,
+// if needed
 #ifdef __cplusplus
-  /* C++ inline semantics */
+  // C++ inline semantics
   #define DMNSN_INLINE inline
 #elif __STDC_VERSION__ >= 199901L
-  /* C99 inline semantics */
+  // C99 inline semantics
   #define DMNSN_INLINE
 #elif defined(__GNUC__)
-  /* GCC inline semantics */
+  // GCC inline semantics
   #define DMNSN_INLINE __inline__
 #else
-  /* Unknown C - mark functions static and hope the compiler is smart enough
-     to inline them */
+  // Unknown C - mark functions static and hope the compiler is smart enough to
+  // inline them
   #define DMNSN_INLINE static
 #endif
 

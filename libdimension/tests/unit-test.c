@@ -47,7 +47,7 @@ dmnsn_get_test_case(const char* name)
 void
 dmnsn_test_setup(void)
 {
-  /* Treat warnings as errors for tests */
+  // Treat warnings as errors for tests
   dmnsn_die_on_warnings(true);
 }
 
@@ -89,21 +89,21 @@ dmnsn_test_suite(void)
 int
 main(void)
 {
-  /* Treat warnings as errors for tests */
+  // Treat warnings as errors for tests
   dmnsn_die_on_warnings(true);
 
-  /* Create the test suite */
+  // Create the test suite
   Suite *suite = dmnsn_test_suite();
   SRunner *sr = srunner_create(suite);
 
-  /* Run the tests */
+  // Run the tests
   srunner_run_all(sr, CK_VERBOSE);
   int nfailed = srunner_ntests_failed(sr);
 
-  /* Clean up */
+  // Clean up
   srunner_free(sr);
 
-  /* Return the right result code */
+  // Return the right result code
   if (nfailed == 0) {
     return EXIT_SUCCESS;
   } else {

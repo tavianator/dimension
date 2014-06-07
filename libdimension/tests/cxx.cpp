@@ -26,10 +26,10 @@
 int
 main(void)
 {
-  /* Treat warnings as errors for tests */
+  // Treat warnings as errors for tests
   dmnsn_die_on_warnings(true);
 
-  /* Make sure we can to bit-ops on this enum type */
+  // Make sure we can to bit-ops on this enum type
   dmnsn_quality quality = DMNSN_RENDER_PIGMENT | DMNSN_RENDER_LIGHTS;
 
   return EXIT_SUCCESS;

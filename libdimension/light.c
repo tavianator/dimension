@@ -26,7 +26,7 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
-/* Allocate a new dummy light */
+// Allocate a new dummy light
 dmnsn_light *
 dmnsn_new_light(dmnsn_pool *pool)
 {
@@ -35,7 +35,7 @@ dmnsn_new_light(dmnsn_pool *pool)
   return light;
 }
 
-/* Initialize a light */
+// Initialize a light
 void
 dmnsn_init_light(dmnsn_light *light)
 {

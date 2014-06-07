@@ -27,13 +27,13 @@
 #include <math.h>
 #include <stdlib.h>
 
-/** Lambertian diffuse type. */
+/// Lambertian diffuse type.
 typedef struct dmnsn_lambertian {
   dmnsn_diffuse diffuse;
   double coeff;
 } dmnsn_lambertian;
 
-/** Diffuse finish callback. */
+/// Diffuse finish callback.
 static dmnsn_color
 dmnsn_lambertian_diffuse_fn(const dmnsn_diffuse *diffuse,
                             dmnsn_color light, dmnsn_color color,

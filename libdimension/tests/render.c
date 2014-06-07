@@ -25,7 +25,7 @@
 static void
 dmnsn_test_scene_set_defaults(dmnsn_pool *pool, dmnsn_scene *scene)
 {
-  /* Default texture */
+  // Default texture
   scene->default_texture->pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_black));
   dmnsn_finish *default_finish = &scene->default_texture->finish;
   default_finish->ambient = dmnsn_new_ambient(
@@ -43,7 +43,7 @@ dmnsn_test_scene_add_canvas(dmnsn_pool *pool, dmnsn_scene *scene)
 static void
 dmnsn_test_scene_add_camera(dmnsn_pool *pool, dmnsn_scene *scene)
 {
-  /* Set up the transformation matrix for the perspective camera */
+  // Set up the transformation matrix for the perspective camera
   dmnsn_matrix trans = dmnsn_scale_matrix(
     dmnsn_new_vector(
       ((double)scene->canvas->width)/scene->canvas->height, 1.0, 1.0
@@ -62,7 +62,7 @@ dmnsn_test_scene_add_camera(dmnsn_pool *pool, dmnsn_scene *scene)
     trans
   );
 
-  /* Create a perspective camera */
+  // Create a perspective camera
   scene->camera = dmnsn_new_perspective_camera(pool);
   scene->camera->trans = trans;
 }
@@ -86,7 +86,7 @@ dmnsn_test_scene_add_background(dmnsn_pool *pool, dmnsn_scene *scene)
       dmnsn_new_vector(0.0, dmnsn_radians(53.0), 0.0)
     );
   } else {
-    /* Loading png2.png failed, possibly compiled with --disable-png */
+    // Loading png2.png failed, possibly compiled with --disable-png
     fprintf(stderr, "--- WARNING: Couldn't open or read png2.png! ---\n");
     png_pigment = dmnsn_new_solid_pigment(pool, DMNSN_TCOLOR(dmnsn_orange));
   }
@@ -306,16 +306,16 @@ main(void)
 {
   int ret = EXIT_FAILURE;
 
-  /* Treat warnings as errors for tests */
+  // Treat warnings as errors for tests
   dmnsn_die_on_warnings(true);
 
   dmnsn_display *display = NULL;
 
-  /* Create the test scene */
+  // Create the test scene
   dmnsn_pool *pool = dmnsn_new_pool();
   dmnsn_scene *scene = dmnsn_new_test_scene(pool);
 
-  /* Optimize the canvas for PNG export */
+  // Optimize the canvas for PNG export
   bool have_png = true;
   errno = 0;
   if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
@@ -327,7 +327,7 @@ main(void)
     }
   }
 
-  /* Optimize the canvas for GL drawing */
+  // Optimize the canvas for GL drawing
   bool have_gl = true;
   errno = 0;
   if (dmnsn_gl_optimize_canvas(scene->canvas) != 0) {
@@ -341,7 +341,7 @@ main(void)
 
   dmnsn_canvas_clear(scene->canvas, DMNSN_TCOLOR(dmnsn_black));
 
-  /* Create a new glX display */
+  // Create a new glX display
   if (have_gl) {
     display = dmnsn_new_display(scene->canvas);
     if (!display) {
@@ -349,12 +349,12 @@ main(void)
     }
   }
 
-  /* Render the scene */
+  // Render the scene
 
   printf("Rendering scene\n");
   dmnsn_future *future = dmnsn_ray_trace_async(scene);
 
-  /* Display the scene as it's rendered */
+  // Display the scene as it's rendered
   if (display) {
     while (!dmnsn_future_is_done(future)) {
       dmnsn_future_pause(future);
@@ -373,7 +373,7 @@ main(void)
     goto exit;
   }
 
-  /* Make sure we show the completed rendering */
+  // Make sure we show the completed rendering
   if (display) {
     printf("Drawing to OpenGL\n");
     if (dmnsn_gl_write_canvas(scene->canvas) != 0) {

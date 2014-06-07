@@ -70,9 +70,9 @@ DMNSN_INTERNAL int dmnsn_execute_concurrently(dmnsn_future *future,
  */
 DMNSN_INTERNAL void dmnsn_initialize_mutex(pthread_mutex_t *mutex);
 
-/** dmnsn_lock_mutex() implementation. */
+/// dmnsn_lock_mutex() implementation.
 DMNSN_INTERNAL void dmnsn_lock_mutex_impl(pthread_mutex_t *mutex);
-/** dmnsn_unlock_mutex() implementation. */
+/// dmnsn_unlock_mutex() implementation.
 DMNSN_INTERNAL void dmnsn_unlock_mutex_impl(void *mutex);
 
 /**
@@ -101,11 +101,11 @@ DMNSN_INTERNAL void dmnsn_destroy_mutex(pthread_mutex_t *mutex);
  */
 DMNSN_INTERNAL void dmnsn_initialize_rwlock(pthread_rwlock_t *rwlock);
 
-/** dmnsn_read_lock() implementation. */
+/// dmnsn_read_lock() implementation.
 DMNSN_INTERNAL void dmnsn_read_lock_impl(pthread_rwlock_t *rwlock);
-/** dmnsn_write_lock() implementation. */
+/// dmnsn_write_lock() implementation.
 DMNSN_INTERNAL void dmnsn_write_lock_impl(pthread_rwlock_t *rwlock);
-/** dmnsn_unlock_rwlock() implementation. */
+/// dmnsn_unlock_rwlock() implementation.
 DMNSN_INTERNAL void dmnsn_unlock_rwlock_impl(pthread_rwlock_t *rwlock);
 
 /**

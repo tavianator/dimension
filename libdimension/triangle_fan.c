@@ -27,14 +27,14 @@
 
 #include "dimension.h"
 
-/** Triangle fan type. */
+/// Triangle fan type.
 typedef struct {
   dmnsn_object object;
   size_t ncoeffs;
   double coeffs[][6];
 } dmnsn_triangle_fan;
 
-/** Change basis from one triangle to the next. */
+/// Change basis from one triangle to the next.
 static inline dmnsn_vector
 dmnsn_change_basis(const double coeffs[6], dmnsn_vector v)
 {
@@ -45,7 +45,7 @@ dmnsn_change_basis(const double coeffs[6], dmnsn_vector v)
   );
 }
 
-/** Change basis from one triangle to the next for a normal vector. */
+/// Change basis from one triangle to the next for a normal vector.
 static inline dmnsn_vector
 dmnsn_change_normal_basis(const double coeffs[6], dmnsn_vector n)
 {
@@ -56,7 +56,7 @@ dmnsn_change_normal_basis(const double coeffs[6], dmnsn_vector n)
   );
 }
 
-/** Triangle intersection callback. */
+/// Triangle intersection callback.
 static bool
 dmnsn_triangle_fan_intersection_fn(const dmnsn_object *object, dmnsn_line l, dmnsn_intersection *intersection)
 {
@@ -98,14 +98,14 @@ dmnsn_triangle_fan_intersection_fn(const dmnsn_object *object, dmnsn_line l, dmn
   return false;
 }
 
-/** Triangle fan inside callback. */
+/// Triangle fan inside callback.
 static bool
 dmnsn_triangle_fan_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
   return false;
 }
 
-/** Triangle fan bounding callback. */
+/// Triangle fan bounding callback.
 static dmnsn_bounding_box
 dmnsn_triangle_fan_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
@@ -134,7 +134,7 @@ dmnsn_triangle_fan_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
   return box;
 }
 
-/** Triangle fan vtable. */
+/// Triangle fan vtable.
 static dmnsn_object_vtable dmnsn_triangle_fan_vtable = {
   .intersection_fn = dmnsn_triangle_fan_intersection_fn,
   .inside_fn = dmnsn_triangle_fan_inside_fn,
@@ -154,7 +154,7 @@ dmnsn_new_triangle_fan(dmnsn_pool *pool, dmnsn_vector vertices[], size_t nvertic
   dmnsn_init_object(object);
   object->vtable = &dmnsn_triangle_fan_vtable;
 
-  /* Compute the initial matrix and the coefficients */
+  // Compute the initial matrix and the coefficients
   dmnsn_vector a = vertices[0];
   dmnsn_vector ab = dmnsn_vector_sub(vertices[1], a);
   dmnsn_vector ac = dmnsn_vector_sub(vertices[2], a);

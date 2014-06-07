@@ -27,18 +27,18 @@
 
 #include "dimension.h"
 
-/** Optimized ray/triangle intersection test. */
+/// Optimized ray/triangle intersection test.
 static inline bool
 dmnsn_ray_triangle_intersection(dmnsn_line l, double *t, double *u, double *v)
 {
-  /* See the change of basis in dmnsn_triangle_basis() */
+  // See the change of basis in dmnsn_triangle_basis()
   *t = -l.x0.z/l.n.z;
   *u = l.x0.x + (*t)*l.n.x;
   *v = l.x0.y + (*t)*l.n.y;
   return *t >= 0.0 && *u >= 0.0 && *v >= 0.0 && *u + *v <= 1.0;
 }
 
-/** Triangle intersection callback. */
+/// Triangle intersection callback.
 static bool
 dmnsn_triangle_intersection_fn(const dmnsn_object *object, dmnsn_line l,
                                dmnsn_intersection *intersection)
@@ -53,14 +53,14 @@ dmnsn_triangle_intersection_fn(const dmnsn_object *object, dmnsn_line l,
   return false;
 }
 
-/** Triangle inside callback. */
+/// Triangle inside callback.
 static bool
 dmnsn_triangle_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
   return false;
 }
 
-/** Triangle bounding callback. */
+/// Triangle bounding callback.
 static dmnsn_bounding_box
 dmnsn_triangle_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
@@ -74,20 +74,20 @@ dmnsn_triangle_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
   return box;
 }
 
-/** Triangle vtable. */
+/// Triangle vtable.
 static const dmnsn_object_vtable dmnsn_triangle_vtable = {
   .intersection_fn = dmnsn_triangle_intersection_fn,
   .inside_fn = dmnsn_triangle_inside_fn,
   .bounding_fn = dmnsn_triangle_bounding_fn,
 };
 
-/** Smooth triangle type. */
+/// Smooth triangle type.
 typedef struct {
   dmnsn_object object;
   dmnsn_vector na, nab, nac;
 } dmnsn_smooth_triangle;
 
-/** Smooth triangle intersection callback. */
+/// Smooth triangle intersection callback.
 static bool
 dmnsn_smooth_triangle_intersection_fn(const dmnsn_object *object, dmnsn_line l,
                                       dmnsn_intersection *intersection)
@@ -110,21 +110,19 @@ dmnsn_smooth_triangle_intersection_fn(const dmnsn_object *object, dmnsn_line l,
   return false;
 }
 
-/** Smooth triangle vtable. */
+/// Smooth triangle vtable.
 static const dmnsn_object_vtable dmnsn_smooth_triangle_vtable = {
   .intersection_fn = dmnsn_smooth_triangle_intersection_fn,
   .inside_fn = dmnsn_triangle_inside_fn,
   .bounding_fn = dmnsn_triangle_bounding_fn,
 };
 
-/** Make a change-of-basis matrix. */
+/// Make a change-of-basis matrix.
 static inline dmnsn_matrix
 dmnsn_triangle_basis(dmnsn_vector vertices[3])
 {
-  /*
-   * The new vector space has corners at <1, 0, 0>, <0, 1, 0>, and 0,
-   * corresponding to the basis (ab, ac, ab X ac).
-   */
+  // The new vector space has corners at <1, 0, 0>, <0, 1, 0>, and 0,
+  // corresponding to the basis (ab, ac, ab X ac).
   dmnsn_vector ab = dmnsn_vector_sub(vertices[1], vertices[0]);
   dmnsn_vector ac = dmnsn_vector_sub(vertices[2], vertices[0]);
   dmnsn_vector normal = dmnsn_vector_cross(ab, ac);
@@ -145,7 +143,7 @@ dmnsn_new_smooth_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3], dmnsn_vect
 {
   dmnsn_matrix P = dmnsn_triangle_basis(vertices);
 
-  /* Transform the given normals. */
+  // Transform the given normals.
   dmnsn_vector na = dmnsn_vector_normalized(dmnsn_transform_normal(P, normals[0]));
   dmnsn_vector nb = dmnsn_vector_normalized(dmnsn_transform_normal(P, normals[1]));
   dmnsn_vector nc = dmnsn_vector_normalized(dmnsn_transform_normal(P, normals[2]));

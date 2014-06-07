@@ -26,16 +26,16 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
-/*
- * Unions
- */
+////////////
+// Unions //
+////////////
 
 typedef struct {
   dmnsn_object object;
   dmnsn_bvh *bvh;
 } dmnsn_csg_union;
 
-/** CSG union intersection callback. */
+/// CSG union intersection callback.
 static bool
 dmnsn_csg_union_intersection_fn(const dmnsn_object *object,
                                 dmnsn_line line,
@@ -45,7 +45,7 @@ dmnsn_csg_union_intersection_fn(const dmnsn_object *object,
   return dmnsn_bvh_intersection(csg->bvh, line, intersection, true);
 }
 
-/** CSG union inside callback. */
+/// CSG union inside callback.
 static bool
 dmnsn_csg_union_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
@@ -53,7 +53,7 @@ dmnsn_csg_union_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return dmnsn_bvh_inside(csg->bvh, point);
 }
 
-/** CSG union precomputation callback. */
+/// CSG union precomputation callback.
 static void
 dmnsn_csg_union_precompute_fn(dmnsn_object *object)
 {
@@ -65,14 +65,14 @@ dmnsn_csg_union_precompute_fn(dmnsn_object *object)
   csg->object.bounding_box = dmnsn_bvh_bounding_box(bvh);
 }
 
-/** CSG union vtable. */
+/// CSG union vtable.
 static const dmnsn_object_vtable dmnsn_csg_union_vtable = {
   .intersection_fn = dmnsn_csg_union_intersection_fn,
   .inside_fn = dmnsn_csg_union_inside_fn,
   .precompute_fn = dmnsn_csg_union_precompute_fn,
 };
 
-/** CSG union destruction callback. */
+/// CSG union destruction callback.
 static void
 dmnsn_csg_union_cleanup(void *ptr)
 {
@@ -80,7 +80,7 @@ dmnsn_csg_union_cleanup(void *ptr)
   dmnsn_delete_bvh(csg->bvh);
 }
 
-/* Bulk-load a union */
+// Bulk-load a union
 dmnsn_object *
 dmnsn_new_csg_union(dmnsn_pool *pool, dmnsn_array *objects)
 {
@@ -171,11 +171,11 @@ dmnsn_csg_intersection_fn(const dmnsn_object *csg, dmnsn_line line,
   return true;
 }
 
-/*
- * Intersections
- */
+///////////////////
+// Intersections //
+///////////////////
 
-/** CSG intersection intersection callback. */
+/// CSG intersection intersection callback.
 static bool
 dmnsn_csg_intersection_intersection_fn(const dmnsn_object *csg,
                                        dmnsn_line line,
@@ -184,7 +184,7 @@ dmnsn_csg_intersection_intersection_fn(const dmnsn_object *csg,
   return dmnsn_csg_intersection_fn(csg, line, intersection, true, true);
 }
 
-/** CSG intersection inside callback. */
+/// CSG intersection inside callback.
 static bool
 dmnsn_csg_intersection_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
@@ -193,7 +193,7 @@ dmnsn_csg_intersection_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
   return dmnsn_object_inside(A, point) && dmnsn_object_inside(B, point);
 }
 
-/** CSG intersection precomputation callback. */
+/// CSG intersection precomputation callback.
 static void
 dmnsn_csg_intersection_precompute_fn(dmnsn_object *csg)
 {
@@ -205,7 +205,7 @@ dmnsn_csg_intersection_precompute_fn(dmnsn_object *csg)
   csg->bounding_box.max = dmnsn_vector_min(A->bounding_box.max, B->bounding_box.max);
 }
 
-/** CSG intersection vtable. */
+/// CSG intersection vtable.
 static const dmnsn_object_vtable dmnsn_csg_intersection_vtable = {
   .intersection_fn = dmnsn_csg_intersection_intersection_fn,
   .inside_fn = dmnsn_csg_intersection_inside_fn,
@@ -225,11 +225,11 @@ dmnsn_new_csg_intersection(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
   return csg;
 }
 
-/*
- * Differences
- */
+/////////////////
+// Differences //
+/////////////////
 
-/** CSG difference intersection callback. */
+/// CSG difference intersection callback.
 static bool
 dmnsn_csg_difference_intersection_fn(const dmnsn_object *csg,
                                      dmnsn_line line,
@@ -238,7 +238,7 @@ dmnsn_csg_difference_intersection_fn(const dmnsn_object *csg,
   return dmnsn_csg_intersection_fn(csg, line, intersection, true, false);
 }
 
-/** CSG difference inside callback. */
+/// CSG difference inside callback.
 static bool
 dmnsn_csg_difference_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
@@ -247,7 +247,7 @@ dmnsn_csg_difference_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
   return dmnsn_object_inside(A, point)  && !dmnsn_object_inside(B, point);
 }
 
-/** CSG difference precomputation callback. */
+/// CSG difference precomputation callback.
 static void
 dmnsn_csg_difference_precompute_fn(dmnsn_object *csg)
 {
@@ -257,7 +257,7 @@ dmnsn_csg_difference_precompute_fn(dmnsn_object *csg)
   csg->bounding_box = A->bounding_box;
 }
 
-/** CSG difference vtable. */
+/// CSG difference vtable.
 static const dmnsn_object_vtable dmnsn_csg_difference_vtable = {
   .intersection_fn = dmnsn_csg_difference_intersection_fn,
   .inside_fn = dmnsn_csg_difference_inside_fn,
@@ -277,11 +277,11 @@ dmnsn_new_csg_difference(dmnsn_pool *pool, dmnsn_object *A, dmnsn_object *B)
   return csg;
 }
 
-/*
- * Merges
- */
+////////////
+// Merges //
+////////////
 
-/** CSG merge intersection callback. */
+/// CSG merge intersection callback.
 static bool
 dmnsn_csg_merge_intersection_fn(const dmnsn_object *csg,
                                 dmnsn_line line,
@@ -290,7 +290,7 @@ dmnsn_csg_merge_intersection_fn(const dmnsn_object *csg,
   return dmnsn_csg_intersection_fn(csg, line, intersection, false, false);
 }
 
-/** CSG merge inside callback. */
+/// CSG merge inside callback.
 static bool
 dmnsn_csg_merge_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
 {
@@ -299,7 +299,7 @@ dmnsn_csg_merge_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
   return dmnsn_object_inside(A, point) || dmnsn_object_inside(B, point);
 }
 
-/** CSG merge precomputation callback. */
+/// CSG merge precomputation callback.
 static void
 dmnsn_csg_merge_precompute_fn(dmnsn_object *csg)
 {
@@ -311,7 +311,7 @@ dmnsn_csg_merge_precompute_fn(dmnsn_object *csg)
   csg->bounding_box.max = dmnsn_vector_max(A->bounding_box.max, B->bounding_box.max);
 }
 
-/** CSG merge vtable. */
+/// CSG merge vtable.
 static const dmnsn_object_vtable dmnsn_csg_merge_vtable = {
   .intersection_fn = dmnsn_csg_merge_intersection_fn,
   .inside_fn = dmnsn_csg_merge_inside_fn,

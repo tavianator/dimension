@@ -26,30 +26,30 @@
 #include "dimension-internal.h"
 #include <stdatomic.h>
 
-/** A single allocation and associated destructor. */
+/// A single allocation and associated destructor.
 typedef struct dmnsn_allocation {
   void *ptr;
   dmnsn_callback_fn *cleanup_fn;
 } dmnsn_allocation;
 
-/** Number of pointers per block, we want a block to fit in a single page. */
+/// Number of pointers per block, we want a block to fit in a single page.
 #define DMNSN_POOL_BLOCK_SIZE ((4096 - 4*sizeof(void *))/sizeof(dmnsn_allocation))
 
-/** A single block in a thread pool. */
+/// A single block in a thread pool.
 typedef struct dmnsn_pool_block {
-  /** Current index into allocs[]. */
+  /// Current index into allocs[].
   size_t i;
-  /** All allocations in the current block. */
+  /// All allocations in the current block.
   dmnsn_allocation allocs[DMNSN_POOL_BLOCK_SIZE];
-  /** Tail pointer to the previous block in the global chain. */
+  /// Tail pointer to the previous block in the global chain.
   struct dmnsn_pool_block *prev;
 } dmnsn_pool_block;
 
-/** dmnsn_pool implementation. */
+/// dmnsn_pool implementation.
 struct dmnsn_pool {
-  /** Thread-local block. */
+  /// Thread-local block.
   pthread_key_t thread_block;
-  /** Global chain of pools. */
+  /// Global chain of pools.
   _Atomic(dmnsn_pool_block *) chain;
 };
 
@@ -87,7 +87,7 @@ dmnsn_palloc_tidy(dmnsn_pool *pool, size_t size, dmnsn_callback_fn *cleanup_fn)
   if (dmnsn_unlikely(new_block != old_block)) {
     dmnsn_setspecific(pool->thread_block, new_block);
 
-    /* Atomically update pool->chain */
+    // Atomically update pool->chain
     dmnsn_pool_block *chain;
     do {
       chain = atomic_load(&pool->chain);
@@ -107,7 +107,7 @@ dmnsn_delete_pool(dmnsn_pool *pool)
 
   dmnsn_pool_block *block = atomic_load_explicit(&pool->chain, memory_order_relaxed);
   while (block) {
-    /* Free all the allocations in reverse order */
+    // Free all the allocations in reverse order
     for (size_t i = block->i; i-- > 0;) {
       dmnsn_allocation *alloc = block->allocs + i;
       if (alloc->cleanup_fn) {
@@ -116,7 +116,7 @@ dmnsn_delete_pool(dmnsn_pool *pool)
       dmnsn_free(alloc->ptr);
     }
 
-    /* Free the block itself and go to the previous one */
+    // Free the block itself and go to the previous one
     dmnsn_pool_block *saved = block;
     block = block->prev;
     dmnsn_free(saved);

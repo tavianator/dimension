@@ -26,13 +26,13 @@
 #include "dimension.h"
 #include <math.h>
 
-/** Cone type. */
+/// Cone type.
 typedef struct dmnsn_cone {
   dmnsn_object object;
   double r1, r2;
 } dmnsn_cone;
 
-/** Intersection callback for a cone. */
+/// Intersection callback for a cone.
 static bool
 dmnsn_cone_intersection_fn(const dmnsn_object *object, dmnsn_line l,
                            dmnsn_intersection *intersection)
@@ -40,8 +40,7 @@ dmnsn_cone_intersection_fn(const dmnsn_object *object, dmnsn_line l,
   const dmnsn_cone *cone = (const dmnsn_cone *)object;
   double r1 = cone->r1, r2 = cone->r2;
 
-  /* Solve (x0 + nx*t)^2 + (z0 + nz*t)^2
-           == (((r2 - r1)*(y0 + ny*t) + r1 + r2)/2)^2 */
+  // Solve (x0 + nx*t)^2 + (z0 + nz*t)^2 == (((r2 - r1)*(y0 + ny*t) + r1 + r2)/2)^2
   double poly[3], x[2];
   poly[2] = l.n.x*l.n.x + l.n.z*l.n.z - l.n.y*l.n.y*(r2 - r1)*(r2 - r1)/4.0;
   poly[1] = 2.0*(l.n.x*l.x0.x + l.n.z*l.x0.z)
@@ -78,7 +77,7 @@ dmnsn_cone_intersection_fn(const dmnsn_object *object, dmnsn_line l,
   return false;
 }
 
-/** Inside callback for a cone. */
+/// Inside callback for a cone.
 static bool
 dmnsn_cone_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
@@ -89,7 +88,7 @@ dmnsn_cone_inside_fn(const dmnsn_object *object, dmnsn_vector point)
          && point.y > -1.0 && point.y < 1.0;
 }
 
-/** Cone bounding callback. */
+/// Cone bounding callback.
 static dmnsn_bounding_box
 dmnsn_cone_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
@@ -100,20 +99,20 @@ dmnsn_cone_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
   return dmnsn_transform_bounding_box(trans, box);
 }
 
-/** Cone vtable. */
+/// Cone vtable.
 static const dmnsn_object_vtable dmnsn_cone_vtable = {
   .intersection_fn = dmnsn_cone_intersection_fn,
   .inside_fn = dmnsn_cone_inside_fn,
   .bounding_fn = dmnsn_cone_bounding_fn,
 };
 
-/** Cone cap type. */
+/// Cone cap type.
 typedef struct dmnsn_cone_cap {
   dmnsn_object object;
   double r;
 } dmnsn_cone_cap;
 
-/** Cone cap intersection function. */
+/// Cone cap intersection function.
 static bool
 dmnsn_cone_cap_intersection_fn(const dmnsn_object *object, dmnsn_line l,
                                dmnsn_intersection *intersection)
@@ -133,14 +132,14 @@ dmnsn_cone_cap_intersection_fn(const dmnsn_object *object, dmnsn_line l,
   return false;
 }
 
-/** Inside callback for a cone cap. */
+/// Inside callback for a cone cap.
 static bool
 dmnsn_cone_cap_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
   return false;
 }
 
-/** Cone cap bounding callback. */
+/// Cone cap bounding callback.
 static dmnsn_bounding_box
 dmnsn_cone_cap_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
@@ -149,14 +148,14 @@ dmnsn_cone_cap_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
   return dmnsn_transform_bounding_box(trans, box);
 }
 
-/** Cone cap vtable. */
+/// Cone cap vtable.
 static const dmnsn_object_vtable dmnsn_cone_cap_vtable = {
   .intersection_fn = dmnsn_cone_cap_intersection_fn,
   .inside_fn = dmnsn_cone_cap_inside_fn,
   .bounding_fn = dmnsn_cone_cap_bounding_fn,
 };
 
-/** Allocate a new cone cap. */
+/// Allocate a new cone cap.
 dmnsn_object *
 dmnsn_new_cone_cap(dmnsn_pool *pool, double r)
 {
@@ -169,7 +168,7 @@ dmnsn_new_cone_cap(dmnsn_pool *pool, double r)
   return object;
 }
 
-/* Allocate a new cone object */
+// Allocate a new cone object
 dmnsn_object *
 dmnsn_new_cone(dmnsn_pool *pool, double r1, double r2, bool open)
 {
@@ -185,7 +184,7 @@ dmnsn_new_cone(dmnsn_pool *pool, double r1, double r2, bool open)
     return object;
   }
 
-  /* Implement closed cones as a union with the caps */
+  // Implement closed cones as a union with the caps
   dmnsn_object *cap1 = dmnsn_new_cone_cap(pool, r1);
   dmnsn_object *cap2 = dmnsn_new_cone_cap(pool, r2);
   cap1->intrinsic_trans = dmnsn_translation_matrix(
@@ -194,7 +193,7 @@ dmnsn_new_cone(dmnsn_pool *pool, double r1, double r2, bool open)
   cap2->intrinsic_trans = dmnsn_translation_matrix(
     dmnsn_new_vector(0.0, +1.0, 0.0)
   );
-  /* Flip the normal around for the top cap */
+  // Flip the normal around for the top cap
   cap2->intrinsic_trans.n[1][1] = -1.0;
 
   dmnsn_array *withcaps = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);

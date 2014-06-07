@@ -69,7 +69,7 @@ dmnsn_assert_roots(const double poly[], size_t degree, size_t nroots_ex, ...)
 
 DMNSN_TEST(linear, no_positive_roots)
 {
-  /* poly[] = x + 1 */
+  // poly[] = x + 1
   static const double poly[] = {
     [1] = 1.0,
     [0] = 1.0,
@@ -79,7 +79,7 @@ DMNSN_TEST(linear, no_positive_roots)
 
 DMNSN_TEST(linear, one_root)
 {
-  /* poly[] = x - 1 */
+  // poly[] = x - 1
   static const double poly[] = {
     [1] =  1.0,
     [0] = -1.0,
@@ -90,7 +90,7 @@ DMNSN_TEST(linear, one_root)
 
 DMNSN_TEST(quadratic, no_roots)
 {
-  /* poly[] = x^2 + 1 */
+  // poly[] = x^2 + 1
   static const double poly[] = {
     [2] = 1.0,
     [1] = 0.0,
@@ -101,7 +101,7 @@ DMNSN_TEST(quadratic, no_roots)
 
 DMNSN_TEST(quadratic, no_positive_roots)
 {
-  /* poly[] = (x + 1)^2 */
+  // poly[] = (x + 1)^2
   static const double poly[] = {
     [2] = 1.0,
     [1] = 2.0,
@@ -112,7 +112,7 @@ DMNSN_TEST(quadratic, no_positive_roots)
 
 DMNSN_TEST(quadratic, one_positive_root)
 {
-  /* poly[] = (x + 1)*(x - 1) */
+  // poly[] = (x + 1)*(x - 1)
   static const double poly[] = {
     [2] =  1.0,
     [1] =  0.0,
@@ -123,7 +123,7 @@ DMNSN_TEST(quadratic, one_positive_root)
 
 DMNSN_TEST(quadratic, two_roots)
 {
-  /* poly[] = (x - 1.2345)*(x - 2.3456) */
+  // poly[] = (x - 1.2345)*(x - 2.3456)
   static const double poly[] = {
     [2] =  1.0,
     [1] = -3.5801,
@@ -135,7 +135,7 @@ DMNSN_TEST(quadratic, two_roots)
 
 DMNSN_TEST(cubic, no_positive_roots)
 {
-  /* poly[] = x^3 + 1 */
+  // poly[] = x^3 + 1
   static const double poly[] = {
     [3] = 1.0,
     [2] = 0.0,
@@ -147,7 +147,7 @@ DMNSN_TEST(cubic, no_positive_roots)
 
 DMNSN_TEST(cubic, one_root)
 {
-  /* poly[] = x^3 - 1 */
+  // poly[] = x^3 - 1
   static const double poly[] = {
     [3] =  1.0,
     [2] =  0.0,
@@ -171,7 +171,7 @@ DMNSN_TEST(cubic, two_roots)
 
 DMNSN_TEST(cubic, three_roots)
 {
-  /* poly[] = (x - 1.2345)*(x - 2.3456)*(x - 100) */
+  // poly[] = (x - 1.2345)*(x - 2.3456)*(x - 100)
   static const double poly[] = {
     [3] =    1.0,
     [2] = -103.5801,
@@ -184,7 +184,7 @@ DMNSN_TEST(cubic, three_roots)
 
 DMNSN_TEST(quintic, four_roots)
 {
-  /* poly[] = 2*(x + 1)*(x - 1.2345)*(x - 2.3456)*(x - 5)*(x - 100) */
+  // poly[] = 2*(x + 1)*(x - 1.2345)*(x - 2.3456)*(x - 5)*(x - 100)
   static const double poly[] = {
     [5] =     2.0,
     [4] =  -215.1602,
@@ -196,7 +196,7 @@ DMNSN_TEST(quintic, four_roots)
   dmnsn_assert_roots(poly, 5, 4, 1.2345, 2.3456, 5.0, 100.0);
 }
 
-/* repeated_root[] = (x - 1)^6 */
+// repeated_root[] = (x - 1)^6
 static const double repeated_root[7] = {
   [6] =   1.0,
   [5] =  -6.0,

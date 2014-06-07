@@ -28,23 +28,23 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-/** Information on one predicted branch. */
+/// Information on one predicted branch.
 typedef struct {
   char *location;
   uint64_t predicted, branches;
 } dmnsn_branch;
 
-/** Count of mispredicted branches. */
+/// Count of mispredicted branches.
 static dmnsn_dictionary *dmnsn_profile = NULL;
-/** Mutex which protects \c dmnsn_profile. */
+/// Mutex which protects \c dmnsn_profile.
 static pthread_mutex_t dmnsn_profile_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/** Thread-local count of mispredicted branches. */
+/// Thread-local count of mispredicted branches.
 static pthread_key_t dmnsn_thread_profile;
-/** Initialize the thread-specific pointer exactly once. */
+/// Initialize the thread-specific pointer exactly once.
 static pthread_once_t dmnsn_thread_profile_once = PTHREAD_ONCE_INIT;
 
-/** Add thread-specific profile data to the global counts. */
+/// Add thread-specific profile data to the global counts.
 static void
 dmnsn_profile_globalize(void *ptr)
 {
@@ -59,7 +59,7 @@ dmnsn_profile_globalize(void *ptr)
   }
 }
 
-/** Destructor function for thread-specific profile data. */
+/// Destructor function for thread-specific profile data.
 static void
 dmnsn_delete_thread_profile(void *ptr)
 {
@@ -72,7 +72,7 @@ dmnsn_delete_thread_profile(void *ptr)
   dmnsn_delete_dictionary(thread_profile);
 }
 
-/** Initialize the thread-specific pointer. */
+/// Initialize the thread-specific pointer.
 static void
 dmnsn_initialize_thread_profile(void)
 {
@@ -83,7 +83,7 @@ dmnsn_initialize_thread_profile(void)
   dmnsn_unlock_mutex(&dmnsn_profile_mutex);
 }
 
-/** Get the thread-specific profile data. */
+/// Get the thread-specific profile data.
 static dmnsn_dictionary *
 dmnsn_get_thread_profile(void)
 {
@@ -91,7 +91,7 @@ dmnsn_get_thread_profile(void)
   return pthread_getspecific(dmnsn_thread_profile);
 }
 
-/** Set the thread-specific profile data. */
+/// Set the thread-specific profile data.
 static void
 dmnsn_set_thread_profile(dmnsn_dictionary *thread_profile)
 {

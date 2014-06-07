@@ -34,7 +34,7 @@ main(void)
     return EXIT_FAILURE;
   }
 
-  /* Benchmark allocation and deallocation */
+  // Benchmark allocation and deallocation
   dmnsn_array *array;
   sandglass_bench_fine(&sandglass, {
     array = dmnsn_new_array(sizeof(object));
@@ -42,10 +42,10 @@ main(void)
   });
   printf("dmnsn_new_array() + dmnsn_delete_array(): %ld\n", sandglass.grains);
 
-  /* Create our test array */
+  // Create our test array
   array = dmnsn_new_array(sizeof(object));
 
-  /* dmnsn_array_push() */
+  // dmnsn_array_push()
 
   printf("dmnsn_array_push():");
 
@@ -55,25 +55,25 @@ main(void)
   }
   printf("\n");
 
-  /* dmnsn_array_get() */
+  // dmnsn_array_get()
   sandglass_bench_fine(&sandglass, dmnsn_array_get(array, count/2, &object));
   printf("dmnsn_array_get(): %ld\n", sandglass.grains);
 
-  /* dmnsn_array_set() */
+  // dmnsn_array_set()
   sandglass_bench_fine(&sandglass, dmnsn_array_set(array, count/2, &object));
   printf("dmnsn_array_set(): %ld\n", sandglass.grains);
 
-  /* dmnsn_array_at() */
+  // dmnsn_array_at()
   void *ptr;
   sandglass_bench_fine(&sandglass, ptr = dmnsn_array_at(array, count/2));
   printf("dmnsn_array_at() = %p: %ld\n", ptr, sandglass.grains);
 
-  /* dmnsn_array_size() */
+  // dmnsn_array_size()
   size_t size;
   sandglass_bench_fine(&sandglass, size = dmnsn_array_size(array));
   printf("dmnsn_array_size() = %zu: %ld\n", size, sandglass.grains);
 
-  /* dmnsn_array_resize() */
+  // dmnsn_array_resize()
   dmnsn_array_resize(array, count);
   sandglass_bench_noprecache(&sandglass, dmnsn_array_resize(array, count * 2));
   printf("dmnsn_array_resize(): %ld", sandglass.grains);
@@ -81,7 +81,7 @@ main(void)
   sandglass_bench_noprecache(&sandglass, dmnsn_array_resize(array, count));
   printf(" %ld\n", sandglass.grains);
 
-  /* dmnsn_array_insert() */
+  // dmnsn_array_insert()
 
   printf("dmnsn_array_insert():");
 
@@ -92,7 +92,7 @@ main(void)
   }
   printf("\n");
 
-  /* dmnsn_array_remove() */
+  // dmnsn_array_remove()
 
   printf("dmnsn_array_remove():");
 
@@ -103,7 +103,7 @@ main(void)
   }
   printf("\n");
 
-  /* dmnsn_array_pop() */
+  // dmnsn_array_pop()
 
   printf("dmnsn_array_pop():");
 

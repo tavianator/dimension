@@ -46,7 +46,7 @@ DMNSN_TEST(pool, simple)
     *p = i;
   }
 
-  /* Leak checking will tell us if something bad happened */
+  // Leak checking will tell us if something bad happened
 }
 
 static int counter = 0;

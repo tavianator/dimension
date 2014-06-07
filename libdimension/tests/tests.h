@@ -24,19 +24,19 @@
 #include <check.h>
 
 #ifdef __cplusplus
-/* We've been included from a C++ file; mark everything here as extern "C" */
+// We've been included from a C++ file; mark everything here as extern "C"
 extern "C" {
 #endif
 
-/** @internal Map to known test cases from their names. */
+/// @internal Map to known test cases from their names.
 extern dmnsn_dictionary* dmnsn_test_cases;
 
-/** @internal Get the test case with the given name, possibly creating it. */
+/// @internal Get the test case with the given name, possibly creating it.
 TCase *dmnsn_get_test_case(const char* name);
 
-/** @internal Default test fixture. */
+/// @internal Default test fixture.
 void dmnsn_test_setup(void);
-/** @internal Default test fixture. */
+/// @internal Default test fixture.
 void dmnsn_test_teardown(void);
 
 /**
@@ -121,11 +121,11 @@ typedef struct dmnsn_display dmnsn_display;
 dmnsn_display *dmnsn_new_display(const dmnsn_canvas *canvas);
 void dmnsn_delete_display(dmnsn_display *display);
 
-/* Flush the GL buffers */
+// Flush the GL buffers
 void dmnsn_display_flush(dmnsn_display *display);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TESTS_H */
+#endif // TESTS_H

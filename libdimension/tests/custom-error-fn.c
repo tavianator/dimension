@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-/* Make sure that custom fatal error handlers work. */
+// Make sure that custom fatal error handlers work.
 
 #include "dimension.h"
 #include <stdlib.h>

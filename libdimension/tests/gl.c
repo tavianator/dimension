@@ -23,17 +23,17 @@
 int
 main(void)
 {
-  /* Treat warnings as errors for tests */
+  // Treat warnings as errors for tests
   dmnsn_die_on_warnings(true);
 
-  /* Allocate our canvas */
+  // Allocate our canvas
   dmnsn_pool *pool = dmnsn_new_pool();
   dmnsn_canvas *canvas = dmnsn_new_canvas(pool, 768, 480);
 
-  /* Paint the test pattern */
+  // Paint the test pattern
   dmnsn_paint_test_canvas(canvas);
 
-  /* Create a new glX display */
+  // Create a new glX display
   dmnsn_display *display = dmnsn_new_display(canvas);
   if (!display) {
     fprintf(stderr, "--- WARNING: Couldn't initialize X or glX! ---\n");
@@ -41,7 +41,7 @@ main(void)
     return EXIT_SUCCESS;
   }
 
-  /* Draw to OpenGL */
+  // Draw to OpenGL
   printf("Drawing to OpenGL\n");
   if (dmnsn_gl_write_canvas(canvas) != 0) {
     dmnsn_delete_display(display);
@@ -55,14 +55,14 @@ main(void)
    * Now test GL import/export
    */
 
-  /* Optimize the canvas for GL drawing */
+  // Optimize the canvas for GL drawing
   if (dmnsn_gl_optimize_canvas(canvas) != 0) {
     dmnsn_delete_pool(pool);
     fprintf(stderr, "--- Couldn't optimize canvas for GL! ---\n");
     return EXIT_FAILURE;
   }
 
-  /* Read the image back from OpenGL */
+  // Read the image back from OpenGL
   printf("Reading from OpenGL\n");
   if (dmnsn_gl_read_canvas(canvas, 0, 0) != 0) {
     dmnsn_delete_display(display);
@@ -71,7 +71,7 @@ main(void)
     return EXIT_FAILURE;
   }
 
-  /* And draw it back */
+  // And draw it back
   printf("Drawing to OpenGL\n");
   if (dmnsn_gl_write_canvas(canvas) != 0) {
     dmnsn_delete_display(display);

@@ -25,13 +25,13 @@
 
 #include "dimension.h"
 
-/** dmnsn_map definition. */
+/// dmnsn_map definition.
 struct dmnsn_map {
-  size_t obj_size; /**< @internal The size of the mapped objects. */
-  dmnsn_array *array; /**< @internal The map entries. */
+  size_t obj_size; ///< @internal The size of the mapped objects.
+  dmnsn_array *array; ///< @internal The map entries.
 };
 
-/** An [index, object] pair. */
+/// An [index, object] pair.
 typedef struct dmnsn_map_entry {
   double n;
   char object[];
@@ -54,7 +54,7 @@ dmnsn_map_add_entry(dmnsn_map *map, double n, const void *obj)
   entry->n = n;
   memcpy(entry->object, obj, map->obj_size);
 
-  /* Sorted insertion */
+  // Sorted insertion
   size_t i;
   for (i = dmnsn_array_size(map->array); i-- > 0;) {
     dmnsn_map_entry *other = dmnsn_array_at(map->array, i);

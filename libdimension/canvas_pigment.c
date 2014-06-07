@@ -25,13 +25,13 @@
 
 #include "dimension.h"
 
-/** Canvas pigment type. */
+/// Canvas pigment type.
 typedef struct dmnsn_canvas_pigment {
   dmnsn_pigment pigment;
   dmnsn_canvas *canvas;
 } dmnsn_canvas_pigment;
 
-/** Canvas pigment color callback. */
+/// Canvas pigment color callback.
 static dmnsn_tcolor
 dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
 {
@@ -43,7 +43,7 @@ dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
   return dmnsn_canvas_get_pixel(canvas, x%canvas->width, y%canvas->height);
 }
 
-/* Create a canvas color */
+// Create a canvas color
 dmnsn_pigment *
 dmnsn_new_canvas_pigment(dmnsn_pool *pool, dmnsn_canvas *canvas)
 {

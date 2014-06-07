@@ -98,7 +98,7 @@ main(void)
   });
   printf("dmnsn_new_bvh(DMNSN_BVH_PRTREE): %ld\n", sandglass.grains);
 
-  /* dmnsn_bvh_intersection() */
+  // dmnsn_bvh_intersection()
   dmnsn_line ray = dmnsn_new_line(
     dmnsn_new_vector( 1.0,  1.0, -2.0),
     dmnsn_new_vector(-0.5, -0.5,  1.0)
@@ -115,13 +115,13 @@ main(void)
   });
   printf("dmnsn_bvh_intersection(nocache): %ld\n", sandglass.grains);
 
-  /* dmnsn_bvh_inside() */
+  // dmnsn_bvh_inside()
   sandglass_bench_fine(&sandglass, {
     dmnsn_bvh_inside(bvh, dmnsn_zero);
   });
   printf("dmnsn_bvh_inside(): %ld\n", sandglass.grains);
 
-  /* Cleanup */
+  // Cleanup
   dmnsn_delete_bvh(bvh);
   dmnsn_delete_pool(pool);
   return EXIT_SUCCESS;

@@ -27,14 +27,14 @@
 #include <math.h>
 #include <stdlib.h>
 
-/** Basic reflective finish type. */
+/// Basic reflective finish type.
 typedef struct dmnsn_basic_reflection {
   dmnsn_reflection reflection;
   dmnsn_color min, max;
   double falloff;
 } dmnsn_basic_reflection;
 
-/** Reflective finish callback. */
+/// Reflective finish callback.
 static dmnsn_color
 dmnsn_basic_reflection_fn(const dmnsn_reflection *reflection,
                           dmnsn_color reflect, dmnsn_color color,

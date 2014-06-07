@@ -26,4 +26,4 @@
  */
 unsigned int dmnsn_terminal_width(void);
 
-#endif /* PLATFORM_H */
+#endif // PLATFORM_H

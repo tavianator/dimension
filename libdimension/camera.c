@@ -26,7 +26,7 @@
 #include "dimension-internal.h"
 #include <stdlib.h>
 
-/* Allocate a new dummy camera */
+// Allocate a new dummy camera
 dmnsn_camera *
 dmnsn_new_camera(dmnsn_pool *pool)
 {
@@ -35,14 +35,14 @@ dmnsn_new_camera(dmnsn_pool *pool)
   return camera;
 }
 
-/* Initialize a camera */
+// Initialize a camera
 void
 dmnsn_init_camera(dmnsn_camera *camera)
 {
   camera->trans = dmnsn_identity_matrix();
 }
 
-/* Invoke the camera ray function */
+// Invoke the camera ray function
 dmnsn_line
 dmnsn_camera_ray(const dmnsn_camera *camera, double x, double y)
 {
