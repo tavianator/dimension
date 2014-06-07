@@ -40,7 +40,7 @@ main(void)
   dmnsn_object *triangle = dmnsn_new_triangle(pool, vertices);
   triangle->texture = dmnsn_new_texture(pool);
   triangle->texture->pigment = dmnsn_new_pigment(pool);
-  dmnsn_object_initialize(triangle);
+  dmnsn_object_precompute(triangle);
 
   dmnsn_intersection intersection;
   dmnsn_line line;

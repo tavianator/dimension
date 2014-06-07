@@ -82,17 +82,29 @@ dmnsn_cone_intersection_fn(const dmnsn_object *object, dmnsn_line l,
 static bool
 dmnsn_cone_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
-  const dmnsn_cone *cone = (const dmnsn_cone *)cone;
+  const dmnsn_cone *cone = (const dmnsn_cone *)object;
   double r1 = cone->r1, r2 = cone->r2;
   double r = (point.y*(r2 - r1) + r1 + r2)/2.0;
   return point.x*point.x + point.z*point.z < r*r
          && point.y > -1.0 && point.y < 1.0;
 }
 
+/** Cone bounding callback. */
+static dmnsn_bounding_box
+dmnsn_cone_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
+{
+  const dmnsn_cone *cone = (const dmnsn_cone *)object;
+
+  double rmax = dmnsn_max(cone->r1, cone->r2);
+  dmnsn_bounding_box box = dmnsn_symmetric_bounding_box(dmnsn_new_vector(rmax, 1.0, rmax));
+  return dmnsn_transform_bounding_box(trans, box);
+}
+
 /** Cone vtable. */
 static const dmnsn_object_vtable dmnsn_cone_vtable = {
   .intersection_fn = dmnsn_cone_intersection_fn,
   .inside_fn = dmnsn_cone_inside_fn,
+  .bounding_fn = dmnsn_cone_bounding_fn,
 };
 
 /** Cone cap type. */
@@ -128,10 +140,20 @@ dmnsn_cone_cap_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return false;
 }
 
+/** Cone cap bounding callback. */
+static dmnsn_bounding_box
+dmnsn_cone_cap_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
+{
+  const dmnsn_cone_cap *cap = (const dmnsn_cone_cap *)object;
+  dmnsn_bounding_box box = dmnsn_symmetric_bounding_box(dmnsn_new_vector(cap->r, 0.0, cap->r));
+  return dmnsn_transform_bounding_box(trans, box);
+}
+
 /** Cone cap vtable. */
 static const dmnsn_object_vtable dmnsn_cone_cap_vtable = {
   .intersection_fn = dmnsn_cone_cap_intersection_fn,
   .inside_fn = dmnsn_cone_cap_inside_fn,
+  .bounding_fn = dmnsn_cone_cap_bounding_fn,
 };
 
 /** Allocate a new cone cap. */
@@ -144,8 +166,6 @@ dmnsn_new_cone_cap(dmnsn_pool *pool, double r)
   dmnsn_object *object = &cap->object;
   dmnsn_init_object(object);
   object->vtable = &dmnsn_cone_cap_vtable;
-  object->bounding_box.min = dmnsn_new_vector(-r, 0.0, -r);
-  object->bounding_box.max = dmnsn_new_vector(+r, 0.0, +r);
   return object;
 }
 
@@ -160,10 +180,6 @@ dmnsn_new_cone(dmnsn_pool *pool, double r1, double r2, bool open)
   dmnsn_object *object = &cone->object;
   dmnsn_init_object(object);
   object->vtable = &dmnsn_cone_vtable;
-
-  double rmax = dmnsn_max(r1, r2);
-  object->bounding_box.min = dmnsn_new_vector(-rmax, -1.0, -rmax);
-  object->bounding_box.max = dmnsn_new_vector(rmax, 1.0, rmax);
 
   if (open) {
     return object;

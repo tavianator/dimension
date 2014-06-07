@@ -40,8 +40,8 @@ dmnsn_fake_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return true;
 }
 
-static void
-dmnsn_randomize_bounding_box(dmnsn_object *object)
+static dmnsn_bounding_box
+dmnsn_fake_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
   dmnsn_vector a, b;
 
@@ -53,18 +53,20 @@ dmnsn_randomize_bounding_box(dmnsn_object *object)
   b.y = 2.0*((double)rand())/RAND_MAX - 1.0;
   b.z = 2.0*((double)rand())/RAND_MAX - 1.0;
 
-  object->bounding_box.min = dmnsn_vector_min(a, b);
-  object->bounding_box.max = dmnsn_vector_max(a, b);
+  return dmnsn_new_bounding_box(dmnsn_vector_min(a, b), dmnsn_vector_max(a, b));
 }
+
+static dmnsn_object_vtable dmnsn_fake_vtable = {
+  .intersection_fn = dmnsn_fake_intersection_fn,
+  .inside_fn = dmnsn_fake_inside_fn,
+  .bounding_fn = dmnsn_fake_bounding_fn,
+};
 
 static dmnsn_object *
 dmnsn_new_fake_object(dmnsn_pool *pool)
 {
   dmnsn_object *object = dmnsn_new_object(pool);
-  /* Generate a bounding box in  (-1, -1, -1), (1, 1, 1) */
-  dmnsn_randomize_bounding_box(object);
-  object->intersection_fn = dmnsn_fake_intersection_fn;
-  object->inside_fn = dmnsn_fake_inside_fn;
+  object->vtable = &dmnsn_fake_vtable;
   return object;
 }
 
@@ -86,7 +88,7 @@ main(void)
   for (size_t i = 0; i < nobjects; ++i) {
     dmnsn_object *object = dmnsn_new_fake_object(pool);
     object->texture = texture;
-    dmnsn_object_initialize(object);
+    dmnsn_object_precompute(object);
     dmnsn_array_push(objects, &object);
   }
 

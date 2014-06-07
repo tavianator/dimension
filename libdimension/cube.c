@@ -129,10 +129,19 @@ dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
       && point.z > -1.0 && point.z < 1.0;
 }
 
+/** Boundary callback for a cube. */
+static dmnsn_bounding_box
+dmnsn_cube_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
+{
+  dmnsn_bounding_box box = dmnsn_symmetric_bounding_box(dmnsn_new_vector(1.0, 1.0, 1.0));
+  return dmnsn_transform_bounding_box(trans, box);
+}
+
 /** Cube vtable. */
 static const dmnsn_object_vtable dmnsn_cube_vtable = {
   .intersection_fn = dmnsn_cube_intersection_fn,
   .inside_fn = dmnsn_cube_inside_fn,
+  .bounding_fn = dmnsn_cube_bounding_fn,
 };
 
 /* Allocate a new cube object */
@@ -141,7 +150,5 @@ dmnsn_new_cube(dmnsn_pool *pool)
 {
   dmnsn_object *cube = dmnsn_new_object(pool);
   cube->vtable = &dmnsn_cube_vtable;
-  cube->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
-  cube->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
   return cube;
 }

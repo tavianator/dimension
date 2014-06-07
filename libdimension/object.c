@@ -46,30 +46,33 @@ dmnsn_init_object(dmnsn_object *object)
   object->intrinsic_trans = dmnsn_identity_matrix();
   object->children = NULL;
   object->split_children = false;
-  object->initialized = false;
+  object->precomputed = false;
 }
 
-/** Recursively initialize objects. */
+/** Recursively precompute objects. */
 static void
-dmnsn_object_initialize_recursive(dmnsn_object *object,
-                                  dmnsn_matrix pigment_trans)
+dmnsn_object_precompute_recursive(dmnsn_object *object, dmnsn_matrix pigment_trans)
 {
-  dmnsn_assert(!object->initialized, "Object double-initialized.");
-  object->initialized = true;
+  dmnsn_assert(!object->precomputed, "Object double-precomputed.");
+  object->precomputed = true;
+
+  const dmnsn_object_vtable *vtable = object->vtable;
+  dmnsn_assert(vtable->intersection_fn, "Missing intersection function.");
+  dmnsn_assert(vtable->inside_fn, "Missing inside function.");
+  dmnsn_assert(vtable->bounding_fn || vtable->precompute_fn, "Missing bounding and precompute function.");
 
   /* Initialize the texture */
   if (!object->texture->initialized) {
     dmnsn_texture_initialize(object->texture);
   }
 
-  /* Precalculate object values */
-  object->pigment_trans = pigment_trans;
-  object->trans = dmnsn_matrix_mul(object->trans, object->intrinsic_trans);
+  dmnsn_matrix total_trans = dmnsn_matrix_mul(object->trans, object->intrinsic_trans);
 
-  /* Initialize the object's children */
+  /* Precompute the object's children */
   if (object->children) {
     DMNSN_ARRAY_FOREACH (dmnsn_object **, child, object->children) {
-      (*child)->trans = dmnsn_matrix_mul(object->trans, (*child)->trans);
+      dmnsn_matrix saved_trans = (*child)->trans;
+      (*child)->trans = dmnsn_matrix_mul(total_trans, saved_trans);
 
       dmnsn_matrix child_pigment_trans;
       if ((*child)->texture == NULL || (*child)->texture->pigment == NULL) {
@@ -81,25 +84,26 @@ dmnsn_object_initialize_recursive(dmnsn_object *object,
 
       dmnsn_texture_cascade(object->texture, &(*child)->texture);
       dmnsn_interior_cascade(object->interior, &(*child)->interior);
-      dmnsn_object_initialize_recursive(*child, child_pigment_trans);
+      dmnsn_object_precompute_recursive(*child, child_pigment_trans);
+      (*child)->trans = saved_trans;
     }
   }
 
-  /* Initialization callback */
-  if (object->vtable->initialize_fn) {
-    object->vtable->initialize_fn(object);
+  /* Precalculate object values */
+  object->pigment_trans = pigment_trans;
+  object->trans_inv = dmnsn_matrix_inverse(total_trans);
+  if (vtable->bounding_fn) {
+    object->bounding_box = vtable->bounding_fn(object, total_trans);
   }
-
-  /* Precalculate more object values */
-  object->bounding_box
-    = dmnsn_transform_bounding_box(object->trans, object->bounding_box);
-  object->trans_inv = dmnsn_matrix_inverse(object->trans);
+  if (vtable->precompute_fn) {
+    vtable->precompute_fn(object);
+  }
 }
 
 /* Precompute object properties */
 void
-dmnsn_object_initialize(dmnsn_object *object)
+dmnsn_object_precompute(dmnsn_object *object)
 {
   dmnsn_matrix pigment_trans = dmnsn_matrix_inverse(object->trans);
-  dmnsn_object_initialize_recursive(object, pigment_trans);
+  dmnsn_object_precompute_recursive(object, pigment_trans);
 }

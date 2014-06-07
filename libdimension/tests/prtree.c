@@ -58,6 +58,20 @@ dmnsn_randomize_bounding_box(dmnsn_object *object)
   object->bounding_box.max = dmnsn_vector_max(a, b);
 }
 
+static const dmnsn_object_vtable dmnsn_fake_vtable = {
+  .intersection_fn = dmnsn_fake_intersection_fn,
+};
+
+static dmnsn_object *
+dmnsn_new_fake_object(dmnsn_pool *pool)
+{
+  dmnsn_object *object = dmnsn_new_object(pool);
+  dmnsn_randomize_bounding_box(object);
+  object->vtable = &dmnsn_fake_vtable;
+  object->trans_inv = dmnsn_identity_matrix();
+  return object;
+}
+
 int
 main(void)
 {
@@ -70,10 +84,7 @@ main(void)
   dmnsn_array *objects = DMNSN_PALLOC_ARRAY(pool, dmnsn_object *);
 
   for (size_t i = 0; i < nobjects; ++i) {
-    dmnsn_object *object = dmnsn_new_object(pool);
-    dmnsn_randomize_bounding_box(object);
-    object->intersection_fn = dmnsn_fake_intersection_fn;
-    object->trans_inv = dmnsn_identity_matrix();
+    dmnsn_object *object = dmnsn_new_fake_object(pool);
     dmnsn_array_push(objects, &object);
   }
 

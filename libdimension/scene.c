@@ -72,6 +72,6 @@ dmnsn_scene_initialize(dmnsn_scene *scene)
   DMNSN_ARRAY_FOREACH (dmnsn_object **, object, scene->objects) {
     dmnsn_texture_cascade(scene->default_texture, &(*object)->texture);
     dmnsn_interior_cascade(scene->default_interior, &(*object)->interior);
-    dmnsn_object_initialize(*object);
+    dmnsn_object_precompute(*object);
   }
 }

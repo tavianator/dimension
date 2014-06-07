@@ -140,10 +140,22 @@ dmnsn_torus_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return dmajor*dmajor + point.y*point.y < torus->minor*torus->minor;
 }
 
+/** Torus bounding callback. */
+static dmnsn_bounding_box
+dmnsn_torus_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
+{
+  const dmnsn_torus *torus = (const dmnsn_torus *)object;
+
+  double extent = torus->major + torus->minor;
+  dmnsn_bounding_box box = dmnsn_symmetric_bounding_box(dmnsn_new_vector(extent, torus->minor, extent));
+  return dmnsn_transform_bounding_box(trans, box);
+}
+
 /** Torus vtable. */
 static const dmnsn_object_vtable dmnsn_torus_vtable = {
   .intersection_fn = dmnsn_torus_intersection_fn,
   .inside_fn = dmnsn_torus_inside_fn,
+  .bounding_fn = dmnsn_torus_bounding_fn,
 };
 
 dmnsn_object *
@@ -156,10 +168,5 @@ dmnsn_new_torus(dmnsn_pool *pool, double major, double minor)
   dmnsn_object *object = &torus->object;
   dmnsn_init_object(object);
   object->vtable = &dmnsn_torus_vtable;
-
-  double extent = major + minor;
-  object->bounding_box.min = dmnsn_new_vector(-extent, -minor, -extent);
-  object->bounding_box.max = dmnsn_new_vector(extent, minor, extent);
-
   return object;
 }

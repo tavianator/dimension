@@ -55,15 +55,30 @@ dmnsn_triangle_intersection_fn(const dmnsn_object *object, dmnsn_line l,
 
 /** Triangle inside callback. */
 static bool
-dmnsn_triangle_inside_fn(const dmnsn_object *triangle, dmnsn_vector point)
+dmnsn_triangle_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
   return false;
+}
+
+/** Triangle bounding callback. */
+static dmnsn_bounding_box
+dmnsn_triangle_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
+{
+  dmnsn_vector a = dmnsn_transform_point(trans, dmnsn_zero);
+  dmnsn_vector b = dmnsn_transform_point(trans, dmnsn_x);
+  dmnsn_vector c = dmnsn_transform_point(trans, dmnsn_y);
+
+  dmnsn_bounding_box box = dmnsn_new_bounding_box(a, a);
+  box = dmnsn_bounding_box_swallow(box, b);
+  box = dmnsn_bounding_box_swallow(box, c);
+  return box;
 }
 
 /** Triangle vtable. */
 static const dmnsn_object_vtable dmnsn_triangle_vtable = {
   .intersection_fn = dmnsn_triangle_intersection_fn,
   .inside_fn = dmnsn_triangle_inside_fn,
+  .bounding_fn = dmnsn_triangle_bounding_fn,
 };
 
 /** Smooth triangle type. */
@@ -99,6 +114,7 @@ dmnsn_smooth_triangle_intersection_fn(const dmnsn_object *object, dmnsn_line l,
 static const dmnsn_object_vtable dmnsn_smooth_triangle_vtable = {
   .intersection_fn = dmnsn_smooth_triangle_intersection_fn,
   .inside_fn = dmnsn_triangle_inside_fn,
+  .bounding_fn = dmnsn_triangle_bounding_fn,
 };
 
 /** Make a change-of-basis matrix. */
@@ -120,8 +136,6 @@ dmnsn_new_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3])
 {
   dmnsn_object *object = dmnsn_new_object(pool);
   object->vtable = &dmnsn_triangle_vtable;
-  object->bounding_box.min = dmnsn_zero;
-  object->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 0.0);
   object->intrinsic_trans = dmnsn_triangle_basis(vertices);
   return object;
 }
@@ -144,8 +158,6 @@ dmnsn_new_smooth_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3], dmnsn_vect
   dmnsn_object *object = &triangle->object;
   dmnsn_init_object(object);
   object->vtable = &dmnsn_smooth_triangle_vtable;
-  object->bounding_box.min = dmnsn_zero;
-  object->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 0.0);
   object->intrinsic_trans = P;
 
   return object;

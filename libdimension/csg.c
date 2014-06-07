@@ -53,12 +53,12 @@ dmnsn_csg_union_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return dmnsn_bvh_inside(csg->bvh, point);
 }
 
-/** CSG union initialization callback. */
+/** CSG union precomputation callback. */
 static void
-dmnsn_csg_union_initialize_fn(dmnsn_object *object)
+dmnsn_csg_union_precompute_fn(dmnsn_object *object)
 {
   dmnsn_csg_union *csg = (dmnsn_csg_union *)object;
-  csg->object.trans = dmnsn_identity_matrix();
+  csg->object.trans_inv = dmnsn_identity_matrix();
 
   dmnsn_bvh *bvh = dmnsn_new_bvh(csg->object.children, DMNSN_BVH_PRTREE);
   csg->bvh = bvh;
@@ -69,7 +69,7 @@ dmnsn_csg_union_initialize_fn(dmnsn_object *object)
 static const dmnsn_object_vtable dmnsn_csg_union_vtable = {
   .intersection_fn = dmnsn_csg_union_intersection_fn,
   .inside_fn = dmnsn_csg_union_inside_fn,
-  .initialize_fn = dmnsn_csg_union_initialize_fn,
+  .precompute_fn = dmnsn_csg_union_precompute_fn,
 };
 
 /** CSG union destruction callback. */
@@ -193,25 +193,23 @@ dmnsn_csg_intersection_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
   return dmnsn_object_inside(A, point) && dmnsn_object_inside(B, point);
 }
 
-/** CSG intersection initialization callback. */
+/** CSG intersection precomputation callback. */
 static void
-dmnsn_csg_intersection_initialize_fn(dmnsn_object *csg)
+dmnsn_csg_intersection_precompute_fn(dmnsn_object *csg)
 {
   dmnsn_object *A = *(dmnsn_object **)dmnsn_array_first(csg->children);
   dmnsn_object *B = *(dmnsn_object **)dmnsn_array_last(csg->children);
 
-  csg->trans = dmnsn_identity_matrix();
-  csg->bounding_box.min
-    = dmnsn_vector_max(A->bounding_box.min, B->bounding_box.min);
-  csg->bounding_box.max
-    = dmnsn_vector_min(A->bounding_box.max, B->bounding_box.max);
+  csg->trans_inv = dmnsn_identity_matrix();
+  csg->bounding_box.min = dmnsn_vector_max(A->bounding_box.min, B->bounding_box.min);
+  csg->bounding_box.max = dmnsn_vector_min(A->bounding_box.max, B->bounding_box.max);
 }
 
 /** CSG intersection vtable. */
 static const dmnsn_object_vtable dmnsn_csg_intersection_vtable = {
   .intersection_fn = dmnsn_csg_intersection_intersection_fn,
   .inside_fn = dmnsn_csg_intersection_inside_fn,
-  .initialize_fn = dmnsn_csg_intersection_initialize_fn,
+  .precompute_fn = dmnsn_csg_intersection_precompute_fn,
 };
 
 dmnsn_object *
@@ -249,13 +247,13 @@ dmnsn_csg_difference_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
   return dmnsn_object_inside(A, point)  && !dmnsn_object_inside(B, point);
 }
 
-/** CSG difference initialization callback. */
+/** CSG difference precomputation callback. */
 static void
-dmnsn_csg_difference_initialize_fn(dmnsn_object *csg)
+dmnsn_csg_difference_precompute_fn(dmnsn_object *csg)
 {
   dmnsn_object *A = *(dmnsn_object **)dmnsn_array_first(csg->children);
 
-  csg->trans = dmnsn_identity_matrix();
+  csg->trans_inv = dmnsn_identity_matrix();
   csg->bounding_box = A->bounding_box;
 }
 
@@ -263,7 +261,7 @@ dmnsn_csg_difference_initialize_fn(dmnsn_object *csg)
 static const dmnsn_object_vtable dmnsn_csg_difference_vtable = {
   .intersection_fn = dmnsn_csg_difference_intersection_fn,
   .inside_fn = dmnsn_csg_difference_inside_fn,
-  .initialize_fn = dmnsn_csg_difference_initialize_fn,
+  .precompute_fn = dmnsn_csg_difference_precompute_fn,
 };
 
 dmnsn_object *
@@ -301,25 +299,23 @@ dmnsn_csg_merge_inside_fn(const dmnsn_object *csg, dmnsn_vector point)
   return dmnsn_object_inside(A, point) || dmnsn_object_inside(B, point);
 }
 
-/** CSG merge initialization callback. */
+/** CSG merge precomputation callback. */
 static void
-dmnsn_csg_merge_initialize_fn(dmnsn_object *csg)
+dmnsn_csg_merge_precompute_fn(dmnsn_object *csg)
 {
   dmnsn_object *A = *(dmnsn_object **)dmnsn_array_first(csg->children);
   dmnsn_object *B = *(dmnsn_object **)dmnsn_array_last(csg->children);
 
-  csg->trans = dmnsn_identity_matrix();
-  csg->bounding_box.min
-    = dmnsn_vector_min(A->bounding_box.min, B->bounding_box.min);
-  csg->bounding_box.max
-    = dmnsn_vector_max(A->bounding_box.max, B->bounding_box.max);
+  csg->trans_inv = dmnsn_identity_matrix();
+  csg->bounding_box.min = dmnsn_vector_min(A->bounding_box.min, B->bounding_box.min);
+  csg->bounding_box.max = dmnsn_vector_max(A->bounding_box.max, B->bounding_box.max);
 }
 
 /** CSG merge vtable. */
 static const dmnsn_object_vtable dmnsn_csg_merge_vtable = {
   .intersection_fn = dmnsn_csg_merge_intersection_fn,
   .inside_fn = dmnsn_csg_merge_inside_fn,
-  .initialize_fn = dmnsn_csg_merge_initialize_fn,
+  .precompute_fn = dmnsn_csg_merge_precompute_fn,
 };
 
 dmnsn_object *

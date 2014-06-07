@@ -41,12 +41,6 @@ typedef struct dmnsn_intersection {
 } dmnsn_intersection;
 
 /**
- * Object initialization callback.
- * @param[in,out] object  The object to initialize.
- */
-typedef void dmnsn_object_initialize_fn(dmnsn_object *object);
-
-/**
  * Ray-object intersection callback.
  * @param[in]  object        The object to test.
  * @param[in]  line          The line to test.
@@ -54,9 +48,7 @@ typedef void dmnsn_object_initialize_fn(dmnsn_object *object);
  *                           closest (if any) intersection.
  * @return Whether \p line intersected \p object.
  */
-typedef bool dmnsn_object_intersection_fn(const dmnsn_object *object,
-                                          dmnsn_line line,
-                                          dmnsn_intersection *intersection);
+typedef bool dmnsn_object_intersection_fn(const dmnsn_object *object, dmnsn_line line, dmnsn_intersection *intersection);
 
 /**
  * Object inside callback.
@@ -64,14 +56,27 @@ typedef bool dmnsn_object_intersection_fn(const dmnsn_object *object,
  * @param[in] point   The point to test.
  * @return Whether \p point is inside \p object.
  */
-typedef bool dmnsn_object_inside_fn(const dmnsn_object *object,
-                                    dmnsn_vector point);
+typedef bool dmnsn_object_inside_fn(const dmnsn_object *object, dmnsn_vector point);
+
+/**
+ * Object bounding callback.
+ * @param[in,out] object  The object to bound.
+ * @param[in,out] trans  The effective transformation for the object.
+ */
+typedef dmnsn_bounding_box dmnsn_object_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans);
+
+/**
+ * Object precomputation callback.
+ * @param[in,out] object  The object to precompute.
+ */
+typedef void dmnsn_object_precompute_fn(dmnsn_object *object);
 
 /** Object callbacks. */
 typedef struct dmnsn_object_vtable {
   dmnsn_object_intersection_fn *intersection_fn; /**< Intersection callback. */
   dmnsn_object_inside_fn *inside_fn; /**< Inside callback. */
-  dmnsn_object_initialize_fn *initialize_fn; /**< Initialization callback. */
+  dmnsn_object_bounding_fn *bounding_fn; /**< Bounding callback. */
+  dmnsn_object_precompute_fn *precompute_fn; /**< Precomputation callback. */
 } dmnsn_object_vtable;
 
 /** An object. */
@@ -82,16 +87,16 @@ struct dmnsn_object {
   dmnsn_interior *interior; /**< Interior properties. */
 
   dmnsn_matrix trans; /**< Transformation matrix. */
-  dmnsn_matrix trans_inv; /**< Inverse of the transformation matrix. */
   dmnsn_matrix intrinsic_trans; /**< Transformations intrinsic to the object. */
-  dmnsn_matrix pigment_trans; /**< Inverse transformation for the texture. */
-
-  dmnsn_bounding_box bounding_box; /**< Object bounding box. */
 
   dmnsn_array *children; /**< Child objects. */
   bool split_children;   /**< Whether the child objects can be split. */
 
-  bool initialized; /**< @internal Whether the object is initialized yet. */
+  /* Precomputed values */
+  bool precomputed; /**< @internal Whether the object is precomputed yet. */
+  dmnsn_matrix trans_inv; /**< Inverse of the transformation matrix. */
+  dmnsn_matrix pigment_trans; /**< Inverse transformation for the texture. */
+  dmnsn_bounding_box bounding_box; /**< Bounding box in world coordinates. */
 };
 
 /**
@@ -108,10 +113,10 @@ dmnsn_object *dmnsn_new_object(dmnsn_pool *pool);
 void dmnsn_init_object(dmnsn_object *object);
 
 /**
- * Initialize an object and potentially its children.
- * @param[in,out] object  The object to initialize.
+ * Precompute values for an object and its children.
+ * @param[in,out] object  The object to precompute.
  */
-void dmnsn_object_initialize(dmnsn_object *object);
+void dmnsn_object_precompute(dmnsn_object *object);
 
 /**
  * Appropriately transform a ray, then test for an intersection.

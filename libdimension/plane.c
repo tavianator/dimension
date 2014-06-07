@@ -61,10 +61,18 @@ dmnsn_plane_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return dmnsn_vector_dot(point, plane->normal) < 0.0;
 }
 
+/** Plane bounding callback. */
+static dmnsn_bounding_box
+dmnsn_plane_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
+{
+  return dmnsn_infinite_bounding_box();
+}
+
 /** Plane vtable. */
 static const dmnsn_object_vtable dmnsn_plane_vtable = {
   .intersection_fn = dmnsn_plane_intersection_fn,
   .inside_fn = dmnsn_plane_inside_fn,
+  .bounding_fn = dmnsn_plane_bounding_fn,
 };
 
 dmnsn_object *
@@ -76,6 +84,5 @@ dmnsn_new_plane(dmnsn_pool *pool, dmnsn_vector normal)
   dmnsn_object *object = &plane->object;
   dmnsn_init_object(object);
   object->vtable = &dmnsn_plane_vtable;
-  object->bounding_box = dmnsn_infinite_bounding_box();
   return object;
 }

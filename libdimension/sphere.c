@@ -39,16 +39,17 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_line l,
   size_t n = dmnsn_polynomial_solve(poly, 2, x);
   if (n == 0) {
     return false;
-  } else {
-    double t = x[0];
-    /* Optimize for the case where we're outside the sphere */
-    if (dmnsn_likely(n == 2))
-      t = dmnsn_min(t, x[1]);
-
-    intersection->t      = t;
-    intersection->normal = dmnsn_line_point(l, t);
-    return true;
   }
+
+  double t = x[0];
+  /* Optimize for the case where we're outside the sphere */
+  if (dmnsn_likely(n == 2)) {
+    t = dmnsn_min(t, x[1]);
+  }
+
+  intersection->t = t;
+  intersection->normal = dmnsn_line_point(l, t);
+  return true;
 }
 
 /** Sphere inside callback. */
@@ -58,10 +59,20 @@ dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
   return point.x*point.x + point.y*point.y + point.z*point.z < 1.0;
 }
 
-/** Torus vtable. */
+/** Sphere bounding callback. */
+static dmnsn_bounding_box
+dmnsn_sphere_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
+{
+  /* TODO: tighter bound */
+  dmnsn_bounding_box box = dmnsn_symmetric_bounding_box(dmnsn_new_vector(1.0, 1.0, 1.0));
+  return dmnsn_transform_bounding_box(trans, box);
+}
+
+/** Sphere vtable. */
 static const dmnsn_object_vtable dmnsn_sphere_vtable = {
   .intersection_fn = dmnsn_sphere_intersection_fn,
   .inside_fn = dmnsn_sphere_inside_fn,
+  .bounding_fn = dmnsn_sphere_bounding_fn,
 };
 
 dmnsn_object *
@@ -69,7 +80,5 @@ dmnsn_new_sphere(dmnsn_pool *pool)
 {
   dmnsn_object *sphere = dmnsn_new_object(pool);
   sphere->vtable = &dmnsn_sphere_vtable;
-  sphere->bounding_box.min = dmnsn_new_vector(-1.0, -1.0, -1.0);
-  sphere->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 1.0);
   return sphere;
 }

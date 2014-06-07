@@ -218,6 +218,19 @@ dmnsn_new_line(dmnsn_vector x0, dmnsn_vector n)
   return l;
 }
 
+/**
+ * Construct a new bounding box.
+ * @param[in] min  The minimal extent of the bounding box.
+ * @param[in] max  The maximal extent of the bounding box.
+ * @return The new bounding box.
+ */
+DMNSN_INLINE dmnsn_bounding_box
+dmnsn_new_bounding_box(dmnsn_vector min, dmnsn_vector max)
+{
+  dmnsn_bounding_box box = { min, max };
+  return box;
+}
+
 /** Return the bounding box which contains nothing. */
 DMNSN_INLINE dmnsn_bounding_box
 dmnsn_zero_bounding_box(void)
@@ -442,6 +455,22 @@ dmnsn_line_add_epsilon(dmnsn_line l)
   );
 }
 
+/**
+ * Construct a new symmetric bounding box.
+ * @param[in] r  The extent of the bounding box from the origin.
+ * @return The new bounding box.
+ */
+DMNSN_INLINE dmnsn_bounding_box
+dmnsn_symmetric_bounding_box(dmnsn_vector r)
+{
+  dmnsn_vector minus_r = dmnsn_vector_negate(r);
+  dmnsn_bounding_box box = {
+    dmnsn_vector_min(r, minus_r),
+    dmnsn_vector_max(r, minus_r)
+  };
+  return box;
+}
+
 /** Return whether \p p is within the axis-aligned bounding box. */
 DMNSN_INLINE bool
 dmnsn_bounding_box_contains(dmnsn_bounding_box box, dmnsn_vector p)
@@ -455,6 +484,22 @@ DMNSN_INLINE bool
 dmnsn_bounding_box_is_infinite(dmnsn_bounding_box box)
 {
   return box.min.x == -INFINITY;
+}
+
+/**
+ * Expand a bounding box to contain a point
+ * @param[in] box  The bounding box to expand.
+ * @param[in] point  The point to swallow.
+ * @return The expanded bounding box.
+ */
+DMNSN_INLINE dmnsn_bounding_box
+dmnsn_bounding_box_swallow(dmnsn_bounding_box box, dmnsn_vector point)
+{
+  dmnsn_bounding_box ret = {
+    dmnsn_vector_min(box.min, point),
+    dmnsn_vector_max(box.max, point)
+  };
+  return ret;
 }
 
 /** Return whether a vector contains any NaN components. */
