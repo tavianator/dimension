@@ -24,11 +24,13 @@
  */
 
 #include "dimension-internal.h"
+#include <errno.h>
 #include <pthread.h>
-#include <string.h>
+#include <stdatomic.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <string.h>
 
 /// Report internal errors in this file.
 #define DMNSN_LOCAL_ERROR(str)                          \
@@ -38,43 +40,14 @@
     abort();                                            \
   } while (0)
 
-/// dmnsn_local_lock_mutex implementation.
-static void
-dmnsn_local_lock_mutex_impl(pthread_mutex_t *mutex)
-{
-  if (pthread_mutex_lock(mutex) != 0) {
-    DMNSN_LOCAL_ERROR("Couldn't lock mutex.");
-  }
-}
-
-/// dmnsn_local_unlock_mutex implementation.
-static void
-dmnsn_local_unlock_mutex_impl(pthread_mutex_t *mutex)
-{
-  if (pthread_mutex_unlock(mutex) != 0) {
-    DMNSN_LOCAL_ERROR("Couldn't lock mutex.");
-  }
-}
-
-/// Lock a mutex, bailing out without dmnsn_error() on error.
-#define dmnsn_local_lock_mutex(mutex)           \
-  dmnsn_local_lock_mutex_impl((mutex)); {
-/// Unlock a mutex, bailing out without dmnsn_error() on error.
-#define dmnsn_local_unlock_mutex(mutex)         \
-  dmnsn_local_unlock_mutex_impl((mutex)); }
-
 /// The default fatal error handler.
 static void dmnsn_default_fatal_error_fn(void);
 
 /// The current fatal error handler.
-static dmnsn_fatal_error_fn *dmnsn_fatal = dmnsn_default_fatal_error_fn;
-/// Mutex which protects \c dmnsn_fatal.
-static pthread_mutex_t dmnsn_fatal_mutex = PTHREAD_MUTEX_INITIALIZER;
+static atomic(dmnsn_fatal_error_fn *) dmnsn_fatal = ATOMIC_VAR_INIT(dmnsn_default_fatal_error_fn);
 
 /// The current resilience.
-static bool dmnsn_always_die = false;
-/// Mutex which protects \c dmnsn_always_die.
-static pthread_mutex_t dmnsn_always_die_mutex = PTHREAD_MUTEX_INITIALIZER;
+static atomic_bool dmnsn_always_die = ATOMIC_VAR_INIT(false);
 
 // Called by dmnsn_error macro (don't call directly)
 void
@@ -84,10 +57,7 @@ dmnsn_report_error(bool die, const char *func, const char *file,
   // Save the value of errno
   int err = errno;
 
-  bool always_die;
-  dmnsn_local_lock_mutex(&dmnsn_always_die_mutex);
-    always_die = dmnsn_always_die;
-  dmnsn_local_unlock_mutex(&dmnsn_always_die_mutex);
+  bool always_die = atomic_load(&dmnsn_always_die);
 
   // Print the diagnostic string
   fprintf(stderr, "Dimension %s: %s, %s:%u: %s\n",
@@ -135,27 +105,20 @@ dmnsn_report_error(bool die, const char *func, const char *file,
 void
 dmnsn_die_on_warnings(bool always_die)
 {
-  dmnsn_local_lock_mutex(&dmnsn_always_die_mutex);
-    dmnsn_always_die = always_die;
-  dmnsn_local_unlock_mutex(&dmnsn_always_die_mutex);
+  atomic_store(&dmnsn_always_die, always_die);
 }
 
 dmnsn_fatal_error_fn *
 dmnsn_get_fatal_error_fn(void)
 {
-  dmnsn_fatal_error_fn *fatal;
-  dmnsn_local_lock_mutex(&dmnsn_fatal_mutex);
-    fatal = dmnsn_fatal;
-  dmnsn_local_unlock_mutex(&dmnsn_fatal_mutex);
+  dmnsn_fatal_error_fn *fatal = atomic_load(&dmnsn_fatal);
   return fatal;
 }
 
 void
 dmnsn_set_fatal_error_fn(dmnsn_fatal_error_fn *fatal)
 {
-  dmnsn_local_lock_mutex(&dmnsn_fatal_mutex);
-    dmnsn_fatal = fatal;
-  dmnsn_local_unlock_mutex(&dmnsn_fatal_mutex);
+  atomic_store(&dmnsn_fatal, fatal);
 }
 
 static void

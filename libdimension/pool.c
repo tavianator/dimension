@@ -50,7 +50,7 @@ struct dmnsn_pool {
   /// Thread-local block.
   pthread_key_t thread_block;
   /// Global chain of pools.
-  _Atomic(dmnsn_pool_block *) chain;
+  atomic(dmnsn_pool_block *) chain;
 };
 
 dmnsn_pool *

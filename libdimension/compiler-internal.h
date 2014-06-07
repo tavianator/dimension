@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -49,3 +49,5 @@
   #define DMNSN_DESTRUCTOR
   #define DMNSN_LATE_DESTRUCTOR
 #endif
+
+#define atomic _Atomic
