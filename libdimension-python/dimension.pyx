@@ -1143,6 +1143,33 @@ cdef class Triangle(Object):
     self._object = dmnsn_new_smooth_triangle(_get_pool(), vertices, normals)
     Object.__init__(self, *args, **kwargs)
 
+cdef class TriangleFan(Object):
+  """A triangle."""
+  def __init__(self, vertices, *args, **kwargs):
+    """
+    Create a TriangleFan.
+
+    Keyword arguments:
+    vertices -- the vertices of the fan, starting in the center
+
+    Additionally, TriangleFan() accepts any arguments that Object() accepts.
+    """
+    cdef size_t nvertices = len(vertices)
+    if nvertices < 3:
+      raise TypeError("expected at least 3 vertices")
+
+    cdef dmnsn_vector *varray
+    try:
+      varray = <dmnsn_vector *>dmnsn_malloc(nvertices*sizeof(dmnsn_vector))
+      for i in range(nvertices):
+        varray[i] = Vector(vertices[i])._v
+
+      self._object = dmnsn_new_triangle_fan(_get_pool(), varray, nvertices)
+    finally:
+      dmnsn_free(varray)
+
+    Object.__init__(self, *args, **kwargs)
+
 cdef class Plane(Object):
   """A plane."""
   def __init__(self, normal, double distance, *args, **kwargs):

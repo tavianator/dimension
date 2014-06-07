@@ -26,9 +26,10 @@
 #include <stdbool.h>
 
 /**
- * A flat triangle, without normal interpolation.
+ * A flat triangle.
  * @param[in] pool  The memory pool to allocate from.
  * @param[in] vertices  The corners of the triangle.
+ * @return A triangle.
  */
 dmnsn_object *dmnsn_new_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3]);
 
@@ -37,8 +38,19 @@ dmnsn_object *dmnsn_new_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3]);
  * @param[in] pool  The memory pool to allocate from.
  * @param[in] vertices  The corners of the triangle.
  * @param[in] normals  The normals at each corner.
+ * @return A smooth triangle.
  */
 dmnsn_object *dmnsn_new_smooth_triangle(dmnsn_pool *pool, dmnsn_vector vertices[3], dmnsn_vector normals[3]);
+
+/**
+ * A triangle fan.
+ * @param[in] pool  The memory pool to allocate from.
+ * @param[in] vertices  The vertices of the fan, starting in the center.
+ * @param[in] nvertices  The number of vertices.
+ * @return A triangle fan.
+ */
+dmnsn_object *
+dmnsn_new_triangle_fan(dmnsn_pool *pool, dmnsn_vector vertices[], size_t nvertices);
 
 /**
  * A plane.

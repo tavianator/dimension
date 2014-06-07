@@ -122,7 +122,7 @@ static inline dmnsn_matrix
 dmnsn_triangle_basis(dmnsn_vector vertices[3])
 {
   /*
-   * The new vector space has corners at <0, 1, 0>, <0, 0, 1>, and 0,
+   * The new vector space has corners at <1, 0, 0>, <0, 1, 0>, and 0,
    * corresponding to the basis (ab, ac, ab X ac).
    */
   dmnsn_vector ab = dmnsn_vector_sub(vertices[1], vertices[0]);
