@@ -153,8 +153,6 @@ dmnsn_new_triangle_fan(dmnsn_pool *pool, dmnsn_vector vertices[], size_t nvertic
   dmnsn_object *object = &fan->object;
   dmnsn_init_object(object);
   object->vtable = &dmnsn_triangle_fan_vtable;
-  object->bounding_box.min = dmnsn_zero;
-  object->bounding_box.max = dmnsn_new_vector(1.0, 1.0, 0.0);
 
   /* Compute the initial matrix and the coefficients */
   dmnsn_vector a = vertices[0];
