@@ -25,7 +25,7 @@
  * for a description of the intersection algorithm.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 
 /// Optimized ray/triangle intersection test.
 static inline bool
@@ -39,7 +39,7 @@ dmnsn_ray_triangle_intersection(dmnsn_line l, double *t, double *u, double *v)
 }
 
 /// Triangle intersection callback.
-static bool
+DMNSN_HOT static bool
 dmnsn_triangle_intersection_fn(const dmnsn_object *object, dmnsn_line l,
                                dmnsn_intersection *intersection)
 {
@@ -88,7 +88,7 @@ typedef struct {
 } dmnsn_smooth_triangle;
 
 /// Smooth triangle intersection callback.
-static bool
+DMNSN_HOT static bool
 dmnsn_smooth_triangle_intersection_fn(const dmnsn_object *object, dmnsn_line l,
                                       dmnsn_intersection *intersection)
 {

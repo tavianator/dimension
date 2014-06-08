@@ -1125,32 +1125,32 @@ cdef class Triangle(Object):
 
     Additionally, Triangle() accepts any arguments that Object() accepts.
     """
-    if a_normal is None and b_normal is None and c_normal is None:
-      a_normal = cross(b - a, c - a)
-      b_normal = a_normal
-      c_normal = a_normal
-
     cdef dmnsn_vector vertices[3]
+    cdef dmnsn_vector normals[3]
+
     vertices[0] = Vector(a)._v
     vertices[1] = Vector(b)._v
     vertices[2] = Vector(c)._v
 
-    cdef dmnsn_vector normals[3]
-    normals[0] = Vector(a_normal)._v
-    normals[1] = Vector(b_normal)._v
-    normals[2] = Vector(c_normal)._v
+    if a_normal is None and b_normal is None and c_normal is None:
+      self._object = dmnsn_new_triangle(_get_pool(), vertices)
+    else:
+      normals[0] = Vector(a_normal)._v
+      normals[1] = Vector(b_normal)._v
+      normals[2] = Vector(c_normal)._v
+      self._object = dmnsn_new_smooth_triangle(_get_pool(), vertices, normals)
 
-    self._object = dmnsn_new_smooth_triangle(_get_pool(), vertices, normals)
     Object.__init__(self, *args, **kwargs)
 
 cdef class TriangleFan(Object):
-  """A triangle."""
-  def __init__(self, vertices, *args, **kwargs):
+  """A triangle fan."""
+  def __init__(self, vertices, normals = None, *args, **kwargs):
     """
     Create a TriangleFan.
 
     Keyword arguments:
     vertices -- the vertices of the fan, starting in the center
+    normals  -- the (optional) normal vectors for each vertex
 
     Additionally, TriangleFan() accepts any arguments that Object() accepts.
     """
@@ -1158,14 +1158,26 @@ cdef class TriangleFan(Object):
     if nvertices < 3:
       raise TypeError("expected at least 3 vertices")
 
-    cdef dmnsn_vector *varray
+    cdef dmnsn_vector *varray = NULL
+    cdef dmnsn_vector *narray = NULL
     try:
       varray = <dmnsn_vector *>dmnsn_malloc(nvertices*sizeof(dmnsn_vector))
       for i in range(nvertices):
         varray[i] = Vector(vertices[i])._v
 
-      self._object = dmnsn_new_triangle_fan(_get_pool(), varray, nvertices)
+      if normals is None:
+        self._object = dmnsn_new_triangle_fan(_get_pool(), varray, nvertices)
+      else:
+        if len(normals) != nvertices:
+          raise TypeError("expected same number of vertices and normals")
+
+        narray = <dmnsn_vector *>dmnsn_malloc(nvertices*sizeof(dmnsn_vector))
+        for i in range(nvertices):
+          narray[i] = Vector(normals[i])._v
+
+        self._object = dmnsn_new_smooth_triangle_fan(_get_pool(), varray, narray, nvertices)
     finally:
+      dmnsn_free(narray)
       dmnsn_free(varray)
 
     Object.__init__(self, *args, **kwargs)
