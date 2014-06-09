@@ -59,74 +59,43 @@ dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
   return point.x*point.x + point.y*point.y + point.z*point.z < 1.0;
 }
 
+/// Helper for sphere bounding box calculation.
+static inline double
+dmnsn_implicit_dot(double row[4])
+{
+  double ret = 0.0;
+  for (int i = 0; i < 3; ++i) {
+    ret += row[i]*row[i];
+  }
+  return ret;
+}
+
 /// Sphere bounding callback.
 static dmnsn_bounding_box
 dmnsn_sphere_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
-  // Get a tight bound using the conic representation of a sphere:
-  //
-  //   S = [ 1  0  0  0 ]
-  //       [ 0  1  0  0 ]
-  //       [ 0  0  1  0 ]
-  //       [ 0  0  0 -1 ].
-  //
-  // The surface is defined by
-  //   p^T * S * p = 0,
-  // and the tangent planes are defined by
-  //   q * S^-1 * q^T = 0.
-  // Note that S = S^-1.
-  //
-  // The symmetric matrix R, defined by
-  //   R = M * S^-1 * M^T,
-  // characterizes the tangent planes. Specifically,
-  //   min.x = (R[0,3] - sqrt(R[0,3]^2 - R[0,0]*R[3,3]))/R[3,3]
-  //   max.x = (R[0,3] + sqrt(R[0,3]^2 - R[0,0]*R[3,3]))/R[3,3]
-  //   min.y = (R[1,3] - sqrt(R[1,3]^2 - R[1,1]*R[3,3]))/R[3,3]
-  //   max.y = (R[1,3] + sqrt(R[1,3]^2 - R[1,1]*R[3,3]))/R[3,3]
-  //   min.z = (R[2,3] - sqrt(R[2,3]^2 - R[2,2]*R[3,3]))/R[3,3]
-  //   max.z = (R[2,3] + sqrt(R[2,3]^2 - R[2,2]*R[3,3]))/R[3,3]
-  //
-  // Unfortunately, we can't use dmnsn_matrix because the matrices are not
-  // affine
-
-  // MS = M * S^-1 = M * S
-  // Last row is [ 0  0  0 -1 ] implicitly
-  double MS[3][4];
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      MS[i][j] = trans.n[i][j];
-    }
-    MS[i][3] = -trans.n[i][3];
-  }
-
-  // R = MS * M^T
-  // We only compute the upper triangular portion
-  // R[3][3] is implicitly -1
-  double R[4][4];
-  for (int i = 0; i < 3; ++i) {
-    for (int j = i; j < 3; ++j) {
-      R[i][j] = 0.0;
-      for (int k = 0; k < 4; ++k) {
-        R[i][j] += MS[i][k]*trans.n[j][k];
-      }
-    }
-    R[i][3] = MS[i][3];
-  }
+  // Get a tight bound using the quadric representation of a sphere.  For
+  // details, see
+  // http://tavianator.com/2014/06/exact-bounding-boxes-for-spheres-ellipsoids
 
   dmnsn_bounding_box box;
 
-  double dx = sqrt(R[0][3]*R[0][3] + R[0][0]);
-  box.min.x = -R[0][3] - dx;
-  box.max.x = -R[0][3] + dx;
+  double cx = trans.n[0][3];
+  double dx = sqrt(dmnsn_implicit_dot(trans.n[0]));
+  box.min.x = cx - dx;
+  box.max.x = cx + dx;
 
-  double dy = sqrt(R[1][3]*R[1][3] + R[1][1]);
-  box.min.y = -R[1][3] - dy;
-  box.max.y = -R[1][3] + dy;
+  double cy = trans.n[1][3];
+  double dy = sqrt(dmnsn_implicit_dot(trans.n[1]));
+  box.min.y = cy - dy;
+  box.max.y = cy + dy;
 
-  double dz = sqrt(R[2][3]*R[2][3] + R[2][2]);
-  box.min.z = -R[2][3] - dz;
-  box.max.z = -R[2][3] + dz;
+  double cz = trans.n[2][3];
+  double dz = sqrt(dmnsn_implicit_dot(trans.n[2]));
+  box.min.z = cz - dz;
+  box.max.z = cz + dz;
 
+  printf(DMNSN_BOUNDING_BOX_FORMAT "\n", DMNSN_BOUNDING_BOX_PRINTF(box));
   return box;
 }
 
