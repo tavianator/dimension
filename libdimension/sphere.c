@@ -95,7 +95,6 @@ dmnsn_sphere_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
   box.min.z = cz - dz;
   box.max.z = cz + dz;
 
-  printf(DMNSN_BOUNDING_BOX_FORMAT "\n", DMNSN_BOUNDING_BOX_PRINTF(box));
   return box;
 }
 
