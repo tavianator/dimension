@@ -25,7 +25,7 @@
 
 #include <stdbool.h>
 
-// Forward-declar dmnsn_light
+/* Forward-declar dmnsn_light */
 typedef struct dmnsn_light dmnsn_light;
 
 /**
@@ -54,12 +54,12 @@ typedef dmnsn_color dmnsn_light_illumination_fn(const dmnsn_light *light,
  */
 typedef bool dmnsn_light_shadow_fn(const dmnsn_light *light, double t);
 
-/// A light.
+/** A light. */
 struct dmnsn_light {
-  // Callbacks
-  dmnsn_light_direction_fn *direction_fn; ///< Direction callback.
-  dmnsn_light_illumination_fn *illumination_fn; ///< Illumination callback.
-  dmnsn_light_shadow_fn *shadow_fn; ///< Shadow callback.
+  /* Callbacks */
+  dmnsn_light_direction_fn *direction_fn; /**< Direction callback. */
+  dmnsn_light_illumination_fn *illumination_fn; /**< Illumination callback. */
+  dmnsn_light_shadow_fn *shadow_fn; /**< Shadow callback. */
 };
 
 /**

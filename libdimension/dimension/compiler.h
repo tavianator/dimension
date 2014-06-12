@@ -30,23 +30,46 @@
  */
 #ifndef DMNSN_INLINE
   #ifdef __cplusplus
-    // C++ inline semantics
+    /* C++ inline semantics */
     #define DMNSN_INLINE inline
   #elif __STDC_VERSION__ >= 199901L
-    // C99 inline semantics
+    /* C99 inline semantics */
     #define DMNSN_INLINE inline
   #elif defined(__GNUC__)
-    // GCC inline semantics
+    /* GCC inline semantics */
     #define DMNSN_INLINE __extension__ extern __inline__
   #else
-    // Unknown C - mark functions static and hope the compiler is smart enough
-    // to inline them
+    /* Unknown C - mark functions static and hope the compiler is smart enough
+       to inline them */
     #define DMNSN_INLINE static
   #endif
 #endif
 
+/**
+ * @internal
+ * @def DMNSN_FUNC
+ * @brief Expands to the name of the current function
+ */
+#ifdef __GNUC__
+  #define DMNSN_FUNC __PRETTY_FUNCTION__
+#elif __STDC_VERSION__ >= 199901L
+  #define DMNSN_FUNC __func__
+#else
+  #define DMNSN_FUNC "<unknown function>"
+#endif
+
+/**
+ * @internal
+ * An unreachable statement.
+ */
 #ifdef __GNUC__
   #define DMNSN_UNREACHABLE() __builtin_unreachable()
 #else
   #define DMNSN_UNREACHABLE() ((void)0)
 #endif
+
+/**
+ * @internal
+ * Whether C99 features are supported.
+ */
+#define DMNSN_C99 (__STDC_VERSION__ >= 199901L || __cplusplus >= 201103L)

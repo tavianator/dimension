@@ -25,9 +25,9 @@
  * once once a scene is rendered (for example).
  */
 
-#include <stddef.h> // For size_t
+#include <stddef.h> /* For size_t */
 
-// Forward-declare dmnsn_pool.
+/* Forward-declare dmnsn_pool. */
 typedef struct dmnsn_pool dmnsn_pool;
 
 /**

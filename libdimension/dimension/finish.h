@@ -23,17 +23,17 @@
  * Object finishes.
  */
 
-// Ambient component
+/* Ambient component */
 
-/// Ambient finish component.
+/** Ambient finish component. */
 typedef struct dmnsn_ambient {
-  dmnsn_color ambient; ///< Ambient light.
+  dmnsn_color ambient; /**< Ambient light. */
 } dmnsn_ambient;
 
-/// Allocate an ambient component.
+/** Allocate an ambient component. */
 dmnsn_ambient *dmnsn_new_ambient(dmnsn_pool *pool, dmnsn_color ambient);
 
-// Diffuse component
+/* Diffuse component */
 
 typedef struct dmnsn_diffuse dmnsn_diffuse;
 
@@ -50,17 +50,17 @@ typedef dmnsn_color dmnsn_diffuse_fn(const dmnsn_diffuse *diffuse,
                                      dmnsn_color light, dmnsn_color color,
                                      dmnsn_vector ray, dmnsn_vector normal);
 
-/// Diffuse finish component.
+/** Diffuse finish component. */
 struct dmnsn_diffuse {
-  dmnsn_diffuse_fn *diffuse_fn; ///< Diffuse callback.
+  dmnsn_diffuse_fn *diffuse_fn; /**< Diffuse callback. */
 };
 
-/// Allocate a dummy diffuse component.
+/** Allocate a dummy diffuse component. */
 dmnsn_diffuse *dmnsn_new_diffuse(dmnsn_pool *pool);
-/// Initialize a dmnsn_diffuse field.
+/** Initialize a dmnsn_diffuse field. */
 void dmnsn_init_diffuse(dmnsn_diffuse *diffuse);
 
-// Specular component
+/* Specular component */
 
 typedef struct dmnsn_specular dmnsn_specular;
 
@@ -79,17 +79,17 @@ typedef dmnsn_color dmnsn_specular_fn(const dmnsn_specular *specular,
                                       dmnsn_vector ray, dmnsn_vector normal,
                                       dmnsn_vector viewer);
 
-/// Specular finish component.
+/** Specular finish component. */
 struct dmnsn_specular {
-  dmnsn_specular_fn *specular_fn; ///< Specular callback.
+  dmnsn_specular_fn *specular_fn; /**< Specular callback. */
 };
 
-/// Allocate a dummy specular component.
+/** Allocate a dummy specular component. */
 dmnsn_specular *dmnsn_new_specular(dmnsn_pool *pool);
-/// Initialize a dmnsn_specular field.
+/** Initialize a dmnsn_specular field. */
 void dmnsn_init_specular(dmnsn_specular *specular);
 
-// Reflection component
+/* Reflection component */
 
 typedef struct dmnsn_reflection dmnsn_reflection;
 
@@ -106,24 +106,24 @@ typedef dmnsn_color dmnsn_reflection_fn(const dmnsn_reflection *reflection,
                                         dmnsn_color reflect, dmnsn_color color,
                                         dmnsn_vector ray, dmnsn_vector normal);
 
-/// The reflection component.
+/** The reflection component. */
 struct dmnsn_reflection {
-  dmnsn_reflection_fn *reflection_fn; ///< Reflection callback.
+  dmnsn_reflection_fn *reflection_fn; /**< Reflection callback. */
 };
 
-/// Allocate a dummy reflection component.
+/** Allocate a dummy reflection component. */
 dmnsn_reflection *dmnsn_new_reflection(dmnsn_pool *pool);
-/// Initialize a dmnsn_reflection field.
+/** Initialize a dmnsn_reflection field. */
 void dmnsn_init_reflection(dmnsn_reflection *reflection);
 
-// Entire finishes
+/* Entire finishes */
 
-/// A finish.
+/** A finish. */
 typedef struct dmnsn_finish {
-  dmnsn_ambient *ambient; ///< Ambient component.
-  dmnsn_diffuse *diffuse; ///< Diffuse component.
-  dmnsn_specular *specular; ///< Specular component.
-  dmnsn_reflection *reflection; ///< Reflection component.
+  dmnsn_ambient *ambient; /**< Ambient component. */
+  dmnsn_diffuse *diffuse; /**< Diffuse component. */
+  dmnsn_specular *specular; /**< Specular component. */
+  dmnsn_reflection *reflection; /**< Reflection component. */
 } dmnsn_finish;
 
 /**

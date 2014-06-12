@@ -26,7 +26,7 @@
  * is returned as an int from dmnsn_finish_progress().
  */
 
-/// A future object.
+/** A future object. */
 typedef struct dmnsn_future dmnsn_future;
 
 /**

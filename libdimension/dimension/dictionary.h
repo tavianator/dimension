@@ -23,7 +23,7 @@
  * Simple associative arrays.
  */
 
-/// A string-object associative array.
+/** A string-object associative array. */
 typedef struct dmnsn_dictionary dmnsn_dictionary;
 
 /**

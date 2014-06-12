@@ -40,26 +40,11 @@
 #define DIMENSION_H
 
 #ifdef __cplusplus
-// We've been included from a C++ file; mark everything here as extern "C"
+/* We've been included from a C++ file; mark everything here as extern "C" */
 extern "C" {
 #endif
 
-// Common macros
-
-/**
- * @internal
- * @def DMNSN_FUNC
- * @brief Expands to the name of the current function
- */
-#ifdef __GNUC__
-  #define DMNSN_FUNC __PRETTY_FUNCTION__
-#elif __STDC_VERSION__ >= 199901L
-  #define DMNSN_FUNC __func__
-#else
-  #define DMNSN_FUNC "<unknown function>"
-#endif
-
-// Common types
+/* Common types */
 
 /**
  * Generic callback type.
@@ -73,7 +58,7 @@ typedef void dmnsn_callback_fn(void *ptr);
  */
 typedef void dmnsn_free_fn(void *ptr);
 
-// Include all the libdimension headers
+/* Include all the libdimension headers */
 #include <dimension/compiler.h>
 #include <dimension/error.h>
 #include <dimension/malloc.h>
@@ -112,4 +97,4 @@ typedef void dmnsn_free_fn(void *ptr);
 }
 #endif
 
-#endif // DIMENSION_H
+#endif /* DIMENSION_H */

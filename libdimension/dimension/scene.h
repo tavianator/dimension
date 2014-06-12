@@ -23,62 +23,62 @@
  * Entire scenes.
  */
 
-/// Render quality flags.
+/** Render quality flags. */
 enum {
-  DMNSN_RENDER_NONE         = 0,      ///< Render nothing.
-  DMNSN_RENDER_PIGMENT      = 1 << 0, ///< Render pigments.
-  DMNSN_RENDER_LIGHTS       = 1 << 1, ///< Render lights and shadows.
-  DMNSN_RENDER_FINISH       = 1 << 2, ///< Render object finishes.
-  DMNSN_RENDER_TRANSPARENCY = 1 << 3, ///< Render transparency/refraction.
-  DMNSN_RENDER_REFLECTION   = 1 << 4, ///< Render specular reflection.
-  DMNSN_RENDER_FULL         = ~DMNSN_RENDER_NONE ///< Render everything.
+  DMNSN_RENDER_NONE         = 0,      /**< Render nothing. */
+  DMNSN_RENDER_PIGMENT      = 1 << 0, /**< Render pigments. */
+  DMNSN_RENDER_LIGHTS       = 1 << 1, /**< Render lights and shadows. */
+  DMNSN_RENDER_FINISH       = 1 << 2, /**< Render object finishes. */
+  DMNSN_RENDER_TRANSPARENCY = 1 << 3, /**< Render transparency/refraction. */
+  DMNSN_RENDER_REFLECTION   = 1 << 4, /**< Render specular reflection. */
+  DMNSN_RENDER_FULL         = ~DMNSN_RENDER_NONE /**< Render everything. */
 };
 
-/// Render quality.
+/** Render quality. */
 typedef unsigned int dmnsn_quality;
 
-/// An entire scene.
+/** An entire scene. */
 typedef struct dmnsn_scene {
-  // World attributes
-  dmnsn_pigment *background;        ///< Background pigment.
-  dmnsn_texture *default_texture;   ///< Default object texture.
-  dmnsn_interior *default_interior; ///< Default object interior.
+  /* World attributes */
+  dmnsn_pigment *background;        /**< Background pigment. */
+  dmnsn_texture *default_texture;   /**< Default object texture. */
+  dmnsn_interior *default_interior; /**< Default object interior. */
 
-  /// Canvas.
+  /** Canvas. */
   dmnsn_canvas *canvas;
 
-  // Support for rendering image subregions.
-  size_t region_x; ///< The x position of the canvas in the broader image.
-  size_t region_y; ///< The y position of the canvas in the broader image.
-  size_t outer_width; ///< Width of the broader image.
-  size_t outer_height; ///< Height of the broader image.
+  /* Support for rendering image subregions. */
+  size_t region_x; /**< The x position of the canvas in the broader image. */
+  size_t region_y; /**< The y position of the canvas in the broader image. */
+  size_t outer_width; /**< Width of the broader image. */
+  size_t outer_height; /**< Height of the broader image. */
 
-  /// Objects.
+  /** Objects. */
   dmnsn_array *objects;
 
-  /// Lights.
+  /** Lights. */
   dmnsn_array *lights;
 
-  /// Camera.
+  /** Camera. */
   dmnsn_camera *camera;
 
-  /// Render quality.
+  /** Render quality. */
   dmnsn_quality quality;
 
-  /// Recursion limit.
+  /** Recursion limit. */
   unsigned int reclimit;
 
-  /// Adaptive depth control bailout.
+  /** Adaptive depth control bailout. */
   double adc_bailout;
 
-  /// Number of parallel threads.
+  /** Number of parallel threads. */
   unsigned int nthreads;
 
-  /// Timers.
+  /** Timers. */
   dmnsn_timer bounding_timer;
   dmnsn_timer render_timer;
 
-  bool initialized; ///< @internal Whether the scene is initialized.
+  bool initialized; /**< @internal Whether the scene is initialized. */
 } dmnsn_scene;
 
 /**

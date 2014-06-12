@@ -44,8 +44,8 @@ dmnsn_pigment *dmnsn_new_canvas_pigment(dmnsn_pool *pool, dmnsn_canvas *canvas);
  * Pigment map flags.
  */
 typedef enum dmnsn_pigment_map_flags {
-  DMNSN_PIGMENT_MAP_REGULAR, ///< Calculate linear color gradients.
-  DMNSN_PIGMENT_MAP_SRGB ///< Calculate sRGB color gradients.
+  DMNSN_PIGMENT_MAP_REGULAR, /**< Calculate linear color gradients. */
+  DMNSN_PIGMENT_MAP_SRGB /**< Calculate sRGB color gradients. */
 } dmnsn_pigment_map_flags;
 
 /**

@@ -25,18 +25,18 @@
 
 #include <stdbool.h>
 
-// Forward-declare dmnsn_object
+/* Forward-declare dmnsn_object */
 typedef struct dmnsn_object dmnsn_object;
 
-/// A type to represent a ray-object intersection.
+/** A type to represent a ray-object intersection. */
 typedef struct dmnsn_intersection {
-  dmnsn_line ray; ///< The ray that intersected.
-  double t;       ///< The line index that intersected.
+  dmnsn_line ray; /**< The ray that intersected. */
+  double t;       /**< The line index that intersected. */
 
-  /// The surface normal at the intersection point.
+  /** The surface normal at the intersection point. */
   dmnsn_vector normal;
 
-  /// The object of intersection.
+  /** The object of intersection. */
   const dmnsn_object *object;
 } dmnsn_intersection;
 
@@ -71,32 +71,32 @@ typedef dmnsn_bounding_box dmnsn_object_bounding_fn(const dmnsn_object *object, 
  */
 typedef void dmnsn_object_precompute_fn(dmnsn_object *object);
 
-/// Object callbacks.
+/** Object callbacks. */
 typedef struct dmnsn_object_vtable {
-  dmnsn_object_intersection_fn *intersection_fn; ///< Intersection callback.
-  dmnsn_object_inside_fn *inside_fn; ///< Inside callback.
-  dmnsn_object_bounding_fn *bounding_fn; ///< Bounding callback.
-  dmnsn_object_precompute_fn *precompute_fn; ///< Precomputation callback.
+  dmnsn_object_intersection_fn *intersection_fn; /**< Intersection callback. */
+  dmnsn_object_inside_fn *inside_fn; /**< Inside callback. */
+  dmnsn_object_bounding_fn *bounding_fn; /**< Bounding callback. */
+  dmnsn_object_precompute_fn *precompute_fn; /**< Precomputation callback. */
 } dmnsn_object_vtable;
 
-/// An object.
+/** An object. */
 struct dmnsn_object {
-  const dmnsn_object_vtable *vtable; ///< Callbacks.
+  const dmnsn_object_vtable *vtable; /**< Callbacks. */
 
-  dmnsn_texture *texture;  ///< Surface properties.
-  dmnsn_interior *interior; ///< Interior properties.
+  dmnsn_texture *texture;  /**< Surface properties. */
+  dmnsn_interior *interior; /**< Interior properties. */
 
-  dmnsn_matrix trans; ///< Transformation matrix.
-  dmnsn_matrix intrinsic_trans; ///< Transformations intrinsic to the object.
+  dmnsn_matrix trans; /**< Transformation matrix. */
+  dmnsn_matrix intrinsic_trans; /**< Transformations intrinsic to the object. */
 
-  dmnsn_array *children; ///< Child objects.
-  bool split_children;   ///< Whether the child objects can be split.
+  dmnsn_array *children; /**< Child objects. */
+  bool split_children;   /**< Whether the child objects can be split. */
 
-  // Precomputed values
-  bool precomputed; ///< @internal Whether the object is precomputed yet.
-  dmnsn_matrix trans_inv; ///< Inverse of the transformation matrix.
-  dmnsn_matrix pigment_trans; ///< Inverse transformation for the texture.
-  dmnsn_bounding_box bounding_box; ///< Bounding box in world coordinates.
+  /* Precomputed values */
+  bool precomputed; /**< @internal Whether the object is precomputed yet. */
+  dmnsn_matrix trans_inv; /**< Inverse of the transformation matrix. */
+  dmnsn_matrix pigment_trans; /**< Inverse transformation for the texture. */
+  dmnsn_bounding_box bounding_box; /**< Bounding box in world coordinates. */
 };
 
 /**
@@ -132,7 +132,7 @@ dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
   dmnsn_line line_trans = dmnsn_transform_line(object->trans_inv, line);
   intersection->object = NULL;
   if (object->vtable->intersection_fn(object, line_trans, intersection)) {
-    // Get us back into world coordinates
+    /* Get us back into world coordinates */
     intersection->ray = line;
     intersection->normal = dmnsn_vector_normalized(
       dmnsn_transform_normal(object->trans_inv, intersection->normal)
@@ -141,9 +141,8 @@ dmnsn_object_intersection(const dmnsn_object *object, dmnsn_line line,
       intersection->object = object;
     }
 
-    dmnsn_assert(!isnan(intersection->t), "Intersection point is NaN.");
-    dmnsn_assert(!dmnsn_vector_isnan(intersection->normal),
-                 "Intersection normal is NaN.");
+    dmnsn_assert(!dmnsn_isnan(intersection->t), "Intersection point is NaN.");
+    dmnsn_assert(!dmnsn_vector_isnan(intersection->normal), "Intersection normal is NaN.");
 
     return true;
   } else {

@@ -40,4 +40,4 @@ HTML_FILE_EXTENSION    = .html
 GENERATE_LATEX         = YES
 LATEX_OUTPUT           = latex
 
-PREDEFINED             = "__STDC_VERSION__=199901L" "__GNUC__"
+PREDEFINED             = "__STDC_VERSION__=201112L" "__GNUC__"

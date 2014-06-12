@@ -33,6 +33,7 @@ check_PROGRAMS    = warning.test                                               \
                     png.test                                                   \
                     gl.test                                                    \
                     render.test                                                \
+                    c89.test                                                   \
                     c99.test                                                   \
                     cxx.test
 TESTS             = $(check_PROGRAMS)
@@ -95,6 +96,11 @@ gl_test_LDADD   = libdimension-tests.la
 
 render_test_SOURCES = render.c
 render_test_LDADD   = libdimension-tests.la
+
+c89_test_SOURCES = c89.c
+c89_test_LDADD   = libdimension-tests.la
+
+c89.o: CFLAGS += -std=c89 -Wpedantic
 
 c99_test_SOURCES = c99.c
 c99_test_LDADD   = libdimension-tests.la

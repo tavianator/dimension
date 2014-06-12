@@ -25,19 +25,19 @@
 
 #include <stdbool.h>
 
-/// A color value.
+/** A color value. */
 typedef struct {
-  double R; ///< Red component.
-  double G; ///< Green component.
-  double B; ///< Blue component.
+  double R; /**< Red component. */
+  double G; /**< Green component. */
+  double B; /**< Blue component. */
 } dmnsn_color;
 
-/// A standard format string for colors.
+/** A standard format string for colors. */
 #define DMNSN_COLOR_FORMAT "Color<%g, %g, %g>"
-/// The appropriate arguements to printf() a color.
+/** The appropriate arguements to printf() a color. */
 #define DMNSN_COLOR_PRINTF(c) (c).R, (c).G, (c).B
 
-/// Construct a new color.
+/** Construct a new color. */
 DMNSN_INLINE dmnsn_color
 dmnsn_new_color(double R, double G, double B)
 {
@@ -45,17 +45,19 @@ dmnsn_new_color(double R, double G, double B)
   return ret;
 }
 
-/// Apply sRGB gamma
+/** Apply sRGB gamma */
 DMNSN_INLINE double
 dmnsn_sRGB_gamma(double Clinear)
 {
-  // If C represents R, G, and B, then the sRGB values are now found as follows:
-  //
-  //         { 12.92*Clinear,                Clinear <= 0.0031308
-  // Csrgb = {                1/2.4
-  //         { (1.055)*Clinear      - 0.055, Clinear >  0.0031308
+  /*
+   * If C represents R, G, and B, then the sRGB values are now found as follows:
+   *
+   *         { 12.92*Clinear,                Clinear <= 0.0031308
+   * Csrgb = {                1/2.4
+   *         { (1.055)*Clinear      - 0.055, Clinear >  0.0031308
+   */
   if (Clinear == 1.0) {
-    return 1.0; // Map 1.0 to 1.0 instead of 0.9999999999999999
+    return 1.0; /* Map 1.0 to 1.0 instead of 0.9999999999999999 */
   } else if (Clinear > 0.0031308) {
     return 1.055*pow(Clinear, 1.0/2.4) - 0.055;
   } else {
@@ -63,7 +65,7 @@ dmnsn_sRGB_gamma(double Clinear)
   }
 }
 
-/// Convert to sRGB space.
+/** Convert to sRGB space. */
 DMNSN_INLINE dmnsn_color
 dmnsn_color_to_sRGB(dmnsn_color color)
 {
@@ -74,18 +76,20 @@ dmnsn_color_to_sRGB(dmnsn_color color)
   );
 }
 
-/// Remove sRGB gamma
+/** Remove sRGB gamma */
 DMNSN_INLINE double
 dmnsn_sRGB_inverse_gamma(double CsRGB)
 {
-  // If C represents R, G, and B, then the Clinear values are now found as
-  // follows:
-  //
-  //           { Csrgb/12.92,                Csrgb <= 0.04045
-  // Clinear = {                        2.4
-  //           { ((Csrgb + 0.055)/1.055)   , Csrgb >  0.04045
+  /*
+   * If C represents R, G, and B, then the Clinear values are now found as
+   * follows:
+   *
+   *           { Csrgb/12.92,                Csrgb <= 0.04045
+   * Clinear = {                        2.4
+   *           { ((Csrgb + 0.055)/1.055)   , Csrgb >  0.04045
+   */
   if (CsRGB == 1.0) {
-    return 1.0; // Map 1.0 to 1.0 instead of 0.9999999999999999
+    return 1.0; /* Map 1.0 to 1.0 instead of 0.9999999999999999 */
   } else if (CsRGB <= 0.040449936) {
     return CsRGB/12.92;
   } else {
@@ -93,7 +97,7 @@ dmnsn_sRGB_inverse_gamma(double CsRGB)
   }
 }
 
-/// Convert from sRGB space.
+/** Convert from sRGB space. */
 DMNSN_INLINE dmnsn_color
 dmnsn_color_from_sRGB(dmnsn_color color)
 {
@@ -104,35 +108,35 @@ dmnsn_color_from_sRGB(dmnsn_color color)
   );
 }
 
-/// Greyscale color intensity.
+/** Greyscale color intensity. */
 DMNSN_INLINE double
 dmnsn_color_intensity(dmnsn_color color)
 {
   return 0.2126*color.R + 0.7152*color.G + 0.0722*color.B;
 }
 
-/// Add two colors together.
+/** Add two colors together. */
 DMNSN_INLINE dmnsn_color
 dmnsn_color_add(dmnsn_color lhs, dmnsn_color rhs)
 {
   return dmnsn_new_color(lhs.R + rhs.R, lhs.G + rhs.G, lhs.B + rhs.B);
 }
 
-/// Subtract two colors.
+/** Subtract two colors. */
 DMNSN_INLINE dmnsn_color
 dmnsn_color_sub(dmnsn_color lhs, dmnsn_color rhs)
 {
   return dmnsn_new_color(lhs.R - rhs.R, lhs.G - rhs.G, lhs.B - rhs.B);
 }
 
-/// Scale a color's intensity.
+/** Scale a color's intensity. */
 DMNSN_INLINE dmnsn_color
 dmnsn_color_mul(double n, dmnsn_color color)
 {
   return dmnsn_new_color(n*color.R, n*color.G, n*color.B);
 }
 
-/// Return the color at \p n on a gradient from \p c1 at 0 to \p c2 at 1.
+/** Return the color at \p n on a gradient from \p c1 at 0 to \p c2 at 1. */
 DMNSN_INLINE dmnsn_color
 dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n)
 {
@@ -143,14 +147,14 @@ dmnsn_color_gradient(dmnsn_color c1, dmnsn_color c2, double n)
   );
 }
 
-/// Illuminate \p color with \p light.
+/** Illuminate \p color with \p light. */
 DMNSN_INLINE dmnsn_color
 dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color)
 {
   return dmnsn_new_color(light.R*color.R, light.G*color.G, light.B*color.B);
 }
 
-/// Saturate the color components to [0.0, 1.0].
+/** Saturate the color components to [0.0, 1.0]. */
 DMNSN_INLINE dmnsn_color
 dmnsn_color_saturate(dmnsn_color color)
 {
@@ -160,30 +164,30 @@ dmnsn_color_saturate(dmnsn_color color)
   return color;
 }
 
-/// Return whether a color contains any NaN components.
+/** Return whether a color contains any NaN components. */
 DMNSN_INLINE bool
 dmnsn_color_isnan(dmnsn_color color)
 {
-  return isnan(color.R) || isnan(color.G) || isnan(color.B);
+  return dmnsn_isnan(color.R) || dmnsn_isnan(color.G) || dmnsn_isnan(color.B);
 }
 
-// Standard colors
+/* Standard colors */
 
-/// Black.
+/** Black. */
 #define dmnsn_black   dmnsn_new_color(0.0, 0.0, 0.0)
-/// White.
+/** White. */
 #define dmnsn_white   dmnsn_new_color(1.0, 1.0, 1.0)
-/// Red.
+/** Red. */
 #define dmnsn_red     dmnsn_new_color(1.0, 0.0, 0.0)
-/// Green.
+/** Green. */
 #define dmnsn_green   dmnsn_new_color(0.0, 1.0, 0.0)
-/// Blue.
+/** Blue. */
 #define dmnsn_blue    dmnsn_new_color(0.0, 0.0, 1.0)
-/// Magenta.
+/** Magenta. */
 #define dmnsn_magenta dmnsn_new_color(1.0, 0.0, 1.0)
-/// Orange.
+/** Orange. */
 #define dmnsn_orange  dmnsn_new_color(1.0, 0.21404114048223255, 0.0)
-/// Yellow.
+/** Yellow. */
 #define dmnsn_yellow  dmnsn_new_color(1.0, 1.0, 0.0)
-/// Cyan.
+/** Cyan. */
 #define dmnsn_cyan    dmnsn_new_color(0.0, 1.0, 1.0)

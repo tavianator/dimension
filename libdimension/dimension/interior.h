@@ -23,9 +23,9 @@
  * Object interiors.
  */
 
-/// An interior.
+/** An interior. */
 typedef struct dmnsn_interior {
-  double ior; ///< Refractive index.
+  double ior; /**< Refractive index. */
 } dmnsn_interior;
 
 /**

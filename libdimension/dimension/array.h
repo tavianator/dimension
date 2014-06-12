@@ -23,16 +23,16 @@
  * Simple dynamic arrays.
  */
 
-#include <stddef.h> // For size_t
-#include <stdlib.h> // For qsort()
-#include <string.h> // For memcpy()
+#include <stddef.h> /* For size_t */
+#include <stdlib.h> /* For qsort() */
+#include <string.h> /* For memcpy() */
 
-/// Dynamic array type.
+/** Dynamic array type. */
 typedef struct dmnsn_array {
-  void *ptr;       ///< @internal The actual memory.
-  size_t obj_size; ///< @internal The size of each object.
-  size_t length;   ///< @internal The current size of the array.
-  size_t capacity; ///< @internal The size of the allocated space.
+  void *ptr;       /**< @internal The actual memory. */
+  size_t obj_size; /**< @internal The size of each object. */
+  size_t length;   /**< @internal The current size of the array. */
+  size_t capacity; /**< @internal The size of the allocated space. */
 } dmnsn_array;
 
 /**
@@ -46,9 +46,9 @@ dmnsn_init_array(dmnsn_array *array, size_t obj_size)
 {
   array->obj_size = obj_size;
   array->length   = 0;
-  array->capacity = 2; // Start with capacity of 2
+  array->capacity = 2; /* Start with capacity of 2 */
 
-  // Allocate the memory
+  /* Allocate the memory */
   array->ptr = dmnsn_malloc(array->capacity*array->obj_size);
 }
 
@@ -134,8 +134,8 @@ DMNSN_INLINE void
 dmnsn_array_resize(dmnsn_array *array, size_t length)
 {
   if (length > array->capacity) {
-    // Resize if we don't have enough capacity
-    array->capacity = length*2; // We are greedy
+    /* Resize if we don't have enough capacity */
+    array->capacity = length*2; /* We are greedy */
     array->ptr = dmnsn_realloc(array->ptr, array->obj_size*array->capacity);
   }
 
@@ -197,7 +197,7 @@ DMNSN_INLINE void
 dmnsn_array_set(dmnsn_array *array, size_t i, const void *obj)
 {
   if (i >= dmnsn_array_size(array)) {
-    // Resize if i is out of range
+    /* Resize if i is out of range */
     dmnsn_array_resize(array, i + 1);
   }
   memcpy((char *)array->ptr + array->obj_size*i, obj, array->obj_size);
@@ -259,8 +259,8 @@ dmnsn_array_pop(dmnsn_array *array, void *obj)
 {
   size_t size = dmnsn_array_size(array);
   dmnsn_assert(size > 0, "Array is empty.");
-  dmnsn_array_get(array, size - 1, obj); // Copy the object
-  dmnsn_array_resize(array, size - 1);   // Shrink the array
+  dmnsn_array_get(array, size - 1, obj); /* Copy the object */
+  dmnsn_array_resize(array, size - 1);   /* Shrink the array */
 }
 
 /**
@@ -277,11 +277,11 @@ dmnsn_array_insert(dmnsn_array *array, size_t i, const void *obj)
     size = i + 1;
   dmnsn_array_resize(array, size);
 
-  // Move the elements at and after `i' 1 to the right
+  /* Move the elements at and after `i' 1 to the right */
   memmove((char *)array->ptr + array->obj_size*(i + 1),
           (char *)array->ptr + array->obj_size*i,
           array->obj_size*(size - i - 1));
-  // Insert `obj' at `i'
+  /* Insert `obj' at `i' */
   memcpy((char *)array->ptr + array->obj_size*i, obj, array->obj_size);
 }
 
@@ -295,11 +295,11 @@ dmnsn_array_remove(dmnsn_array *array, size_t i)
 {
   size_t size = dmnsn_array_size(array);
   dmnsn_assert(i < size, "Array index out of bounds.");
-  // Move the array elements after `i' 1 to the left
+  /* Move the array elements after `i' 1 to the left */
   memmove((char *)array->ptr + array->obj_size*i,
           (char *)array->ptr + array->obj_size*(i + 1),
           array->obj_size*(size - i - 1));
-  // Decrease the size by 1
+  /* Decrease the size by 1 */
   dmnsn_array_resize(array, size - 1);
 }
 
@@ -337,7 +337,7 @@ dmnsn_array_sort(dmnsn_array *array, dmnsn_array_comparator_fn *comparator)
   qsort(array->ptr, dmnsn_array_size(array), array->obj_size, comparator);
 }
 
-// Macros to shorten array iteration
+/* Macros to shorten array iteration */
 
 /**
  * Iterate over an array.  For example,
