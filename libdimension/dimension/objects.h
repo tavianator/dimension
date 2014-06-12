@@ -55,7 +55,7 @@ dmnsn_object *dmnsn_new_triangle_fan(dmnsn_pool *pool, dmnsn_vector vertices[], 
  * A smooth triangle fan.
  * @param[in] pool  The memory pool to allocate from.
  * @param[in] vertices  The vertices of the fan, starting in the center.
- * @param[in] vertices  The normal vector for each vertex.
+ * @param[in] normals  The normal vector for each vertex.
  * @param[in] nvertices  The number of vertices.
  * @return A triangle fan.
  */
