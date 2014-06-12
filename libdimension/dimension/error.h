@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -51,15 +51,15 @@
  * @param[in] expr  The expression to assert.
  * @param[in] str   A string to print if the assertion fails.
  */
-#ifdef NDEBUG
-  #define dmnsn_assert(expr, str) ((void)0)
-#else
+#if DMNSN_DEBUG
   #define dmnsn_assert(expr, str)                 \
     do {                                          \
       if (!(expr)) {                              \
         dmnsn_error((str));                       \
       }                                           \
     } while (0)
+#else
+  #define dmnsn_assert(expr, str) ((void)0)
 #endif
 
 /**
@@ -67,10 +67,10 @@
  * Express that a line of code is unreachable.
  * @param[in] str  A string to print if the line is reached.
  */
-#ifdef NDEBUG
-  #define dmnsn_unreachable(str) DMNSN_UNREACHABLE()
-#else
+#if DMNSN_DEBUG
   #define dmnsn_unreachable(str) dmnsn_error((str))
+#else
+  #define dmnsn_unreachable(str) DMNSN_UNREACHABLE()
 #endif
 
 /**

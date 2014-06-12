@@ -82,7 +82,10 @@ AC_ARG_ENABLE([debug],
                               [Perform potentially expensive sanity checks while running [default=no]])],
               [],
               [enable_debug=no])
-if test "$enable_debug" = "no"; then
+if test "$enable_debug" = "yes"; then
+  AC_DEFINE([DMNSN_DEBUG], [1])
+else
+  AC_DEFINE([DMNSN_DEBUG], [0])
   AC_DEFINE([NDEBUG], [1])
 fi
 AM_CONDITIONAL([DEBUG], [test "$enable_debug" = "yes"])

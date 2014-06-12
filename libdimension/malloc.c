@@ -28,7 +28,7 @@
 #include <string.h>
 #include <stdatomic.h>
 
-#ifndef NDEBUG
+#if DMNSN_DEBUG
 static atomic_size_t dmnsn_allocs = ATOMIC_VAR_INIT(0);
 #endif
 
@@ -40,7 +40,7 @@ dmnsn_malloc(size_t size)
     dmnsn_error("Memory allocation failed.");
   }
 
-#ifndef NDEBUG
+#if DMNSN_DEBUG
   atomic_fetch_add(&dmnsn_allocs, 1);
 #endif
 
@@ -50,7 +50,7 @@ dmnsn_malloc(size_t size)
 void *
 dmnsn_realloc(void *ptr, size_t size)
 {
-#ifndef NDEBUG
+#if DMNSN_DEBUG
   if (!ptr) {
     atomic_fetch_add(&dmnsn_allocs, 1);
   }
@@ -74,7 +74,7 @@ dmnsn_strdup(const char *s)
 void
 dmnsn_free(void *ptr)
 {
-#ifndef NDEBUG
+#if DMNSN_DEBUG
   if (ptr) {
     atomic_fetch_sub(&dmnsn_allocs, 1);
   }
@@ -83,7 +83,7 @@ dmnsn_free(void *ptr)
   free(ptr);
 }
 
-#ifndef NDEBUG
+#if DMNSN_DEBUG
 DMNSN_LATE_DESTRUCTOR static void
 dmnsn_leak_check(void)
 {
