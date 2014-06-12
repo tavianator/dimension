@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Benchmark Suite.                   *
  *                                                                       *
@@ -27,6 +27,7 @@ main(void)
   dmnsn_vector vector, vector2;
   dmnsn_matrix matrix, matrix2;
   dmnsn_line line;
+  dmnsn_bounding_box box;
   double result;
 
   sandglass_t sandglass;
@@ -41,7 +42,7 @@ main(void)
   });
   printf("dmnsn_new_vector(): %ld\n", sandglass.grains);
 
-  // dmnsn_matrix_construct()
+  // dmnsn_new_matrix()
   sandglass_bench_fine(&sandglass, {
     matrix = dmnsn_new_matrix(1.0, 1.0, 0.0, 0.0,
                               1.0, 1.0, 1.0, 0.0,
@@ -79,6 +80,13 @@ main(void)
     line = dmnsn_new_line(vector, vector2);
   });
   printf("dmnsn_new_line(): %ld\n", sandglass.grains);
+
+  // dmnsn_new_bounding_box()
+  vector2 = dmnsn_new_vector(3.0, 4.0, 5.0);
+  sandglass_bench_fine(&sandglass, {
+    box = dmnsn_new_bounding_box(vector, vector2);
+  });
+  printf("dmnsn_new_bounding_box(): %ld\n", sandglass.grains);
 
   // dmnsn_vector_add()
   sandglass_bench_fine(&sandglass, {
@@ -172,6 +180,12 @@ main(void)
     line = dmnsn_transform_line(matrix, line);
   });
   printf("dmnsn_transform_line(): %ld\n", sandglass.grains);
+
+  // dmnsn_transform_bounding_box()
+  sandglass_bench_fine(&sandglass, {
+    box = dmnsn_transform_bounding_box(matrix, box);
+  });
+  printf("dmnsn_transform_bounding_box(): %ld\n", sandglass.grains);
 
   // dmnsn_line_point()
   sandglass_bench_fine(&sandglass, {

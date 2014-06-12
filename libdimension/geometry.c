@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -358,48 +358,40 @@ dmnsn_bounding_box
 dmnsn_transform_bounding_box(dmnsn_matrix trans, dmnsn_bounding_box box)
 {
   // Infinite/zero bounding box support
-  if (isinf(box.min.x))
+  if (isinf(box.min.x)) {
     return box;
+  }
 
-  dmnsn_vector corner;
+  // Taking the "absolute value" of the matrix saves some min/max calculations
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      trans.n[i][j] = fabs(trans.n[i][j]);
+    }
+  }
+
+  dmnsn_vector Mx = dmnsn_matrix_column(trans, 0);
+  dmnsn_vector xmin = dmnsn_vector_mul(box.min.x, Mx);
+  dmnsn_vector xmax = dmnsn_vector_mul(box.max.x, Mx);
+
+  dmnsn_vector My = dmnsn_matrix_column(trans, 1);
+  dmnsn_vector ymin = dmnsn_vector_mul(box.min.y, My);
+  dmnsn_vector ymax = dmnsn_vector_mul(box.max.y, My);
+
+  dmnsn_vector Mz = dmnsn_matrix_column(trans, 2);
+  dmnsn_vector zmin = dmnsn_vector_mul(box.min.z, Mz);
+  dmnsn_vector zmax = dmnsn_vector_mul(box.max.z, Mz);
+
+  dmnsn_vector Mt = dmnsn_matrix_column(trans, 3);
+
   dmnsn_bounding_box ret;
-  ret.min = dmnsn_transform_point(trans, box.min);
-  ret.max = ret.min;
 
-  corner  = dmnsn_new_vector(box.min.x, box.min.y, box.max.z);
-  corner  = dmnsn_transform_point(trans, corner);
-  ret.min = dmnsn_vector_min(ret.min, corner);
-  ret.max = dmnsn_vector_max(ret.max, corner);
+  ret.min = dmnsn_vector_add(xmin, ymin);
+  ret.min = dmnsn_vector_add(ret.min, zmin);
+  ret.min = dmnsn_vector_add(ret.min, Mt);
 
-  corner  = dmnsn_new_vector(box.min.x, box.max.y, box.min.z);
-  corner  = dmnsn_transform_point(trans, corner);
-  ret.min = dmnsn_vector_min(ret.min, corner);
-  ret.max = dmnsn_vector_max(ret.max, corner);
-
-  corner  = dmnsn_new_vector(box.min.x, box.max.y, box.max.z);
-  corner  = dmnsn_transform_point(trans, corner);
-  ret.min = dmnsn_vector_min(ret.min, corner);
-  ret.max = dmnsn_vector_max(ret.max, corner);
-
-  corner  = dmnsn_new_vector(box.max.x, box.min.y, box.min.z);
-  corner  = dmnsn_transform_point(trans, corner);
-  ret.min = dmnsn_vector_min(ret.min, corner);
-  ret.max = dmnsn_vector_max(ret.max, corner);
-
-  corner  = dmnsn_new_vector(box.max.x, box.min.y, box.max.z);
-  corner  = dmnsn_transform_point(trans, corner);
-  ret.min = dmnsn_vector_min(ret.min, corner);
-  ret.max = dmnsn_vector_max(ret.max, corner);
-
-  corner  = dmnsn_new_vector(box.max.x, box.max.y, box.min.z);
-  corner  = dmnsn_transform_point(trans, corner);
-  ret.min = dmnsn_vector_min(ret.min, corner);
-  ret.max = dmnsn_vector_max(ret.max, corner);
-
-  corner  = dmnsn_new_vector(box.max.x, box.max.y, box.max.z);
-  corner  = dmnsn_transform_point(trans, corner);
-  ret.min = dmnsn_vector_min(ret.min, corner);
-  ret.max = dmnsn_vector_max(ret.max, corner);
+  ret.max = dmnsn_vector_add(xmax, ymax);
+  ret.max = dmnsn_vector_add(ret.max, zmax);
+  ret.max = dmnsn_vector_add(ret.max, Mt);
 
   return ret;
 }

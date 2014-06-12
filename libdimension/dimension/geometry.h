@@ -170,6 +170,13 @@ dmnsn_new_matrix4(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
   return m;
 }
 
+/** Extract column vectors from a matrix. */
+DMNSN_INLINE dmnsn_vector
+dmnsn_matrix_column(dmnsn_matrix M, unsigned int i)
+{
+  return dmnsn_new_vector(M.n[0][i], M.n[1][i], M.n[2][i]);
+}
+
 /** Return the identity matrix. */
 dmnsn_matrix dmnsn_identity_matrix(void);
 
