@@ -23,7 +23,7 @@
  * Object pigments.
  */
 
-/* Forward-declare dmnsn_pigment */
+// Forward-declare dmnsn_pigment
 typedef struct dmnsn_pigment dmnsn_pigment;
 
 /**
@@ -41,18 +41,18 @@ typedef dmnsn_tcolor dmnsn_pigment_fn(const dmnsn_pigment *pigment,
  */
 typedef void dmnsn_pigment_initialize_fn(dmnsn_pigment *pigment);
 
-/** A pigment. */
+/// A pigment.
 struct dmnsn_pigment {
-  dmnsn_pigment_fn *pigment_fn; /**< The pigment callback. */
-  dmnsn_pigment_initialize_fn *initialize_fn; /**< The initializer callback. */
+  dmnsn_pigment_fn *pigment_fn; ///< The pigment callback.
+  dmnsn_pigment_initialize_fn *initialize_fn; ///< The initializer callback.
 
-  dmnsn_matrix trans; /**< Transformation matrix. */
-  dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
+  dmnsn_matrix trans; ///< Transformation matrix.
+  dmnsn_matrix trans_inv; ///< The inverse of the transformation matrix.
 
-  /** Quick color -- used for low-quality renders. */
+  /// Quick color -- used for low-quality renders.
   dmnsn_tcolor quick_color;
 
-  bool initialized; /** @internal Whether the pigment is initialized. */
+  bool initialized; /// @internal Whether the pigment is initialized.
 };
 
 /**

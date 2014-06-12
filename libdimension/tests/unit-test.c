@@ -60,8 +60,8 @@ __attribute__((destructor))
 static void
 dmnsn_test_cleanup(void)
 {
-  /* Can't go in dmnsn_test_teardown(), because it should run even if the test
-     fails. */
+  // Can't go in dmnsn_test_teardown(), because it should run even if the test
+  // fails
   dmnsn_delete_dictionary(dmnsn_test_cases);
 }
 

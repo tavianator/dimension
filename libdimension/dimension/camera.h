@@ -23,7 +23,7 @@
  * Cameras.
  */
 
-/* Forward-declare dmnsn_camera */
+// Forward-declare dmnsn_camera
 typedef struct dmnsn_camera dmnsn_camera;
 
 /**
@@ -36,12 +36,12 @@ typedef struct dmnsn_camera dmnsn_camera;
 typedef dmnsn_line dmnsn_camera_ray_fn(const dmnsn_camera *camera,
                                        double x, double y);
 
-/** A camera. */
+/// A camera.
 struct dmnsn_camera {
-  /* Callback functions */
-  dmnsn_camera_ray_fn *ray_fn; /**< Camera ray callback. */
+  // Callback functions
+  dmnsn_camera_ray_fn *ray_fn; ///< Camera ray callback.
 
-  dmnsn_matrix trans; /**< Transformation matrix. */
+  dmnsn_matrix trans; ///< Transformation matrix.
 };
 
 /**

@@ -24,7 +24,7 @@
  * used for pigments and normals.
  */
 
-/* Forward-declare dmnsn_pattern */
+// Forward-declare dmnsn_pattern
 typedef struct dmnsn_pattern dmnsn_pattern;
 
 /**
@@ -35,9 +35,9 @@ typedef struct dmnsn_pattern dmnsn_pattern;
  */
 typedef double dmnsn_pattern_fn(const dmnsn_pattern *pattern, dmnsn_vector v);
 
-/** A pattern. */
+/// A pattern.
 struct dmnsn_pattern {
-  dmnsn_pattern_fn *pattern_fn; /**< The pattern callback. */
+  dmnsn_pattern_fn *pattern_fn; ///< The pattern callback.
 };
 
 /**

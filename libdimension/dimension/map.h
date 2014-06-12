@@ -23,7 +23,7 @@
  * Generic maps (backend for pigment_maps, etc.).
  */
 
-/** A map. */
+/// A map.
 typedef struct dmnsn_map dmnsn_map;
 
 /**

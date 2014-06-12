@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2014 Tavian Barnes <tavianator@tavianator.com>          *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -19,20 +19,14 @@
 
 /**
  * @file
- * Ensure that dimension.h can be included in a C++ program and behave properly.
+ * Check strict C99 compliance of headers.
  */
 
-#include "tests.h"
-#include <cstdlib>
+#include "dimension.h"
+#include <stddef.h>
 
 int
 main(void)
 {
-  // Treat warnings as errors for tests
-  dmnsn_die_on_warnings(true);
-
-  // Make sure we can to bit-ops on this enum type
-  dmnsn_quality quality = DMNSN_RENDER_PIGMENT | DMNSN_RENDER_LIGHTS;
-
   return EXIT_SUCCESS;
 }

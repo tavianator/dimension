@@ -33,6 +33,7 @@ check_PROGRAMS    = warning.test                                               \
                     png.test                                                   \
                     gl.test                                                    \
                     render.test                                                \
+                    c99.test                                                   \
                     cxx.test
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = warning-as-error.test error.test
@@ -51,16 +52,16 @@ libdimension_tests_la_SOURCES = test_canvas.c                                  \
                                 tests.h
 libdimension_tests_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
-libdimension_unit_test_la_SOURCES = unit-test.c
-libdimension_unit_test_la_CFLAGS  = $(CHECK_CFLAGS) $(AM_CFLAGS)
-libdimension_unit_test_la_LIBADD  = $(CHECK_LIBS) libdimension-tests.la
-
 if GLX
 libdimension_tests_la_SOURCES += display.c
 libdimension_tests_la_LIBADD += -lX11 -lGL
 else
 libdimension_tests_la_SOURCES += display-stubs.c
 endif
+
+libdimension_unit_test_la_SOURCES = unit-test.c
+libdimension_unit_test_la_CFLAGS  = $(CHECK_CFLAGS) $(AM_CFLAGS)
+libdimension_unit_test_la_LIBADD  = $(CHECK_LIBS) $(top_builddir)/libdimension/libdimension.la
 
 warning_test_SOURCES = warning.c
 warning_test_LDADD   = libdimension-tests.la
@@ -94,6 +95,11 @@ gl_test_LDADD   = libdimension-tests.la
 
 render_test_SOURCES = render.c
 render_test_LDADD   = libdimension-tests.la
+
+c99_test_SOURCES = c99.c
+c99_test_LDADD   = libdimension-tests.la
+
+c99.o: CFLAGS += -std=c99 -Wpedantic
 
 cxx_test_SOURCES = cxx.cpp
 cxx_test_LDADD   = libdimension-tests.la

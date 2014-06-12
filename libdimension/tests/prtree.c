@@ -17,8 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-/*
- * Basic tests of PR-trees
+/**
+ * @file
+ * Basic tests of PR-trees.
  */
 
 #include "../platform.c"

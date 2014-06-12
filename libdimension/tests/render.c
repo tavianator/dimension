@@ -285,9 +285,7 @@ dmnsn_test_scene_add_objects(dmnsn_pool *pool, dmnsn_scene *scene)
   dmnsn_test_scene_add_ground(pool, scene);
 }
 
-/*
- * Test scene
- */
+/// Test scene.
 static dmnsn_scene *
 dmnsn_new_test_scene(dmnsn_pool *pool)
 {

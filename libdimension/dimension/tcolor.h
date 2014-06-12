@@ -23,19 +23,19 @@
  * Colors with transparency information.
  */
 
-/** A transparent color. */
+/// A transparent color.
 typedef struct dmnsn_tcolor {
-  dmnsn_color c; /**< Color. */
-  double T;      /**< Transparency. */
-  double F;      /**< Proportion of filtered transparency. */
+  dmnsn_color c; ///< Color.
+  double T;      ///< Transparency.
+  double F;      ///< Proportion of filtered transparency.
 } dmnsn_tcolor;
 
-/** A standard format string for colors. */
+/// A standard format string for colors.
 #define DMNSN_TCOLOR_FORMAT "TColor<%g, %g, %g, %g, %g>"
-/** The appropriate arguements to printf() a color. */
+/// The appropriate arguements to printf() a color.
 #define DMNSN_TCOLOR_PRINTF(tc) (tc).c.R, (tc).c.G, (tc).c.B, (tc).T, (tc).F
 
-/** Create a tcolor. */
+/// Create a tcolor.
 DMNSN_INLINE dmnsn_tcolor
 dmnsn_new_tcolor(dmnsn_color c, double T, double F)
 {
@@ -43,10 +43,10 @@ dmnsn_new_tcolor(dmnsn_color c, double T, double F)
   return ret;
 }
 
-/** Convert a dmnsn_color into a dmnsn_tcolor. */
+/// Convert a dmnsn_color into a dmnsn_tcolor.
 #define DMNSN_TCOLOR(c) dmnsn_new_tcolor(c, 0.0, 0.0)
 
-/** Create a tcolor with individually-specified components. */
+/// Create a tcolor with individually-specified components.
 DMNSN_INLINE dmnsn_tcolor
 dmnsn_new_tcolor5(double R, double G, double B, double T, double F)
 {
@@ -54,7 +54,7 @@ dmnsn_new_tcolor5(double R, double G, double B, double T, double F)
   return ret;
 }
 
-/** Return the color at \p n on a gradient from \p c1 at 0 to \p c2 at 1. */
+/// Return the color at \p n on a gradient from \p c1 at 0 to \p c2 at 1.
 DMNSN_INLINE dmnsn_tcolor
 dmnsn_tcolor_gradient(dmnsn_tcolor c1, dmnsn_tcolor c2, double n)
 {
@@ -65,7 +65,7 @@ dmnsn_tcolor_gradient(dmnsn_tcolor c1, dmnsn_tcolor c2, double n)
   );
 }
 
-/** Filter \p light through \p filter. */
+/// Filter \p light through \p filter.
 DMNSN_INLINE dmnsn_color
 dmnsn_tcolor_filter(dmnsn_color light, dmnsn_tcolor filter)
 {
@@ -75,7 +75,7 @@ dmnsn_tcolor_filter(dmnsn_color light, dmnsn_tcolor filter)
   return dmnsn_color_add(filtered, transmitted);
 }
 
-/** Remove the filtered component of a tcolor. */
+/// Remove the filtered component of a tcolor.
 DMNSN_INLINE dmnsn_tcolor
 dmnsn_tcolor_remove_filter(dmnsn_tcolor tcolor)
 {
@@ -89,7 +89,7 @@ dmnsn_tcolor_remove_filter(dmnsn_tcolor tcolor)
   return tcolor;
 }
 
-/** Saturate the tcolor components to [0.0, 1.0]. */
+/// Saturate the tcolor components to [0.0, 1.0].
 DMNSN_INLINE dmnsn_tcolor
 dmnsn_tcolor_saturate(dmnsn_tcolor tcolor)
 {
@@ -99,14 +99,14 @@ dmnsn_tcolor_saturate(dmnsn_tcolor tcolor)
   return tcolor;
 }
 
-/** Return whether a tcolor contains any NaN components. */
+/// Return whether a tcolor contains any NaN components.
 DMNSN_INLINE bool
 dmnsn_tcolor_isnan(dmnsn_tcolor tcolor)
 {
   return dmnsn_color_isnan(tcolor.c) || isnan(tcolor.T) || isnan(tcolor.F);
 }
 
-/* Standard tcolors */
+// Standard tcolors
 
-/** Clear. */
+/// Clear.
 #define dmnsn_clear dmnsn_new_tcolor5(0.0, 0.0, 0.0, 1.0, 0.0)

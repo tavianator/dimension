@@ -107,9 +107,7 @@ void dmnsn_test_teardown(void);
   static void                                                           \
   fixture(void)
 
-/*
- * Test canvas
- */
+/// Test canvas.
 void dmnsn_paint_test_canvas(dmnsn_canvas *canvas);
 
 /*

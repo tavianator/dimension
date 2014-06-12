@@ -23,14 +23,14 @@
  * A platform-agnostic timer abstraction.
  */
 
-/** A platform-agnotic timer. */
+/// A platform-agnotic timer.
 typedef struct dmnsn_timer {
-  double real;   /**< Wall-clock time. */
-  double user;   /**< Time spent executing. */
-  double system; /**< Time spent waiting for the system. */
+  double real;   ///< Wall-clock time.
+  double user;   ///< Time spent executing.
+  double system; ///< Time spent waiting for the system.
 } dmnsn_timer;
 
-/** A standard format string for timers. */
+/// A standard format string for timers.
 #define DMNSN_TIMER_FORMAT "%.2fs (user: %.2fs; system: %.2fs)"
 /**
  * The appropriate arguments to printf() a timer.  For example:

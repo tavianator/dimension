@@ -159,7 +159,7 @@ DMNSN_TEST(cubic, one_root)
 
 DMNSN_TEST(cubic, two_roots)
 {
-  /* poly[] = (x - 1)*(x - 4)^2 **/
+  // poly[] = (x - 1)*(x - 4)^2
   static const double poly[] = {
     [3] =   1.0,
     [2] =  -9.0,

@@ -25,7 +25,7 @@
  * fails, they instead call dmnsn_error().
  */
 
-#include <stddef.h> /* For size_t */
+#include <stddef.h> // For size_t
 
 /**
  * Allocate some memory.  Always use dmnsn_free() to free this memory, never

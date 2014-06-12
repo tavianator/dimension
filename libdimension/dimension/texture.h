@@ -23,15 +23,15 @@
  * Object textures.
  */
 
-/** A complete texture. */
+/// A complete texture.
 typedef struct {
-  dmnsn_pigment *pigment; /**< Pigment. */
-  dmnsn_finish finish;    /**< Finish. */
+  dmnsn_pigment *pigment; ///< Pigment.
+  dmnsn_finish finish;    ///< Finish.
 
-  dmnsn_matrix trans;     /**< Transformation matrix. */
-  dmnsn_matrix trans_inv; /**< The inverse of the transformation matrix. */
+  dmnsn_matrix trans;     ///< Transformation matrix.
+  dmnsn_matrix trans_inv; ///< The inverse of the transformation matrix.
 
-  bool initialized; /**< @internal Whether the texture is initialized yet. */
+  bool initialized; ///< @internal Whether the texture is initialized yet.
 } dmnsn_texture;
 
 /**
