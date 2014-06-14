@@ -369,29 +369,20 @@ dmnsn_transform_bounding_box(dmnsn_matrix trans, dmnsn_bounding_box box)
     }
   }
 
-  dmnsn_vector Mx = dmnsn_matrix_column(trans, 0);
-  dmnsn_vector xmin = dmnsn_vector_mul(box.min.x, Mx);
-  dmnsn_vector xmax = dmnsn_vector_mul(box.max.x, Mx);
-
-  dmnsn_vector My = dmnsn_matrix_column(trans, 1);
-  dmnsn_vector ymin = dmnsn_vector_mul(box.min.y, My);
-  dmnsn_vector ymax = dmnsn_vector_mul(box.max.y, My);
+  dmnsn_vector Mt = dmnsn_matrix_column(trans, 3);
+  dmnsn_bounding_box ret = { Mt, Mt };
 
   dmnsn_vector Mz = dmnsn_matrix_column(trans, 2);
-  dmnsn_vector zmin = dmnsn_vector_mul(box.min.z, Mz);
-  dmnsn_vector zmax = dmnsn_vector_mul(box.max.z, Mz);
+  ret.min = dmnsn_vector_add(ret.min, dmnsn_vector_mul(box.min.z, Mz));
+  ret.max = dmnsn_vector_add(ret.max, dmnsn_vector_mul(box.max.z, Mz));
 
-  dmnsn_vector Mt = dmnsn_matrix_column(trans, 3);
+  dmnsn_vector My = dmnsn_matrix_column(trans, 1);
+  ret.min = dmnsn_vector_add(ret.min, dmnsn_vector_mul(box.min.y, My));
+  ret.max = dmnsn_vector_add(ret.max, dmnsn_vector_mul(box.max.y, My));
 
-  dmnsn_bounding_box ret;
-
-  ret.min = dmnsn_vector_add(xmin, ymin);
-  ret.min = dmnsn_vector_add(ret.min, zmin);
-  ret.min = dmnsn_vector_add(ret.min, Mt);
-
-  ret.max = dmnsn_vector_add(xmax, ymax);
-  ret.max = dmnsn_vector_add(ret.max, zmax);
-  ret.max = dmnsn_vector_add(ret.max, Mt);
+  dmnsn_vector Mx = dmnsn_matrix_column(trans, 0);
+  ret.min = dmnsn_vector_add(ret.min, dmnsn_vector_mul(box.min.x, Mx));
+  ret.max = dmnsn_vector_add(ret.max, dmnsn_vector_mul(box.max.x, Mx));
 
   return ret;
 }
