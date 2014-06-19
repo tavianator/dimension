@@ -52,12 +52,6 @@ extern "C" {
  */
 typedef void dmnsn_callback_fn(void *ptr);
 
-/**
- * Destructor callback type.
- * @param[in,out] ptr  The pointer to free.
- */
-typedef void dmnsn_free_fn(void *ptr);
-
 /* Include all the libdimension headers */
 #include <dimension/compiler.h>
 #include <dimension/error.h>
