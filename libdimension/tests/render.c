@@ -316,7 +316,7 @@ main(void)
   // Optimize the canvas for PNG export
   bool have_png = true;
   errno = 0;
-  if (dmnsn_png_optimize_canvas(scene->canvas) != 0) {
+  if (dmnsn_png_optimize_canvas(pool, scene->canvas) != 0) {
     if (errno == ENOSYS) {
       have_png = false;
     } else {
@@ -328,7 +328,7 @@ main(void)
   // Optimize the canvas for GL drawing
   bool have_gl = true;
   errno = 0;
-  if (dmnsn_gl_optimize_canvas(scene->canvas) != 0) {
+  if (dmnsn_gl_optimize_canvas(pool, scene->canvas) != 0) {
     if (errno == ENOSYS) {
       have_gl = false;
     } else {

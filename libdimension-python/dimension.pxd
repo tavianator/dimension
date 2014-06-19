@@ -219,13 +219,13 @@ cdef extern from "../libdimension/dimension.h":
 
   void dmnsn_canvas_clear(dmnsn_canvas *canvas, dmnsn_tcolor tcolor)
 
-  int dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
+  int dmnsn_png_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas)
   int dmnsn_png_write_canvas(dmnsn_canvas *canvas, FILE *file)
   dmnsn_future *dmnsn_png_write_canvas_async(dmnsn_canvas *canvas, FILE *file)
   dmnsn_canvas *dmnsn_png_read_canvas(dmnsn_pool *pool, FILE *file)
   dmnsn_future *dmnsn_png_read_canvas_async(dmnsn_canvas **canvas, dmnsn_pool *pool, FILE *file)
 
-  int dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
+  int dmnsn_gl_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas)
   int dmnsn_gl_write_canvas(dmnsn_canvas *canvas)
 
   ############

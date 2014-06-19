@@ -25,50 +25,37 @@
 
 #include "dimension-internal.h"
 
-/// cleanup_fn for canvases.
-static void dmnsn_canvas_cleanup(void *ptr);
-
 dmnsn_canvas *
 dmnsn_new_canvas(dmnsn_pool *pool, size_t width, size_t height)
 {
-  dmnsn_canvas *canvas = DMNSN_PALLOC_TIDY(pool, dmnsn_canvas, dmnsn_canvas_cleanup);
+  dmnsn_canvas *canvas = DMNSN_PALLOC(pool, dmnsn_canvas);
   canvas->width = width;
   canvas->height = height;
-  canvas->optimizers = DMNSN_NEW_ARRAY(dmnsn_canvas_optimizer);
+  canvas->optimizers = DMNSN_PALLOC_ARRAY(pool, dmnsn_canvas_optimizer *);
   canvas->pixels = dmnsn_palloc(pool, sizeof(dmnsn_tcolor)*width*height);
   return canvas;
 }
 
 void
-dmnsn_canvas_cleanup(void *ptr)
+dmnsn_init_canvas_optimizer(dmnsn_canvas_optimizer *optimizer)
 {
-  dmnsn_canvas *canvas = ptr;
-
-  // Free the optimizers
-  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    if (i->free_fn) {
-      i->free_fn(i->ptr);
-    }
-  }
-  dmnsn_delete_array(canvas->optimizers);
+  optimizer->optimizer_fn = NULL;
 }
 
 // Set a canvas optimizer
 void
-dmnsn_canvas_optimize(dmnsn_canvas *canvas,
-                      const dmnsn_canvas_optimizer *optimizer)
+dmnsn_canvas_optimize(dmnsn_canvas *canvas, const dmnsn_canvas_optimizer *optimizer)
 {
-  dmnsn_array_push(canvas->optimizers, optimizer);
+  dmnsn_array_push(canvas->optimizers, &optimizer);
 }
 
 // Find an optimizer if it's already installed
 dmnsn_canvas_optimizer *
-dmnsn_canvas_find_optimizer(const dmnsn_canvas *canvas,
-                            dmnsn_canvas_optimizer_fn *optimizer_fn)
+dmnsn_canvas_find_optimizer(const dmnsn_canvas *canvas, dmnsn_canvas_optimizer_fn *optimizer_fn)
 {
-  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    if (i->optimizer_fn == optimizer_fn) {
-      return i;
+  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer **, i, canvas->optimizers) {
+    if ((*i)->optimizer_fn == optimizer_fn) {
+      return *i;
     }
   }
 
@@ -88,8 +75,8 @@ dmnsn_canvas_set_pixel(dmnsn_canvas *canvas, size_t x, size_t y,
   canvas->pixels[y*canvas->width + x] = tcolor;
 
   // Call the optimizers
-  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer *, i, canvas->optimizers) {
-    i->optimizer_fn(canvas, i->ptr, x, y);
+  DMNSN_ARRAY_FOREACH (dmnsn_canvas_optimizer **, i, canvas->optimizers) {
+    (*i)->optimizer_fn(*i, canvas, x, y);
   }
 }
 

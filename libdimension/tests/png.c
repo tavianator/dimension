@@ -34,7 +34,7 @@ main(void)
   dmnsn_canvas *canvas = dmnsn_new_canvas(pool, 768, 480);
 
   // Optimize the canvas for PNG export
-  if (dmnsn_png_optimize_canvas(canvas) != 0) {
+  if (dmnsn_png_optimize_canvas(pool, canvas) != 0) {
     fprintf(stderr, "--- Couldn't optimize canvas for PNG! ---\n");
     ret = EXIT_FAILURE;
     goto exit;

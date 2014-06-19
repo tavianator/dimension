@@ -27,10 +27,11 @@
 
 /**
  * Optimize a canvas for PNG exporting
+ * @param[in] pool  The memory pool to allocate from.
  * @param[in,out] canvas  The canvas to optimize.
  * @return Whether the canvas was successfully optimized.
  */
-int dmnsn_png_optimize_canvas(dmnsn_canvas *canvas);
+int dmnsn_png_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas);
 
 /**
  * Write a canvas to a file in PNG format.

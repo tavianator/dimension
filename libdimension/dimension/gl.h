@@ -25,10 +25,11 @@
 
 /**
  * Optimize a canvas for GL drawing
+ * @param[in] pool  The memory pool to allocate from.
  * @param[in,out] canvas  The canvas to optimize.
  * @return Whether the canvas was successfully optimized.
  */
-int dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas);
+int dmnsn_gl_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas);
 
 /**
  * Write canvas to GL framebuffer.

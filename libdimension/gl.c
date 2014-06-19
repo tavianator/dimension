@@ -30,9 +30,9 @@
 
 // Optimize canvas for GL drawing
 int
-dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
+dmnsn_gl_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas)
 {
-  dmnsn_rgba8_optimize_canvas(canvas);
+  dmnsn_rgba8_optimize_canvas(pool, canvas);
   return 0;
 }
 
@@ -44,10 +44,9 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
   size_t height = canvas->height;
 
   // Check if we can optimize this
-  dmnsn_canvas_optimizer *optimizer =
-    dmnsn_canvas_find_optimizer(canvas, dmnsn_rgba8_optimizer_fn);
-  if (optimizer) {
-    glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, optimizer->ptr);
+  dmnsn_rgba8_optimizer *rgba8 = (dmnsn_rgba8_optimizer *)dmnsn_canvas_find_optimizer(canvas, dmnsn_rgba8_optimizer_fn);
+  if (rgba8) {
+    glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgba8->data);
     return glGetError() == GL_NO_ERROR ? 0 : 1;
   }
 

@@ -27,7 +27,7 @@
 #include <errno.h>
 
 int
-dmnsn_gl_optimize_canvas(dmnsn_canvas *canvas)
+dmnsn_gl_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas)
 {
   errno = ENOSYS;
   return -1;

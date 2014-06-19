@@ -56,7 +56,7 @@ main(void)
    */
 
   // Optimize the canvas for GL drawing
-  if (dmnsn_gl_optimize_canvas(canvas) != 0) {
+  if (dmnsn_gl_optimize_canvas(pool, canvas) != 0) {
     dmnsn_delete_pool(pool);
     fprintf(stderr, "--- Couldn't optimize canvas for GL! ---\n");
     return EXIT_FAILURE;

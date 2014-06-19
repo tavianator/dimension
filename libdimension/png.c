@@ -31,9 +31,9 @@
 #include <stdint.h>
 
 int
-dmnsn_png_optimize_canvas(dmnsn_canvas *canvas)
+dmnsn_png_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas)
 {
-  dmnsn_rgba16_optimize_canvas(canvas);
+  dmnsn_rgba16_optimize_canvas(pool, canvas);
   return 0;
 }
 
@@ -171,12 +171,11 @@ dmnsn_png_write_canvas_thread(void *ptr)
   }
 
   // Check if we can optimize this
-  dmnsn_canvas_optimizer *optimizer =
-    dmnsn_canvas_find_optimizer(payload->canvas, dmnsn_rgba16_optimizer_fn);
-  if (optimizer) {
+  dmnsn_rgba16_optimizer *rgba16 = (dmnsn_rgba16_optimizer *)dmnsn_canvas_find_optimizer(payload->canvas, dmnsn_rgba16_optimizer_fn);
+  if (rgba16) {
     for (size_t y = 0; y < height; ++y) {
       // Invert the rows.  PNG coordinates are fourth quadrant.
-      uint16_t *row_opt = (uint16_t *)optimizer->ptr + 4*(height - y - 1)*width;
+      uint16_t *row_opt = rgba16->data + 4*(height - y - 1)*width;
       png_write_row(png_ptr, (png_bytep)row_opt);
       dmnsn_future_increment(payload->future);
     }

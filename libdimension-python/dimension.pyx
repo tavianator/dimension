@@ -666,12 +666,12 @@ cdef class Canvas:
 
   def optimize_PNG(self):
     """Optimize a canvas for PNG output."""
-    if dmnsn_png_optimize_canvas(self._canvas) != 0:
+    if dmnsn_png_optimize_canvas(_get_pool(), self._canvas) != 0:
       _raise_OSError()
 
   def optimize_GL(self):
     """Optimize a canvas for OpenGL output."""
-    if dmnsn_gl_optimize_canvas(self._canvas) != 0:
+    if dmnsn_gl_optimize_canvas(_get_pool(), self._canvas) != 0:
       _raise_OSError()
 
   def clear(self, c):

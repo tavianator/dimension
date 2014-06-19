@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -23,16 +23,26 @@
  * RGBA canvas optimizer interface, used by image optimizers.
  */
 
+#include <stdint.h>
+
+/// RGBA8 optimizer type.
+typedef struct dmnsn_rgba8_optimizer {
+  dmnsn_canvas_optimizer optimizer;
+  uint8_t data[];
+} dmnsn_rgba8_optimizer;
+
+/// RGBA16 optimizer type.
+typedef struct dmnsn_rgba16_optimizer {
+  dmnsn_canvas_optimizer optimizer;
+  uint16_t data[];
+} dmnsn_rgba16_optimizer;
+
 /// Apply the RGBA8 optimizer to a canvas.
-DMNSN_INTERNAL void dmnsn_rgba8_optimize_canvas(dmnsn_canvas *canvas);
+DMNSN_INTERNAL void dmnsn_rgba8_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas);
 /// Apply the RGBA16 optimizer to a canvas.
-DMNSN_INTERNAL void dmnsn_rgba16_optimize_canvas(dmnsn_canvas *canvas);
+DMNSN_INTERNAL void dmnsn_rgba16_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas);
 
 /// RGBA8 optimizer callback.
-DMNSN_INTERNAL void dmnsn_rgba8_optimizer_fn(const dmnsn_canvas *canvas,
-                                             void *ptr,
-                                             size_t x, size_t y);
+DMNSN_INTERNAL void dmnsn_rgba8_optimizer_fn(dmnsn_canvas_optimizer *optimizer, const dmnsn_canvas *canvas, size_t x, size_t y);
 /// RGBA16 optimizer callback.
-DMNSN_INTERNAL void dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas,
-                                              void *ptr,
-                                              size_t x, size_t y);
+DMNSN_INTERNAL void dmnsn_rgba16_optimizer_fn(dmnsn_canvas_optimizer *optimizer, const dmnsn_canvas *canvas, size_t x, size_t y);

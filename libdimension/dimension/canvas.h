@@ -41,23 +41,22 @@ typedef struct dmnsn_canvas {
   dmnsn_tcolor *pixels;
 } dmnsn_canvas;
 
+/* Forward-declare dmnsn_canvas_optimizer. */
+typedef struct dmnsn_canvas_optimizer dmnsn_canvas_optimizer;
+
 /**
  * Canvas optimizer callback type.
+ * @param[in] optimizer  The canvas optimizer.
  * @param[in] canvas  The canvas that was just updated.
- * @param[in] ptr     The canvas optimizer's data pointer.
- * @param[in] x       The x-coordinate that was just updated.
- * @param[in] y       The y-coordinate that was just updated.
+ * @param[in] x  The x-coordinate that was just updated.
+ * @param[in] y  The y-coordinate that was just updated.
  */
-typedef void dmnsn_canvas_optimizer_fn(const dmnsn_canvas *canvas, void *ptr,
-                                       size_t x, size_t y);
+typedef void dmnsn_canvas_optimizer_fn(dmnsn_canvas_optimizer *optimizer, const dmnsn_canvas *canvas, size_t x, size_t y);
 
 /** Canvas optimizer. */
-typedef struct dmnsn_canvas_optimizer {
+struct dmnsn_canvas_optimizer {
   dmnsn_canvas_optimizer_fn *optimizer_fn; /**< Optimizer callback. */
-  dmnsn_free_fn             *free_fn;      /**< Destructor callback. */
-
-  void *ptr; /**< Generic pointer. */
-} dmnsn_canvas_optimizer;
+};
 
 /**
  * Allocate a new canvas.
@@ -67,6 +66,12 @@ typedef struct dmnsn_canvas_optimizer {
  * @return The allocated canvas.
  */
 dmnsn_canvas *dmnsn_new_canvas(dmnsn_pool *pool, size_t width, size_t height);
+
+/**
+ * Initialize a dmnsn_canvas_optimizer field
+ * @param[in] optimizer  The optimizer to initialize.
+ */
+void dmnsn_init_canvas_optimizer(dmnsn_canvas_optimizer *optimizer);
 
 /**
  * Set a canvas optimizer

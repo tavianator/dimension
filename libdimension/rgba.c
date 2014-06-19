@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -27,40 +27,45 @@
 #include <stdint.h>
 
 void
-dmnsn_rgba8_optimize_canvas(dmnsn_canvas *canvas)
+dmnsn_rgba8_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas)
 {
   if (dmnsn_canvas_find_optimizer(canvas, dmnsn_rgba8_optimizer_fn)) {
     return;
   }
 
-  dmnsn_canvas_optimizer optimizer;
-  optimizer.optimizer_fn = dmnsn_rgba8_optimizer_fn;
-  optimizer.free_fn = dmnsn_free;
-  optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(uint8_t));
+  size_t ndata = 4*canvas->width*canvas->height;
+  dmnsn_rgba8_optimizer *rgba8 = dmnsn_palloc(pool, sizeof(dmnsn_rgba8_optimizer) + ndata*sizeof(uint8_t));
 
-  dmnsn_canvas_optimize(canvas, &optimizer);
+  dmnsn_canvas_optimizer *optimizer = &rgba8->optimizer;
+  dmnsn_init_canvas_optimizer(optimizer);
+  optimizer->optimizer_fn = dmnsn_rgba8_optimizer_fn;
+
+  dmnsn_canvas_optimize(canvas, optimizer);
 }
 
 void
-dmnsn_rgba16_optimize_canvas(dmnsn_canvas *canvas)
+dmnsn_rgba16_optimize_canvas(dmnsn_pool *pool, dmnsn_canvas *canvas)
 {
   if (dmnsn_canvas_find_optimizer(canvas, dmnsn_rgba16_optimizer_fn)) {
     return;
   }
 
-  dmnsn_canvas_optimizer optimizer;
-  optimizer.optimizer_fn = dmnsn_rgba16_optimizer_fn;
-  optimizer.free_fn = dmnsn_free;
-  optimizer.ptr = dmnsn_malloc(4*canvas->width*canvas->height*sizeof(uint16_t));
+  size_t ndata = 4*canvas->width*canvas->height;
+  dmnsn_rgba16_optimizer *rgba16 = dmnsn_palloc(pool, sizeof(dmnsn_rgba16_optimizer) + ndata*sizeof(uint16_t));
 
-  dmnsn_canvas_optimize(canvas, &optimizer);
+  dmnsn_canvas_optimizer *optimizer = &rgba16->optimizer;
+  dmnsn_init_canvas_optimizer(optimizer);
+  optimizer->optimizer_fn = dmnsn_rgba16_optimizer_fn;
+
+  dmnsn_canvas_optimize(canvas, optimizer);
 }
 
 void
-dmnsn_rgba8_optimizer_fn(const dmnsn_canvas *canvas, void *ptr,
-                         size_t x, size_t y)
+dmnsn_rgba8_optimizer_fn(dmnsn_canvas_optimizer *optimizer, const dmnsn_canvas *canvas, size_t x, size_t y)
 {
-  uint8_t *pixel = (uint8_t *)ptr + 4*(y*canvas->width + x);
+  dmnsn_rgba8_optimizer *rgba8 = (dmnsn_rgba8_optimizer *)optimizer;
+
+  uint8_t *pixel = rgba8->data + 4*(y*canvas->width + x);
   dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(canvas, x, y);
   tcolor = dmnsn_tcolor_remove_filter(tcolor);
   tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
@@ -73,10 +78,11 @@ dmnsn_rgba8_optimizer_fn(const dmnsn_canvas *canvas, void *ptr,
 }
 
 void
-dmnsn_rgba16_optimizer_fn(const dmnsn_canvas *canvas, void *ptr,
-                          size_t x, size_t y)
+dmnsn_rgba16_optimizer_fn(dmnsn_canvas_optimizer *optimizer, const dmnsn_canvas *canvas, size_t x, size_t y)
 {
-  uint16_t *pixel = (uint16_t *)ptr + 4*(y*canvas->width + x);
+  dmnsn_rgba16_optimizer *rgba16 = (dmnsn_rgba16_optimizer *)optimizer;
+
+  uint16_t *pixel = rgba16->data + 4*(y*canvas->width + x);
   dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(canvas, x, y);
   tcolor = dmnsn_tcolor_remove_filter(tcolor);
   tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
