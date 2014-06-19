@@ -59,10 +59,10 @@ callback(void *ptr)
 
 DMNSN_TEST(pool, callback)
 {
-  DMNSN_PALLOC_TIDY(pool, int, NULL);
+  DMNSN_PALLOC(pool, int);
   DMNSN_PALLOC_TIDY(pool, int, callback);
   DMNSN_PALLOC_TIDY(pool, int, callback);
-  DMNSN_PALLOC_TIDY(pool, int, NULL);
+  DMNSN_PALLOC(pool, int);
 
   dmnsn_delete_pool(pool);
   pool = NULL;
