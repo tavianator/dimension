@@ -23,7 +23,7 @@
  * Generic maps.
  */
 
-#include "dimension.h"
+#include "dimension-internal.h"
 
 /// dmnsn_map definition.
 struct dmnsn_map {
@@ -49,8 +49,9 @@ dmnsn_new_map(dmnsn_pool *pool, size_t size)
 void
 dmnsn_map_add_entry(dmnsn_map *map, double n, const void *obj)
 {
-  char mem[sizeof(dmnsn_map_entry) + map->obj_size];
-  dmnsn_map_entry *entry = (dmnsn_map_entry *)mem;
+  dmnsn_map_entry *entry;
+  DMNSN_ALLOCA(entry, sizeof(dmnsn_map_entry) + map->obj_size);
+
   entry->n = n;
   memcpy(entry->object, obj, map->obj_size);
 
@@ -91,11 +92,10 @@ dmnsn_map_evaluate(const dmnsn_map *map, double n,
     return;
   }
 
-  const dmnsn_map_entry *last = dmnsn_array_last(map->array);
   ptrdiff_t skip = sizeof(dmnsn_map_entry) + map->obj_size;
-  for (; entry <= last;
-       entry = (const dmnsn_map_entry *)((const char *)entry + skip))
-  {
+  for (const dmnsn_map_entry *last = dmnsn_array_last(map->array);
+       entry <= last;
+       entry = (const dmnsn_map_entry *)((const char *)entry + skip)) {
     n1 = n2;
     o1 = o2;
 

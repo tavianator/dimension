@@ -53,10 +53,10 @@ void
 dmnsn_backtrace(FILE *file)
 {
 #if DMNSN_BACKTRACE
-  const size_t size = 128;
-  void *buffer[size];
+#define DMNSN_BACKTRACE_SIZE 128
+  void *buffer[DMNSN_BACKTRACE_SIZE];
 
-  int nptrs = backtrace(buffer, size);
+  int nptrs = backtrace(buffer, DMNSN_BACKTRACE_SIZE);
   int fd = fileno(file);
   if (fd != -1) {
     backtrace_symbols_fd(buffer, nptrs, fd);

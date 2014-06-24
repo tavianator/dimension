@@ -32,18 +32,15 @@
  * Report a warning.
  * @param[in] str  A string to print explaining the warning.
  */
-#define dmnsn_warning(str)                                              \
-  dmnsn_report_error(false, DMNSN_FUNC, __FILE__, __LINE__, str)
+#define dmnsn_warning(str)                                      \
+  dmnsn_report_warning(DMNSN_FUNC, __FILE__, __LINE__, str)
 
 /**
  * Report an error.
  * @param[in] str  A string to print explaining the error.
  */
-#define dmnsn_error(str)                                                \
-  do {                                                                  \
-    dmnsn_report_error(true, DMNSN_FUNC, __FILE__, __LINE__, str);      \
-    DMNSN_UNREACHABLE();                                                \
-  } while (0)
+#define dmnsn_error(str)                                        \
+  dmnsn_report_error(DMNSN_FUNC, __FILE__, __LINE__, str)
 
 /**
  * @def dmnsn_assert
@@ -75,15 +72,23 @@
 
 /**
  * @internal
- * Called by dmnsn_warning() and dmnsn_error(); don't call directly.
- * @param[in] die   Whether the error is fatal.
+ * Called by dmnsn_warning(); don't call directly.
  * @param[in] func  The name of the function where the error originated.
  * @param[in] file  The file where the error originated.
  * @param[in] line  The line number where the error originated.
  * @param[in] str   A string describing the error.
  */
-void dmnsn_report_error(bool die, const char *func, const char *file,
-                        unsigned int line, const char *str);
+void dmnsn_report_warning(const char *func, const char *file, unsigned int line, const char *str);
+
+/**
+ * @internal
+ * Called by dmnsn_error(); don't call directly.
+ * @param[in] func  The name of the function where the error originated.
+ * @param[in] file  The file where the error originated.
+ * @param[in] line  The line number where the error originated.
+ * @param[in] str   A string describing the error.
+ */
+DMNSN_NORETURN dmnsn_report_error(const char *func, const char *file, unsigned int line, const char *str);
 
 /**
  * Treat warnings as errors.

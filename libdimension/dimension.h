@@ -39,7 +39,9 @@
 #ifndef DIMENSION_H
 #define DIMENSION_H
 
-#ifdef __cplusplus
+#include <dimension/compiler.h>
+
+#if DMNSN_CXX
 /* We've been included from a C++ file; mark everything here as extern "C" */
 extern "C" {
 #endif
@@ -53,7 +55,6 @@ extern "C" {
 typedef void dmnsn_callback_fn(void *ptr);
 
 /* Include all the libdimension headers */
-#include <dimension/compiler.h>
 #include <dimension/error.h>
 #include <dimension/malloc.h>
 #include <dimension/pool.h>
@@ -87,7 +88,7 @@ typedef void dmnsn_callback_fn(void *ptr);
 #include <dimension/scene.h>
 #include <dimension/ray_trace.h>
 
-#ifdef __cplusplus
+#if DMNSN_CXX
 }
 #endif
 

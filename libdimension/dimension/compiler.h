@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2010 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -24,18 +24,70 @@
  */
 
 /**
+ * @internal
+ * @def DMNSN_C_VERSION
+ * The C version according to \p __STDC_VERSION__ if available, otherwise 0.
+ */
+#ifdef __STDC_VERSION__
+  #define DMNSN_C_VERSION __STDC_VERSION__
+#else
+  #define DMNSN_C_VERSION 0L
+#endif
+
+/**
+ * @internal
+ * @def DMNSN_CXX_VERSION
+ * The C++ version according to \p __cplusplus if available, otherwise 0.
+ */
+#ifdef __cplusplus
+  #define DMNSN_CXX_VERSION __cplusplus
+#else
+  #define DMNSN_CXX_VERSION 0L
+#endif
+
+/**
+ * @internal
+ * Whether we're being compiled as C++.
+ */
+#define DMNSN_CXX (DMNSN_CXX_VERSION > 0)
+
+/**
+ * @internal
+ * Whether C++11 features are supported.
+ */
+#define DMNSN_CXX11 (DMNSN_CXX_VERSION >= 201103L)
+
+/**
+ * @internal
+ * Whether C99 features are supported.
+ */
+#define DMNSN_C99 (DMNSN_C_VERSION >= 199901L || DMNSN_CXX11)
+
+/**
+ * @internal
+ * Whether C11 features are supported.
+ */
+#define DMNSN_C11 (DMNSN_C_VERSION >= 201112L)
+
+/**
+ * @internal
+ * Whether GNU C features are supported.
+ */
+#define DMNSN_GNUC defined(__GNUC__)
+
+/**
  * @def DMNSN_INLINE
  * A portable inline specifier. Expands to the correct method of declaring
  * inline functions for the version of C you are using.
  */
 #ifndef DMNSN_INLINE
-  #ifdef __cplusplus
+  #if DMNSN_CXX
     /* C++ inline semantics */
     #define DMNSN_INLINE inline
-  #elif __STDC_VERSION__ >= 199901L
+  #elif DMNSN_C99
     /* C99 inline semantics */
     #define DMNSN_INLINE inline
-  #elif defined(__GNUC__)
+  #elif DMNSN_GNUC
     /* GCC inline semantics */
     #define DMNSN_INLINE __extension__ extern __inline__
   #else
@@ -46,13 +98,27 @@
 #endif
 
 /**
+ * @def DMNSN_NORETURN
+ * A portable noreturn attribute.
+ */
+#if DMNSN_CXX11
+  #define DMNSN_NORETURN [[noreturn]] void
+#elif DMNSN_C11
+  #define DMNSN_NORETURN _Noreturn void
+#elif DMNSN_GNUC
+  #define DMNSN_NORETURN __attribute__((noreturn)) void
+#else
+  #define DMNSN_NORETURN void
+#endif
+
+/**
  * @internal
  * @def DMNSN_FUNC
  * @brief Expands to the name of the current function
  */
-#ifdef __GNUC__
+#if DMNSN_GNUC
   #define DMNSN_FUNC __PRETTY_FUNCTION__
-#elif __STDC_VERSION__ >= 199901L
+#elif DMNSN_C99
   #define DMNSN_FUNC __func__
 #else
   #define DMNSN_FUNC "<unknown function>"
@@ -62,14 +128,8 @@
  * @internal
  * An unreachable statement.
  */
-#ifdef __GNUC__
+#if DMNSN_GNUC
   #define DMNSN_UNREACHABLE() __builtin_unreachable()
 #else
   #define DMNSN_UNREACHABLE() ((void)0)
 #endif
-
-/**
- * @internal
- * Whether C99 features are supported.
- */
-#define DMNSN_C99 (__STDC_VERSION__ >= 199901L || __cplusplus >= 201103L)

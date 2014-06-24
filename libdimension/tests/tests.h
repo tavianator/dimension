@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2012 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -23,7 +23,7 @@
 #include "dimension.h"
 #include <check.h>
 
-#ifdef __cplusplus
+#if DMNSN_CXX
 // We've been included from a C++ file; mark everything here as extern "C"
 extern "C" {
 #endif
@@ -122,7 +122,7 @@ void dmnsn_delete_display(dmnsn_display *display);
 // Flush the GL buffers
 void dmnsn_display_flush(dmnsn_display *display);
 
-#ifdef __cplusplus
+#if DMNSN_CXX
 }
 #endif
 

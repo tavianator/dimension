@@ -49,10 +49,8 @@ static atomic(dmnsn_fatal_error_fn *) dmnsn_fatal = ATOMIC_VAR_INIT(dmnsn_defaul
 /// The current resilience.
 static atomic_bool dmnsn_always_die = ATOMIC_VAR_INIT(false);
 
-// Called by dmnsn_error macro (don't call directly)
 void
-dmnsn_report_error(bool die, const char *func, const char *file,
-                   unsigned int line, const char *str)
+dmnsn_report_impl(bool die, const char *func, const char *file, unsigned int line, const char *str)
 {
   // Save the value of errno
   int err = errno;
@@ -89,7 +87,7 @@ dmnsn_report_error(bool die, const char *func, const char *file,
     if (thread_exiting) {
       if (die) {
         // Prevent infinite recursion if the fatal error function itself calls
-        // dmnsn_error() (not dmnsn_warning()) */
+        // dmnsn_error() (not dmnsn_warning())
         DMNSN_LOCAL_ERROR("Error raised while in error handler, aborting.");
       }
     } else {
@@ -100,6 +98,19 @@ dmnsn_report_error(bool die, const char *func, const char *file,
       DMNSN_LOCAL_ERROR("Fatal error handler didn't exit.");
     }
   }
+}
+
+void
+dmnsn_report_warning(const char *func, const char *file, unsigned int line, const char *str)
+{
+  dmnsn_report_impl(false, func, file, line, str);
+}
+
+DMNSN_NORETURN
+dmnsn_report_error(const char *func, const char *file, unsigned int line, const char *str)
+{
+  dmnsn_report_impl(true, func, file, line, str);
+  DMNSN_UNREACHABLE();
 }
 
 void
