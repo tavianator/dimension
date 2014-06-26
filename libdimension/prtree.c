@@ -120,16 +120,16 @@ static dmnsn_array_comparator_fn *const dmnsn_comparators[DMNSN_PSEUDO_B] = {
 /// Add the priority leaves for this level.
 static void
 dmnsn_add_priority_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
-                          size_t nleaves,
+                          size_t start, size_t end,
                           dmnsn_array *new_leaves)
 {
   for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
     dmnsn_bvh_node *leaf = NULL;
     dmnsn_bvh_node **leaves = sorted_leaves[i];
-    for (size_t j = 0;
-         j < nleaves && (!leaf || leaf->nchildren < DMNSN_PRTREE_B);
-         ++j)
-    {
+
+    for (size_t j = start;
+         j < end && (!leaf || leaf->nchildren < DMNSN_PRTREE_B);
+         ++j) {
       // Skip all the previously found extreme nodes
       if (leaves[j]->data == DMNSN_PRTREE_LEAF) {
         continue;
@@ -150,14 +150,12 @@ dmnsn_add_priority_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
   }
 }
 
+/// Get rid of the extreme nodes.
 static void
-dmnsn_split_sorted_leaves_easy(dmnsn_bvh_node **leaves,
-                               size_t *nleaves,
-                               size_t *nright_leaves)
+dmnsn_filter_leaves(dmnsn_bvh_node **leaves, size_t start, size_t *endp)
 {
-  // Get rid of the extreme nodes
-  size_t i, skip, size = *nleaves;
-  for (i = 0, skip = 0; i < size; ++i) {
+  size_t i, skip, end;
+  for (i = start, skip = 0, end = *endp; i < end; ++i) {
     if (leaves[i]->data == DMNSN_PRTREE_LEAF) {
       ++skip;
     } else {
@@ -165,28 +163,30 @@ dmnsn_split_sorted_leaves_easy(dmnsn_bvh_node **leaves,
     }
   }
 
-  size -= skip;
+  *endp -= skip;
+}
 
-  // Split the leaves and mark the left and right child nodes
-  size_t left_size = (size + 1)/2;
-  for (i = 0; i < left_size; ++i) {
+/// Split the leaves and mark the left and right child nodes.
+static void
+dmnsn_split_sorted_leaves_easy(dmnsn_bvh_node **leaves, size_t start, size_t *midp, size_t end)
+{
+  size_t i, mid = start + (end - start + 1)/2;
+  for (i = start; i < mid; ++i) {
     leaves[i]->data = DMNSN_PRTREE_LEFT;
   }
-  for (i = left_size; i < size; ++i) {
+  for (; i < end; ++i) {
     leaves[i]->data = DMNSN_PRTREE_RIGHT;
   }
 
-  *nleaves = left_size;
-  *nright_leaves = size - left_size;
+  *midp = mid;
 }
 
+/// Split the leaves using the coloring from dmnsn_split_sorted_leaves_easy().
 static void
-dmnsn_split_sorted_leaves_hard(dmnsn_bvh_node **leaves,
-                               dmnsn_bvh_node **buffer,
-                               size_t nleaves)
+dmnsn_split_sorted_leaves_hard(dmnsn_bvh_node **leaves, dmnsn_bvh_node **buffer, size_t start, size_t mid, size_t end)
 {
   size_t i, j, skip;
-  for (i = 0, j = 0, skip = 0; i < nleaves; ++i) {
+  for (i = start, j = 0, skip = 0; i < end; ++i) {
     if (leaves[i]->data == DMNSN_PRTREE_LEFT) {
       leaves[i - skip] = leaves[i];
     } else {
@@ -198,34 +198,32 @@ dmnsn_split_sorted_leaves_hard(dmnsn_bvh_node **leaves,
     }
   }
 
-  size_t left_size = i - skip;
   for (i = 0; i < j; ++i) {
-    leaves[left_size + i] = buffer[i];
+    leaves[mid + i] = buffer[i];
   }
 }
 
 /// Split the sorted lists into the left and right subtrees.
 static void
 dmnsn_split_sorted_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
-                          size_t *nleaves,
-                          dmnsn_bvh_node **right_sorted_leaves[DMNSN_PSEUDO_B],
-                          size_t *nright_leaves,
-                          dmnsn_bvh_node **buffer,
-                          size_t i)
+                          size_t start, size_t *midp, size_t *endp,
+                          dmnsn_bvh_node **buffer, int i)
 {
-  size_t original_size = *nleaves;
+  size_t orig_end = *endp;
+
+  // Filter the extreme nodes in the ith list
+  dmnsn_filter_leaves(sorted_leaves[i], start, endp);
 
   // Split the ith list
-  dmnsn_split_sorted_leaves_easy(sorted_leaves[i], nleaves, nright_leaves);
+  dmnsn_split_sorted_leaves_easy(sorted_leaves[i], start, midp, *endp);
 
   // Split the rest of the lists
   for (size_t j = 0; j < DMNSN_PSEUDO_B; ++j) {
-    right_sorted_leaves[j] = sorted_leaves[j] + *nleaves;
     if (j == i) {
       continue;
     }
 
-    dmnsn_split_sorted_leaves_hard(sorted_leaves[j], buffer, original_size);
+    dmnsn_split_sorted_leaves_hard(sorted_leaves[j], buffer, start, *midp, orig_end);
   }
 }
 
@@ -233,30 +231,24 @@ dmnsn_split_sorted_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
 /// leaves.
 static void
 dmnsn_priority_leaves_recursive(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
-                                size_t nleaves,
+                                size_t start, size_t end,
                                 dmnsn_bvh_node **buffer,
                                 dmnsn_array *new_leaves,
                                 int comparator)
 {
-  dmnsn_add_priority_leaves(sorted_leaves, nleaves, new_leaves);
+  dmnsn_add_priority_leaves(sorted_leaves, start, end, new_leaves);
 
-  dmnsn_bvh_node **right_sorted_leaves[DMNSN_PSEUDO_B];
-  size_t right_nleaves;
+  size_t mid;
+  dmnsn_split_sorted_leaves(sorted_leaves, start, &mid, &end, buffer, comparator);
 
-  dmnsn_split_sorted_leaves(sorted_leaves, &nleaves,
-                            right_sorted_leaves, &right_nleaves,
-                            buffer, comparator);
+  int next = (comparator + 1)%DMNSN_PSEUDO_B;
 
-  if (nleaves > 0) {
-    dmnsn_priority_leaves_recursive(sorted_leaves, nleaves,
-                                    buffer, new_leaves,
-                                    (comparator + 1)%DMNSN_PSEUDO_B);
+  if (start < mid) {
+    dmnsn_priority_leaves_recursive(sorted_leaves, start, mid, buffer, new_leaves, next);
   }
 
-  if (right_nleaves > 0) {
-    dmnsn_priority_leaves_recursive(right_sorted_leaves, right_nleaves,
-                                    buffer, new_leaves,
-                                    (comparator + 1)%DMNSN_PSEUDO_B);
+  if (mid < end) {
+    dmnsn_priority_leaves_recursive(sorted_leaves, mid, end, buffer, new_leaves, next);
   }
 }
 
@@ -275,8 +267,7 @@ dmnsn_sort_leaf_array(dmnsn_bvh_node **leaves, size_t nleaves, int comparator)
   size_t leaves_size = nleaves*sizeof(dmnsn_bvh_node *);
   dmnsn_bvh_node **sorted_leaves = dmnsn_malloc(leaves_size);
   memcpy(sorted_leaves, leaves, leaves_size);
-  qsort(sorted_leaves, nleaves, sizeof(dmnsn_bvh_node *),
-        dmnsn_comparators[comparator]);
+  qsort(sorted_leaves, nleaves, sizeof(dmnsn_bvh_node *), dmnsn_comparators[comparator]);
   return sorted_leaves;
 }
 
@@ -286,8 +277,7 @@ dmnsn_sort_leaves(void *ptr, unsigned int thread, unsigned int nthreads)
   dmnsn_sort_leaves_payload *payload = ptr;
 
   for (unsigned int i = thread; i < DMNSN_PSEUDO_B; i += nthreads) {
-    payload->sorted_leaves[i] =
-      dmnsn_sort_leaf_array(payload->leaves_arr, payload->nleaves, i);
+    payload->sorted_leaves[i] = dmnsn_sort_leaf_array(payload->leaves_arr, payload->nleaves, i);
   }
 
   return 0;
@@ -319,8 +309,7 @@ dmnsn_priority_leaves(const dmnsn_array *leaves, unsigned int nthreads)
 
   dmnsn_array *new_leaves = DMNSN_NEW_ARRAY(dmnsn_bvh_node *);
 
-  dmnsn_priority_leaves_recursive(sorted_leaves, nleaves, buffer, new_leaves,
-                                  0);
+  dmnsn_priority_leaves_recursive(sorted_leaves, 0, nleaves, buffer, new_leaves, 0);
 
   dmnsn_free(buffer);
   for (size_t i = 0; i < DMNSN_PSEUDO_B; ++i) {
