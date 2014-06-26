@@ -42,7 +42,3 @@ libdimension-python/dimension.c
 dimension/client.py
 dimension/wrapper.so
 __pycache__
-
-# Core dumps
-core
-vgcore.*
