@@ -152,7 +152,7 @@ dmnsn_add_priority_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
 
 /// Get rid of the extreme nodes.
 static void
-dmnsn_filter_leaves(dmnsn_bvh_node **leaves, size_t start, size_t *endp)
+dmnsn_filter_priority_leaves(dmnsn_bvh_node **leaves, size_t start, size_t *endp)
 {
   size_t i, skip, end;
   for (i = start, skip = 0, end = *endp; i < end; ++i) {
@@ -183,7 +183,7 @@ dmnsn_split_sorted_leaves_easy(dmnsn_bvh_node **leaves, size_t start, size_t *mi
 
 /// Split the leaves using the coloring from dmnsn_split_sorted_leaves_easy().
 static void
-dmnsn_split_sorted_leaves_hard(dmnsn_bvh_node **leaves, dmnsn_bvh_node **buffer, size_t start, size_t mid, size_t end)
+dmnsn_split_sorted_leaves_hard(dmnsn_bvh_node **leaves, dmnsn_bvh_node **buffer, size_t start, size_t end)
 {
   size_t i, j, skip;
   for (i = start, j = 0, skip = 0; i < end; ++i) {
@@ -198,6 +198,7 @@ dmnsn_split_sorted_leaves_hard(dmnsn_bvh_node **leaves, dmnsn_bvh_node **buffer,
     }
   }
 
+  size_t mid = i - skip;
   for (i = 0; i < j; ++i) {
     leaves[mid + i] = buffer[i];
   }
@@ -212,7 +213,7 @@ dmnsn_split_sorted_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
   size_t orig_end = *endp;
 
   // Filter the extreme nodes in the ith list
-  dmnsn_filter_leaves(sorted_leaves[i], start, endp);
+  dmnsn_filter_priority_leaves(sorted_leaves[i], start, endp);
 
   // Split the ith list
   dmnsn_split_sorted_leaves_easy(sorted_leaves[i], start, midp, *endp);
@@ -223,7 +224,7 @@ dmnsn_split_sorted_leaves(dmnsn_bvh_node **sorted_leaves[DMNSN_PSEUDO_B],
       continue;
     }
 
-    dmnsn_split_sorted_leaves_hard(sorted_leaves[j], buffer, start, *midp, orig_end);
+    dmnsn_split_sorted_leaves_hard(sorted_leaves[j], buffer, start, orig_end);
   }
 }
 
