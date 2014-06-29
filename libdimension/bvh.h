@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2012 Tavian Barnes <tavianator@tavianator.com>          *
+ * Copyright (C) 2012-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -54,16 +54,15 @@ DMNSN_INTERNAL dmnsn_bounding_box dmnsn_bvh_bounding_box(const dmnsn_bvh *bvh);
 
 /// A non-flat BVH representation, used by BVH implementations.
 typedef struct dmnsn_bvh_node {
-  dmnsn_bounding_box bounding_box;   /// The bounding box of this node.
-  dmnsn_object *object;              /// The object, for leaf nodes.
-  int data;                          /// Extra field for implementation use.
-  size_t nchildren;                  /// How many children this node has.
-  size_t max_children;               /// Maximum number of children.
-  struct dmnsn_bvh_node *children[]; /// Flexible array of children.
+  dmnsn_bounding_box bounding_box;   ///< The bounding box of this node.
+  dmnsn_object *object;              ///< The object, for leaf nodes.
+  unsigned int nchildren;            ///< How many children this node has.
+  unsigned int max_children;         ///< Maximum number of children.
+  struct dmnsn_bvh_node *children[]; ///< Flexible array of children.
 } dmnsn_bvh_node;
 
 /// Create a BVH node.
-DMNSN_INTERNAL dmnsn_bvh_node *dmnsn_new_bvh_node(size_t max_children);
+DMNSN_INTERNAL dmnsn_bvh_node *dmnsn_new_bvh_node(unsigned int max_children);
 
 /// Create a BVH leaf node.
 DMNSN_INTERNAL dmnsn_bvh_node *dmnsn_new_bvh_leaf_node(dmnsn_object *object);
@@ -72,5 +71,4 @@ DMNSN_INTERNAL dmnsn_bvh_node *dmnsn_new_bvh_leaf_node(dmnsn_object *object);
 DMNSN_INTERNAL void dmnsn_delete_bvh_node(dmnsn_bvh_node *node);
 
 /// Add a child to a BVH node.
-DMNSN_INTERNAL void dmnsn_bvh_node_add(dmnsn_bvh_node *parent,
-                                       dmnsn_bvh_node *child);
+DMNSN_INTERNAL void dmnsn_bvh_node_add(dmnsn_bvh_node *parent, dmnsn_bvh_node *child);

@@ -358,10 +358,9 @@ dmnsn_bvh_bounding_box(const dmnsn_bvh *bvh)
 }
 
 dmnsn_bvh_node *
-dmnsn_new_bvh_node(size_t max_children)
+dmnsn_new_bvh_node(unsigned int max_children)
 {
-  dmnsn_bvh_node *node = dmnsn_malloc(sizeof(dmnsn_bvh_node)
-                                      + max_children*sizeof(dmnsn_bvh_node *));
+  dmnsn_bvh_node *node = dmnsn_malloc(sizeof(dmnsn_bvh_node) + max_children*sizeof(dmnsn_bvh_node *));
   node->bounding_box = dmnsn_zero_bounding_box();
   node->object = NULL;
   node->nchildren = 0;
