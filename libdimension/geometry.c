@@ -142,8 +142,7 @@ static dmnsn_matrix2 dmnsn_matrix2_mul(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs);
 /// Invert a matrix with the slower cofactor algorithm, if partitioning failed.
 static dmnsn_matrix dmnsn_matrix_inverse_generic(dmnsn_matrix A);
 /// Get the [\p row, \p col] cofactor of A.
-static double dmnsn_matrix_cofactor(dmnsn_matrix A,
-                                    unsigned int row, unsigned int col);
+static double dmnsn_matrix_cofactor(dmnsn_matrix A, size_t row, size_t col);
 
 // Invert a matrix, by partitioning
 dmnsn_matrix
@@ -306,7 +305,7 @@ dmnsn_matrix_inverse_generic(dmnsn_matrix A)
 // upper-left 3x3 corner of A by ignoring row `row' and column `col',
 // times (-1)^(row + col)
 static double
-dmnsn_matrix_cofactor(dmnsn_matrix A, unsigned int row, unsigned int col)
+dmnsn_matrix_cofactor(dmnsn_matrix A, size_t row, size_t col)
 {
   // 2 multiplications, 1 addition
   double n[4];
