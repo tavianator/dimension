@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2010-2012 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Test Suite.                        *
  *                                                                       *
@@ -31,7 +31,7 @@
 static void
 dmnsn_assert_roots(const double poly[], size_t degree, size_t nroots_ex, ...)
 {
-  double roots[degree - 1];
+  double roots[degree];
   size_t nroots = dmnsn_polynomial_solve(poly, degree, roots);
   ck_assert_int_eq(nroots, nroots_ex);
 
@@ -41,18 +41,19 @@ dmnsn_assert_roots(const double poly[], size_t degree, size_t nroots_ex, ...)
     double root_ex = va_arg(ap, double);
     bool found = false;
     for (size_t j = 0; j < nroots; ++j) {
-      if (fabs(root_ex - roots[j]) >= dmnsn_epsilon) {
+      double root = roots[j];
+      if (fabs(root_ex - root) >= dmnsn_epsilon) {
         continue;
       }
-      found = true;
 
-      double evroot = dmnsn_polynomial_evaluate(poly, degree, roots[j]);
+      double evroot = dmnsn_polynomial_evaluate(poly, degree, root);
       ck_assert(fabs(evroot) < DMNSN_CLOSE_ENOUGH);
 
-      double evmin = dmnsn_polynomial_evaluate(poly, degree, roots[j] - dmnsn_epsilon);
-      double evmax = dmnsn_polynomial_evaluate(poly, degree, roots[j] + dmnsn_epsilon);
+      double evmin = dmnsn_polynomial_evaluate(poly, degree, root - dmnsn_epsilon);
+      double evmax = dmnsn_polynomial_evaluate(poly, degree, root + dmnsn_epsilon);
       ck_assert(fabs(evroot) <= fabs(evmin) && fabs(evroot) <= fabs(evmax));
 
+      found = true;
       break;
     }
 
@@ -60,6 +61,7 @@ dmnsn_assert_roots(const double poly[], size_t degree, size_t nroots_ex, ...)
       for (size_t j = 0; j < nroots; ++j) {
         fprintf(stderr, "roots[%zu] == %.17g\n", j, roots[j]);
       }
+      fprintf(stderr, "----\n");
       ck_abort_msg("Expected root %.17g not found", root_ex);
     }
   }
