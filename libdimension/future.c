@@ -164,10 +164,9 @@ dmnsn_future_pause(dmnsn_future *future)
     while (future->nrunning < future->nthreads) {
       dmnsn_cond_wait_safely(&future->all_running_cond, &future->mutex);
     }
-    if (future->npaused++ == 0) {
-      while (future->nrunning > 0) {
-        dmnsn_cond_wait_safely(&future->none_running_cond, &future->mutex);
-      }
+    ++future->npaused;
+    while (future->nrunning > 0) {
+      dmnsn_cond_wait_safely(&future->none_running_cond, &future->mutex);
     }
   dmnsn_unlock_mutex(&future->mutex);
 }
@@ -177,8 +176,7 @@ void
 dmnsn_future_resume(dmnsn_future *future)
 {
   dmnsn_lock_mutex(&future->mutex);
-    dmnsn_assert(future->npaused > 0,
-                 "dmnsn_future_resume() without matching dmnsn_future_pause()");
+    dmnsn_assert(future->npaused > 0, "dmnsn_future_resume() without matching dmnsn_future_pause()");
     if (--future->npaused == 0) {
       dmnsn_cond_broadcast(&future->resume_cond);
     }

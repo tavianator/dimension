@@ -22,7 +22,10 @@ AM_CXXFLAGS = $(AM_CFLAGS)
 
 check_LTLIBRARIES = libdimension-tests.la                                      \
                     libdimension-unit-test.la
-check_PROGRAMS    = warning.test                                               \
+check_PROGRAMS    = c89.test                                                   \
+                    c99.test                                                   \
+                    cxx.test                                                   \
+                    warning.test                                               \
                     warning-as-error.test                                      \
                     error.test                                                 \
                     custom-error-fn.test                                       \
@@ -30,12 +33,10 @@ check_PROGRAMS    = warning.test                                               \
                     dictionary.test                                            \
                     polynomial.test                                            \
                     prtree.test                                                \
+                    future.test                                                \
                     png.test                                                   \
                     gl.test                                                    \
-                    render.test                                                \
-                    c89.test                                                   \
-                    c99.test                                                   \
-                    cxx.test
+                    render.test
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = warning-as-error.test error.test
 
@@ -64,6 +65,19 @@ libdimension_unit_test_la_SOURCES = unit-test.c
 libdimension_unit_test_la_CFLAGS  = $(CHECK_CFLAGS) $(AM_CFLAGS)
 libdimension_unit_test_la_LIBADD  = $(CHECK_LIBS) $(top_builddir)/libdimension/libdimension.la
 
+c89_test_SOURCES = c89.c
+c89_test_LDADD   = libdimension-tests.la
+
+c89.o: CFLAGS += -std=c89 -Wpedantic
+
+c99_test_SOURCES = c99.c
+c99_test_LDADD   = libdimension-tests.la
+
+c99.o: CFLAGS += -std=c99 -Wpedantic
+
+cxx_test_SOURCES = cxx.cpp
+cxx_test_LDADD   = libdimension-tests.la
+
 warning_test_SOURCES = warning.c
 warning_test_LDADD   = libdimension-tests.la
 
@@ -88,6 +102,9 @@ polynomial_test_LDADD   = libdimension-unit-test.la
 prtree_test_SOURCES = prtree.c
 prtree_test_LDADD   = libdimension-tests.la
 
+future_test_SOURCES = future.c
+future_test_LDADD   = libdimension-unit-test.la
+
 png_test_SOURCES = png.c
 png_test_LDADD   = libdimension-tests.la
 
@@ -96,19 +113,6 @@ gl_test_LDADD   = libdimension-tests.la
 
 render_test_SOURCES = render.c
 render_test_LDADD   = libdimension-tests.la
-
-c89_test_SOURCES = c89.c
-c89_test_LDADD   = libdimension-tests.la
-
-c89.o: CFLAGS += -std=c89 -Wpedantic
-
-c99_test_SOURCES = c99.c
-c99_test_LDADD   = libdimension-tests.la
-
-c99.o: CFLAGS += -std=c99 -Wpedantic
-
-cxx_test_SOURCES = cxx.cpp
-cxx_test_LDADD   = libdimension-tests.la
 
 clean-local:
 	rm -f *.png
