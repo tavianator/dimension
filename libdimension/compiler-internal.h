@@ -87,6 +87,6 @@
 
 #define DMNSN_ALLOCA_IMPL(var, size, ctr) DMNSN_ALLOCA_IMPL2(var, size, ctr)
 
-#define DMNSN_ALLOCA_IMPL2(var, size, ctr)      \
+#define DMNSN_ALLOCA_IMPL2(var, size, ctr)              \
   alignas(max_align_t) char dmnsn_alloca##ctr[size];    \
   var = (void *)dmnsn_alloca##ctr
