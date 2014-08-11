@@ -442,7 +442,7 @@ dmnsn_bounding_box dmnsn_transform_bounding_box(dmnsn_matrix T,
 DMNSN_INLINE dmnsn_line
 dmnsn_transform_line(dmnsn_matrix T, dmnsn_line l)
 {
-  /* 18 multiplications, 24 additions */
+  /* 18 multiplications, 15 additions */
   dmnsn_line ret;
   ret.x0 = dmnsn_transform_point(T, l.x0);
   ret.n  = dmnsn_transform_direction(T, l.n);
