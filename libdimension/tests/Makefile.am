@@ -24,7 +24,8 @@ check_LTLIBRARIES = libdimension-tests.la                                      \
                     libdimension-unit-test.la
 check_PROGRAMS    = c89.test                                                   \
                     c99.test                                                   \
-                    cxx.test                                                   \
+                    c++03.test                                                 \
+                    c++11.test                                                 \
                     warning.test                                               \
                     warning-as-error.test                                      \
                     error.test                                                 \
@@ -75,8 +76,15 @@ c99_test_LDADD   = libdimension-tests.la
 
 c99.o: CFLAGS += -std=c99 -Wpedantic
 
-cxx_test_SOURCES = cxx.cpp
-cxx_test_LDADD   = libdimension-tests.la
+c__03_test_SOURCES = c++03.cpp
+c__03_test_LDADD   = libdimension-tests.la
+
+c++03.o: CFLAGS += -std=c++03 -Wpedantic
+
+c__11_test_SOURCES = c++11.cpp
+c__11_test_LDADD   = libdimension-tests.la
+
+c++11.o: CFLAGS += -std=c++11 -Wpedantic
 
 warning_test_SOURCES = warning.c
 warning_test_LDADD   = libdimension-tests.la
