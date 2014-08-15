@@ -120,6 +120,13 @@ dmnsn_max(double a, double b)
   return a > b ? a : b;
 }
 
+/** Clamp a value to an interval. */
+DMNSN_INLINE double
+dmnsn_clamp(double n, double min, double max)
+{
+  return dmnsn_min(dmnsn_max(n, min), max);
+}
+
 /** Convert degrees to radians. */
 DMNSN_INLINE double
 dmnsn_radians(double degrees)

@@ -94,8 +94,8 @@ DMNSN_INLINE dmnsn_tcolor
 dmnsn_tcolor_clamp(dmnsn_tcolor tcolor)
 {
   tcolor.c = dmnsn_color_clamp(tcolor.c);
-  tcolor.T = dmnsn_min(dmnsn_max(tcolor.T, 0.0), 1.0);
-  tcolor.F = dmnsn_min(dmnsn_max(tcolor.F, 0.0), 1.0);
+  tcolor.T = dmnsn_clamp(tcolor.T, 0.0, 1.0);
+  tcolor.F = dmnsn_clamp(tcolor.F, 0.0, 1.0);
   return tcolor;
 }
 

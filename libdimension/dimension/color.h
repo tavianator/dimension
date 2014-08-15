@@ -158,9 +158,9 @@ dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color)
 DMNSN_INLINE dmnsn_color
 dmnsn_color_clamp(dmnsn_color color)
 {
-  color.R = dmnsn_min(dmnsn_max(color.R, 0.0), 1.0);
-  color.G = dmnsn_min(dmnsn_max(color.G, 0.0), 1.0);
-  color.B = dmnsn_min(dmnsn_max(color.B, 0.0), 1.0);
+  color.R = dmnsn_clamp(color.R, 0.0, 1.0);
+  color.G = dmnsn_clamp(color.G, 0.0, 1.0);
+  color.B = dmnsn_clamp(color.B, 0.0, 1.0);
   return color;
 }
 
