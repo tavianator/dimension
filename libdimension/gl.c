@@ -60,7 +60,7 @@ dmnsn_gl_write_canvas(const dmnsn_canvas *canvas)
       dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(canvas, x, y);
       tcolor = dmnsn_tcolor_remove_filter(tcolor);
       tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
-      tcolor = dmnsn_tcolor_saturate(tcolor);
+      tcolor = dmnsn_tcolor_clamp(tcolor);
 
       pixel[0] = lround(tcolor.c.R*UINT8_MAX);
       pixel[1] = lround(tcolor.c.G*UINT8_MAX);

@@ -198,7 +198,7 @@ dmnsn_png_write_canvas_thread(void *ptr)
                                                    x, height - y - 1);
       tcolor = dmnsn_tcolor_remove_filter(tcolor);
       tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
-      tcolor = dmnsn_tcolor_saturate(tcolor);
+      tcolor = dmnsn_tcolor_clamp(tcolor);
 
       row[4*x]     = lround(tcolor.c.R*UINT16_MAX);
       row[4*x + 1] = lround(tcolor.c.G*UINT16_MAX);

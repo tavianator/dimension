@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -156,7 +156,7 @@ dmnsn_color_illuminate(dmnsn_color light, dmnsn_color color)
 
 /** Saturate the color components to [0.0, 1.0]. */
 DMNSN_INLINE dmnsn_color
-dmnsn_color_saturate(dmnsn_color color)
+dmnsn_color_clamp(dmnsn_color color)
 {
   color.R = dmnsn_min(dmnsn_max(color.R, 0.0), 1.0);
   color.G = dmnsn_min(dmnsn_max(color.G, 0.0), 1.0);

@@ -69,7 +69,7 @@ dmnsn_rgba8_optimizer_fn(dmnsn_canvas_optimizer *optimizer, const dmnsn_canvas *
   dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(canvas, x, y);
   tcolor = dmnsn_tcolor_remove_filter(tcolor);
   tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
-  tcolor = dmnsn_tcolor_saturate(tcolor);
+  tcolor = dmnsn_tcolor_clamp(tcolor);
 
   pixel[0] = lround(tcolor.c.R*UINT8_MAX);
   pixel[1] = lround(tcolor.c.G*UINT8_MAX);
@@ -86,7 +86,7 @@ dmnsn_rgba16_optimizer_fn(dmnsn_canvas_optimizer *optimizer, const dmnsn_canvas 
   dmnsn_tcolor tcolor = dmnsn_canvas_get_pixel(canvas, x, y);
   tcolor = dmnsn_tcolor_remove_filter(tcolor);
   tcolor.c = dmnsn_color_to_sRGB(tcolor.c);
-  tcolor = dmnsn_tcolor_saturate(tcolor);
+  tcolor = dmnsn_tcolor_clamp(tcolor);
 
   pixel[0] = lround(tcolor.c.R*UINT16_MAX);
   pixel[1] = lround(tcolor.c.G*UINT16_MAX);

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2011 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -91,9 +91,9 @@ dmnsn_tcolor_remove_filter(dmnsn_tcolor tcolor)
 
 /** Saturate the tcolor components to [0.0, 1.0]. */
 DMNSN_INLINE dmnsn_tcolor
-dmnsn_tcolor_saturate(dmnsn_tcolor tcolor)
+dmnsn_tcolor_clamp(dmnsn_tcolor tcolor)
 {
-  tcolor.c = dmnsn_color_saturate(tcolor.c);
+  tcolor.c = dmnsn_color_clamp(tcolor.c);
   tcolor.T = dmnsn_min(dmnsn_max(tcolor.T, 0.0), 1.0);
   tcolor.F = dmnsn_min(dmnsn_max(tcolor.F, 0.0), 1.0);
   return tcolor;
