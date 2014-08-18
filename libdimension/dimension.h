@@ -20,25 +20,21 @@
 
 /**
  * @file
- * The main \#include file for libdimension.  This file declares all public
- * functions and types used by the Dimension library.  You should never attempt
- * to include any of the component headers in the dimension/ subdirectory
- * directly; only this file.
+ * The main \#include file for the Dimension library.  This file declares all
+ * of its public functions and types.
  */
 
 /**
  * @mainpage libdimension - A library for photo-realistic 3-D rendering
  *
  * The Dimension library (libdimension) is the ray-tracing library that handles
- * all rendering-related tasks for Dimension.  It is written in C and designed
- * with performance and concurrency in mind.  It is also generic enough to be
- * used for applications other than Dimension, though that is its primary
- * purpose.
+ * all rendering-related tasks for Dimension.
  */
 
 #ifndef DIMENSION_H
 #define DIMENSION_H
 
+/* Include compiler.h first for DMNSN_CXX */
 #include <dimension/compiler.h>
 
 #if DMNSN_CXX
@@ -46,15 +42,8 @@
 extern "C" {
 #endif
 
-/* Common types */
-
-/**
- * Generic callback type.
- * @param[in,out] ptr  A pointer to an object to act on.
- */
-typedef void dmnsn_callback_fn(void *ptr);
-
 /* Include all the libdimension headers */
+#include <dimension/common.h>
 #include <dimension/error.h>
 #include <dimension/malloc.h>
 #include <dimension/pool.h>
@@ -62,6 +51,7 @@ typedef void dmnsn_callback_fn(void *ptr);
 #include <dimension/dictionary.h>
 #include <dimension/future.h>
 #include <dimension/timer.h>
+#include <dimension/math.h>
 #include <dimension/geometry.h>
 #include <dimension/polynomial.h>
 #include <dimension/color.h>

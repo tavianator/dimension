@@ -125,9 +125,9 @@ dmnsn_descartes_bound(const double poly[], size_t degree)
 
   // Find the number of sign changes in p[]
   size_t changes = 0;
-  int lastsign = dmnsn_sign(p[0]);
+  int lastsign = dmnsn_sgn(p[0]);
   for (size_t i = 1; changes <= 1 && i <= degree; ++i) {
-    int sign = dmnsn_sign(p[i]);
+    int sign = dmnsn_sgn(p[i]);
     if (sign != 0 && sign != lastsign) {
       ++changes;
       lastsign = sign;
@@ -227,7 +227,7 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
   for (size_t i = 0; i < DMNSN_BISECT_ITERATIONS; ++i) {
     mid = (min*evmax - max*evmin)/(evmax - evmin);
     evmid = dmnsn_polynomial_evaluate(poly, degree, mid);
-    int sign = dmnsn_sign(evmid);
+    int sign = dmnsn_sgn(evmid);
 
     if ((fabs(evmid) < fabs(mid)*dmnsn_epsilon
          // This condition improves stability when one of the bounds is close to
@@ -250,7 +250,7 @@ dmnsn_bisect_root(const double poly[], size_t degree, double min, double max)
       evmin = evmax;
       max = mid;
       evmax = evmid;
-    } else if (sign == dmnsn_sign(evmax)) {
+    } else if (sign == dmnsn_sgn(evmax)) {
       max = mid;
       evmax = evmid;
       if (sign == lastsign) {

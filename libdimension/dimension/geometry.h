@@ -82,9 +82,6 @@ typedef struct dmnsn_bounding_box {
 
 /* Constants */
 
-/** The smallest value considered non-zero by some numerical algorithms. */
-#define dmnsn_epsilon 1.0e-10
-
 /** The zero vector. */
 static const dmnsn_vector dmnsn_zero = { 0.0, 0.0, 0.0 };
 /** The x vector. */
@@ -93,66 +90,6 @@ static const dmnsn_vector dmnsn_x = { 1.0, 0.0, 0.0 };
 static const dmnsn_vector dmnsn_y = { 0.0, 1.0, 0.0 };
 /** The z vector. */
 static const dmnsn_vector dmnsn_z = { 0.0, 0.0, 1.0 };
-
-/**
- * @def DMNSN_INFINITY
- * Expands to floating-point infinity.
- */
-#if defined(INFINITY) || DMNSN_C99
-  #define DMNSN_INFINITY INFINITY
-#else
-  #define DMNSN_INFINITY HUGE_VAL
-#endif
-
-/* Scalar functions */
-
-/** Find the minimum of two scalars. */
-DMNSN_INLINE double
-dmnsn_min(double a, double b)
-{
-  return a < b ? a : b;
-}
-
-/** Find the maximum of two scalars. */
-DMNSN_INLINE double
-dmnsn_max(double a, double b)
-{
-  return a > b ? a : b;
-}
-
-/** Clamp a value to an interval. */
-DMNSN_INLINE double
-dmnsn_clamp(double n, double min, double max)
-{
-  return dmnsn_min(dmnsn_max(n, min), max);
-}
-
-/** Convert degrees to radians. */
-DMNSN_INLINE double
-dmnsn_radians(double degrees)
-{
-  return degrees*atan(1.0)/45.0;
-}
-
-/** Convert radians to degrees. */
-DMNSN_INLINE double
-dmnsn_degrees(double radians)
-{
-  return radians*45.0/atan(1.0);
-}
-
-/** Return the sign of a scalar. */
-DMNSN_INLINE int
-dmnsn_sign(double n)
-{
-  if (n > 0.0) {
-    return 1;
-  } else if (n < 0.0) {
-    return -1;
-  } else {
-    return 0;
-  }
-}
 
 /* Shorthand for vector/matrix construction */
 
@@ -524,17 +461,6 @@ dmnsn_bounding_box_swallow(dmnsn_bounding_box box, dmnsn_vector point)
     dmnsn_vector_max(box.max, point)
   };
   return ret;
-}
-
-/** Return whether a scalar is NaN. */
-DMNSN_INLINE bool
-dmnsn_isnan(double n)
-{
-#if DMNSN_C99
-  return isnan(n);
-#else
-  return n != n;
-#endif
 }
 
 /** Return whether a vector contains any NaN components. */
