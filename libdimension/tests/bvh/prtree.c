@@ -22,11 +22,11 @@
  * Basic tests of PR-trees.
  */
 
-#include "../platform/platform.c"
-#include "../concurrency/threads.c"
-#include "../concurrency/future.c"
-#include "../bvh/bvh.c"
-#include "../bvh/prtree.c"
+#include "../../platform/platform.c"
+#include "../../concurrency/threads.c"
+#include "../../concurrency/future.c"
+#include "../../bvh/bvh.c"
+#include "../../bvh/prtree.c"
 #include <stdio.h>
 #include <stdlib.h>
 

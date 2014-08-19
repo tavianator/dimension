@@ -22,7 +22,7 @@
  * Basic tests of the polynomial root-finder.
  */
 
-#include "../math/polynomial.c"
+#include "../../math/polynomial.c"
 #include "tests.h"
 #include <stdarg.h>
 

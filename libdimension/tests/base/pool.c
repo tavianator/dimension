@@ -22,9 +22,9 @@
  * Tests for memory pools.
  */
 
-#include "../concurrency/future.c"
-#include "../concurrency/threads.c"
-#include "../internal.h"
+#include "../../concurrency/future.c"
+#include "../../concurrency/threads.c"
+#include "../../internal.h"
 #include "tests.h"
 
 static dmnsn_pool *pool;

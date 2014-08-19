@@ -67,71 +67,71 @@ libdimension_unit_test_la_SOURCES = unit-test.c
 libdimension_unit_test_la_CFLAGS  = $(CHECK_CFLAGS) $(AM_CFLAGS)
 libdimension_unit_test_la_LIBADD  = $(CHECK_LIBS) $(top_builddir)/libdimension/libdimension.la
 
-modules_test_SOURCES = modules/base.c \
-  modules/canvas.c \
-  modules/color.c \
-  modules/concurrency.c \
-  modules/math.c \
-  modules/model.c \
-  modules/pattern.c \
-  modules/platform.c \
-  modules/render.c
+modules_test_SOURCES = build/modules/base.c \
+  build/modules/canvas.c \
+  build/modules/color.c \
+  build/modules/concurrency.c \
+  build/modules/math.c \
+  build/modules/model.c \
+  build/modules/pattern.c \
+  build/modules/platform.c \
+  build/modules/render.c
 modules_test_LDADD   = libdimension-unit-test.la
 
-c89_test_SOURCES = c89.c
+c89_test_SOURCES = build/c89.c
 c89_test_LDADD   = libdimension-tests.la
 
 c89.o: CFLAGS += -std=c89 -Wpedantic
 
-c99_test_SOURCES = c99.c
+c99_test_SOURCES = build/c99.c
 c99_test_LDADD   = libdimension-tests.la
 
 c99.o: CFLAGS += -std=c99 -Wpedantic
 
-c__03_test_SOURCES = c++03.cpp
+c__03_test_SOURCES = build/c++03.cpp
 c__03_test_LDADD   = libdimension-tests.la
 
 c++03.o: CFLAGS += -std=c++03 -Wpedantic
 
-c__11_test_SOURCES = c++11.cpp
+c__11_test_SOURCES = build/c++11.cpp
 c__11_test_LDADD   = libdimension-tests.la
 
 c++11.o: CFLAGS += -std=c++11 -Wpedantic
 
-warning_test_SOURCES = warning.c
+warning_test_SOURCES = base/error/warning.c
 warning_test_LDADD   = libdimension-tests.la
 
-warning_as_error_test_SOURCES = warning-as-error.c
+warning_as_error_test_SOURCES = base/error/warning-as-error.c
 warning_as_error_test_LDADD   = libdimension-tests.la
 
-error_test_SOURCES = error.c
+error_test_SOURCES = base/error/error.c
 error_test_LDADD   = libdimension-tests.la
 
-custom_error_fn_test_SOURCES = custom-error-fn.c
+custom_error_fn_test_SOURCES = base/error/custom-error-fn.c
 custom_error_fn_test_LDADD   = libdimension-tests.la
 
-pool_test_SOURCES = pool.c
+pool_test_SOURCES = base/pool.c
 pool_test_LDADD   = libdimension-unit-test.la
 
-dictionary_test_SOURCES = dictionary.c
+dictionary_test_SOURCES = base/dictionary.c
 dictionary_test_LDADD   = libdimension-unit-test.la
 
-polynomial_test_SOURCES = polynomial.c
+polynomial_test_SOURCES = math/polynomial.c
 polynomial_test_LDADD   = libdimension-unit-test.la
 
-prtree_test_SOURCES = prtree.c
+prtree_test_SOURCES = bvh/prtree.c
 prtree_test_LDADD   = libdimension-tests.la
 
-future_test_SOURCES = future.c
+future_test_SOURCES = concurrency/future.c
 future_test_LDADD   = libdimension-unit-test.la
 
-png_test_SOURCES = png.c
+png_test_SOURCES = canvas/png.c
 png_test_LDADD   = libdimension-tests.la
 
-gl_test_SOURCES = gl.c
+gl_test_SOURCES = canvas/gl.c
 gl_test_LDADD   = libdimension-tests.la
 
-render_test_SOURCES = render.c
+render_test_SOURCES = render/render.c
 render_test_LDADD   = libdimension-tests.la
 
 clean-local:
