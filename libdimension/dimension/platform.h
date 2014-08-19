@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#include <dimension/base.h>
+
 #include <dimension/platform/timer.h>
 
 #ifdef __cplusplus

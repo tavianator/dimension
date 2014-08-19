@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#include <dimension/base.h>
+
 #include <dimension/concurrency/future.h>
 
 #ifdef __cplusplus

@@ -20,24 +20,25 @@
 AM_CFLAGS = -I$(top_srcdir)/libdimension
 AM_CXXFLAGS = $(AM_CFLAGS)
 
-check_LTLIBRARIES = libdimension-tests.la                                      \
-                    libdimension-unit-test.la
-check_PROGRAMS    = c89.test                                                   \
-                    c99.test                                                   \
-                    c++03.test                                                 \
-                    c++11.test                                                 \
-                    warning.test                                               \
-                    warning-as-error.test                                      \
-                    error.test                                                 \
-                    custom-error-fn.test                                       \
-                    pool.test                                                  \
-                    dictionary.test                                            \
-                    polynomial.test                                            \
-                    prtree.test                                                \
-                    future.test                                                \
-                    png.test                                                   \
-                    gl.test                                                    \
-                    render.test
+check_LTLIBRARIES = libdimension-tests.la \
+  libdimension-unit-test.la
+check_PROGRAMS    = modules.test \
+  c89.test \
+  c99.test \
+  c++03.test \
+  c++11.test \
+  warning.test \
+  warning-as-error.test \
+  error.test \
+  custom-error-fn.test \
+  pool.test \
+  dictionary.test \
+  polynomial.test \
+  prtree.test \
+  future.test \
+  png.test \
+  gl.test \
+  render.test
 TESTS             = $(check_PROGRAMS)
 XFAIL_TESTS       = warning-as-error.test error.test
 
@@ -51,8 +52,8 @@ if !GL
 XFAIL_TESTS += gl.test
 endif
 
-libdimension_tests_la_SOURCES = test_canvas.c                                  \
-                                tests.h
+libdimension_tests_la_SOURCES = test_canvas.c \
+  tests.h
 libdimension_tests_la_LIBADD  = $(top_builddir)/libdimension/libdimension.la
 
 if GLX
@@ -65,6 +66,17 @@ endif
 libdimension_unit_test_la_SOURCES = unit-test.c
 libdimension_unit_test_la_CFLAGS  = $(CHECK_CFLAGS) $(AM_CFLAGS)
 libdimension_unit_test_la_LIBADD  = $(CHECK_LIBS) $(top_builddir)/libdimension/libdimension.la
+
+modules_test_SOURCES = modules/base.c \
+  modules/canvas.c \
+  modules/color.c \
+  modules/concurrency.c \
+  modules/math.c \
+  modules/model.c \
+  modules/pattern.c \
+  modules/platform.c \
+  modules/render.c
+modules_test_LDADD   = libdimension-unit-test.la
 
 c89_test_SOURCES = c89.c
 c89_test_LDADD   = libdimension-tests.la
