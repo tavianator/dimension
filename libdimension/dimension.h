@@ -22,6 +22,9 @@
  * @file
  * The main \#include file for the Dimension library.  This file declares all
  * of its public functions and types.
+ *
+ * To import only a subset of the libdimension's functionality, you can include
+ * the headers for submodules directly.
  */
 
 /**
@@ -31,55 +34,18 @@
  * all rendering-related tasks for Dimension.
  */
 
-#ifndef DIMENSION_H
-#define DIMENSION_H
+#ifndef DMNSN_H
+#define DMNSN_H
 
-/* Include compiler.h first for DMNSN_CXX */
-#include <dimension/compiler.h>
-
-#if DMNSN_CXX
-/* We've been included from a C++ file; mark everything here as extern "C" */
-extern "C" {
-#endif
-
-/* Include all the libdimension headers */
-#include <dimension/common.h>
-#include <dimension/error.h>
-#include <dimension/malloc.h>
-#include <dimension/pool.h>
-#include <dimension/array.h>
-#include <dimension/dictionary.h>
-#include <dimension/future.h>
-#include <dimension/timer.h>
+/* Include all modules. */
+#include <dimension/base.h>
+#include <dimension/platform.h>
+#include <dimension/concurrency.h>
 #include <dimension/math.h>
-#include <dimension/geometry.h>
-#include <dimension/polynomial.h>
 #include <dimension/color.h>
-#include <dimension/tcolor.h>
 #include <dimension/canvas.h>
-#include <dimension/gl.h>
-#include <dimension/png.h>
 #include <dimension/pattern.h>
-#include <dimension/patterns.h>
-#include <dimension/map.h>
-#include <dimension/pigment.h>
-#include <dimension/pigments.h>
-#include <dimension/finish.h>
-#include <dimension/finishes.h>
-#include <dimension/texture.h>
-#include <dimension/interior.h>
-#include <dimension/object.h>
-#include <dimension/objects.h>
-#include <dimension/csg.h>
-#include <dimension/light.h>
-#include <dimension/lights.h>
-#include <dimension/camera.h>
-#include <dimension/cameras.h>
-#include <dimension/scene.h>
-#include <dimension/ray_trace.h>
+#include <dimension/model.h>
+#include <dimension/render.h>
 
-#if DMNSN_CXX
-}
-#endif
-
-#endif /* DIMENSION_H */
+#endif /* DMNSN_H */

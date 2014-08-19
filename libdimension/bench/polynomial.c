@@ -17,7 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include "dimension.h"
+#define DMNSN_INLINE extern inline
+#include "../math/polynomial.c"
 #include <sandglass.h>
 #include <stdlib.h>
 

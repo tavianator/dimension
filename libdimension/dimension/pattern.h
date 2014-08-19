@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2014 Tavian Barnes <tavianator@tavianator.com>          *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -20,43 +20,25 @@
 
 /**
  * @file
- * Patterns.  Patterns are functions which map vectors to scalars, which are
- * used for pigments and normals.
+ * Patterns.
  */
 
-/* Forward-declare dmnsn_pattern */
-typedef struct dmnsn_pattern dmnsn_pattern;
+#ifndef DMNSN_PATTERN_H
+#define DMNSN_PATTERN_H
 
-/**
- * Pattern callback.
- * @param[in] pattern  The pattern itself.
- * @param[in] v        The point at which to evaluate the pattern.
- * @return The value of the pattern at \p v.
- */
-typedef double dmnsn_pattern_fn(const dmnsn_pattern *pattern, dmnsn_vector v);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/** A pattern. */
-struct dmnsn_pattern {
-  dmnsn_pattern_fn *pattern_fn; /**< The pattern callback. */
-};
+#include <dimension/base.h>
+#include <dimension/math.h>
 
-/**
- * Allocate a dummy pattern.
- * @param[in] pool  The memory pool to allocate from.
- * @return A pattern with no callbacks set.
- */
-dmnsn_pattern *dmnsn_new_pattern(dmnsn_pool *pool);
+#include <dimension/pattern/pattern.h>
+#include <dimension/pattern/patterns.h>
+#include <dimension/pattern/map.h>
 
-/**
- * Initialize a dmnsn_pattern field.
- * @param[out] pattern  The pattern to initialize.
- */
-void dmnsn_init_pattern(dmnsn_pattern *pattern);
+#ifdef __cplusplus
+}
+#endif
 
-/**
- * Invoke the pattern callback.
- * @param[in] pattern  The pattern to evaluate.
- * @param[in] v        The point to get the pattern value for.
- * @return The value of the pattern at \p v.
- */
-double dmnsn_pattern_value(const dmnsn_pattern *pattern, dmnsn_vector v);
+#endif /* DMNSN_PATTERN_H */

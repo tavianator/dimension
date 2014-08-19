@@ -17,19 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include "../platform.c"
-#include "../threads.c"
-#include "../future.c"
-#include "../bvh.c"
-#include "../prtree.c"
+#include "../platform/platform.c"
+#include "../concurrency/threads.c"
+#include "../concurrency/future.c"
+#include "../bvh/bvh.c"
+#include "../bvh/prtree.c"
 #include <sandglass.h>
 #include <stdlib.h>
 
 static bool
-dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_line line,
+dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_ray ray,
                            dmnsn_intersection *intersection)
 {
-  intersection->t = (object->bounding_box.min.z - line.x0.z)/line.n.z;
+  intersection->t = (object->aabb.min.z - ray.x0.z)/ray.n.z;
   intersection->normal = dmnsn_x;
   return true;
 }
@@ -40,7 +40,7 @@ dmnsn_fake_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return true;
 }
 
-static dmnsn_bounding_box
+static dmnsn_aabb
 dmnsn_fake_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
   dmnsn_vector a, b;
@@ -53,7 +53,7 @@ dmnsn_fake_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
   b.y = 2.0*((double)rand())/RAND_MAX - 1.0;
   b.z = 2.0*((double)rand())/RAND_MAX - 1.0;
 
-  return dmnsn_new_bounding_box(dmnsn_vector_min(a, b), dmnsn_vector_max(a, b));
+  return dmnsn_new_aabb(dmnsn_vector_min(a, b), dmnsn_vector_max(a, b));
 }
 
 static dmnsn_object_vtable dmnsn_fake_vtable = {
@@ -99,7 +99,7 @@ main(void)
   printf("dmnsn_new_bvh(DMNSN_BVH_PRTREE): %ld\n", sandglass.grains);
 
   // dmnsn_bvh_intersection()
-  dmnsn_line ray = dmnsn_new_line(
+  dmnsn_ray ray = dmnsn_new_ray(
     dmnsn_new_vector( 1.0,  1.0, -2.0),
     dmnsn_new_vector(-0.5, -0.5,  1.0)
   );

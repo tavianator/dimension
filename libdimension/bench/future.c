@@ -17,9 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include "../platform.c"
-#include "../future.c"
-#include "../threads.c"
+#include "../platform/platform.c"
+#include "../concurrency/future.c"
+#include "../concurrency/threads.c"
 #include <sandglass.h>
 #include <stdlib.h>
 

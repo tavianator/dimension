@@ -403,8 +403,8 @@ cdef extern from "../libdimension/dimension.h":
 
   dmnsn_scene *dmnsn_new_scene(dmnsn_pool *pool)
 
-  void dmnsn_ray_trace(dmnsn_scene *scene)
-  dmnsn_future *dmnsn_ray_trace_async(dmnsn_scene *scene)
+  void dmnsn_render(dmnsn_scene *scene)
+  dmnsn_future *dmnsn_render_async(dmnsn_scene *scene)
 
 cdef extern from "platform.h":
   unsigned int dmnsn_terminal_width()

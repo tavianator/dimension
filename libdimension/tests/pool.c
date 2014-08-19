@@ -22,10 +22,10 @@
  * Tests for memory pools.
  */
 
-#include "../dimension-internal.h"
+#include "../concurrency/future.c"
+#include "../concurrency/threads.c"
+#include "../internal.h"
 #include "tests.h"
-#include "../future.c"
-#include "../threads.c"
 
 static dmnsn_pool *pool;
 

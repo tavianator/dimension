@@ -3,14 +3,15 @@ Here's an overview of how the code is arranged:
 Library (LGPLv3):
 =================
 
-API:                   libdimension/dimension.h, libdimension/dimension/*.h
-                       (Implementations for libdimension/dimension/$file.h
-                       are generally at libdimension/$file.c)
-Ray tracing algorithm: libdimension/ray_trace.c
-Bounding hierarchy:    libdimension/prtree.{c,h}
-Library internals:     libdimension/dimension-internal.h and its #includes
+API:                   libdimension/dimension.h, libdimension/dimension/**/*.h
+Ray tracing algorithm: libdimension/render/render.c
+Bounding hierarchy:    libdimension/bvh/prtree.{c,h}
+Library internals:     libdimension/internal.h, libdimension/internal/*.h
 Tests:                 libdimension/tests/*.{c,cpp}
 Benchmarks:            libdimension/bench/*.c
+
+Implementations for libdimension/dimension/<module>/<file>.h are generally at
+libdimension/<module>/<file>.c
 
 Python Module (LGPLv3):
 =======================

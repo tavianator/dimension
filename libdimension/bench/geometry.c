@@ -17,17 +17,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include "dimension.h"
+#include "dimension/math.h"
 #include <sandglass.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 int
 main(void)
 {
   dmnsn_vector vector, vector2;
   dmnsn_matrix matrix, matrix2;
-  dmnsn_line line;
-  dmnsn_bounding_box box;
+  dmnsn_ray ray;
+  dmnsn_aabb box;
   double result;
 
   sandglass_t sandglass;
@@ -74,19 +75,19 @@ main(void)
   });
   printf("dmnsn_rotation_matrix(): %ld\n", sandglass.grains);
 
-  // dmnsn_new_line()
+  // dmnsn_new_ray()
   vector2 = dmnsn_new_vector(3.0, 2.0, 1.0);
   sandglass_bench_fine(&sandglass, {
-    line = dmnsn_new_line(vector, vector2);
+    ray = dmnsn_new_ray(vector, vector2);
   });
-  printf("dmnsn_new_line(): %ld\n", sandglass.grains);
+  printf("dmnsn_new_ray(): %ld\n", sandglass.grains);
 
-  // dmnsn_new_bounding_box()
+  // dmnsn_new_aabb()
   vector2 = dmnsn_new_vector(3.0, 4.0, 5.0);
   sandglass_bench_fine(&sandglass, {
-    box = dmnsn_new_bounding_box(vector, vector2);
+    box = dmnsn_new_aabb(vector, vector2);
   });
-  printf("dmnsn_new_bounding_box(): %ld\n", sandglass.grains);
+  printf("dmnsn_new_aabb(): %ld\n", sandglass.grains);
 
   // dmnsn_vector_add()
   sandglass_bench_fine(&sandglass, {
@@ -175,23 +176,23 @@ main(void)
   });
   printf("dmnsn_transform_normal(): %ld\n", sandglass.grains);
 
-  // dmnsn_transform_line()
+  // dmnsn_transform_ray()
   sandglass_bench_fine(&sandglass, {
-    line = dmnsn_transform_line(matrix, line);
+    ray = dmnsn_transform_ray(matrix, ray);
   });
-  printf("dmnsn_transform_line(): %ld\n", sandglass.grains);
+  printf("dmnsn_transform_ray(): %ld\n", sandglass.grains);
 
-  // dmnsn_transform_bounding_box()
+  // dmnsn_transform_aabb()
   sandglass_bench_fine(&sandglass, {
-    box = dmnsn_transform_bounding_box(matrix, box);
+    box = dmnsn_transform_aabb(matrix, box);
   });
-  printf("dmnsn_transform_bounding_box(): %ld\n", sandglass.grains);
+  printf("dmnsn_transform_aabb(): %ld\n", sandglass.grains);
 
-  // dmnsn_line_point()
+  // dmnsn_ray_point()
   sandglass_bench_fine(&sandglass, {
-    vector = dmnsn_line_point(line, result);
+    vector = dmnsn_ray_point(ray, result);
   });
-  printf("dmnsn_line_point(): %ld\n", sandglass.grains);
+  printf("dmnsn_ray_point(): %ld\n", sandglass.grains);
 
   return EXIT_SUCCESS;
 }

@@ -27,7 +27,7 @@ Makefile.in
 # Files created by `make bench'
 /*/bench/*.bench
 
-# Files created by make doc
+# Files created by `make doc'
 /*/doc/
 Doxyfile
 
@@ -42,3 +42,4 @@ libdimension-python/dimension.c
 dimension/client.py
 dimension/wrapper.so
 __pycache__
+*.dirstamp

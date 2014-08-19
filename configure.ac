@@ -19,7 +19,7 @@ dnl Initialization
 AC_PREREQ([2.68])
 AC_INIT([Dimension], [0.0], [tavianator@tavianator.com], [dimension],
         [http://www.tavianator.com/dimension/])
-AM_INIT_AUTOMAKE([parallel-tests color-tests std-options])
+AM_INIT_AUTOMAKE([subdir-objects parallel-tests color-tests std-options])
 AM_SILENT_RULES([yes])
 
 dnl Use C11 mode with GNU extensions by default

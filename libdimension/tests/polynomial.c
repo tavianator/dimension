@@ -22,8 +22,8 @@
  * Basic tests of the polynomial root-finder.
  */
 
+#include "../math/polynomial.c"
 #include "tests.h"
-#include "../polynomial.c"
 #include <stdarg.h>
 
 #define DMNSN_CLOSE_ENOUGH 1.0e-6

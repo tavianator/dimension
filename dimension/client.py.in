@@ -152,7 +152,7 @@ def main():
     scene.adc_bailout = float(args.adc_bailout)
 
   # Ray-trace the scene
-  with scene.ray_trace_async() as future:
+  with scene.render_async() as future:
     bar = None
     if not args.quiet:
       if scene.nthreads == 1:

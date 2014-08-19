@@ -350,7 +350,7 @@ main(void)
   // Render the scene
 
   printf("Rendering scene\n");
-  dmnsn_future *future = dmnsn_ray_trace_async(scene);
+  dmnsn_future *future = dmnsn_render_async(scene);
 
   // Display the scene as it's rendered
   if (display) {

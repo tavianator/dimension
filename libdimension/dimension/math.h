@@ -20,80 +20,26 @@
 
 /**
  * @file
- * Useful math functions.
+ * Mathematical functions and types.
  */
 
-#include <math.h>
-#include <stdbool.h>
+#ifndef DMNSN_MATH_H
+#define DMNSN_MATH_H
 
-/** The smallest value considered non-zero by some numerical algorithms. */
-#define dmnsn_epsilon 1.0e-10
-
-/**
- * @def DMNSN_INFINITY
- * Expands to floating-point infinity.
- */
-#if defined(INFINITY) || DMNSN_C99
-  #define DMNSN_INFINITY INFINITY
-#else
-  #define DMNSN_INFINITY HUGE_VAL
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-/** Find the minimum of two values. */
-DMNSN_INLINE double
-dmnsn_min(double a, double b)
-{
-  return a < b ? a : b;
-}
+#include <dimension/base.h>
 
-/** Find the maximum of two values. */
-DMNSN_INLINE double
-dmnsn_max(double a, double b)
-{
-  return a > b ? a : b;
-}
+#include <dimension/math/scalar.h>
+#include <dimension/math/vector.h>
+#include <dimension/math/ray.h>
+#include <dimension/math/aabb.h>
+#include <dimension/math/matrix.h>
 
-/** Clamp a value to an interval. */
-DMNSN_INLINE double
-dmnsn_clamp(double n, double min, double max)
-{
-  return dmnsn_min(dmnsn_max(n, min), max);
+#ifdef __cplusplus
 }
-
-/** Convert degrees to radians. */
-DMNSN_INLINE double
-dmnsn_radians(double degrees)
-{
-  return degrees*(atan(1.0)/45.0);
-}
-
-/** Convert radians to degrees. */
-DMNSN_INLINE double
-dmnsn_degrees(double radians)
-{
-  return radians*(45.0/atan(1.0));
-}
-
-/** Signum function: return the sign of a value. */
-DMNSN_INLINE int
-dmnsn_sgn(double n)
-{
-  if (n > 0.0) {
-    return 1;
-  } else if (n < 0.0) {
-    return -1;
-  } else {
-    return 0;
-  }
-}
-
-/** Return whether a value is NaN. */
-DMNSN_INLINE bool
-dmnsn_isnan(double n)
-{
-#if DMNSN_C99
-  return isnan(n);
-#else
-  return n != n;
 #endif
-}
+
+#endif /* DMNSN_MATH_H */

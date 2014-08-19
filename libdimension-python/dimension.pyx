@@ -1608,10 +1608,10 @@ cdef class Scene:
     def __get__(self):
       return _Timer(self._scene.render_timer)
 
-  def ray_trace(self):
+  def render(self):
     """Render the scene."""
-    self.ray_trace_async().join()
-  def ray_trace_async(self):
+    self.render_async().join()
+  def render_async(self):
     """Render the scene, in the background."""
     # Account for image dimensions in the camera
     # Do this here so subregion renders can tell us the broader image size
@@ -1628,7 +1628,7 @@ cdef class Scene:
     # Ensure the default texture is complete
     cdef Texture default = Texture(pigment = Black)
     dmnsn_texture_cascade(default._texture, &self._scene.default_texture)
-    return _Future(dmnsn_ray_trace_async(self._scene))
+    return _Future(dmnsn_render_async(self._scene))
 
 def _quality_to_string(int quality):
   cdef str s = ""

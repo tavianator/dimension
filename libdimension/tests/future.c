@@ -22,9 +22,9 @@
  * Tests for dmnsn_future.
  */
 
-#include "../platform.c"
-#include "../future.c"
-#include "../threads.c"
+#include "../platform/platform.c"
+#include "../concurrency/future.c"
+#include "../concurrency/threads.c"
 #include "tests.h"
 #include <stdatomic.h>
 
