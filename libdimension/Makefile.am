@@ -91,6 +91,7 @@ libdimension_la_SOURCES = $(nobase_include_HEADERS) \
   concurrency/threads.c \
   dimension.h \
   internal.h \
+  internal/all.h \
   internal/bvh.h \
   internal/compiler.h \
   internal/future.h \

@@ -1,5 +1,5 @@
 /*************************************************************************
- * Copyright (C) 2009-2014 Tavian Barnes <tavianator@tavianator.com>     *
+ * Copyright (C) 2010-2014 Tavian Barnes <tavianator@tavianator.com>     *
  *                                                                       *
  * This file is part of The Dimension Library.                           *
  *                                                                       *
@@ -20,24 +20,15 @@
 
 /**
  * @file
- * Emit definitions of inline functions, if necessary.
+ * All headers, internal or otherwise.
  */
 
-// Set DMNSN_INLINE to produce definitions of inline functions, emitted here,
-// if needed
-#ifdef __cplusplus
-  // C++ inline semantics
-  #define DMNSN_INLINE inline
-#elif __STDC_VERSION__ >= 199901L
-  // C99 inline semantics
-  #define DMNSN_INLINE
-#elif defined(__GNUC__)
-  // GCC inline semantics
-  #define DMNSN_INLINE __inline__
-#else
-  // Unknown C - mark functions static and hope the compiler is smart enough to
-  // inline them
-  #define DMNSN_INLINE static
-#endif
-
-#include "internal/all.h"
+#include "internal.h"
+#include "dimension.h"
+#include "internal/bvh.h"
+#include "internal/concurrency.h"
+#include "internal/future.h"
+#include "internal/platform.h"
+#include "internal/polynomial.h"
+#include "internal/prtree.h"
+#include "internal/rgba.h"
