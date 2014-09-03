@@ -234,15 +234,15 @@ cdef class Vector:
   property x:
     """The x coordinate."""
     def __get__(self):
-      return self._v.x
+      return self._v.n[0]
   property y:
     """The y coordinate."""
     def __get__(self):
-      return self._v.y
+      return self._v.n[1]
   property z:
     """The z coordinate."""
     def __get__(self):
-      return self._v.z
+      return self._v.n[2]
 
   def __pos__(self):
     return self
@@ -261,7 +261,7 @@ cdef class Vector:
     else:
       return _Vector(dmnsn_vector_mul(lhs, (<Vector?>rhs)._v))
   def __truediv__(Vector lhs not None, double rhs):
-    return _Vector(dmnsn_vector_div(lhs._v, rhs))
+    return _Vector(dmnsn_vector_mul(1.0/rhs, lhs._v))
 
   def __richcmp__(lhs, rhs, int op):
     equal = (Vector(lhs) - Vector(rhs)).norm() < dmnsn_epsilon

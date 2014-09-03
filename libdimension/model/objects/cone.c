@@ -43,11 +43,11 @@ dmnsn_cone_intersection_fn(const dmnsn_object *object, dmnsn_ray l,
 
   // Solve (x0 + nx*t)^2 + (z0 + nz*t)^2 == (((r2 - r1)*(y0 + ny*t) + r1 + r2)/2)^2
   double poly[3], x[2];
-  poly[2] = l.n.x*l.n.x + l.n.z*l.n.z - l.n.y*l.n.y*(r2 - r1)*(r2 - r1)/4.0;
-  poly[1] = 2.0*(l.n.x*l.x0.x + l.n.z*l.x0.z)
-            - l.n.y*(r2 - r1)*(l.x0.y*(r2 - r1) + r2 + r1)/2.0;
-  poly[0] = l.x0.x*l.x0.x + l.x0.z*l.x0.z
-            - (l.x0.y*(r2 - r1) + r2 + r1)*(l.x0.y*(r2 - r1) + r2 + r1)/4.0;
+  poly[2] = l.n.X*l.n.X + l.n.Z*l.n.Z - l.n.Y*l.n.Y*(r2 - r1)*(r2 - r1)/4.0;
+  poly[1] = 2.0*(l.n.X*l.x0.X + l.n.Z*l.x0.Z)
+            - l.n.Y*(r2 - r1)*(l.x0.Y*(r2 - r1) + r2 + r1)/2.0;
+  poly[0] = l.x0.X*l.x0.X + l.x0.Z*l.x0.Z
+            - (l.x0.Y*(r2 - r1) + r2 + r1)*(l.x0.Y*(r2 - r1) + r2 + r1)/4.0;
 
   size_t n = dmnsn_polynomial_solve(poly, 2, x);
 
@@ -58,7 +58,7 @@ dmnsn_cone_intersection_fn(const dmnsn_object *object, dmnsn_ray l,
       t = dmnsn_min(t, x[1]);
       p = dmnsn_ray_point(l, t);
 
-      if (p.y <= -1.0 || p.y >= 1.0) {
+      if (p.Y <= -1.0 || p.Y >= 1.0) {
         t = dmnsn_max(x[0], x[1]);
         p = dmnsn_ray_point(l, t);
       }
@@ -66,9 +66,9 @@ dmnsn_cone_intersection_fn(const dmnsn_object *object, dmnsn_ray l,
       p = dmnsn_ray_point(l, t);
     }
 
-    if (t >= 0.0 && p.y >= -1.0 && p.y <= 1.0) {
-      double r = ((r2 - r1)*p.y + r1 + r2)/2.0;
-      dmnsn_vector norm = dmnsn_new_vector(p.x, -r*(r2 - r1)/2.0, p.z);
+    if (t >= 0.0 && p.Y >= -1.0 && p.Y <= 1.0) {
+      double r = ((r2 - r1)*p.Y + r1 + r2)/2.0;
+      dmnsn_vector norm = dmnsn_new_vector(p.X, -r*(r2 - r1)/2.0, p.Z);
       intersection->t      = t;
       intersection->normal = norm;
       return true;
@@ -84,9 +84,9 @@ dmnsn_cone_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
   const dmnsn_cone *cone = (const dmnsn_cone *)object;
   double r1 = cone->r1, r2 = cone->r2;
-  double r = (point.y*(r2 - r1) + r1 + r2)/2.0;
-  return point.x*point.x + point.z*point.z < r*r
-         && point.y > -1.0 && point.y < 1.0;
+  double r = (point.Y*(r2 - r1) + r1 + r2)/2.0;
+  return point.X*point.X + point.Z*point.Z < r*r
+         && point.Y > -1.0 && point.Y < 1.0;
 }
 
 /// Cone bounding callback.
@@ -118,12 +118,12 @@ static bool
 dmnsn_cone_cap_intersection_fn(const dmnsn_object *object, dmnsn_ray l,
                                dmnsn_intersection *intersection)
 {
-  if (l.n.y != 0.0) {
+  if (l.n.Y != 0.0) {
     const dmnsn_cone_cap *cap = (const dmnsn_cone_cap *)object;
     double r = cap->r;
-    double t = -l.x0.y/l.n.y;
+    double t = -l.x0.Y/l.n.Y;
     dmnsn_vector p = dmnsn_ray_point(l, t);
-    if (t >= 0.0 && p.x*p.x + p.z*p.z <= r*r) {
+    if (t >= 0.0 && p.X*p.X + p.Z*p.Z <= r*r) {
       intersection->t      = t;
       intersection->normal = dmnsn_new_vector(0.0, -1.0, 0.0);
       return true;
@@ -188,12 +188,8 @@ dmnsn_new_cone(dmnsn_pool *pool, double r1, double r2, bool open)
   // Implement closed cones as a union with the caps
   dmnsn_object *cap1 = dmnsn_new_cone_cap(pool, r1);
   dmnsn_object *cap2 = dmnsn_new_cone_cap(pool, r2);
-  cap1->intrinsic_trans = dmnsn_translation_matrix(
-    dmnsn_new_vector(0.0, -1.0, 0.0)
-  );
-  cap2->intrinsic_trans = dmnsn_translation_matrix(
-    dmnsn_new_vector(0.0, +1.0, 0.0)
-  );
+  cap1->intrinsic_trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, -1.0, 0.0));
+  cap2->intrinsic_trans = dmnsn_translation_matrix(dmnsn_new_vector(0.0, +1.0, 0.0));
   // Flip the normal around for the top cap
   cap2->intrinsic_trans.n[1][1] = -1.0;
 

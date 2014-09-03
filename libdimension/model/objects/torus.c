@@ -41,18 +41,18 @@ dmnsn_torus_bound_intersection(const dmnsn_torus *torus, dmnsn_ray l)
   double rmax2 = rmax*rmax, rmin2 = rmin*rmin;
 
   // Try the caps first
-  double tlower = (-r - l.x0.y)/l.n.y;
-  double tupper = (+r - l.x0.y)/l.n.y;
+  double tlower = (-r - l.x0.Y)/l.n.Y;
+  double tupper = (+r - l.x0.Y)/l.n.Y;
   dmnsn_vector lower = dmnsn_ray_point(l, tlower);
   dmnsn_vector upper = dmnsn_ray_point(l, tupper);
-  double ldist2 = lower.x*lower.x + lower.z*lower.z;
-  double udist2 = upper.x*upper.x + upper.z*upper.z;
+  double ldist2 = lower.X*lower.X + lower.Z*lower.Z;
+  double udist2 = upper.X*upper.X + upper.Z*upper.Z;
   if ((ldist2 < rmin2 || ldist2 > rmax2) && (udist2 < rmin2 || udist2 > rmax2)) {
     // No valid intersection with the caps, try the cylinder walls
-    double dist2 = l.x0.x*l.x0.x + l.x0.z*l.x0.z;
+    double dist2 = l.x0.X*l.x0.X + l.x0.Z*l.x0.Z;
     double bigcyl[3], smallcyl[3];
-    bigcyl[2]   = smallcyl[2] = l.n.x*l.n.x + l.n.z*l.n.z;
-    bigcyl[1]   = smallcyl[1] = 2.0*(l.n.x*l.x0.x + l.n.z*l.x0.z);
+    bigcyl[2]   = smallcyl[2] = l.n.X*l.n.X + l.n.Z*l.n.Z;
+    bigcyl[1]   = smallcyl[1] = 2.0*(l.n.X*l.x0.X + l.n.Z*l.x0.Z);
     bigcyl[0]   = dist2 - rmax2;
     smallcyl[0] = dist2 - rmin2;
 
@@ -63,7 +63,7 @@ dmnsn_torus_bound_intersection(const dmnsn_torus *torus, dmnsn_ray l)
     size_t i;
     for (i = 0; i < n; ++i) {
       dmnsn_vector p = dmnsn_ray_point(l, x[i]);
-      if (p.y >= -r && p.y <= r)
+      if (p.Y >= -r && p.Y <= r)
         break;
     }
 
@@ -90,8 +90,8 @@ dmnsn_torus_intersection_fn(const dmnsn_object *object, dmnsn_ray l,
   }
 
   // This bit of algebra here is correct
-  dmnsn_vector x0mod = dmnsn_new_vector(l.x0.x, -l.x0.y, l.x0.z);
-  dmnsn_vector nmod  = dmnsn_new_vector(l.n.x,  -l.n.y,  l.n.z);
+  dmnsn_vector x0mod = dmnsn_new_vector(l.x0.X, -l.x0.Y, l.x0.Z);
+  dmnsn_vector nmod  = dmnsn_new_vector(l.n.X,  -l.n.Y,  l.n.Z);
   double nn      = dmnsn_vector_dot(l.n, l.n);
   double nx0     = dmnsn_vector_dot(l.n, l.x0);
   double x0x0    = dmnsn_vector_dot(l.x0, l.x0);
@@ -123,7 +123,7 @@ dmnsn_torus_intersection_fn(const dmnsn_object *object, dmnsn_ray l,
   dmnsn_vector p = dmnsn_ray_point(l, t);
   dmnsn_vector center = dmnsn_vector_mul(
     R,
-    dmnsn_vector_normalized(dmnsn_new_vector(p.x, 0.0, p.z))
+    dmnsn_vector_normalized(dmnsn_new_vector(p.X, 0.0, p.Z))
   );
   dmnsn_vector normal = dmnsn_vector_sub(p, center);
 
@@ -137,8 +137,8 @@ static bool
 dmnsn_torus_inside_fn(const dmnsn_object *object, dmnsn_vector point)
 {
   const dmnsn_torus *torus = (const dmnsn_torus *)object;
-  double dmajor = torus->major - sqrt(point.x*point.x + point.z*point.z);
-  return dmajor*dmajor + point.y*point.y < torus->minor*torus->minor;
+  double dmajor = torus->major - sqrt(point.X*point.X + point.Z*point.Z);
+  return dmajor*dmajor + point.Y*point.Y < torus->minor*torus->minor;
 }
 
 /// Torus bounding callback.

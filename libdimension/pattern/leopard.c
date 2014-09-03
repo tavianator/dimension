@@ -23,6 +23,7 @@
  * Leopard pattern.
  */
 
+#include "internal.h"
 #include "dimension/pattern.h"
 #include <math.h>
 
@@ -30,7 +31,7 @@
 static double
 dmnsn_leopard_pattern_fn(const dmnsn_pattern *leopard, dmnsn_vector v)
 {
-  double val = (sin(v.x) + sin(v.y) + sin(v.z))/3.0;
+  double val = (sin(v.X) + sin(v.Y) + sin(v.Z))/3.0;
   return val*val;
 }
 

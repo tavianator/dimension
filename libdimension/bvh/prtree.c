@@ -74,48 +74,48 @@ enum {
 static int
 dmnsn_xmin_comp(const void *l, const void *r)
 {
-  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.min.x;
-  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.min.x;
+  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.min.X;
+  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.min.X;
   return (lval > rval) - (lval < rval);
 }
 
 static int
 dmnsn_ymin_comp(const void *l, const void *r)
 {
-  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.min.y;
-  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.min.y;
+  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.min.Y;
+  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.min.Y;
   return (lval > rval) - (lval < rval);
 }
 
 static int
 dmnsn_zmin_comp(const void *l, const void *r)
 {
-  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.min.z;
-  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.min.z;
+  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.min.Z;
+  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.min.Z;
   return (lval > rval) - (lval < rval);
 }
 
 static int
 dmnsn_xmax_comp(const void *l, const void *r)
 {
-  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.max.x;
-  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.max.x;
+  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.max.X;
+  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.max.X;
   return (lval < rval) - (lval > rval);
 }
 
 static int
 dmnsn_ymax_comp(const void *l, const void *r)
 {
-  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.max.y;
-  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.max.y;
+  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.max.Y;
+  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.max.Y;
   return (lval < rval) - (lval > rval);
 }
 
 static int
 dmnsn_zmax_comp(const void *l, const void *r)
 {
-  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.max.z;
-  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.max.z;
+  double lval = (*(const dmnsn_colored_prnode **)l)->node->aabb.max.Z;
+  double rval = (*(const dmnsn_colored_prnode **)r)->node->aabb.max.Z;
   return (lval < rval) - (lval > rval);
 }
 

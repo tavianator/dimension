@@ -40,9 +40,9 @@ static inline dmnsn_vector
 dmnsn_change_basis(const double coeffs[6], dmnsn_vector v)
 {
   return dmnsn_new_vector(
-    coeffs[0]*v.x + coeffs[1]*v.z + v.y,
-    coeffs[2]*v.x + coeffs[3]*v.z,
-    coeffs[4]*v.x + coeffs[5]*v.z
+    coeffs[0]*v.X + coeffs[1]*v.Z + v.Y,
+    coeffs[2]*v.X + coeffs[3]*v.Z,
+    coeffs[4]*v.X + coeffs[5]*v.Z
   );
 }
 
@@ -51,9 +51,9 @@ static inline dmnsn_vector
 dmnsn_change_normal_basis(const double coeffs[6], dmnsn_vector n)
 {
   return dmnsn_new_vector(
-    coeffs[0]*n.x + coeffs[2]*n.y + coeffs[4]*n.z,
-    n.x,
-    coeffs[1]*n.x + coeffs[3]*n.y + coeffs[5]*n.z
+    coeffs[0]*n.X + coeffs[2]*n.Y + coeffs[4]*n.Z,
+    n.X,
+    coeffs[1]*n.X + coeffs[3]*n.Y + coeffs[5]*n.Z
   );
 }
 
@@ -80,12 +80,11 @@ dmnsn_compress_coeffs(double coeffs[6], dmnsn_matrix incremental)
 static inline dmnsn_matrix
 dmnsn_decompress_coeffs(const double coeffs[6])
 {
-  dmnsn_matrix incremental = dmnsn_new_matrix(
+  return dmnsn_new_matrix(
     coeffs[0], 1.0, coeffs[1], 0.0,
     coeffs[2], 0.0, coeffs[3], 0.0,
     coeffs[4], 0.0, coeffs[5], 0.0
   );
-  return incremental;
 }
 
 /// Make a change-of-basis matrix for a triangle.
@@ -100,9 +99,9 @@ dmnsn_triangle_basis(dmnsn_vector a, dmnsn_vector ab, dmnsn_vector ac)
 static inline bool
 dmnsn_ray_triangle_intersection(dmnsn_ray l, double *t, double *u, double *v)
 {
-  *t = -l.x0.z/l.n.z;
-  *u = l.x0.x + (*t)*l.n.x;
-  *v = l.x0.y + (*t)*l.n.y;
+  *t = -l.x0.Z/l.n.Z;
+  *u = l.x0.X + (*t)*l.n.X;
+  *v = l.x0.Y + (*t)*l.n.Y;
   return *t >= 0.0 && *u >= 0.0 && *v >= 0.0 && *u + *v <= 1.0;
 }
 
@@ -149,7 +148,7 @@ dmnsn_triangle_fan_inside_fn(const dmnsn_object *object, dmnsn_vector point)
   return false;
 }
 
-/// Computes the bounding box for the first triangle
+/// Computes the bounding box for the first triangle.
 static inline dmnsn_aabb
 dmnsn_bound_first_triangle(dmnsn_matrix trans)
 {
@@ -336,9 +335,9 @@ dmnsn_new_smooth_triangle_fan(dmnsn_pool *pool, dmnsn_vector vertices[], dmnsn_v
 
     nc = dmnsn_vector_normalized(dmnsn_transform_normal(Pabc, normals[i + 3]));
     dmnsn_vector nac = dmnsn_vector_sub(nc, na);
-    coeffs[6] = nac.x;
-    coeffs[7] = nac.y;
-    coeffs[8] = nac.z;
+    coeffs[6] = nac.X;
+    coeffs[7] = nac.Y;
+    coeffs[8] = nac.Z;
 
     P = newP;
   }

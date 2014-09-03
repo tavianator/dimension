@@ -29,7 +29,7 @@ static bool
 dmnsn_fake_intersection_fn(const dmnsn_object *object, dmnsn_ray ray,
                            dmnsn_intersection *intersection)
 {
-  intersection->t = (object->aabb.min.z - ray.x0.z)/ray.n.z;
+  intersection->t = (object->aabb.min.Z - ray.x0.Z)/ray.n.Z;
   intersection->normal = dmnsn_x;
   return true;
 }
@@ -45,13 +45,10 @@ dmnsn_fake_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 {
   dmnsn_vector a, b;
 
-  a.x = 2.0*((double)rand())/RAND_MAX - 1.0;
-  a.y = 2.0*((double)rand())/RAND_MAX - 1.0;
-  a.z = 2.0*((double)rand())/RAND_MAX - 1.0;
-
-  b.x = 2.0*((double)rand())/RAND_MAX - 1.0;
-  b.y = 2.0*((double)rand())/RAND_MAX - 1.0;
-  b.z = 2.0*((double)rand())/RAND_MAX - 1.0;
+  for (unsigned int i = 0; i < 3; ++i) {
+    a.n[i] = 2.0*((double)rand())/RAND_MAX - 1.0;
+    b.n[i] = 2.0*((double)rand())/RAND_MAX - 1.0;
+  }
 
   return dmnsn_new_aabb(dmnsn_vector_min(a, b), dmnsn_vector_max(a, b));
 }

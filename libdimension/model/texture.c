@@ -45,8 +45,7 @@ dmnsn_texture_initialize(dmnsn_texture *texture)
   texture->trans_inv = dmnsn_matrix_inverse(texture->trans);
 
   if (!texture->pigment->initialized) {
-    texture->pigment->trans = dmnsn_matrix_mul(texture->trans,
-                                               texture->pigment->trans);
+    texture->pigment->trans = dmnsn_matrix_mul(texture->trans, texture->pigment->trans);
     dmnsn_pigment_initialize(texture->pigment);
   }
 }

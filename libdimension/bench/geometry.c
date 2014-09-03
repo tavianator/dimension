@@ -107,12 +107,6 @@ main(void)
   });
   printf("dmnsn_vector_mul(): %ld\n", sandglass.grains);
 
-  // dmnsn_vector_div()
-  sandglass_bench_fine(&sandglass, {
-    vector = dmnsn_vector_div(vector, 2.0);
-  });
-  printf("dmnsn_vector_div(): %ld\n", sandglass.grains);
-
   // dmnsn_vector_cross()
   sandglass_bench_fine(&sandglass, {
     vector = dmnsn_vector_cross(vector, vector2);

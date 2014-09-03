@@ -34,9 +34,6 @@
  * all rendering-related tasks for Dimension.
  */
 
-#ifndef DMNSN_H
-#define DMNSN_H
-
 /* Include all modules. */
 #include <dimension/base.h>
 #include <dimension/platform.h>
@@ -47,5 +44,3 @@
 #include <dimension/pattern.h>
 #include <dimension/model.h>
 #include <dimension/render.h>
-
-#endif /* DMNSN_H */

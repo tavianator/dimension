@@ -57,8 +57,8 @@ DMNSN_INLINE dmnsn_aabb
 dmnsn_zero_aabb(void)
 {
   dmnsn_aabb box = {
-    {  DMNSN_INFINITY,  DMNSN_INFINITY,  DMNSN_INFINITY },
-    { -DMNSN_INFINITY, -DMNSN_INFINITY, -DMNSN_INFINITY }
+    { {  DMNSN_INFINITY,  DMNSN_INFINITY,  DMNSN_INFINITY } },
+    { { -DMNSN_INFINITY, -DMNSN_INFINITY, -DMNSN_INFINITY } }
   };
   return box;
 }
@@ -68,8 +68,8 @@ DMNSN_INLINE dmnsn_aabb
 dmnsn_infinite_aabb(void)
 {
   dmnsn_aabb box = {
-    { -DMNSN_INFINITY, -DMNSN_INFINITY, -DMNSN_INFINITY },
-    {  DMNSN_INFINITY,  DMNSN_INFINITY,  DMNSN_INFINITY }
+    { { -DMNSN_INFINITY, -DMNSN_INFINITY, -DMNSN_INFINITY } },
+    { {  DMNSN_INFINITY,  DMNSN_INFINITY,  DMNSN_INFINITY } }
   };
   return box;
 }
@@ -94,15 +94,26 @@ dmnsn_symmetric_aabb(dmnsn_vector r)
 DMNSN_INLINE bool
 dmnsn_aabb_contains(dmnsn_aabb box, dmnsn_vector p)
 {
-  return (p.x >= box.min.x && p.y >= box.min.y && p.z >= box.min.z)
-      && (p.x <= box.max.x && p.y <= box.max.y && p.z <= box.max.z);
+  for (unsigned int i = 0; i < 3; ++i) {
+    if (p.n[i] < box.min.n[i]) {
+      return false;
+    }
+  }
+
+  for (unsigned int i = 0; i < 3; ++i) {
+    if (p.n[i] > box.max.n[i]) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /** Return whether a bounding box is infinite. */
 DMNSN_INLINE bool
 dmnsn_aabb_is_infinite(dmnsn_aabb box)
 {
-  return box.min.x == -DMNSN_INFINITY;
+  return box.min.n[0] == -DMNSN_INFINITY;
 }
 
 /**

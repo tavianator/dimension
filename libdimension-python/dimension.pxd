@@ -115,9 +115,7 @@ cdef extern from "../libdimension/dimension.h":
   double dmnsn_degrees(double radians)
 
   ctypedef struct dmnsn_vector:
-    double x
-    double y
-    double z
+    double n[3]
 
   dmnsn_vector dmnsn_new_vector(double x, double y, double z)
 
@@ -126,7 +124,6 @@ cdef extern from "../libdimension/dimension.h":
   dmnsn_vector dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
   dmnsn_vector dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
   dmnsn_vector dmnsn_vector_mul(double lhs, dmnsn_vector rhs)
-  dmnsn_vector dmnsn_vector_div(dmnsn_vector lhs, double rhs)
 
   dmnsn_vector dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
   double dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs)

@@ -43,3 +43,14 @@ extern "C" {
 #endif
 
 #endif /* DMNSN_MATH_H */
+
+#if defined(DMNSN_SHORT_NAMES) && !defined(DMNSN_SHORT_NAMES_DEFINED)
+  #define DMNSN_SHORT_NAMES_DEFINED
+
+  /** Short name for the \a x component of a \c dmnsn_vector. */
+  #define X n[0]
+  /** Short name for the \a y component of a \c dmnsn_vector. */
+  #define Y n[1]
+  /** Short name for the \a z component of a \c dmnsn_vector. */
+  #define Z n[2]
+#endif

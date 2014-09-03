@@ -23,15 +23,16 @@
  * Checker pattern.
  */
 
+#include "internal.h"
 #include "dimension/pattern.h"
 
 /// Checker pattern callback.
 static double
 dmnsn_checker_pattern_fn(const dmnsn_pattern *checker, dmnsn_vector v)
 {
-  double xmod = fmod(v.x, 2.0);
-  double ymod = fmod(v.y, 2.0);
-  double zmod = fmod(v.z, 2.0);
+  double xmod = fmod(v.X, 2.0);
+  double ymod = fmod(v.Y, 2.0);
+  double zmod = fmod(v.Z, 2.0);
 
   if (xmod < -dmnsn_epsilon)
     xmod += 2.0;

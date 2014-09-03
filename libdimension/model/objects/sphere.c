@@ -29,8 +29,7 @@
 
 /// Sphere intersection callback.
 static bool
-dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_ray l,
-                             dmnsn_intersection *intersection)
+dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_ray l, dmnsn_intersection *intersection)
 {
   // Solve (x0 + nx*t)^2 + (y0 + ny*t)^2 + (z0 + nz*t)^2 == 1
   double poly[3], x[2];
@@ -58,12 +57,12 @@ dmnsn_sphere_intersection_fn(const dmnsn_object *sphere, dmnsn_ray l,
 static bool
 dmnsn_sphere_inside_fn(const dmnsn_object *sphere, dmnsn_vector point)
 {
-  return point.x*point.x + point.y*point.y + point.z*point.z < 1.0;
+  return point.X*point.X + point.Y*point.Y + point.Z*point.Z < 1.0;
 }
 
 /// Helper for sphere bounding box calculation.
 static inline double
-dmnsn_implicit_dot(double row[4])
+dmnsn_implicit_dot(const double row[4])
 {
   double ret = 0.0;
   for (int i = 0; i < 3; ++i) {
@@ -84,18 +83,18 @@ dmnsn_sphere_bounding_fn(const dmnsn_object *object, dmnsn_matrix trans)
 
   double cx = trans.n[0][3];
   double dx = sqrt(dmnsn_implicit_dot(trans.n[0]));
-  box.min.x = cx - dx;
-  box.max.x = cx + dx;
+  box.min.X = cx - dx;
+  box.max.X = cx + dx;
 
   double cy = trans.n[1][3];
   double dy = sqrt(dmnsn_implicit_dot(trans.n[1]));
-  box.min.y = cy - dy;
-  box.max.y = cy + dy;
+  box.min.Y = cy - dy;
+  box.max.Y = cy + dy;
 
   double cz = trans.n[2][3];
   double dz = sqrt(dmnsn_implicit_dot(trans.n[2]));
-  box.min.z = cz - dz;
-  box.max.z = cz + dz;
+  box.min.Z = cz - dz;
+  box.max.Z = cz + dz;
 
   return box;
 }

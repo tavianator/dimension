@@ -186,7 +186,7 @@ dmnsn_optimize_ray(dmnsn_ray ray)
 {
   dmnsn_optimized_ray optray = {
     .x0    = ray.x0,
-    .n_inv = dmnsn_new_vector(1.0/ray.n.x, 1.0/ray.n.y, 1.0/ray.n.z)
+    .n_inv = dmnsn_new_vector(1.0/ray.n.X, 1.0/ray.n.Y, 1.0/ray.n.Z)
   };
   return optray;
 }
@@ -202,20 +202,20 @@ dmnsn_ray_box_intersection(dmnsn_optimized_ray optray, dmnsn_aabb box, double t)
   // or tmax == -inf, while rays inside the box will have tmin and tmax
   // unchanged.
 
-  double tx1 = (box.min.x - optray.x0.x)*optray.n_inv.x;
-  double tx2 = (box.max.x - optray.x0.x)*optray.n_inv.x;
+  double tx1 = (box.min.X - optray.x0.X)*optray.n_inv.X;
+  double tx2 = (box.max.X - optray.x0.X)*optray.n_inv.X;
 
   double tmin = dmnsn_min(tx1, tx2);
   double tmax = dmnsn_max(tx1, tx2);
 
-  double ty1 = (box.min.y - optray.x0.y)*optray.n_inv.y;
-  double ty2 = (box.max.y - optray.x0.y)*optray.n_inv.y;
+  double ty1 = (box.min.Y - optray.x0.Y)*optray.n_inv.Y;
+  double ty2 = (box.max.Y - optray.x0.Y)*optray.n_inv.Y;
 
   tmin = dmnsn_max(tmin, dmnsn_min(ty1, ty2));
   tmax = dmnsn_min(tmax, dmnsn_max(ty1, ty2));
 
-  double tz1 = (box.min.z - optray.x0.z)*optray.n_inv.z;
-  double tz2 = (box.max.z - optray.x0.z)*optray.n_inv.z;
+  double tz1 = (box.min.Z - optray.x0.Z)*optray.n_inv.Z;
+  double tz2 = (box.max.Z - optray.x0.Z)*optray.n_inv.Z;
 
   tmin = dmnsn_max(tmin, dmnsn_min(tz1, tz2));
   tmax = dmnsn_min(tmax, dmnsn_max(tz1, tz2));

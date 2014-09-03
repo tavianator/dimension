@@ -189,10 +189,7 @@ dmnsn_rtstate_initialize(dmnsn_rtstate *state,
   state->interior     = intersection->object->interior;
 
   state->r = dmnsn_ray_point(intersection->ray, intersection->t);
-  state->pigment_r = dmnsn_transform_point(
-    intersection->object->pigment_trans,
-    state->r
-  );
+  state->pigment_r = dmnsn_transform_point(intersection->object->pigment_trans, state->r);
   state->viewer = dmnsn_vector_normalized(
     dmnsn_vector_negate(intersection->ray.n)
   );

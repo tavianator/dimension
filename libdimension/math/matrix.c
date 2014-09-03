@@ -27,53 +27,22 @@
 #include "dimension/math.h"
 #include <math.h>
 
-// Identity matrix
-dmnsn_matrix
-dmnsn_identity_matrix(void)
-{
-  return dmnsn_new_matrix(1.0, 0.0, 0.0, 0.0,
-                          0.0, 1.0, 0.0, 0.0,
-                          0.0, 0.0, 1.0, 0.0);
-}
-
-// Scaling matrix
-dmnsn_matrix
-dmnsn_scale_matrix(dmnsn_vector s)
-{
-  return dmnsn_new_matrix(s.x, 0.0, 0.0, 0.0,
-                          0.0, s.y, 0.0, 0.0,
-                          0.0, 0.0, s.z, 0.0);
-}
-
-// Translation matrix
-dmnsn_matrix
-dmnsn_translation_matrix(dmnsn_vector d)
-{
-  return dmnsn_new_matrix(1.0, 0.0, 0.0, d.x,
-                          0.0, 1.0, 0.0, d.y,
-                          0.0, 0.0, 1.0, d.z);
-}
-
 // Left-handed rotation matrix; theta/|theta| = axis, |theta| = angle
 dmnsn_matrix
 dmnsn_rotation_matrix(dmnsn_vector theta)
 {
-  // Two trig calls, 25 multiplications, 13 additions
-
   double angle = dmnsn_vector_norm(theta);
   if (fabs(angle) < dmnsn_epsilon) {
     return dmnsn_identity_matrix();
   }
-  dmnsn_vector axis = dmnsn_vector_div(theta, angle);
+  dmnsn_vector axis = dmnsn_vector_mul(1.0/angle, theta);
 
   // Shorthand to make dmnsn_new_matrix() call legible
-
   double s = sin(angle);
   double t = 1.0 - cos(angle);
-
-  double x = axis.x;
-  double y = axis.y;
-  double z = axis.z;
+  double x = axis.X;
+  double y = axis.Y;
+  double z = axis.Z;
 
   return dmnsn_new_matrix(
     1.0 + t*(x*x - 1.0), -z*s + t*x*y,        y*s + t*x*z,         0.0,
@@ -87,7 +56,7 @@ static double
 dmnsn_axis_angle(dmnsn_vector from, dmnsn_vector to, dmnsn_vector axis)
 {
   from = dmnsn_vector_sub(from, dmnsn_vector_proj(from, axis));
-  to   = dmnsn_vector_sub(to,   dmnsn_vector_proj(to, axis));
+  to = dmnsn_vector_sub(to, dmnsn_vector_proj(to, axis));
 
   double fromnorm = dmnsn_vector_norm(from);
   double tonorm   = dmnsn_vector_norm(to);
@@ -95,8 +64,8 @@ dmnsn_axis_angle(dmnsn_vector from, dmnsn_vector to, dmnsn_vector axis)
     return 0.0;
   }
 
-  from = dmnsn_vector_div(from, fromnorm);
-  to   = dmnsn_vector_div(to,   tonorm);
+  from = dmnsn_vector_mul(1.0/fromnorm, from);
+  to = dmnsn_vector_mul(1.0/tonorm, to);
 
   double angle = acos(dmnsn_vector_dot(from, to));
 
@@ -109,8 +78,7 @@ dmnsn_axis_angle(dmnsn_vector from, dmnsn_vector to, dmnsn_vector axis)
 
 // Alignment matrix
 dmnsn_matrix
-dmnsn_alignment_matrix(dmnsn_vector from, dmnsn_vector to,
-                       dmnsn_vector axis1, dmnsn_vector axis2)
+dmnsn_alignment_matrix(dmnsn_vector from, dmnsn_vector to, dmnsn_vector axis1, dmnsn_vector axis2)
 {
   double theta1 = dmnsn_axis_angle(from, to, axis1);
   dmnsn_matrix align1 = dmnsn_rotation_matrix(dmnsn_vector_mul(theta1, axis1));
@@ -141,13 +109,13 @@ static dmnsn_matrix2 dmnsn_matrix2_sub(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs);
 static dmnsn_matrix2 dmnsn_matrix2_mul(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs);
 
 /// Invert a matrix with the slower cofactor algorithm, if partitioning failed.
-static dmnsn_matrix dmnsn_matrix_inverse_generic(dmnsn_matrix A);
+static dmnsn_matrix dmnsn_matrix_inverse_generic(const dmnsn_matrix M);
 /// Get the [\p row, \p col] cofactor of A.
-static double dmnsn_matrix_cofactor(dmnsn_matrix A, size_t row, size_t col);
+static double dmnsn_matrix_cofactor(dmnsn_matrix M, size_t row, size_t col);
 
 // Invert a matrix, by partitioning
 dmnsn_matrix
-dmnsn_matrix_inverse(dmnsn_matrix A)
+dmnsn_matrix_inverse(dmnsn_matrix M)
 {
   // Use partitioning to invert a matrix:
   //
@@ -162,11 +130,8 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   //      RR = -SS*R*inv(P), and
   //      SS = inv(S - R*inv(P)*Q).
 
-  // The algorithm uses 2 inversions, 6 multiplications, and 2 subtractions,
-  // giving 52 multiplications, 34 additions, and 8 divisions.
-
   dmnsn_matrix2 P, Q, R, S, Pi, RPi, PiQ, RPiQ, PP, QQ, RR, SS;
-  double Pdet = A.n[0][0]*A.n[1][1] - A.n[0][1]*A.n[1][0];
+  double Pdet = M.n[0][0]*M.n[1][1] - M.n[0][1]*M.n[1][0];
 
   if (dmnsn_unlikely(fabs(Pdet) < dmnsn_epsilon)) {
     // If P is close to singular, try a more generic algorithm; this is very
@@ -175,22 +140,24 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
     //   [ 1 1 1 0 ]
     //   [ 0 1 1 0 ]
     //   [ 0 0 0 1 ]
-    return dmnsn_matrix_inverse_generic(A);
+    return dmnsn_matrix_inverse_generic(M);
   }
 
+  double Pdet_inv = 1.0/Pdet;
+
   // Partition the matrix
-  P = dmnsn_new_matrix2(A.n[0][0], A.n[0][1],
-                        A.n[1][0], A.n[1][1]);
-  Q = dmnsn_new_matrix2(A.n[0][2], A.n[0][3],
-                        A.n[1][2], A.n[1][3]);
-  R = dmnsn_new_matrix2(A.n[2][0], A.n[2][1],
+  P = dmnsn_new_matrix2(M.n[0][0], M.n[0][1],
+                        M.n[1][0], M.n[1][1]);
+  Q = dmnsn_new_matrix2(M.n[0][2], M.n[0][3],
+                        M.n[1][2], M.n[1][3]);
+  R = dmnsn_new_matrix2(M.n[2][0], M.n[2][1],
                         0.0,       0.0);
-  S = dmnsn_new_matrix2(A.n[2][2], A.n[2][3],
+  S = dmnsn_new_matrix2(M.n[2][2], M.n[2][3],
                         0.0,       1.0);
 
   // Do this inversion ourselves, since we already have the determinant
-  Pi = dmnsn_new_matrix2( P.n[1][1]/Pdet, -P.n[0][1]/Pdet,
-                         -P.n[1][0]/Pdet,  P.n[0][0]/Pdet);
+  Pi = dmnsn_new_matrix2( P.n[1][1]*Pdet_inv, -P.n[0][1]*Pdet_inv,
+                         -P.n[1][0]*Pdet_inv,  P.n[0][0]*Pdet_inv);
 
   // Calculate R*inv(P), inv(P)*Q, and R*inv(P)*Q
   RPi  = dmnsn_matrix2_mul(R, Pi);
@@ -204,9 +171,11 @@ dmnsn_matrix_inverse(dmnsn_matrix A)
   PP = dmnsn_matrix2_sub(Pi, dmnsn_matrix2_mul(PiQ, RR));
 
   // Reconstruct the matrix
-  return dmnsn_new_matrix(PP.n[0][0], PP.n[0][1], QQ.n[0][0], QQ.n[0][1],
-                          PP.n[1][0], PP.n[1][1], QQ.n[1][0], QQ.n[1][1],
-                          RR.n[0][0], RR.n[0][1], SS.n[0][0], SS.n[0][1]);
+  return dmnsn_new_matrix(
+    PP.n[0][0], PP.n[0][1], QQ.n[0][0], QQ.n[0][1],
+    PP.n[1][0], PP.n[1][1], QQ.n[1][0], QQ.n[1][1],
+    RR.n[0][0], RR.n[0][1], SS.n[0][0], SS.n[0][1]
+  );
 }
 
 // For nice shorthand
@@ -222,10 +191,9 @@ dmnsn_new_matrix2(double a1, double a2, double b1, double b2)
 static dmnsn_matrix2
 dmnsn_matrix2_inverse(dmnsn_matrix2 A)
 {
-  // 4 divisions, 2 multiplications, 1 addition
-  double det = A.n[0][0]*A.n[1][1] - A.n[0][1]*A.n[1][0];
-  return dmnsn_new_matrix2( A.n[1][1]/det, -A.n[0][1]/det,
-                           -A.n[1][0]/det,  A.n[0][0]/det);
+  double inv_det = 1.0/(A.n[0][0]*A.n[1][1] - A.n[0][1]*A.n[1][0]);
+  return dmnsn_new_matrix2( A.n[1][1]*inv_det, -A.n[0][1]*inv_det,
+                           -A.n[1][0]*inv_det,  A.n[0][0]*inv_det);
 }
 
 // Also basically a shorthand
@@ -240,7 +208,6 @@ dmnsn_matrix2_negate(dmnsn_matrix2 A)
 static dmnsn_matrix2
 dmnsn_matrix2_sub(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs)
 {
-  // 4 additions
   return dmnsn_new_matrix2(
     lhs.n[0][0] - rhs.n[0][0], lhs.n[0][1] - rhs.n[0][1],
     lhs.n[1][0] - rhs.n[1][0], lhs.n[1][1] - rhs.n[1][1]
@@ -251,7 +218,6 @@ dmnsn_matrix2_sub(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs)
 static dmnsn_matrix2
 dmnsn_matrix2_mul(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs)
 {
-  // 8 multiplications, 4 additions
   return dmnsn_new_matrix2(
     lhs.n[0][0]*rhs.n[0][0] + lhs.n[0][1]*rhs.n[1][0],
       lhs.n[0][0]*rhs.n[0][1] + lhs.n[0][1]*rhs.n[1][1],
@@ -262,7 +228,7 @@ dmnsn_matrix2_mul(dmnsn_matrix2 lhs, dmnsn_matrix2 rhs)
 
 // Invert a matrix, if partitioning failed (|P| == 0)
 static dmnsn_matrix
-dmnsn_matrix_inverse_generic(dmnsn_matrix A)
+dmnsn_matrix_inverse_generic(dmnsn_matrix M)
 {
   // For A = [ A'      b ]  A^-1 = [ A'^-1   -(A'^-1)*b ]
   //         [ 0 ... 0 1 ],        [ 0 ... 0      1     ].
@@ -274,20 +240,22 @@ dmnsn_matrix_inverse_generic(dmnsn_matrix A)
   // Perform a Laplace expansion along the first row to give us the adjugate's
   // first column and the determinant
   for (size_t j = 0; j < 3; ++j) {
-    C = dmnsn_matrix_cofactor(A, 0, j);
-    det += A.n[0][j]*C;
+    C = dmnsn_matrix_cofactor(M, 0, j);
+    det += M.n[0][j]*C;
     inv.n[j][0] = C;
   }
 
+  double inv_det = 1.0/det;
+
   // Divide the first column by the determinant
   for (size_t j = 0; j < 3; ++j) {
-    inv.n[j][0] /= det;
+    inv.n[j][0] *= inv_det;
   }
 
   // Find the rest of A'
   for (size_t j = 0; j < 3; ++j) {
     for (size_t i = 1; i < 3; ++i) {
-      inv.n[j][i] = dmnsn_matrix_cofactor(A, i, j)/det;
+      inv.n[j][i] = dmnsn_matrix_cofactor(M, i, j)*inv_det;
     }
     inv.n[j][3] = 0.0;
   }
@@ -295,7 +263,7 @@ dmnsn_matrix_inverse_generic(dmnsn_matrix A)
   // Find the translational component of the inverse
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      inv.n[i][3] -= inv.n[i][j]*A.n[j][3];
+      inv.n[i][3] -= inv.n[i][j]*M.n[j][3];
     }
   }
 
@@ -306,15 +274,14 @@ dmnsn_matrix_inverse_generic(dmnsn_matrix A)
 // upper-left 3x3 corner of A by ignoring row `row' and column `col',
 // times (-1)^(row + col)
 static double
-dmnsn_matrix_cofactor(dmnsn_matrix A, size_t row, size_t col)
+dmnsn_matrix_cofactor(dmnsn_matrix M, size_t row, size_t col)
 {
-  // 2 multiplications, 1 addition
   double n[4];
   size_t k = 0;
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
       if (i != row && j != col) {
-        n[k] = A.n[i][j];
+        n[k] = M.n[i][j];
         ++k;
       }
     }
@@ -328,61 +295,30 @@ dmnsn_matrix_cofactor(dmnsn_matrix A, size_t row, size_t col)
   }
 }
 
-// 4x4 matrix multiplication
-dmnsn_matrix
-dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs)
-{
-  // 36 multiplications, 27 additions
-  dmnsn_matrix r;
-
-  r.n[0][0] = lhs.n[0][0]*rhs.n[0][0] + lhs.n[0][1]*rhs.n[1][0] + lhs.n[0][2]*rhs.n[2][0];
-  r.n[0][1] = lhs.n[0][0]*rhs.n[0][1] + lhs.n[0][1]*rhs.n[1][1] + lhs.n[0][2]*rhs.n[2][1];
-  r.n[0][2] = lhs.n[0][0]*rhs.n[0][2] + lhs.n[0][1]*rhs.n[1][2] + lhs.n[0][2]*rhs.n[2][2];
-  r.n[0][3] = lhs.n[0][0]*rhs.n[0][3] + lhs.n[0][1]*rhs.n[1][3] + lhs.n[0][2]*rhs.n[2][3] + lhs.n[0][3];
-
-  r.n[1][0] = lhs.n[1][0]*rhs.n[0][0] + lhs.n[1][1]*rhs.n[1][0] + lhs.n[1][2]*rhs.n[2][0];
-  r.n[1][1] = lhs.n[1][0]*rhs.n[0][1] + lhs.n[1][1]*rhs.n[1][1] + lhs.n[1][2]*rhs.n[2][1];
-  r.n[1][2] = lhs.n[1][0]*rhs.n[0][2] + lhs.n[1][1]*rhs.n[1][2] + lhs.n[1][2]*rhs.n[2][2];
-  r.n[1][3] = lhs.n[1][0]*rhs.n[0][3] + lhs.n[1][1]*rhs.n[1][3] + lhs.n[1][2]*rhs.n[2][3] + lhs.n[1][3];
-
-  r.n[2][0] = lhs.n[2][0]*rhs.n[0][0] + lhs.n[2][1]*rhs.n[1][0] + lhs.n[2][2]*rhs.n[2][0];
-  r.n[2][1] = lhs.n[2][0]*rhs.n[0][1] + lhs.n[2][1]*rhs.n[1][1] + lhs.n[2][2]*rhs.n[2][1];
-  r.n[2][2] = lhs.n[2][0]*rhs.n[0][2] + lhs.n[2][1]*rhs.n[1][2] + lhs.n[2][2]*rhs.n[2][2];
-  r.n[2][3] = lhs.n[2][0]*rhs.n[0][3] + lhs.n[2][1]*rhs.n[1][3] + lhs.n[2][2]*rhs.n[2][3] + lhs.n[2][3];
-
-  return r;
-}
-
 // Give an axis-aligned box that contains the given box transformed by `lhs'
 dmnsn_aabb
-dmnsn_transform_aabb(dmnsn_matrix trans, dmnsn_aabb box)
+dmnsn_transform_aabb(dmnsn_matrix M, dmnsn_aabb box)
 {
   // Infinite/zero bounding box support
-  if (isinf(box.min.x)) {
+  if (isinf(box.min.X)) {
     return box;
   }
 
   // Taking the "absolute value" of the matrix saves some min/max calculations
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      trans.n[i][j] = fabs(trans.n[i][j]);
+  dmnsn_vector Mabs[3];
+  for (unsigned int i = 0; i < 3; ++i) {
+    for (unsigned int j = 0; j < 3; ++j) {
+      Mabs[i].n[j] = fabs(M.n[j][i]);
     }
   }
 
-  dmnsn_vector Mt = dmnsn_matrix_column(trans, 3);
+  dmnsn_vector Mt = dmnsn_matrix_column(M, 3);
   dmnsn_aabb ret = { Mt, Mt };
 
-  dmnsn_vector Mz = dmnsn_matrix_column(trans, 2);
-  ret.min = dmnsn_vector_add(ret.min, dmnsn_vector_mul(box.min.z, Mz));
-  ret.max = dmnsn_vector_add(ret.max, dmnsn_vector_mul(box.max.z, Mz));
-
-  dmnsn_vector My = dmnsn_matrix_column(trans, 1);
-  ret.min = dmnsn_vector_add(ret.min, dmnsn_vector_mul(box.min.y, My));
-  ret.max = dmnsn_vector_add(ret.max, dmnsn_vector_mul(box.max.y, My));
-
-  dmnsn_vector Mx = dmnsn_matrix_column(trans, 0);
-  ret.min = dmnsn_vector_add(ret.min, dmnsn_vector_mul(box.min.x, Mx));
-  ret.max = dmnsn_vector_add(ret.max, dmnsn_vector_mul(box.max.x, Mx));
+  for (unsigned int i = 0; i < 3; ++i) {
+    ret.min = dmnsn_vector_add(ret.min, dmnsn_vector_mul(box.min.n[i], Mabs[i]));
+    ret.max = dmnsn_vector_add(ret.max, dmnsn_vector_mul(box.max.n[i], Mabs[i]));
+  }
 
   return ret;
 }

@@ -23,6 +23,7 @@
  * Cubes.
  */
 
+#include "internal.h"
 #include "dimension/model.h"
 #include <math.h>
 
@@ -36,8 +37,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_ray ray,
   dmnsn_vector nmin, nmax;
   double tmin, tmax;
 
-  double tx1 = (-1.0 - ray.x0.x)/ray.n.x;
-  double tx2 = (+1.0 - ray.x0.x)/ray.n.x;
+  double tx1 = (-1.0 - ray.x0.X)/ray.n.X;
+  double tx2 = (+1.0 - ray.x0.X)/ray.n.X;
 
   if (tx1 < tx2) {
     tmin = tx1;
@@ -54,8 +55,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_ray ray,
   if (tmin > tmax)
     return false;
 
-  double ty1 = (-1.0 - ray.x0.y)/ray.n.y;
-  double ty2 = (+1.0 - ray.x0.y)/ray.n.y;
+  double ty1 = (-1.0 - ray.x0.Y)/ray.n.Y;
+  double ty2 = (+1.0 - ray.x0.Y)/ray.n.Y;
 
   if (ty1 < ty2) {
     if (ty1 > tmin) {
@@ -80,8 +81,8 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_ray ray,
   if (tmin > tmax)
     return false;
 
-  double tz1 = (-1.0 - ray.x0.z)/ray.n.z;
-  double tz2 = (+1.0 - ray.x0.z)/ray.n.z;
+  double tz1 = (-1.0 - ray.x0.Z)/ray.n.Z;
+  double tz2 = (+1.0 - ray.x0.Z)/ray.n.Z;
 
   if (tz1 < tz2) {
     if (tz1 > tmin) {
@@ -124,9 +125,9 @@ dmnsn_cube_intersection_fn(const dmnsn_object *cube, dmnsn_ray ray,
 static bool
 dmnsn_cube_inside_fn(const dmnsn_object *cube, dmnsn_vector point)
 {
-  return point.x > -1.0 && point.x < 1.0
-      && point.y > -1.0 && point.y < 1.0
-      && point.z > -1.0 && point.z < 1.0;
+  return point.X > -1.0 && point.X < 1.0
+      && point.Y > -1.0 && point.Y < 1.0
+      && point.Z > -1.0 && point.Z < 1.0;
 }
 
 /// Boundary callback for a cube.

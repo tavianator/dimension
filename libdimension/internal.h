@@ -27,6 +27,8 @@
 #ifndef DMNSN_INTERNAL_H
 #define DMNSN_INTERNAL_H
 
+#define DMNSN_SHORT_NAMES
+
 #include "dimension/base.h"
 
 #include "internal/compiler.h"

@@ -32,26 +32,24 @@
 
 /** A vector in 3 dimensions. */
 typedef struct dmnsn_vector {
-  double x; /**< The x component. */
-  double y; /**< The y component. */
-  double z; /**< The z component. */
+  double n[3]; /**< The components. */
 } dmnsn_vector;
 
 /** A standard format string for vectors. */
 #define DMNSN_VECTOR_FORMAT "<%g, %g, %g>"
 /** The appropriate arguements to printf() a vector. */
-#define DMNSN_VECTOR_PRINTF(v) (v).x, (v).y, (v).z
+#define DMNSN_VECTOR_PRINTF(v) (v).n[0], (v).n[1], (v).n[2]
 
 /* Constants */
 
 /** The zero vector. */
-static const dmnsn_vector dmnsn_zero = { 0.0, 0.0, 0.0 };
+static const dmnsn_vector dmnsn_zero = { { 0.0, 0.0, 0.0 } };
 /** The x vector. */
-static const dmnsn_vector dmnsn_x = { 1.0, 0.0, 0.0 };
+static const dmnsn_vector dmnsn_x = { { 1.0, 0.0, 0.0 } };
 /** The y vector. */
-static const dmnsn_vector dmnsn_y = { 0.0, 1.0, 0.0 };
+static const dmnsn_vector dmnsn_y = { { 0.0, 1.0, 0.0 } };
 /** The z vector. */
-static const dmnsn_vector dmnsn_z = { 0.0, 0.0, 1.0 };
+static const dmnsn_vector dmnsn_z = { { 0.0, 0.0, 1.0 } };
 
 /* Shorthand for vector construction */
 
@@ -59,7 +57,7 @@ static const dmnsn_vector dmnsn_z = { 0.0, 0.0, 1.0 };
 DMNSN_INLINE dmnsn_vector
 dmnsn_new_vector(double x, double y, double z)
 {
-  dmnsn_vector v = { x, y, z };
+  dmnsn_vector v = { { x, y, z } };
   return v;
 }
 
@@ -69,8 +67,11 @@ dmnsn_new_vector(double x, double y, double z)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_negate(dmnsn_vector rhs)
 {
-  /* 3 negations */
-  dmnsn_vector v = { -rhs.x, -rhs.y, -rhs.z };
+  dmnsn_vector v;
+  unsigned int i;
+  for (i = 0; i < 3; ++i) {
+    v.n[i] = -rhs.n[i];
+  }
   return v;
 }
 
@@ -78,8 +79,11 @@ dmnsn_vector_negate(dmnsn_vector rhs)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
 {
-  /* 3 additions */
-  dmnsn_vector v = { lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z };
+  dmnsn_vector v;
+  unsigned int i;
+  for (i = 0; i < 3; ++i) {
+    v.n[i] = lhs.n[i] + rhs.n[i];
+  }
   return v;
 }
 
@@ -87,8 +91,11 @@ dmnsn_vector_add(dmnsn_vector lhs, dmnsn_vector rhs)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
 {
-  /* 3 additions */
-  dmnsn_vector v = { lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z };
+  dmnsn_vector v;
+  unsigned int i;
+  for (i = 0; i < 3; ++i) {
+    v.n[i] = lhs.n[i] - rhs.n[i];
+  }
   return v;
 }
 
@@ -96,17 +103,11 @@ dmnsn_vector_sub(dmnsn_vector lhs, dmnsn_vector rhs)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_mul(double lhs, dmnsn_vector rhs)
 {
-  /* 3 multiplications */
-  dmnsn_vector v = { lhs*rhs.x, lhs*rhs.y, lhs*rhs.z };
-  return v;
-}
-
-/** Divide a vector by a scalar. */
-DMNSN_INLINE dmnsn_vector
-dmnsn_vector_div(dmnsn_vector lhs, double rhs)
-{
-  /* 3 divisions */
-  dmnsn_vector v = { lhs.x/rhs, lhs.y/rhs, lhs.z/rhs };
+  dmnsn_vector v;
+  unsigned int i;
+  for (i = 0; i < 3; ++i) {
+    v.n[i] = lhs*rhs.n[i];
+  }
   return v;
 }
 
@@ -114,18 +115,22 @@ dmnsn_vector_div(dmnsn_vector lhs, double rhs)
 DMNSN_INLINE double
 dmnsn_vector_dot(dmnsn_vector lhs, dmnsn_vector rhs)
 {
-  /* 3 multiplications, 2 additions */
-  return lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z;
+  double result = 0.0;
+  unsigned int i;
+  for (i = 0; i < 3; ++i) {
+    result += lhs.n[i]*rhs.n[i];
+  }
+  return result;
 }
 
 /** Return the cross product of two vectors. */
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
 {
-  /* 6 multiplications, 3 additions */
-  dmnsn_vector v = { lhs.y*rhs.z - lhs.z*rhs.y,
-                     lhs.z*rhs.x - lhs.x*rhs.z,
-                     lhs.x*rhs.y - lhs.y*rhs.x };
+  dmnsn_vector v;
+  v.n[0] = lhs.n[1]*rhs.n[2] - lhs.n[2]*rhs.n[1];
+  v.n[1] = lhs.n[2]*rhs.n[0] - lhs.n[0]*rhs.n[2];
+  v.n[2] = lhs.n[0]*rhs.n[1] - lhs.n[1]*rhs.n[0];
   return v;
 }
 
@@ -133,7 +138,6 @@ dmnsn_vector_cross(dmnsn_vector lhs, dmnsn_vector rhs)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_proj(dmnsn_vector u, dmnsn_vector d)
 {
-  /* 1 division, 9 multiplications, 4 additions */
   return dmnsn_vector_mul(dmnsn_vector_dot(u, d)/dmnsn_vector_dot(d, d), d);
 }
 
@@ -141,7 +145,6 @@ dmnsn_vector_proj(dmnsn_vector u, dmnsn_vector d)
 DMNSN_INLINE double
 dmnsn_vector_norm(dmnsn_vector n)
 {
-  /* 1 sqrt, 3 multiplications, 2 additions */
   return sqrt(dmnsn_vector_dot(n, n));
 }
 
@@ -149,35 +152,42 @@ dmnsn_vector_norm(dmnsn_vector n)
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_normalized(dmnsn_vector n)
 {
-  /* 1 sqrt, 3 divisions, 3 multiplications, 2 additions */
-  return dmnsn_vector_div(n, dmnsn_vector_norm(n));
+  return dmnsn_vector_mul(1.0/dmnsn_vector_norm(n), n);
 }
 
 /** Return the component-wise minimum of two vectors. */
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_min(dmnsn_vector a, dmnsn_vector b)
 {
-  return dmnsn_new_vector(
-    dmnsn_min(a.x, b.x),
-    dmnsn_min(a.y, b.y),
-    dmnsn_min(a.z, b.z)
-  );
+  dmnsn_vector v;
+  unsigned int i;
+  for (i = 0; i < 3; ++i) {
+    v.n[i] = dmnsn_min(a.n[i], b.n[i]);
+  }
+  return v;
 }
 
 /** Return the component-wise maximum of two vectors. */
 DMNSN_INLINE dmnsn_vector
 dmnsn_vector_max(dmnsn_vector a, dmnsn_vector b)
 {
-  return dmnsn_new_vector(
-    dmnsn_max(a.x, b.x),
-    dmnsn_max(a.y, b.y),
-    dmnsn_max(a.z, b.z)
-  );
+  dmnsn_vector v;
+  unsigned int i;
+  for (i = 0; i < 3; ++i) {
+    v.n[i] = dmnsn_max(a.n[i], b.n[i]);
+  }
+  return v;
 }
 
 /** Return whether a vector contains any NaN components. */
 DMNSN_INLINE bool
 dmnsn_vector_isnan(dmnsn_vector v)
 {
-  return dmnsn_isnan(v.x) || dmnsn_isnan(v.y) || dmnsn_isnan(v.z);
+  unsigned int i;
+  for (i = 0; i < 3; ++i) {
+    if (dmnsn_isnan(v.n[i])) {
+      return true;
+    }
+  }
+  return false;
 }

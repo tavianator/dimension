@@ -39,152 +39,218 @@ typedef struct dmnsn_matrix {
   "[%g\t%g\t%g\t%g]\n"                          \
   "[%g\t%g\t%g\t%g]"
 /** The appropriate arguements to printf() a matrix. */
-#define DMNSN_MATRIX_PRINTF(m)                          \
-  (m).n[0][0], (m).n[0][1], (m).n[0][2], (m).n[0][3],   \
-  (m).n[1][0], (m).n[1][1], (m).n[1][2], (m).n[1][3],   \
-  (m).n[2][0], (m).n[2][1], (m).n[2][2], (m).n[2][3],   \
+#define DMNSN_MATRIX_PRINTF(M)                              \
+  (M).n[0][0], (M).n[0][1], (M).n[0][2], (M).n[0][3],   \
+  (M).n[1][0], (M).n[1][1], (M).n[1][2], (M).n[1][3],   \
+  (M).n[2][0], (M).n[2][1], (M).n[2][2], (M).n[2][3],   \
   0.0, 0.0, 0.0, 1.0
 
-/** Construct a new transformation matrix. */
+/** Create a transformation matrix. */
 DMNSN_INLINE dmnsn_matrix
-dmnsn_new_matrix(double a0, double a1, double a2, double a3,
-                 double b0, double b1, double b2, double b3,
-                 double c0, double c1, double c2, double c3)
+dmnsn_new_matrix(double a0, double b0, double c0, double d0,
+                 double a1, double b1, double c1, double d1,
+                 double a2, double b2, double c2, double d2)
 {
-  dmnsn_matrix m = { { { a0, a1, a2, a3 },
-                       { b0, b1, b2, b3 },
-                       { c0, c1, c2, c3 } } };
-  return m;
+  dmnsn_matrix M = {
+    {
+      { a0, b0, c0, d0 },
+      { a1, b1, c1, d1 },
+      { a2, b2, c2, d2 }
+    }
+  };
+  return M;
 }
 
-/** Construct a new transformation matrix from column vectors. */
+/** Create a transformation matrix from column vectors. */
 DMNSN_INLINE dmnsn_matrix
-dmnsn_new_matrix4(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c,
-                  dmnsn_vector d)
+dmnsn_new_matrix4(dmnsn_vector a, dmnsn_vector b, dmnsn_vector c, dmnsn_vector d)
 {
-  dmnsn_matrix m = { { { a.x, b.x, c.x, d.x },
-                       { a.y, b.y, c.y, d.y },
-                       { a.z, b.z, c.z, d.z } } };
-  return m;
+  dmnsn_matrix M;
+
+  unsigned int i;
+  for (i = 0; i < 3; ++i) {
+    M.n[i][0] = a.n[i];
+  }
+  for (i = 0; i < 3; ++i) {
+    M.n[i][1] = b.n[i];
+  }
+  for (i = 0; i < 3; ++i) {
+    M.n[i][2] = c.n[i];
+  }
+  for (i = 0; i < 3; ++i) {
+    M.n[i][3] = d.n[i];
+  }
+
+  return M;
 }
 
 /** Extract column vectors from a matrix. */
 DMNSN_INLINE dmnsn_vector
 dmnsn_matrix_column(dmnsn_matrix M, unsigned int i)
 {
-  return dmnsn_new_vector(M.n[0][i], M.n[1][i], M.n[2][i]);
+  dmnsn_vector v;
+  unsigned int j;
+  for (j = 0; j < 3; ++j) {
+    v.n[j] = M.n[j][i];
+  }
+  return v;
 }
 
 /** Return the identity matrix. */
-dmnsn_matrix dmnsn_identity_matrix(void);
+DMNSN_INLINE dmnsn_matrix
+dmnsn_identity_matrix(void)
+{
+  return dmnsn_new_matrix(
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0
+  );
+}
 
 /**
- * A scale transformation.
- * @param[in] s  A vector with components representing the scaling factor in
- *               each axis.
- * @return The transformation matrix.
+ * Return a scale transformation.
+ * @param[in]  s  A vector with components representing the scaling factor in
+ *                each axis.
  */
-dmnsn_matrix dmnsn_scale_matrix(dmnsn_vector s);
+DMNSN_INLINE dmnsn_matrix
+dmnsn_scale_matrix(dmnsn_vector s)
+{
+  return dmnsn_new_matrix(
+    s.n[0], 0.0,    0.0,    0.0,
+    0.0,    s.n[1], 0.0,    0.0,
+    0.0,    0.0,    s.n[2], 0.0
+  );
+}
+
 /**
- * A translation.
- * @param[in] d  The vector to translate by.
- * @return The transformation matrix.
+ * Set \p M to a translation matrix.
+ * @param[in]  d  The vector to translate by.
  */
-dmnsn_matrix dmnsn_translation_matrix(dmnsn_vector d);
+DMNSN_INLINE dmnsn_matrix
+dmnsn_translation_matrix(dmnsn_vector d)
+{
+  return dmnsn_new_matrix(
+    1.0, 0.0, 0.0, d.n[0],
+    0.0, 1.0, 0.0, d.n[1],
+    0.0, 0.0, 1.0, d.n[2]
+  );
+}
+
 /**
- * A left-handed rotation.
- * @param[in] theta  A vector representing an axis and angle.
- *                   @f$ axis = \vec{\theta}/|\vec{\theta}| @f$,
- *                   @f$ angle = |\vec{\theta}| @f$
- * @return The transformation matrix.
+ * Return a rotation matrix.
+ * @param[in]  theta  A vector representing an axis and angle.
+ *                    @f$ axis = \vec{\theta}/|\vec{\theta}| @f$,
+ *                    @f$ angle = |\vec{\theta}| @f$
  */
 dmnsn_matrix dmnsn_rotation_matrix(dmnsn_vector theta);
 
 /**
- * An alignment matrix.
+ * Return an alignment matrix.
  * @param[in] from   The initial vector.
  * @param[in] to     The desired direction.
  * @param[in] axis1  The first axis about which to rotate.
  * @param[in] axis2  The second axis about which to rotate.
- * @return A transformation matrix that will rotate \p from to \p to.
  */
-dmnsn_matrix dmnsn_alignment_matrix(dmnsn_vector from, dmnsn_vector to,
-                                    dmnsn_vector axis1, dmnsn_vector axis2);
+dmnsn_matrix dmnsn_alignment_matrix(dmnsn_vector from, dmnsn_vector to, dmnsn_vector axis1, dmnsn_vector axis2);
 
 /** Invert a matrix. */
-dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix A);
+dmnsn_matrix dmnsn_matrix_inverse(dmnsn_matrix M);
 
 /** Multiply two matricies. */
-dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs);
+DMNSN_INLINE dmnsn_matrix dmnsn_matrix_mul(dmnsn_matrix lhs, dmnsn_matrix rhs)
+{
+  dmnsn_matrix M;
+
+  unsigned int i, j, k;
+  for (i = 0; i < 3; ++i) {
+    for (j = 0; j < 3; ++j) {
+      M.n[i][j] = 0.0;
+      for (k = 0; k < 3; ++k) {
+        M.n[i][j] += lhs.n[i][k]*rhs.n[k][j];
+      }
+    }
+
+    M.n[i][3] = lhs.n[i][3];
+    for (k = 0; k < 3; ++k) {
+      M.n[i][3] += lhs.n[i][k]*rhs.n[k][3];
+    }
+  }
+
+  return M;
+}
 
 /** Transform a point by a matrix. */
 DMNSN_INLINE dmnsn_vector
-dmnsn_transform_point(dmnsn_matrix T, dmnsn_vector v)
+dmnsn_transform_point(dmnsn_matrix M, dmnsn_vector v)
 {
-  /* 9 multiplications, 9 additions */
   dmnsn_vector r;
-  r.x = T.n[0][0]*v.x + T.n[0][1]*v.y + T.n[0][2]*v.z + T.n[0][3];
-  r.y = T.n[1][0]*v.x + T.n[1][1]*v.y + T.n[1][2]*v.z + T.n[1][3];
-  r.z = T.n[2][0]*v.x + T.n[2][1]*v.y + T.n[2][2]*v.z + T.n[2][3];
+  unsigned int i, j;
+  for (i = 0; i < 3; ++i) {
+    r.n[i] = M.n[i][3];
+    for (j = 0; j < 3; ++j) {
+      r.n[i] += M.n[i][j]*v.n[j];
+    }
+  }
   return r;
 }
 
 /** Transform a direction by a matrix. */
 DMNSN_INLINE dmnsn_vector
-dmnsn_transform_direction(dmnsn_matrix T, dmnsn_vector v)
+dmnsn_transform_direction(dmnsn_matrix M, dmnsn_vector v)
 {
-  /* 9 multiplications, 6 additions */
   dmnsn_vector r;
-  r.x = T.n[0][0]*v.x + T.n[0][1]*v.y + T.n[0][2]*v.z;
-  r.y = T.n[1][0]*v.x + T.n[1][1]*v.y + T.n[1][2]*v.z;
-  r.z = T.n[2][0]*v.x + T.n[2][1]*v.y + T.n[2][2]*v.z;
+  unsigned int i, j;
+  for (i = 0; i < 3; ++i) {
+    r.n[i] = 0.0;
+    for (j = 0; j < 3; ++j) {
+      r.n[i] += M.n[i][j]*v.n[j];
+    }
+  }
   return r;
 }
 
 /**
  * Transform a pseudovector by a matrix.
- * @param[in] Tinv  The inverse of the transformation matrix.
- * @param[in] v     The pseudovector to transform
+ * @param[in] Minv  The inverse of the transformation matrix.
+ * @param[in] v     The pseudovector to transform.
  * @return The transformed pseudovector.
  */
 DMNSN_INLINE dmnsn_vector
-dmnsn_transform_normal(dmnsn_matrix Tinv, dmnsn_vector v)
+dmnsn_transform_normal(dmnsn_matrix Minv, dmnsn_vector v)
 {
-  /* Multiply by the transpose of the inverse
-     (9 multiplications, 6 additions) */
+  /* Multiply by the transpose of the inverse */
   dmnsn_vector r;
-  r.x = Tinv.n[0][0]*v.x + Tinv.n[1][0]*v.y + Tinv.n[2][0]*v.z;
-  r.y = Tinv.n[0][1]*v.x + Tinv.n[1][1]*v.y + Tinv.n[2][1]*v.z;
-  r.z = Tinv.n[0][2]*v.x + Tinv.n[1][2]*v.y + Tinv.n[2][2]*v.z;
+  unsigned int i, j;
+  for (i = 0; i < 3; ++i) {
+    r.n[i] = 0.0;
+    for (j = 0; j < 3; ++j) {
+      r.n[i] += Minv.n[j][i]*v.n[j];
+    }
+  }
   return r;
 }
 
-/**
- * Transform a ray by a matrix.
- * \f$ n' = T(l.\vec{x_0} + l.\vec{n}) - T(l.\vec{x_0}) \f$,
- * \f$ \vec{x_0}' = T(l.\vec{x_0}) \f$
- */
+/** Transform a ray by a matrix. */
 DMNSN_INLINE dmnsn_ray
-dmnsn_transform_ray(dmnsn_matrix T, dmnsn_ray l)
+dmnsn_transform_ray(dmnsn_matrix M, dmnsn_ray l)
 {
-  /* 18 multiplications, 15 additions */
   dmnsn_ray ret;
-  ret.x0 = dmnsn_transform_point(T, l.x0);
-  ret.n  = dmnsn_transform_direction(T, l.n);
+  ret.x0 = dmnsn_transform_point(M, l.x0);
+  ret.n = dmnsn_transform_direction(M, l.n);
   return ret;
 }
 
 /** Transform a bounding box by a matrix. */
-dmnsn_aabb dmnsn_transform_aabb(dmnsn_matrix T, dmnsn_aabb box);
+dmnsn_aabb dmnsn_transform_aabb(dmnsn_matrix M, dmnsn_aabb box);
 
 /** Return whether a matrix contains any NaN components. */
 DMNSN_INLINE bool
-dmnsn_matrix_isnan(dmnsn_matrix m)
+dmnsn_matrix_isnan(dmnsn_matrix M)
 {
-  size_t i, j;
+  unsigned int i, j;
   for (i = 0; i < 3; ++i) {
     for (j = 0; j < 4; ++j) {
-      if (dmnsn_isnan(m.n[i][j])) {
+      if (dmnsn_isnan(M.n[i][j])) {
         return true;
       }
     }

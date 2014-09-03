@@ -33,16 +33,15 @@ static inline bool
 dmnsn_ray_triangle_intersection(dmnsn_ray l, double *t, double *u, double *v)
 {
   // See the change of basis in dmnsn_triangle_basis()
-  *t = -l.x0.z/l.n.z;
-  *u = l.x0.x + (*t)*l.n.x;
-  *v = l.x0.y + (*t)*l.n.y;
+  *t = -l.x0.Z/l.n.Z;
+  *u = l.x0.X + (*t)*l.n.X;
+  *v = l.x0.Y + (*t)*l.n.Y;
   return *t >= 0.0 && *u >= 0.0 && *v >= 0.0 && *u + *v <= 1.0;
 }
 
 /// Triangle intersection callback.
 DMNSN_HOT static bool
-dmnsn_triangle_intersection_fn(const dmnsn_object *object, dmnsn_ray l,
-                               dmnsn_intersection *intersection)
+dmnsn_triangle_intersection_fn(const dmnsn_object *object, dmnsn_ray l, dmnsn_intersection *intersection)
 {
   double t, u, v;
   if (dmnsn_ray_triangle_intersection(l, &t, &u, &v)) {

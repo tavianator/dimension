@@ -23,6 +23,7 @@
  * Image maps.
  */
 
+#include "internal.h"
 #include "dimension/model.h"
 
 /// Canvas pigment type.
@@ -38,8 +39,8 @@ dmnsn_canvas_pigment_fn(const dmnsn_pigment *pigment, dmnsn_vector v)
   const dmnsn_canvas_pigment *canvas_pigment = (const dmnsn_canvas_pigment *)pigment;
   dmnsn_canvas *canvas = canvas_pigment->canvas;
 
-  size_t x = llround((fmod(v.x, 1.0) + 1.0)*(canvas->width  - 1));
-  size_t y = llround((fmod(v.y, 1.0) + 1.0)*(canvas->height - 1));
+  size_t x = llround((fmod(v.X, 1.0) + 1.0)*(canvas->width  - 1));
+  size_t y = llround((fmod(v.Y, 1.0) + 1.0)*(canvas->height - 1));
   return dmnsn_canvas_get_pixel(canvas, x%canvas->width, y%canvas->height);
 }
 
