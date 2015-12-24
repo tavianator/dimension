@@ -121,7 +121,7 @@
  * @brief Expands to the name of the current function
  */
 #if DMNSN_GNUC
-  #define DMNSN_FUNC __PRETTY_FUNCTION__
+  #define DMNSN_FUNC __extension__ __PRETTY_FUNCTION__
 #elif DMNSN_C99
   #define DMNSN_FUNC __func__
 #else
